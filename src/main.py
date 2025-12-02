@@ -1,6 +1,7 @@
 # src/main.py
 import sys
 import traceback
+import pandas as pd
 
 # 모듈 경로 설정
 import os
