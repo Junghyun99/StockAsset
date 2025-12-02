@@ -36,6 +36,10 @@ class Portfolio:
         stock_val = sum(q * self.current_prices.get(t, 0) for t, q in self.holdings.items())
         return self.total_cash + stock_val
 
+    def get_group_value(self, tickers: List[str]) -> float:
+        """특정 종목 그룹의 평가액 합계"""
+        return sum(self.holdings.get(t, 0) * self.current_prices.get(t, 0) for t in tickers)
+
 @dataclass
 class Order:
     ticker: str
