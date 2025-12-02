@@ -61,3 +61,37 @@ def test_save_history_only_when_orders_exist(repo):
         data = json.load(f)
         assert len(data) == 1
         assert data[0]['orders'][0]['ticker'] == "SPY"
+
+# tests/test_infra_repo.py (추가 내용)
+
+def test_load_corrupted_json_file(repo):
+    """
+    [예외 시나리오: 파일 손상]
+    저장된 JSON 파일의 내용이 깨져있을 때(Syntax Error),
+    프로그램이 죽지 않고 default 값(빈 리스트 등)을 리턴하는지?
+    """
+    # 1. 고의로 깨진 파일 생성
+    with open(repo.status_file, 'w') as f:
+        f.write("{ this is broken json ... ")
+    
+    # 2. 로드 시도
+    # JsonRepository._load_json 내부의 try-except 블록이 작동해야 함
+    data = repo._load_json(repo.status_file, default={})
+    
+    # 3. 에러 없이 기본값 리턴 확인
+    assert data == {}
+
+def test_repo_directory_creation(tmp_path):
+    """
+    [예외 시나리오: 폴더 없음]
+    저장 경로의 폴더가 없을 때 자동으로 생성하는지?
+    """
+    new_path = tmp_path / "subdir" / "data"
+    # 아직 폴더 없음
+    assert not os.path.exists(new_path)
+    
+    # Repo 초기화 시 자동 생성
+    from src.infra.repo import JsonRepository
+    repo = JsonRepository(root_path=str(new_path))
+    
+    assert os.path.exists(new_path)
