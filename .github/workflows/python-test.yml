@@ -32,3 +32,15 @@ jobs:
     - name: Test with pytest
       run: |
         pytest tests/
+
+
+
+    - name: Slack Notification on Failure
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+        author_name: GitHub Actions Test Fail
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # 아까 등록한 시크릿 사용
+      if: failure() # 중요: 앞 단계가 실패했을 때만 실행됨
