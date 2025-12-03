@@ -9,9 +9,12 @@ class IndicatorCalculator:
         OHLCV 데이터프레임(1년치 이상)을 받아 오늘의 MarketData 스냅샷 생성
         df columns: ['Open', 'High', 'Low', 'Close', 'Volume'] (MultiIndex일 경우 처리 필요)
         """
-        # 데이터가 충분한지 확인
-        if len(df) < 252:
-            raise ValueError(f"Data insufficient: requires 252 days, got {len(df)}")
+        # 물리적으로 253개가 안 되면 12개월 모멘텀 계산 불가
+        min_required = 253
+        
+        if len(df) < min_required:
+            # 로그에 현재 개수와 함께 에러를 명시
+            raise ValueError(f"Data insufficient: Need at least {min_required} rows (trading days), but got {len(df)}.")
 
         # 1. 전처리 (종가 시리즈 추출)
         # yfinance download 결과가 MultiIndex인 경우 대비

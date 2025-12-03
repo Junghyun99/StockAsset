@@ -9,12 +9,19 @@ def repo(tmp_path):
     # 임시 디렉토리를 root로 하는 리포지토리 생성
     return JsonRepository(root_path=str(tmp_path))
 
-def test_save_and_load_status(repo):
+@pytest.fixture
+def dummy_market_data():
+    return MarketData(
+            "2024-01-01", 100.0, 90.0, 0.2, 0.1, -0.05, 15.0
+                )
+@pytest.fixture
+def dummy_portfolio():
+    return Portfolio(1000.0, {'A': 10}, {'A': 100.0})
+
+def test_save_and_load_status(repo, dummy_portfolio, dummy_market_data):
     # 1. Status 저장 및 덮어쓰기 테스트
-    pf = Portfolio(1000, {'A': 10}, {'A': 100})
-    
     # 저장
-    repo.update_status(MarketRegime.BULL, 0.8, pf)
+    repo.update_status(MarketRegime.BULL, 0.8, dummy_portfolio, dummy_market_data,"Test reason")
     
     # 파일 생성 확인
     assert os.path.exists(repo.status_file)
@@ -22,9 +29,10 @@ def test_save_and_load_status(repo):
     # 내용 확인
     with open(repo.status_file, 'r') as f:
         data = json.load(f)
-        assert data['regime'] == "Bull"
-        assert data['exposure'] == 0.8
-        assert data['total_value'] == 2000.0
+        assert data['strategy']['regime'] == "Bull"
+        assert data['strategy']['target_exposure'] == 0.8
+        assert data['strategy']['market_score']['vix'] == 15.0
+        assert data['portfolio']['total_value'] == 2000.0
 
 def test_save_summary_append(repo):
     # 2. Summary 이어쓰기(Append) 테스트
@@ -43,24 +51,31 @@ def test_save_summary_append(repo):
         assert len(data) == 2 # 데이터가 2건이어야 함
         assert data[0]['date'] == "2024-01-01"
 
-def test_save_history_only_when_orders_exist(repo):
+def test_save_history_only_when_orders_exist(repo, dummy_portfolio):
     # 3. 주문이 있을 때만 History 저장 테스트
     
-    # Case A: 주문 없음
+    # Case A: 주문 없음 -> 저장 안 함
     signal_no_order = TradeSignal(0.8, False, [], "No Trade")
-    repo.save_trade_history(signal_no_order)
+    
+    # [수정] 변경된 시그니처에 맞춰 dummy_portfolio 추가
+    repo.save_trade_history(signal_no_order, dummy_portfolio)
+    
     assert not os.path.exists(repo.history_file) # 파일 생성이 안 되어야 함
     
-    # Case B: 주문 있음
+    # Case B: 주문 있음 -> 저장 함
     orders = [Order("SPY", "BUY", 1, 100)]
     signal_with_order = TradeSignal(0.8, True, orders, "Trade")
-    repo.save_trade_history(signal_with_order)
+    
+    # [수정] 변경된 시그니처에 맞춰 dummy_portfolio 추가
+    repo.save_trade_history(signal_with_order, dummy_portfolio)
     
     assert os.path.exists(repo.history_file)
     with open(repo.history_file, 'r') as f:
         data = json.load(f)
         assert len(data) == 1
         assert data[0]['orders'][0]['ticker'] == "SPY"
+        # [추가 검증] 새로 추가된 스키마 필드(portfolio_value) 확인
+        assert data[0]['portfolio_value'] == 1000.0 + (10 * 100.0) # total_value (2000.0)
 
 # tests/test_infra_repo.py (추가 내용)
 

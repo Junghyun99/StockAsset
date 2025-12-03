@@ -116,8 +116,8 @@ class TradingBot:
 
             self.logger.info(">>> Step 5: Archiving Data")
             self.repo.save_daily_summary(market_data, signal, current_pf)
-            self.repo.save_trade_history(signal)
-            self.repo.update_status(regime, exposure, current_pf)
+            self.repo.save_trade_history(signal, current_pf)
+            self.repo.update_status(regime, exposure, current_pf, market_data, signal.reason)
             
         except Exception as e:
             error_msg = f"Critical Error:\n{traceback.format_exc()}"
