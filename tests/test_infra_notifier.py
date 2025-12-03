@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch
-from src.infra.notifier import TelegramNotifier
+from src.infra.notifier import TelegramNotifier, SlackNotifier
 
 @pytest.fixture
 def mock_requests_post():
@@ -41,3 +41,41 @@ def test_telegram_network_error(mock_requests_post, capsys):
     # 콘솔에 에러 로그가 찍혔는지 확인
     captured = capsys.readouterr()
     assert "[Telegram Error]" in captured.out
+
+
+def test_slack_send_success(mock_requests_post):
+    # 1. Mock 설정 (성공 응답 200)
+    mock_requests_post.return_value.status_code = 200
+    
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+    notifier.send_message("Hello Slack")
+    
+    # 호출 검증
+    mock_requests_post.assert_called_once()
+    
+    # 인자 검증 (json 파라미터 확인)
+    args, kwargs = mock_requests_post.call_args
+    assert args[0] == "https://hooks.slack.com/test"
+    assert "Hello Slack" in kwargs['json']['text']
+
+def test_slack_alert_channel_mention(mock_requests_post):
+    # 2. Alert 전송 시 <!channel> 멘션 포함 확인
+    mock_requests_post.return_value.status_code = 200
+    
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+    notifier.send_alert("Emergency!")
+    
+    _, kwargs = mock_requests_post.call_args
+    assert "<!channel>" in kwargs['json']['text']
+
+def test_slack_send_failure(mock_requests_post, capsys):
+    # 3. 슬랙 서버 에러 (500) 처리 확인
+    mock_requests_post.return_value.status_code = 500
+    mock_requests_post.return_value.text = "Internal Server Error"
+    
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+    notifier.send_message("Test")
+    
+    # 콘솔에 에러 로그가 찍혀야 함
+    captured = capsys.readouterr()
+    assert "[Slack Error]" in captured.out

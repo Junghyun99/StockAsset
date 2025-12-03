@@ -23,8 +23,9 @@ class Config:
         self.KIS_ACC_NO = os.getenv("KIS_ACC_NO", "")
         
         # 텔레그램
-        self.TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
-        self.TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+        # self.TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+        # self.TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+        ㄴself.SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
         
         # 3. 데이터 경로
         self.DATA_PATH = "docs/data"

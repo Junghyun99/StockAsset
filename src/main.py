@@ -14,6 +14,7 @@ from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
 from src.infra.broker import MockBroker, KisBroker
 from src.infra.notifier import TelegramNotifier
+from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
 from src.core.models import MarketRegime
 
@@ -28,7 +29,8 @@ class TradingBot:
         # 2. 인프라 객체 생성 (DI)
         self.data_loader = YFinanceLoader()
         self.repo = JsonRepository(self.config.DATA_PATH)
-        self.notifier = TelegramNotifier(self.config.TELEGRAM_TOKEN, self.config.TELEGRAM_CHAT_ID)
+        #self.notifier = TelegramNotifier(self.config.TELEGRAM_TOKEN, self.config.TELEGRAM_CHAT_ID)
+        self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL)
         
         # 브로커 선택 (실전 vs 모의)
         if self.config.IS_LIVE_TRADING:
