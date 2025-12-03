@@ -27,7 +27,7 @@ class TelegramNotifier(INotifier):
 
 class SlackNotifier(INotifier):
     def __init__(self, webhook_url: str):
-        self.webhook_url = ㄴ
+        self.webhook_url = webhook_url
 
     def send_message(self, message: str) -> None:
         # 일반 메시지
