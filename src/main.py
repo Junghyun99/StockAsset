@@ -27,7 +27,7 @@ class TradingBot:
         self.logger.info("=== Initializing Trading Bot ===")
         
         # 2. 인프라 객체 생성 (DI)
-        self.data_loader = YFinanceLoader()
+        self.data_loader = YFinanceLoader(self.logger)
         self.repo = JsonRepository(self.config.DATA_PATH)
         #self.notifier = TelegramNotifier(self.config.TELEGRAM_TOKEN, self.config.TELEGRAM_CHAT_ID)
         self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL)
