@@ -11,7 +11,7 @@ def mock_yf_download():
 @pytest.fixture
 def mock_logger():
     """가짜 로거 생성"""
-        return MagicMock()
+    return MagicMock()
 
 def test_fetch_ohlcv_success(mock_yf_download):
     # 1. 정상 데이터 반환 시나리오
