@@ -1,6 +1,7 @@
 # src/infra/repo.py
 import json
 import os
+from typing import List, Dict
 from dataclasses import asdict
 from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
