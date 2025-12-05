@@ -243,3 +243,34 @@ def test_rebalancer_small_balance_rounding(create_portfolio):
     # 현재가치 500만 vs 목표 510만 -> 차이 10만 -> 10만/50만 = 0.2 -> int(0)
     # 주문이 생성되지 않아야 함
     assert len(orders) == 0   
+
+def test_rebalancer_order_sequence(create_portfolio):
+    """
+    [주문 순서 테스트]
+    현금이 없고 SHV만 있는 상태에서 리밸런싱 할 때,
+    반드시 SELL 주문이 BUY 주문보다 앞에 와야 한다.
+    """
+    groups = {'A': ['SSO'], 'B': ['IEF'], 'C': ['SHV']}
+    rebalancer = Rebalancer(groups)
+    
+    # 현금 0원, SHV(C) 1000만원 보유
+    # 목표: A매수, B매수 (C를 팔아서 사야 함)
+    pf = create_portfolio(
+        cash=0.0,
+        holdings={'SHV': 100}, # 1000만원
+        prices={'SSO': 100, 'IEF': 100, 'SHV': 100}
+    )
+    
+    # 횡보장, 100% 투자 -> A:33%, B:33%, C:33% 목표 가정 (예시)
+    # 실제 로직: A, B 목표 채우고 나머지가 C
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+    
+    # 1. 주문이 생성되었는지 확인
+    assert len(signal.orders) > 0
+    
+    # 2. 첫 번째 주문이 반드시 'SELL' 이어야 함 (SHV 매도)
+    assert signal.orders[0].action == "SELL"
+    assert signal.orders[0].ticker == "SHV"
+    
+    # 3. 그 뒤에 'BUY' 주문이 와야 함
+    assert signal.orders[-1].action == "BUY"

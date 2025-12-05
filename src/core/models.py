@@ -54,3 +54,15 @@ class TradeSignal:
     rebalance_needed: bool
     orders: List[Order]
     reason: str
+
+@dataclass
+class TradeExecution:
+    """실제 체결된 매매 결과 (영수증)"""
+    ticker: str
+    action: str   # "BUY" or "SELL"
+    quantity: int # 실제 체결 수량
+    price: float  # 실제 체결 단가 (평균단가)
+    fee: float    # 수수료
+    date: str     # 체결 시간
+    status: str   # "FILLED" (체결), "PARTIAL" (부분체결), "REJECTED" (거부)
+    reason: str = "" # 거부 사유 등

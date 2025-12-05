@@ -3,7 +3,7 @@ import json
 import os
 from dataclasses import asdict
 from datetime import datetime
-from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime
+from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
 
 class JsonRepository:
     def __init__(self, root_path: str = "docs/data"):
@@ -43,13 +43,13 @@ class JsonRepository:
         # data = data[-2000:] 
         
         self._save_json(self.summary_file, data)
-    def save_trade_history(self, signal: TradeSignal, pf: Portfolio): # [수정] pf 인자 추가
+    def save_trade_history(self, executions: List[TradeExecution], pf: Portfolio, reason: str):
         """매매 내역 저장 - Append"""
-        if not signal.orders:
+        if not executions:
             return
 
         # 거래 규모 계산
-        trade_amt = sum(o.quantity * o.price for o in signal.orders)
+        trade_amt = sum(e.price * e.quantity for e in executions)
         
         # ID 생성 (타임스탬프 기반)
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -60,8 +60,8 @@ class JsonRepository:
             "date": now_str,
             "portfolio_value": pf.total_value, # [추가]
             "total_trade_amount": trade_amt,   # [추가]
-            "reason": signal.reason,
-            "orders": [asdict(o) for o in signal.orders]
+            "reason": reason,
+            "executions": [asdict(e) for e in executions]
         }
         
         data = self._load_json(self.history_file, default=[])

@@ -2,6 +2,7 @@
 import sys
 import traceback
 import pandas as pd
+import time
 
 # 모듈 경로 설정
 import os
@@ -75,49 +76,47 @@ class TradingBot:
             self.logger.info(f"Regime: {regime.value} | Target Exposure: {exposure:.2f}")
             
             self.logger.info(">>> Step 4: Portfolio Rebalancing")
-            current_pf = self.broker.get_portfolio()
-            self.logger.info(f"Current Portfolio: Cash=${current_pf.total_cash:,.0f}, Value=${current_pf.total_value:,.0f}")
+            pre_trade_pf = self.broker.get_portfolio()
+            self.logger.info(f"Current Portfolio: Cash=${pre_trade_pf.total_cash:,.0f}, Value=${pre_trade_pf.total_value:,.0f}")
             
             # 현재가 업데이트 (리밸런싱 계산을 위해 전체 티커 최신가 필요)
             # 여기서는 편의상 YFinance로 전체 티커 현재가 조회 후 Portfolio에 주입
+            self.logger.info("Fetching Real-time prices from Broker...")
             all_tickers = sum(self.config.ASSET_GROUPS.values(), [])
-            prices_df = self.data_loader.fetch_ohlcv(all_tickers, days=5)
-            # 마지막 종가 추출 로직 (단순화)
-            current_prices = {}
-            if isinstance(prices_df.columns, pd.MultiIndex):
-                for t in all_tickers:
-                    try:
-                        current_prices[t] = float(prices_df.xs('Close', axis=1, level=0)[t].iloc[-1])
-                    except:
-                        current_prices[t] = 0.0
-            else:
-                 # 단일 티커일 경우 등 처리 필요하지만 여기선 생략
-                 pass 
-            
-            # MockBroker인 경우 가격 정보가 없으므로 주입
-            current_pf.current_prices = current_prices
+            real_time_prices = self.broker.fetch_current_prices(all_tickers)
+            # 주의: Broker가 가격을 못 가져온 종목이 있다면 기존 값 유지 등의 방어 로직 필요
+            for t, price in real_time_prices.items():
+                if price > 0:
+                    pre_trade_pf.current_prices[t] = price
 
-            signal = self.rebalancer.generate_signal(current_pf, exposure, regime)
-            
+            signal = self.rebalancer.generate_signal(pre_trade_pf, exposure, regime)
+            final_pf = pre_trade_pf 
             if signal.rebalance_needed:
                 self.logger.info(f"Signal Generated: {signal.reason}")
                 self.logger.info(f"Executing {len(signal.orders)} orders...")
                 
-                success = self.broker.execute_orders(signal.orders)
+                executions = self.broker.execute_orders(signal.orders)
                 
-                if success:
-                    msg = f"✅ Rebalance Completed\nReason: {signal.reason}\nOrders: {len(signal.orders)}"
+                if executions:
+                    msg = f"✅ Orders Executed. Count: {len(executions)}"
                     self.notifier.send_message(msg)
+                    if self.config.IS_LIVE_TRADING:
+                        time.sleep(3) 
+                    
+                    final_pf = self.broker.get_portfolio()
+                    self.logger.info(f"Updated Portfolio: Cash=${final_pf.total_cash:,.0f}, Value=${final_pf.total_value:,.0f}")
                 else:
-                    self.notifier.send_alert("❌ Order Execution Failed!")
+                    self.notifier.send_alert("⚠️ Orders sent but NO execution result returned.")
+                    executions = []
             else:
                 self.logger.info("No Rebalance Needed.")
                 self.notifier.send_message(f"Bot Finished. Hold. ({regime.value})")
+                executions = []
 
             self.logger.info(">>> Step 5: Archiving Data")
-            self.repo.save_daily_summary(market_data, signal, current_pf)
-            self.repo.save_trade_history(signal, current_pf)
-            self.repo.update_status(regime, exposure, current_pf, market_data, signal.reason)
+            self.repo.save_daily_summary(market_data, signal, final_pf)
+            self.repo.save_trade_history(executions, final_pf)
+            self.repo.update_status(regime, exposure, final_pf, market_data, signal.reason)
             
         except Exception as e:
             error_msg = f"Critical Error:\n{traceback.format_exc()}"

@@ -81,6 +81,11 @@ class Rebalancer:
         val_a = portfolio.get_group_value(self.groups.get('A', []))
         val_b = portfolio.get_group_value(self.groups.get('B', []))
         val_risky = val_a + val_b
+
+        # [핵심 변경 1] 자산 C의 가치는 "보유종목(SHV 등) + 예수금(Cash)"의 합
+        # 리밸런싱 판단 시, 현금도 C 자산의 일부로 간주함
+        holdings_c = portfolio.get_group_value(self.groups.get('C', []))
+        val_c_total = holdings_c + portfolio.total_cash
         
         # A, B 상대 비중
         if val_risky == 0:
@@ -111,18 +116,30 @@ class Rebalancer:
         target_val_a = portfolio.total_value * target_exposure * target_ratio_a
         target_val_b = portfolio.total_value * target_exposure * target_ratio_b
 
+        # C는 나머지 전부 (Total - A - B)
+        # 현금으로 두지 않고, C그룹 주식(SHV)으로 꽉 채우는 것을 목표로 함
+        target_val_c = portfolio.total_value - (target_val_a + target_val_b)
+
         # 4. 주문 생성
         orders = []
         orders.extend(self._create_group_orders(portfolio, self.groups.get('A', []), target_val_a))
         orders.extend(self._create_group_orders(portfolio, self.groups.get('B', []), target_val_b))
+        # 남는 현금을 모두 SHV 매수에 사용하거나, 현금이 부족하면 SHV를 매도함
+        orders.extend(self._create_group_orders(portfolio, self.groups.get('C', []), target_val_c))
         
-        # 주문이 있으면 실행 플래그 True
-        execution_needed = len(orders) > 0
+        # 예수금이 없는 상황을 대비하여, 무조건 매도 주문을 먼저 실행해서 현금을 확보해야 함.
+        sell_orders = [o for o in orders if o.action == "SELL"]
+        buy_orders = [o for o in orders if o.action == "BUY"]
+        
+        # 정렬된 최종 주문 리스트
+        sorted_orders = sell_orders + buy_orders
+        
+        execution_needed = len(sorted_orders) > 0
         
         return TradeSignal(
             target_exposure=target_exposure,
             rebalance_needed=execution_needed,
-            orders=orders,
+            orders=sorted_orders,
             reason=reason
         )
 

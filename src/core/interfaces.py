@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict
 import pandas as pd
-from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime
+from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution
 
 class IDataProvider(ABC):
     @abstractmethod
@@ -13,7 +13,9 @@ class IBrokerAdapter(ABC):
     @abstractmethod
     def get_portfolio(self) -> Portfolio: ...
     @abstractmethod
-    def execute_orders(self, orders: List[Order]) -> bool: ...
+    def execute_orders(self, orders: List[Order]) -> List[TradeExecution]: ...
+    @abstractmethod
+    def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]: ...
 
 class INotifier(ABC):
     @abstractmethod

@@ -93,15 +93,20 @@ def test_bot_run_rebalance_execution(mock_dependencies):
         1.0, True, [MagicMock()], "Rebalance Needed"
     )
     mock_dependencies['broker'].execute_orders.return_value = True
+    mock_dependencies['broker'].fetch_current_prices.return_value = {
+        'SPY': 101.0, 'IEF': 99.0 # 실시간 가격 가정
+    }
     
     # 2. 실행
     bot = TradingBot()
     bot.run()
     
     # 3. 검증
+    mock_dependencies['broker'].fetch_current_prices.assert_called_once()
     mock_dependencies['broker'].execute_orders.assert_called_once()
     mock_dependencies['notifier'].send_message.assert_called()
     mock_dependencies['repo'].save_trade_history.assert_called()
+    mock_dependencies['rebalancer'].generate_signal.assert_called()
 
 def test_bot_crash_handling(mock_dependencies):
     """[시나리오 4: 프로그램 예외 발생]"""
