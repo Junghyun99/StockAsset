@@ -2,7 +2,7 @@ import pytest
 import json
 import os
 from src.infra.repo import JsonRepository
-from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Order
+from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Order, TradeExecution
 
 @pytest.fixture
 def repo(tmp_path):
@@ -58,16 +58,16 @@ def test_save_history_only_when_orders_exist(repo, dummy_portfolio):
     signal_no_order = TradeSignal(0.8, False, [], "No Trade")
     
     # [수정] 변경된 시그니처에 맞춰 dummy_portfolio 추가
-    repo.save_trade_history(signal_no_order, dummy_portfolio)
+    repo.save_trade_history(signal_no_order, dummy_portfolio, "Test Reason")
     
     assert not os.path.exists(repo.history_file) # 파일 생성이 안 되어야 함
     
     # Case B: 주문 있음 -> 저장 함
     orders = [Order("SPY", "BUY", 1, 100)]
-    signal_with_order = TradeSignal(0.8, True, orders, "Trade")
+    executions = [TradeExecution("SPY", "BUY", 1, 100, 0.1, "2024-01-01", "FILLED")]
     
     # [수정] 변경된 시그니처에 맞춰 dummy_portfolio 추가
-    repo.save_trade_history(signal_with_order, dummy_portfolio)
+    repo.save_trade_history(executions, dummy_portfolio, "Test Reason")
     
     assert os.path.exists(repo.history_file)
     with open(repo.history_file, 'r') as f:

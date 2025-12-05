@@ -92,7 +92,7 @@ def test_bot_run_rebalance_execution(mock_dependencies):
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
         1.0, True, [MagicMock()], "Rebalance Needed"
     )
-    mock_dependencies['broker'].execute_orders.return_value = True
+    mock_dependencies['broker'].execute_orders.return_value = [MagicMock()] 
     mock_dependencies['broker'].fetch_current_prices.return_value = {
         'SPY': 101.0, 'IEF': 99.0 # 실시간 가격 가정
     }
@@ -129,14 +129,14 @@ def test_bot_order_execution_failure(mock_dependencies):
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
         1.0, True, [MagicMock()], "Go Trade"
     )
-    mock_dependencies['broker'].execute_orders.return_value = False
+    mock_dependencies['broker'].execute_orders.return_value = []
     
     bot = TradingBot()
     bot.run()
     
     mock_dependencies['notifier'].send_alert.assert_called()
     args, _ = mock_dependencies['notifier'].send_alert.call_args
-    assert "Failed" in args[0]
+    assert "NO execution result" in args[0]
 
 def test_bot_current_price_fetch_failure(mock_dependencies):
     """[예외 시나리오: 현재가 조회 실패]"""
@@ -144,14 +144,11 @@ def test_bot_current_price_fetch_failure(mock_dependencies):
     mock_dependencies['analyzer'].analyze.return_value = MarketRegime.BULL
     mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
     
-    mock_dependencies['loader'].fetch_ohlcv.side_effect = [
-        MagicMock(), 
-        Exception("Quote Server Error")
-    ]
+    mock_dependencies['broker'].fetch_current_prices.side_effect = Exception("Quote Error")
     
     bot = TradingBot()
     
-    with pytest.raises(Exception, match="Quote Server Error"):
+    with pytest.raises(Exception, match="Quote Error"):
         bot.run()
     
     mock_dependencies['notifier'].send_alert.assert_called()
@@ -166,7 +163,7 @@ def test_bot_repo_save_permission_error(mock_dependencies):
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
         1.0, True, [MagicMock()], "Trade Done"
     )
-    mock_dependencies['broker'].execute_orders.return_value = True
+    mock_dependencies['broker'].execute_orders.return_value = [MagicMock()]
     mock_dependencies['repo'].save_daily_summary.side_effect = PermissionError("Disk Read-only")
     
     bot = TradingBot()
