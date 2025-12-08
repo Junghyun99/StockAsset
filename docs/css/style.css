@@ -1,0 +1,39 @@
+/* 기본 폰트 및 배경 */
+body {
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 카드 스타일 */
+.card {
+    border-radius: 10px;
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* 국면별 뱃지/텍스트 색상 */
+.regime-bull {
+    color: #198754; /* Success Green */
+}
+.regime-bear {
+    color: #dc3545; /* Danger Red */
+}
+.regime-sideways {
+    color: #ffc107; /* Warning Yellow */
+}
+.regime-crash {
+    color: #212529; /* Dark */
+    background-color: #ffcccc;
+}
+
+/* 테이블 스타일 */
+.table th {
+    font-weight: 600;
+    color: #555;
+}
+.order-badge {
+    font-size: 0.85em;
+    margin-right: 4px;
+}
