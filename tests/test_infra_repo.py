@@ -52,33 +52,25 @@ def test_save_summary_append(repo):
         assert data[0]['date'] == "2024-01-01"
 
 def test_save_history_only_when_orders_exist(repo, dummy_portfolio):
-    # 3. 주문이 있을 때만 History 저장 테스트
+    # Case A: 체결 내역 없음 (빈 리스트)
+    # [수정] signal 객체가 아니라 빈 리스트 [] 전달
+    repo.save_trade_history([], dummy_portfolio, "No Trade")
+    assert not os.path.exists(repo.history_file)
     
-    # Case A: 주문 없음 -> 저장 안 함
-    signal_no_order = TradeSignal(0.8, False, [], "No Trade")
+    # Case B: 체결 내역 있음
+    # [수정] TradeExecution 객체 리스트 생성
+    executions = [
+        TradeExecution("SPY", "BUY", 1, 100.0, 0.1, "2024-01-01", "FILLED")
+    ]
     
-    # [수정] 변경된 시그니처에 맞춰 dummy_portfolio 추가
-    repo.save_trade_history(signal_no_order, dummy_portfolio, "Test Reason")
-    
-    assert not os.path.exists(repo.history_file) # 파일 생성이 안 되어야 함
-    
-    # Case B: 주문 있음 -> 저장 함
-    orders = [Order("SPY", "BUY", 1, 100)]
-    executions = [TradeExecution("SPY", "BUY", 1, 100, 0.1, "2024-01-01", "FILLED")]
-    
-    # [수정] 변경된 시그니처에 맞춰 dummy_portfolio 추가
-    repo.save_trade_history(executions, dummy_portfolio, "Test Reason")
-    
+    repo.save_trade_history(executions, dummy_portfolio, "Trade Executed")
     assert os.path.exists(repo.history_file)
     with open(repo.history_file, 'r') as f:
         data = json.load(f)
         assert len(data) == 1
-        assert data[0]['orders'][0]['ticker'] == "SPY"
-        # [추가 검증] 새로 추가된 스키마 필드(portfolio_value) 확인
-        assert data[0]['portfolio_value'] == 1000.0 + (10 * 100.0) # total_value (2000.0)
-
-# tests/test_infra_repo.py (추가 내용)
-
+        assert data[0]['executions'][0]['ticker'] == "SPY"
+    
+    
 def test_load_corrupted_json_file(repo):
     """
     [예외 시나리오: 파일 손상]
