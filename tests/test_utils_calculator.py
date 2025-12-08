@@ -47,3 +47,36 @@ def test_calculator_multiindex_handling():
     # 에러 없이 계산되어야 함
     market_data = calc.calculate(df, 20.0)
     assert isinstance(market_data.spy_price, float)
+
+
+def test_calculator_resilience_to_nan_values():
+    """
+    [심화] 중간에 결측치(NaN)가 섞인 데이터가 들어왔을 때 처리
+    상황: 거래 정지 등으로 며칠간 가격이 NaN인 경우
+    """
+    calc = IndicatorCalculator()
+    
+    # 1. 데이터 생성 (300일)
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    prices = np.linspace(100, 200, 300)
+    df = pd.DataFrame({'Close': prices}, index=dates)
+    
+    # 2. 고의로 중간에 NaN 주입 (최근 데이터 포함)
+    df.iloc[-5] = np.nan # 5일 전 데이터 유실
+    df.iloc[-10] = np.nan
+    
+    # 3. 계산 시도 (에러가 나면 안 됨)
+    # Pandas의 rolling 함수는 기본적으로 NaN을 건너뛰거나 처리함
+    try:
+        market_data = calc.calculate(df, 20.0)
+        
+        # 4. 검증
+        # 값이 계산되어 나왔는지 (NaN이 아니어야 함)
+        assert not np.isnan(market_data.spy_price)
+        assert not np.isnan(market_data.spy_ma180)
+        
+        # 만약 마지막 날(iloc[-1])이 NaN이면? -> 이건 fetcher에서 걸러지거나 에러가 날 수 있음.
+        # IndicatorCalculator는 보통 ffill() 등을 안 하므로, 마지막 값이 NaN이면 결과도 NaN일 수 있음.
+        # 이 테스트는 "중간 결측치"에 대한 내성을 확인.
+    except Exception as e:
+        pytest.fail(f"Calculator crashed on NaN data: {e}")
