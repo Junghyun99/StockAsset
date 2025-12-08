@@ -102,3 +102,32 @@ def test_repo_directory_creation(tmp_path):
     repo = JsonRepository(root_path=str(new_path))
     
     assert os.path.exists(new_path)
+
+
+def test_repo_resilience_empty_file(repo):
+    """
+    [심화] JSON 파일이 존재하지만 내용이 비어있는 경우(0 byte) 방어
+    """
+    # 1. 빈 파일 생성
+    with open(repo.status_file, 'w') as f:
+        pass # create empty file
+        
+    # 2. 로드 시도
+    # JSONDecodeError가 발생하지 않고 기본값({})을 리턴하거나, None을 리턴해야 함
+    data = repo._load_json(repo.status_file, default={})
+    
+    assert data == {}
+
+def test_repo_resilience_malformed_json(repo):
+    """
+    [심화] JSON 파일 내용이 깨진 경우 방어
+    """
+    # 1. 깨진 파일 생성
+    with open(repo.status_file, 'w') as f:
+        f.write("{ 'key': 'value' ... broken") # 닫는 괄호 없음
+        
+    # 2. 로드 시도
+    data = repo._load_json(repo.status_file, default={'fallback': True})
+    
+    # 3. 기본값(Fallback)으로 복구되는지 확인
+    assert data['fallback'] is True
