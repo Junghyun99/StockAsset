@@ -108,3 +108,37 @@ def test_mock_broker_insufficient_funds():
     assert len(executions) == 0
     assert pf.total_cash == 100.0 # 현금 그대로
     assert pf.holdings.get('SPY', 0) == 0
+
+
+
+def test_mock_broker_cash_recycling_logic():
+    """
+    [심화] 매도 대금이 즉시 매수 재원으로 활용되는지 검증
+    상황: 현금 0원, A주식 100만원어치 보유.
+    주문: A 전량 매도 -> B 100만원어치 매수.
+    기대: A 매도 후 현금이 100만원이 되고, 그 돈으로 B를 사서 최종 현금은 0원, B 보유량이 늘어야 함.
+    """
+    # 1. 초기 설정: 현금 0, StockA 10주($100)
+    broker = MockBroker(initial_cash=0.0, holdings={'StockA': 10})
+    
+    # 2. 주문 목록: Sell A -> Buy B
+    # (Rebalancer가 정렬해준 순서대로 들어온다고 가정)
+    orders = [
+        Order('StockA', 'SELL', 10, 100.0),
+        Order('StockB', 'BUY', 10, 100.0)
+    ]
+    
+    # 3. 실행
+    broker.execute_orders(orders)
+    pf = broker.get_portfolio()
+    
+    # 4. 검증
+    # StockA는 팔았으니 0
+    assert pf.holdings.get('StockA', 0) == 0
+    
+    # StockB는 샀으니 10 (이게 핵심! 매도 대금이 안 들어왔으면 0일 것임)
+    assert pf.holdings.get('StockB', 0) == 10
+    
+    # 현금 흐름: 0 -> +1000(매도) -> -1000(매수) -> 0 (수수료/슬리피지 제외 시)
+    # 실제로는 MockBroker 수수료 로직 때문에 약간 차감됨, 대략 0 근처인지 확인
+    assert pf.total_cash < 100.0 # 잔돈만 남아야 함
