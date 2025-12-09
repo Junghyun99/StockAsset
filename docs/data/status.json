@@ -1,0 +1,46 @@
+{
+  "last_updated": "2024-05-25 07:00:00",
+  "strategy": {
+    "regime": "Bear_Weak",
+    "target_exposure": 0.6,
+    "trigger_reason": "Momentum Negative (-0.02)",
+    "market_score": {
+      "vix": 24.50,
+      "spy_mdd": -0.12,
+      "spy_momentum": -0.02,
+      "spy_price": 445.20,
+      "spy_ma180": 455.00,
+      "spy_volatility": 0.18
+    }
+  },
+  "portfolio": {
+    "total_value": 10500.25,
+    "cash_balance": 4200.10,
+    "holdings": [
+      {
+        "ticker": "SSO",
+        "qty": 30,
+        "price": 55.00,
+        "value": 1650.00
+      },
+      {
+        "ticker": "QLD",
+        "qty": 20,
+        "price": 75.00,
+        "value": 1500.00
+      },
+      {
+        "ticker": "IEF",
+        "qty": 33,
+        "price": 95.00,
+        "value": 3135.00
+      },
+      {
+        "ticker": "SHV",
+        "qty": 0,
+        "price": 110.00,
+        "value": 0.00
+      }
+    ]
+  }
+}
