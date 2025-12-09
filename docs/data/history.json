@@ -1,0 +1,40 @@
+[
+  {
+    "id": "tx_20240521_070000",
+    "date": "2024-05-21 07:00:00",
+    "portfolio_value": 10000.0,
+    "total_trade_amount": 10000.0,
+    "total_fee": 10.0,
+    "reason": "Initial Entry (Bull Market)",
+    "executions": [
+      {
+        "ticker": "SSO", "action": "BUY", "quantity": 50, "price": 50.0, "fee": 2.5, "status": "FILLED"
+      },
+      {
+        "ticker": "QLD", "action": "BUY", "quantity": 30, "price": 83.3, "fee": 2.5, "status": "FILLED"
+      },
+      {
+        "ticker": "IEF", "action": "BUY", "quantity": 50, "price": 100.0, "fee": 5.0, "status": "FILLED"
+      }
+    ]
+  },
+  {
+    "id": "tx_20240525_070005",
+    "date": "2024-05-25 07:00:05",
+    "portfolio_value": 10500.25,
+    "total_trade_amount": 4200.0,
+    "total_fee": 4.20,
+    "reason": "Regime Change: Bull -> Bear (Exposure 1.0 -> 0.6)",
+    "executions": [
+      {
+        "ticker": "SSO", "action": "SELL", "quantity": 20, "price": 55.0, "fee": 1.1, "status": "FILLED"
+      },
+      {
+        "ticker": "QLD", "action": "SELL", "quantity": 10, "price": 75.0, "fee": 0.75, "status": "FILLED"
+      },
+      {
+        "ticker": "IEF", "action": "SELL", "quantity": 17, "price": 95.0, "fee": 1.6, "status": "FILLED"
+      }
+    ]
+  }
+]
