@@ -217,3 +217,66 @@ def test_logger_non_string_input(tmp_path, reset_logger):
         
     # 딕셔너리 내용이 문자열로 잘 찍혔는지 확인
     assert "{'price': 100, 'ticker': 'SPY'}" in content
+
+
+def test_logger_multiline_message(tmp_path, reset_logger):
+    """
+    [내용] 줄바꿈(\n)이 포함된 로그(예: Traceback)가 형태를 유지하며 저장되는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    multiline_msg = """Critical Error Occurred:
+    Traceback (most recent call last):
+      File "main.py", line 10, in <module>
+        1 / 0
+    ZeroDivisionError: division by zero"""
+    
+    logger.error(multiline_msg)
+    
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        content = f.read()
+    
+    # 내용이 그대로 포함되어 있는지 확인
+    assert multiline_msg in content
+    # 줄바꿈 개수가 유지되는지 확인
+    assert content.count('\n') >= 4
+
+def test_logger_large_payload(tmp_path, reset_logger):
+    """
+    [성능/한계] 매우 긴 문자열(예: 10KB API 응답)을 기록해도 잘리지 않는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    # 10KB 짜리 긴 문자열 생성
+    large_msg = "A" * 1024 * 10 
+    
+    logger.info(large_msg)
+    
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        content = f.read()
+        
+    # 파일 내용에 긴 문자열이 통째로 들어있는지 확인
+    assert large_msg in content
+
+def test_logger_empty_message(tmp_path, reset_logger):
+    """
+    [방어] 빈 문자열을 로깅했을 때 에러 없이 빈 내용이 기록되는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    logger.info("")
+    
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        content = f.read()
+    
+    # 포맷([INFO])은 찍히고 내용은 비어있어야 함
+    assert "[INFO]" in content
+    # 로그 포맷 뒷부분에 공백 혹은 개행이 붙어있는지 확인 (정규식 등으로 더 엄밀하게 볼 수도 있음)
+    # 여기서는 에러가 안 났다는 것과 파일에 뭔가가 쓰였다는 것을 검증
+    assert len(content) > 0
