@@ -2,6 +2,8 @@ import os
 import logging
 import pytest
 from src.utils.logger import TradeLogger
+from datetime import datetime
+from unittest.mock import patch
 
 @pytest.fixture
 def reset_logger():
@@ -98,3 +100,50 @@ def test_prevent_duplicate_handlers(tmp_path, capsys, reset_logger):
     # 문자열 count로 확인 (이스케이프 문자 등이 있을 수 있어 단순 포함 여부보다 count가 정확)
     assert captured.err.count("Duplicate Check") == 1
 
+
+
+
+
+def test_logger_encoding(tmp_path, reset_logger):
+    """
+    [심화] 한글 및 이모지가 깨지지 않고 UTF-8로 저장되는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    special_msg = "테스트 메시지: 한글 및 이모지 🚀 확인"
+    logger.info(special_msg)
+    
+    # 생성된 로그 파일 찾기
+    log_file = log_dir / os.listdir(log_dir)[0]
+    
+    # utf-8로 읽어서 내용 확인
+    with open(log_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+        assert special_msg in content
+
+def test_logger_filename_date_format(tmp_path, reset_logger):
+    """
+    [심화] 로그 파일명이 'YYYY-MM-DD.log' 형식을 따르는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    TradeLogger(log_dir=str(log_dir))
+    
+    files = os.listdir(log_dir)
+    filename = files[0]
+    
+    # 오늘 날짜 구하기
+    expected_date = datetime.now().strftime("%Y-%m-%d")
+    expected_filename = f"{expected_date}.log"
+    
+    assert filename == expected_filename
+
+def test_logger_permission_error(reset_logger):
+    """
+    [예외] 로그 디렉토리 생성 권한이 없을 때 예외가 발생하는지 확인
+    """
+    # os.makedirs가 PermissionError를 일으키도록 Mocking
+    with patch("os.makedirs", side_effect=PermissionError("Access Denied")):
+        # TradeLogger 초기화 시도 -> 에러 발생해야 함
+        with pytest.raises(PermissionError):
+            TradeLogger(log_dir="/root/protected_logs")
