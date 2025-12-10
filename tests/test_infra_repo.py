@@ -239,3 +239,69 @@ def test_repo_nested_directory(tmp_path):
     repo.update_status(MarketRegime.BULL, 1.0, pf, MarketData("date", 100, 100, 0.1, 0.1, 0, 15), "Init")
     
     assert os.path.exists(repo.status_file)
+
+# ... (기존 코드 생략) ...
+from datetime import datetime
+import numpy as np
+
+def test_repo_serialization_error(repo, dummy_portfolio, dummy_market_data):
+    """
+    [방어] JSON으로 변환할 수 없는 타입(datetime 객체 등)이 들어왔을 때 동작 확인
+    """
+    # datetime 객체는 기본 json.dump로 직렬화 불가능 (문자열로 변환 필요)
+    # 실수로 변환 안 된 객체를 reason에 넣었다고 가정
+    invalid_reason = datetime.now() 
+    
+    # Python은 동적 타이핑이라 여기까진 에러 안 남
+    signal = TradeSignal(0.8, True, [], invalid_reason) 
+    
+    # 저장 시도 시 TypeError 발생해야 함 (만약 커스텀 인코더를 구현했다면 성공해야 함)
+    # 현재 구현은 기본 json.dump를 쓰므로 에러가 나는 것이 정상 동작임 -> 이를 알고 있어야 함
+    with pytest.raises(TypeError):
+        repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+
+def test_repo_recover_from_corruption(repo, dummy_market_data, dummy_portfolio):
+    """
+    [복구] 파일이 깨져있을 때(Load 실패), 봇이 멈추지 않고 덮어쓰기로 복구하는지 확인
+    """
+    # 1. 깨진 파일 생성 (JSON 문법 오류)
+    with open(repo.status_file, 'w') as f:
+        f.write("{ 'broken': ... ")
+    
+    # 2. 업데이트 시도
+    # _load_json 내부에서 try-except로 잡고 default(None/Empty)를 리턴하므로,
+    # save 로직이 멈추지 않고 새로운 내용으로 덮어써야 함.
+    try:
+        repo.update_status(
+            MarketRegime.BULL, 0.5, dummy_portfolio, dummy_market_data, "Recover"
+        )
+    except Exception as e:
+        pytest.fail(f"Repo failed to recover from corrupted file: {e}")
+        
+    # 3. 파일이 정상적인 JSON으로 복구되었는지 확인
+    with open(repo.status_file, 'r') as f:
+        data = json.load(f)
+        assert data['strategy']['trigger_reason'] == "Recover"
+
+def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
+    """
+    [OS] 파일이 읽기 전용(Read-only)이라 쓸 수 없을 때, 명확한 에러 발생 확인
+    (Linux/Mac 환경 기준)
+    """
+    import stat
+    
+    # 1. 파일 생성
+    signal = TradeSignal(0.8, True, [], "Test")
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+    
+    # 2. 읽기 전용으로 권한 변경 (Write 권한 제거)
+    os.chmod(repo.summary_file, stat.S_IREAD)
+    
+    try:
+        # 3. 쓰기 시도 -> PermissionError 발생해야 함
+        with pytest.raises(PermissionError):
+            repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+            
+    finally:
+        # 테스트 종료 후 권한 복구 (Cleanup) - 안 하면 임시 폴더 삭제 시 에러 날 수 있음
+        os.chmod(repo.summary_file, stat.S_IWRITE | stat.S_IREAD)
