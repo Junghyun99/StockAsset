@@ -22,3 +22,40 @@ def test_slack_live_integration():
         notifier.send_message("🧪 Pytest Live Integration Test")
     except Exception as e:
         pytest.fail(f"Live Slack notification failed: {e}")
+
+
+# tests/test_infra_notifier_live.py (기존 내용 아래에 추가)
+
+@pytest.mark.skipif(not REAL_WEBHOOK_URL, reason="No real Slack URL found")
+def test_slack_live_alert_mention():
+    """
+    [Live] send_alert가 실제로 채널 전체(channel)를 멘션하는지 확인
+    주의: 이 테스트는 채널에 있는 모든 사람에게 알림이 갑니다.
+    """
+    notifier = SlackNotifier(REAL_WEBHOOK_URL)
+    try:
+        notifier.send_alert("🚨 [LiveTest] 긴급 알림 테스트입니다. (채널 멘션 확인용)")
+    except Exception as e:
+        pytest.fail(f"Live Alert failed: {e}")
+
+@pytest.mark.skipif(not REAL_WEBHOOK_URL, reason="No real Slack URL found")
+def test_slack_live_rich_format():
+    """
+    [Live] 마크다운, 이모지, 줄바꿈이 슬랙에서 예쁘게 나오는지 확인
+    """
+    notifier = SlackNotifier(REAL_WEBHOOK_URL)
+    
+    # 실제 리포트와 유사한 복잡한 메시지 구성
+    rich_message = (
+        "📊 *Daily Rebalancing Report*\n"
+        "--------------------------------\n"
+        "• *Date*: 2024-05-25\n"
+        "• *Regime*: `Bull Market` 🐂\n"
+        "• *Profit*: +1.5% 📈\n"
+        "• *Action*: Rebalanced (Buy `SPY`, Sell `SHV`)"
+    )
+    
+    try:
+        notifier.send_message(rich_message)
+    except Exception as e:
+        pytest.fail(f"Live Rich Text failed: {e}")
