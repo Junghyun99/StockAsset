@@ -49,7 +49,10 @@ class IndicatorCalculator:
         
         # 6. MDD (최근 1년 고점 대비 현재가 하락률)
         rolling_max = close.rolling(window=252, min_periods=1).max().iloc[-1]
-        mdd = (current_price - rolling_max) / rolling_max
+        if rolling_max == 0:
+            mdd = 0.0
+        else:
+            mdd = (current_price - rolling_max) / rolling_max
         
         return MarketData(
             date=today_date,
