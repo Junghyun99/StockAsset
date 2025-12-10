@@ -141,3 +141,59 @@ def test_live_vix_sanity_check(live_loader):
     # 2. 범위 확인 (역대 최저 ~9, 역대 최고 ~80)
     # 안전하게 5 ~ 150 사이인지 확인
     assert 5.0 < vix < 150.0, f"VIX value {vix} seems abnormal!"
+
+# ... (기존 코드 생략) ...
+
+def test_live_timezone_awareness(live_loader):
+    """
+    [Live] 반환된 데이터의 인덱스(날짜)가 Timezone 정보를 포함하고 있는지 확인
+    """
+    df = live_loader.fetch_ohlcv(["SPY"], days=5)
+    
+    # yfinance는 보통 'America/New_York' 등의 타임존 정보를 포함함
+    assert df.index.tz is not None, "Index should be timezone-aware"
+    
+    # 참고: 만약 로직 내부에서 tz_localize(None)을 수행한다면 
+    # 이 테스트는 assert df.index.tz is None 으로 수정되어야 함.
+    # 현재 YFinanceLoader는 원본 그대로 반환하므로 tz가 있어야 정상.
+
+def test_live_volume_validity(live_loader):
+    """
+    [Live] 주요 ETF의 거래량(Volume)이 0이 아닌 유효한 값인지 확인
+    """
+    df = live_loader.fetch_ohlcv(["SPY"], days=10)
+    
+    # 1. Volume 컬럼 존재 확인
+    assert "Volume" in df.columns
+    
+    # 2. 거래량이 모두 0보다 큰지 확인 (휴장일이 아닌 이상 SPY 거래량이 0일 수는 없음)
+    # NaN 체크 후 0 체크
+    volumes = df['Volume'].dropna()
+    assert (volumes > 0).all(), "Zero volume found in SPY data!"
+
+def test_live_index_monotonic(live_loader):
+    """
+    [Live] 날짜가 과거에서 미래 순으로(오름차순) 꼬임 없이 정렬되어 있는지 확인
+    """
+    df = live_loader.fetch_ohlcv(["SPY"], days=30)
+    
+    # 인덱스가 단조 증가(Monotonic Increasing)하는지 확인
+    assert df.index.is_monotonic_increasing, "Date index is not sorted!"
+    # 중복된 날짜가 없는지 확인
+    assert df.index.is_unique, "Duplicate dates found in index!"
+
+def test_live_long_period_fetch(live_loader):
+    """
+    [Live] 장기간(예: 3년 = 약 1000일) 데이터를 요청했을 때 문제없이 받아오는지 확인
+    """
+    days_to_fetch = 365 * 3 # 3년
+    
+    # 데이터 요청
+    df = live_loader.fetch_ohlcv(["SPY"], days=days_to_fetch)
+    
+    # 검증
+    # 1. 데이터가 비어있지 않음
+    assert not df.empty
+    # 2. 개수가 충분한지 (휴일 제외 대략 252 * 3 = 756개 근처)
+    expected_min_rows = 250 * 3
+    assert len(df) > expected_min_rows, f"Expected >{expected_min_rows} rows, got {len(df)}"
