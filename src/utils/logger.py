@@ -23,11 +23,11 @@ class TradeLogger:
             ch.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
             self.logger.addHandler(ch)
 
-    def info(self, msg: str):
-        self.logger.info(msg)
+    def info(self, msg: Any):
+        self.logger.info(f"{msg}")
 
-    def warning(self, msg: str):
-        self.logger.warning(msg)
+    def warning(self, msg: Any):
+        self.logger.warning(f"{msg}")
 
-    def error(self, msg: str):
-        self.logger.error(msg)
+    def error(self, msg: Any):
+        self.logger.error(f"{msg}")
