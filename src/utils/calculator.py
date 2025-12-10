@@ -29,15 +29,15 @@ class IndicatorCalculator:
             
         # 2. 오늘 날짜 및 가격
         today_date = close.index[-1].strftime("%Y-%m-%d")
-        current_price = float(close.iloc[-1])
+        current_price = close.iloc[-1]
         
         # 3. 이평선 (180일)
-        ma180 = float(close.rolling(window=180).mean().iloc[-1])
+        ma180 = close.rolling(window=180).mean().iloc[-1]
         
         # 4. 변동성 (21일, 연율화)
         daily_ret = close.pct_change()
         # 21일 표준편차 * sqrt(252)
-        volatility = float(daily_ret.rolling(window=21).std().iloc[-1] * np.sqrt(252))
+        volatility = daily_ret.rolling(window=21).std().iloc[-1] * np.sqrt(252)
         
         # 5. 모멘텀 스코어 ((1M + 3M + 6M + 12M) / 4)
         # 영업일 기준: 1M=21, 3M=63, 6M=126, 12M=252
@@ -53,10 +53,10 @@ class IndicatorCalculator:
         
         return MarketData(
             date=today_date,
-            spy_price=current_price,
-            spy_ma180=ma180,
-            spy_volatility=volatility,
-            spy_momentum=momentum,
-            spy_mdd=mdd,
-            vix=vix_now
+            spy_price=float(current_price),
+            spy_ma180=float(ma180),
+            spy_volatility=float(volatility),
+            spy_momentum=float(momentum),
+            spy_mdd=float(mdd),
+            vix=float(vix_now)
         )
