@@ -116,3 +116,60 @@ def test_fetch_ohlcv_network_error(mock_yf_download, mock_logger):
         
     # 3. 동시에 에러 로그도 남겨야 함
     mock_logger.error.assert_called_once()
+
+# ... (기존 코드 생략) ...
+import numpy as np
+
+def test_fetch_vix_multiindex_structure(mock_yf_download, mock_logger):
+    """
+    [구조] VIX 데이터가 MultiIndex(Close -> ^VIX) 형태로 들어와도
+    로직이 깨지지 않고 값을 추출하는지 확인
+    """
+    # 1. MultiIndex 구조 생성 (Close, ^VIX)
+    columns = pd.MultiIndex.from_product([['Close'], ['^VIX']])
+    # 값 25.5
+    mock_df = pd.DataFrame([[25.5]], columns=columns)
+    
+    mock_yf_download.return_value = mock_df
+    
+    loader = YFinanceLoader(mock_logger)
+    vix = loader.fetch_vix()
+    
+    # 2. 검증
+    assert vix == 25.5
+    # 성공 로그가 찍혔는지 확인
+    mock_logger.info.assert_any_call("[Data] 🔍 Fetching VIX data from Yahoo Finance...")
+
+def test_fetch_vix_return_type_float(mock_yf_download, mock_logger):
+    """
+    [타입] VIX 결과값이 numpy 타입이 아닌 순수 float인지 확인 (JSON 직렬화 안전성)
+    """
+    # Numpy float64 타입 데이터 준비
+    mock_df = pd.DataFrame({'Close': [np.float64(19.5)]})
+    mock_yf_download.return_value = mock_df
+    
+    loader = YFinanceLoader(mock_logger)
+    vix = loader.fetch_vix()
+    
+    # 값 검증
+    assert vix == 19.5
+    # 타입 검증 (매우 중요: numpy type은 json dump시 에러 유발 가능)
+    assert isinstance(vix, float)
+    assert not isinstance(vix, np.float64)
+
+def test_fetch_ohlcv_datetime_index(mock_yf_download, mock_logger):
+    """
+    [데이터] 반환된 DataFrame의 인덱스가 DatetimeIndex인지 확인
+    (IndicatorCalculator에서 날짜 연산을 하려면 필수)
+    """
+    # 문자열 날짜로 생성해도 yfinance는 보통 datetime 객체로 줌
+    dates = pd.date_range("2024-01-01", periods=3)
+    mock_df = pd.DataFrame({'Close': [100, 101, 102]}, index=dates)
+    mock_yf_download.return_value = mock_df
+    
+    loader = YFinanceLoader(mock_logger)
+    df = loader.fetch_ohlcv(['SPY'], days=5)
+    
+    # 인덱스 타입 확인
+    assert isinstance(df.index, pd.DatetimeIndex)
+    assert len(df) == 3
