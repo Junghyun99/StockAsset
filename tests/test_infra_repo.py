@@ -171,3 +171,71 @@ def test_save_summary_large_file_performance(repo, dummy_market_data, dummy_port
     # 속도 체크 (JSON 파싱 및 쓰기가 1초 이내여야 함)
     # 로컬 디스크 I/O에 따라 다르지만, 10000건 정도는 순식간이어야 함
     assert (end - start) < 1.0
+
+# ... (기존 임포트 및 Fixture 생략) ...
+
+def test_repo_encoding_support(repo, dummy_portfolio, dummy_market_data):
+    """
+    [인코딩] 한글과 이모지가 포함된 데이터가 깨지지 않고 저장되는지 확인
+    """
+    # 1. 특수문자가 포함된 사유
+    reason_msg = "전략 변경: 하락장 진입 📉 (위험해!)"
+    signal = TradeSignal(0.5, True, [], reason_msg)
+    
+    # 2. 저장
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+    
+    # 3. 파일 읽기 (Raw Text 확인)
+    with open(repo.summary_file, 'r', encoding='utf-8') as f:
+        content = f.read()
+        
+    # 4. 검증
+    # \uXXXX 형태가 아니라 실제 글자로 저장되어야 함 (ensure_ascii=False 덕분)
+    assert "전략 변경" in content
+    assert "📉" in content
+    assert reason_msg in content
+
+def test_repo_schema_evolution(repo, dummy_market_data, dummy_portfolio):
+    """
+    [호환성] 기존 파일에 옛날 스키마 데이터가 있어도, 새 데이터가 잘 추가되는지 확인
+    """
+    # 1. 구버전 데이터 파일 생성 (필드가 적음)
+    old_data = [
+        {"date": "2020-01-01", "total_value": 100} # 옛날엔 이것만 있었다고 가정
+    ]
+    repo._save_json(repo.summary_file, old_data)
+    
+    # 2. 신버전 데이터 저장 (필드가 많음: spy_price, mdd 등)
+    signal = TradeSignal(0.8, True, [], "New Version")
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+    
+    # 3. 로드 및 검증
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+        
+    assert len(data) == 2
+    assert data[0]['total_value'] == 100          # 구버전 데이터 유지
+    assert 'spy_price' not in data[0]             # 구버전엔 필드 없음
+    assert data[1]['spy_price'] == 100.0          # 신버전엔 필드 있음
+    
+    # 봇이 죽지 않고 Append에 성공했다는 것이 핵심
+
+def test_repo_nested_directory(tmp_path):
+    """
+    [환경] 저장 경로가 깊거나(Nested) 존재하지 않아도 자동으로 생성하는지 확인
+    """
+    # 1. 깊은 경로 지정
+    deep_path = tmp_path / "archive" / "strategy_v1" / "data"
+    assert not os.path.exists(deep_path)
+    
+    # 2. Repo 초기화 (이 시점에 폴더 생성 로직 동작)
+    repo = JsonRepository(root_path=str(deep_path))
+    
+    # 3. 폴더 생성 확인
+    assert os.path.exists(deep_path)
+    
+    # 4. 파일 생성 확인
+    pf = Portfolio(100, {}, {})
+    repo.update_status(MarketRegime.BULL, 1.0, pf, MarketData("date", 100, 100, 0.1, 0.1, 0, 15), "Init")
+    
+    assert os.path.exists(repo.status_file)
