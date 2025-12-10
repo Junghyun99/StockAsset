@@ -163,7 +163,7 @@ def test_calculator_declining_market():
     
     # 1. 400일간 선형 하락 데이터 생성 (200 -> ~100)
     dates = pd.date_range(end='2024-01-01', periods=400)
-    prices = np.linspace(200, 100, 400)
+    prices = np.linspace(200, 100, 253)
     df = pd.DataFrame({'Close': prices}, index=dates)
     
     data = calc.calculate(df, 20.0)
@@ -223,3 +223,73 @@ def test_calculator_integer_inputs():
     assert isinstance(data.spy_momentum, float)
     assert isinstance(data.spy_mdd, float)
     assert isinstance(data.vix, float)
+
+
+
+def test_calculator_input_immutability():
+    """
+    [안전성] 계산기가 입력받은 원본 DataFrame을 훼손(In-place modification)하지 않는지 확인
+    """
+    calc = IndicatorCalculator()
+    
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    df = pd.DataFrame({'Close': [100.0] * 300}, index=dates)
+    
+    # 원본에 NaN 심기
+    df.iloc[-10] = np.nan
+    
+    # 원본 복사본 생성 (비교용)
+    df_original = df.copy()
+    
+    # 계산 실행 (내부적으로 ffill 등을 수행함)
+    calc.calculate(df, 20.0)
+    
+    # 검증: 함수 실행 후에도 원본 df의 NaN이 그대로 있어야 함 (함수가 원본을 건드리지 않았어야 함)
+    assert np.isnan(df.iloc[-10].item())
+    # 원본과 복사본이 완전히 동일해야 함
+    pd.testing.assert_frame_equal(df, df_original)
+
+def test_calculator_zero_price_handling():
+    """
+    [예외] 주가가 0원이 되었을 때(상장폐지 등), ZeroDivisionError 없이 처리되는지 확인
+    MDD 계산 식: (현재 - 최고) / 최고
+    만약 최고가가 0이라면? -> 나누기 에러 발생 가능성
+    """
+    calc = IndicatorCalculator()
+    
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    # 모든 가격이 0원인 데이터
+    df = pd.DataFrame({'Close': [0.0] * 300}, index=dates)
+    
+    try:
+        data = calc.calculate(df, 20.0)
+        
+        # 에러 없이 결과가 나왔다면 성공
+        # MDD는 정의상 0으로 나누면 안되지만, 보통 0.0 혹은 -1.0 등으로 처리되거나
+        # numpy/pandas가 inf를 반환해도 봇이 죽지만 않으면 됨
+        assert isinstance(data.spy_mdd, float)
+        
+    except ZeroDivisionError:
+        pytest.fail("Calculator crashed due to ZeroDivisionError (Price=0)")
+
+def test_calculator_boundary_data_length():
+    """
+    [경계값] 데이터가 정확히 최소 요구량(253개)일 때 성공하는지 확인
+    """
+    calc = IndicatorCalculator()
+    
+    # 1. 252개 -> 실패해야 함 (이미 다른 테스트에 있지만 확인차)
+    dates_252 = pd.date_range(end='2024-01-01', periods=252)
+    df_252 = pd.DataFrame({'Close': [100.0]*252}, index=dates_252)
+    with pytest.raises(ValueError):
+        calc.calculate(df_252, 20.0)
+        
+    # 2. 253개 -> 성공해야 함
+    dates_253 = pd.date_range(end='2024-01-01', periods=253)
+    df_253 = pd.DataFrame({'Close': [100.0]*253}, index=dates_253)
+    
+    try:
+        data = calc.calculate(df_253, 20.0)
+        assert data.spy_price == 100.0
+    except Exception as e:
+        pytest.fail(f"Failed on boundary length (253): {e}")
