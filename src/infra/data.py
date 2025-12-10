@@ -37,7 +37,7 @@ class YFinanceLoader(IDataProvider):
         self.logger.info("[Data] 🔍 Fetching VIX data from Yahoo Finance...")
 
         try:
-            vix_df = yf.download("^VIX", period="5d", progress=False)
+            vix_df = yf.download("^VIX", period="5d",auto_adjust=True,  progress=False)
             
             # 1. 데이터가 비어있는 경우
             if vix_df.empty:
