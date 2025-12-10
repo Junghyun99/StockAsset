@@ -34,3 +34,31 @@ def test_default_env_values():
     with patch.dict(os.environ, {}, clear=True):
         config = Config()
         assert config.SLACK_WEBHOOK_URL == ""
+
+
+def test_config_asset_groups_not_empty():
+    """
+    [설정] 자산군 설정이 비어있으면 봇이 작동하지 않아야 함
+    """
+    config = Config()
+    
+    # 1. 자산군이 정의되어 있는지 확인
+    assert len(config.ASSET_GROUPS) > 0
+    
+    # 2. 각 그룹에 최소 1개 이상의 티커가 있는지 확인
+    for group_name, tickers in config.ASSET_GROUPS.items():
+        assert len(tickers) > 0, f"Asset group {group_name} is empty!"
+
+def test_config_ticker_duplication():
+    """
+    [설정] 동일한 종목이 여러 그룹에 중복 등록되었는지 확인
+    (중복되면 자산 가치가 더블 카운팅되어 계산 오류 유발)
+    """
+    config = Config()
+    
+    all_tickers = []
+    for tickers in config.ASSET_GROUPS.values():
+        all_tickers.extend(tickers)
+        
+    # 중복 확인
+    assert len(all_tickers) == len(set(all_tickers)), "Duplicate tickers found in ASSET_GROUPS!"
