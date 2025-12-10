@@ -152,3 +152,74 @@ def test_calculator_date_format():
     
     # 시간 정보는 잘리고 날짜만 나와야 함
     assert data.date == "2024-01-01"
+
+
+def test_calculator_declining_market():
+    """
+    [로직] 주가가 지속적으로 하락할 때 지표들이 의도대로 반응하는지 확인
+    상황: 200원에서 시작해서 100원으로 매일 일정하게 하락
+    """
+    calc = IndicatorCalculator()
+    
+    # 1. 400일간 선형 하락 데이터 생성 (200 -> ~100)
+    dates = pd.date_range(end='2024-01-01', periods=400)
+    prices = np.linspace(200, 100, 400)
+    df = pd.DataFrame({'Close': prices}, index=dates)
+    
+    data = calc.calculate(df, 20.0)
+    
+    # 2. 검증
+    # 현재가(100)가 MA180(최근 180일 평균, 약 122.5)보다 낮아야 함
+    assert data.spy_price < data.spy_ma180
+    
+    # 모멘텀은 확실히 음수여야 함
+    assert data.spy_momentum < 0
+    
+    # MDD: 고점(200) 대비 현재(100) -> -0.5
+    assert data.spy_mdd == pytest.approx(-0.5, rel=1e-2)
+
+def test_calculator_ma_window_logic():
+    """
+    [로직] MA180이 정확히 '최근 180일'만 반영하고, 그 이전 데이터는 무시하는지 검증
+    상황: 옛날(181일 전)에는 주가가 1000원이었고, 최근 180일은 100원으로 횡보 중
+    기대: MA180은 옛날 가격(1000원)의 영향을 받지 않고 100원이 되어야 함
+    """
+    calc = IndicatorCalculator()
+    
+    dates = pd.date_range(end='2024-01-01', periods=400)
+    prices = [100.0] * 400
+    
+    # 181일 전까지는 1000원 (고가)
+    # iloc[-1]이 오늘이므로, -180까지가 최근 180일. 그 이전 데이터 조작.
+    prices[0:200] = [1000.0] * 200 # 앞쪽 200개는 비쌈
+    prices[220:] = [100.0] * 180   # 뒤쪽(최근) 180개는 쌈
+    
+    df = pd.DataFrame({'Close': prices}, index=dates)
+    
+    data = calc.calculate(df, 15.0)
+    
+    # 최근 180일은 모두 100원이었으므로, 평균도 100원이어야 함.
+    # 만약 윈도우가 잘못되어 옛날 데이터를 포함하면 100보다 훨씬 클 것임.
+    assert data.spy_ma180 == 100.0
+
+def test_calculator_integer_inputs():
+    """
+    [타입] 입력 데이터가 정수형(int)이어도 출력은 실수형(float)으로 변환되는지 확인
+    (JSON 직렬화 및 추후 연산 안정성 위함)
+    """
+    calc = IndicatorCalculator()
+    
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    # 소수점 없는 정수 리스트
+    prices = [100, 101, 102] * 100 
+    df = pd.DataFrame({'Close': prices}, index=dates, dtype='int64')
+    
+    data = calc.calculate(df, 15) # VIX도 정수로 입력
+    
+    # 모든 필드가 float 타입인지 검사
+    assert isinstance(data.spy_price, float)
+    assert isinstance(data.spy_ma180, float)
+    assert isinstance(data.spy_volatility, float)
+    assert isinstance(data.spy_momentum, float)
+    assert isinstance(data.spy_mdd, float)
+    assert isinstance(data.vix, float)
