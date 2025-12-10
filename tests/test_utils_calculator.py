@@ -162,7 +162,7 @@ def test_calculator_declining_market():
     calc = IndicatorCalculator()
     
     # 1. 400일간 선형 하락 데이터 생성 (200 -> ~100)
-    dates = pd.date_range(end='2024-01-01', periods=400)
+    dates = pd.date_range(end='2024-01-01', periods=253)
     prices = np.linspace(200, 100, 253)
     df = pd.DataFrame({'Close': prices}, index=dates)
     
