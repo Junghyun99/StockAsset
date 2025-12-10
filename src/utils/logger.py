@@ -2,6 +2,7 @@
 import logging
 import os
 from datetime import datetime
+from typing import Any
 
 class TradeLogger:
     def __init__(self, log_dir: str = "logs"):
