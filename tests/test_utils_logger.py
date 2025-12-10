@@ -280,3 +280,77 @@ def test_logger_empty_message(tmp_path, reset_logger):
     # 로그 포맷 뒷부분에 공백 혹은 개행이 붙어있는지 확인 (정규식 등으로 더 엄밀하게 볼 수도 있음)
     # 여기서는 에러가 안 났다는 것과 파일에 뭔가가 쓰였다는 것을 검증
     assert len(content) > 0
+
+
+
+def test_logger_nested_directory(tmp_path, reset_logger):
+    """
+    [환경] 'logs/a/b/c' 처럼 깊은 경로를 주어도 폴더를 자동 생성하고 기록하는지 확인
+    """
+    # 3단계 깊이의 경로 지정
+    deep_dir = tmp_path / "logs" / "year" / "month"
+    
+    # 디렉토리가 없는 상태에서 초기화
+    assert not os.path.exists(deep_dir)
+    
+    logger = TradeLogger(log_dir=str(deep_dir))
+    logger.info("Deep Log")
+    
+    # 1. 디렉토리 생성 확인
+    assert os.path.exists(deep_dir)
+    
+    # 2. 파일 생성 확인
+    files = os.listdir(deep_dir)
+    assert len(files) == 1
+    
+    # 3. 내용 확인
+    with open(deep_dir / files[0], 'r') as f:
+        assert "Deep Log" in f.read()
+
+def test_logger_special_chars(tmp_path, reset_logger):
+    """
+    [안전성] %, {}, \ 등 포맷팅 특수문자가 포함된 메시지도 에러 없이 그대로 기록되는지 확인
+    (logging 모듈이 내부적으로 formatting을 시도하다 죽는 경우 방지)
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    # 문제 소지가 있는 문자열들
+    tricky_msg_1 = "Profit is 100% accurate" # % 기호
+    tricky_msg_2 = "User: {name}"            # .format 스타일
+    tricky_msg_3 = "Path: C:\\Windows\\System32" # 백슬래시
+    
+    logger.info(tricky_msg_1)
+    logger.info(tricky_msg_2)
+    logger.info(tricky_msg_3)
+    
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        content = f.read()
+        
+    assert tricky_msg_1 in content
+    assert tricky_msg_2 in content
+    assert tricky_msg_3 in content
+
+def test_logger_stress_write(tmp_path, reset_logger):
+    """
+    [성능/신뢰성] 짧은 시간에 대량(1,000라인) 로그를 남겨도 유실되지 않는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    count = 1000
+    for i in range(count):
+        logger.info(f"Log line {i}")
+        
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        lines = f.readlines()
+        
+    # 라인 수 확인 (빈 줄 등이 있을 수 있으니 strip 후 카운트하거나 len 체크)
+    # 로그 파일은 한 줄씩 쌓이므로 len(lines)가 count와 같아야 함
+    assert len(lines) == count
+    
+    # 첫 줄과 마지막 줄 검증
+    assert "Log line 0" in lines[0]
+    assert f"Log line {count-1}" in lines[-1]
