@@ -305,3 +305,72 @@ def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
     finally:
         # 테스트 종료 후 권한 복구 (Cleanup) - 안 하면 임시 폴더 삭제 시 에러 날 수 있음
         os.chmod(repo.summary_file, stat.S_IWRITE | stat.S_IREAD)
+
+# ... (기존 코드 생략) ...
+
+def test_repo_float_precision(repo, dummy_portfolio, dummy_market_data):
+    """
+    [데이터] 소수점 단위가 중요한 금융 데이터가 JSON 저장 후에도 정밀도를 유지하는지 확인
+    """
+    # 1. 미세한 소수점을 가진 데이터 생성
+    precise_val = 123.456789123
+    dummy_portfolio.total_cash = precise_val
+    
+    # 2. 저장
+    repo.update_status(
+        MarketRegime.BULL, 0.5, dummy_portfolio, dummy_market_data, "Precision Test"
+    )
+    
+    # 3. 로드
+    with open(repo.status_file, 'r') as f:
+        data = json.load(f)
+    
+    # 4. 검증 (JSON은 부동소수점을 완벽히 보존하지 못할 수 있으므로 approx 사용)
+    loaded_cash = data['portfolio']['cash_balance']
+    assert loaded_cash == pytest.approx(precise_val, abs=1e-9)
+
+def test_repo_status_overwrite_clean(repo, dummy_portfolio, dummy_market_data):
+    """
+    [로직] update_status가 파일을 '완전히 새로 쓰는지' 확인 (이전 데이터 잔재 제거)
+    """
+    # 1. 초기 상태 저장 (Extra Field를 임의로 넣어서 저장했다고 가정)
+    initial_data = {"extra_field": "I should be deleted", "portfolio": {}}
+    repo._save_json(repo.status_file, initial_data)
+    
+    # 2. 새로운 상태 업데이트
+    repo.update_status(
+        MarketRegime.BEAR_WEAK, 0.5, dummy_portfolio, dummy_market_data, "Overwrite"
+    )
+    
+    # 3. 로드 및 검증
+    with open(repo.status_file, 'r') as f:
+        data = json.load(f)
+    
+    # 이전 데이터의 흔적이 사라져야 함
+    assert "extra_field" not in data
+    assert data['strategy']['trigger_reason'] == "Overwrite"
+
+def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
+    """
+    [시나리오] 일주일(7일) 동안 봇이 매일 실행되어 데이터를 쌓는 상황 시뮬레이션
+    """
+    days = 7
+    
+    # 1. 7일간의 데이터 누적
+    for i in range(days):
+        # 날짜를 바꿔가며 데이터 생성
+        market_data = MarketData(f"2024-01-0{i+1}", 100+i, 100, 0.1, 0.1, 0, 15)
+        signal = TradeSignal(1.0, False, [], f"Day {i+1}")
+        
+        # 저장 (Append)
+        repo.save_daily_summary(market_data, signal, dummy_portfolio)
+    
+    # 2. 파일 검증
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    
+    # 3. 데이터 무결성 확인
+    assert len(data) == days # 7개 행이 있어야 함
+    assert data[0]['date'] == "2024-01-01" # 첫째 날
+    assert data[-1]['date'] == "2024-01-07" # 마지막 날
+    assert data[-1]['spy_price'] == 106.0 # 가격 변화 반영 확인
