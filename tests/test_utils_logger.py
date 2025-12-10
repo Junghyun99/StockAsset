@@ -308,7 +308,7 @@ def test_logger_nested_directory(tmp_path, reset_logger):
         assert "Deep Log" in f.read()
 
 def test_logger_special_chars(tmp_path, reset_logger):
-    """
+    r"""
     [안전성] %, {}, \ 등 포맷팅 특수문자가 포함된 메시지도 에러 없이 그대로 기록되는지 확인
     (logging 모듈이 내부적으로 formatting을 시도하다 죽는 경우 방지)
     """
