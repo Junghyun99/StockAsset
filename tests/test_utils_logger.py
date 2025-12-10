@@ -1,5 +1,6 @@
 import os
 import logging
+import re
 import pytest
 from src.utils.logger import TradeLogger
 from datetime import datetime
@@ -147,3 +148,72 @@ def test_logger_permission_error(reset_logger):
         # TradeLogger 초기화 시도 -> 에러 발생해야 함
         with pytest.raises(PermissionError):
             TradeLogger(log_dir="/root/protected_logs")
+
+
+def test_logger_append_mode(tmp_path, reset_logger):
+    """
+    [운영] 같은 날짜에 로거가 다시 생성되어도, 기존 로그를 덮어쓰지 않고 이어쓰는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    
+    # 1. 첫 번째 실행 (오전 9시 가정)
+    logger1 = TradeLogger(log_dir=str(log_dir))
+    logger1.info("First execution log")
+    
+    # 로거 핸들러 강제 초기화 (프로그램 재시작 시뮬레이션)
+    logging.getLogger("SolidQuant").handlers = []
+    
+    # 2. 두 번째 실행 (오후 1시 가정)
+    logger2 = TradeLogger(log_dir=str(log_dir))
+    logger2.info("Second execution log")
+    
+    # 3. 파일 검증
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        content = f.read()
+        
+    # 두 메시지가 모두 존재해야 함
+    assert "First execution log" in content
+    assert "Second execution log" in content
+    # 순서 확인 (첫 번째가 먼저 나와야 함)
+    assert content.index("First execution log") < content.index("Second execution log")
+
+def test_logger_format_structure(tmp_path, reset_logger):
+    """
+    [포맷] 로그 파일의 형식이 '[날짜 시간] [레벨] 메시지' 구조를 따르는지 정규식 검증
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    logger.info("Format Test")
+    
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        line = f.readline()
+        
+    # 정규식 패턴: YYYY-MM-DD HH:MM:SS,mmm [INFO] Message
+    # 예: 2024-05-21 10:00:00,123 [INFO] Format Test
+    pattern = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} \[INFO\] Format Test"
+    
+    assert re.search(pattern, line) is not None, f"Log format mismatch! Line: {line}"
+
+def test_logger_non_string_input(tmp_path, reset_logger):
+    """
+    [방어] 문자열이 아닌 객체(Dict, List, Exception)를 넣어도 죽지 않고 기록하는지 확인
+    """
+    log_dir = tmp_path / "logs"
+    logger = TradeLogger(log_dir=str(log_dir))
+    
+    data_dict = {"price": 100, "ticker": "SPY"}
+    
+    # 딕셔너리를 직접 로깅 시도 (내부적으로 str() 변환되거나 에러 없이 넘어가야 함)
+    try:
+        logger.info(data_dict) # type: ignore
+    except Exception as e:
+        pytest.fail(f"Logger crashed with non-string input: {e}")
+        
+    log_file = log_dir / os.listdir(log_dir)[0]
+    with open(log_file, 'r') as f:
+        content = f.read()
+        
+    # 딕셔너리 내용이 문자열로 잘 찍혔는지 확인
+    assert "{'price': 100, 'ticker': 'SPY'}" in content
