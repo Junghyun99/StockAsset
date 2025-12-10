@@ -80,3 +80,75 @@ def test_calculator_resilience_to_nan_values():
         # 이 테스트는 "중간 결측치"에 대한 내성을 확인.
     except Exception as e:
         pytest.fail(f"Calculator crashed on NaN data: {e}")
+
+
+
+def test_calculator_flat_market():
+    """
+    [수학] 주가가 변동 없이 일정할 때(Flat), 지표들이 0으로 나오는지 확인
+    """
+    calc = IndicatorCalculator()
+    
+    # 1. 300일간 가격이 100원으로 고정된 데이터 생성
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    df = pd.DataFrame({'Close': [100.0] * 300}, index=dates)
+    
+    # 2. 계산
+    data = calc.calculate(df, 15.0)
+    
+    # 3. 검증
+    assert data.spy_price == 100.0
+    assert data.spy_ma180 == 100.0       # 평균도 100
+    assert data.spy_volatility == 0.0    # 변동성 0
+    assert data.spy_momentum == 0.0      # 수익률 0
+    assert data.spy_mdd == 0.0           # 낙폭 0
+
+def test_calculator_mdd_logic():
+    """
+    [수학] MDD(최대 낙폭) 계산이 정확한지 수치 검증
+    상황: 1년 내 최고가 200원 -> 현재가 100원 (MDD -50%)
+    """
+    calc = IndicatorCalculator()
+    
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    # 기본 100원
+    prices = [100.0] * 300
+    # 200일 전쯤에 200원 찍음 (고점)
+    prices[100] = 200.0 
+    
+    df = pd.DataFrame({'Close': prices}, index=dates)
+    
+    data = calc.calculate(df, 15.0)
+    
+    # 공식: (100 - 200) / 200 = -0.5
+    assert data.spy_mdd == -0.5
+    assert data.spy_price == 100.0
+
+def test_calculator_missing_column():
+    """
+    [방어] DataFrame에 'Close' 컬럼이 아예 없을 때
+    """
+    calc = IndicatorCalculator()
+    
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    # 'Open'만 있고 'Close'가 없는 데이터
+    df = pd.DataFrame({'Open': [100.0] * 300}, index=dates)
+    
+    # KeyError가 발생해야 함
+    with pytest.raises(KeyError):
+        calc.calculate(df, 20.0)
+
+def test_calculator_date_format():
+    """
+    [형식] 인덱스의 타임스탬프가 'YYYY-MM-DD' 문자열로 잘 변환되는지
+    """
+    calc = IndicatorCalculator()
+    
+    # 시간 정보가 포함된 날짜 (2024-01-01 15:30:00)
+    dates = pd.date_range(end='2024-01-01 15:30:00', periods=300)
+    df = pd.DataFrame({'Close': [100.0] * 300}, index=dates)
+    
+    data = calc.calculate(df, 15.0)
+    
+    # 시간 정보는 잘리고 날짜만 나와야 함
+    assert data.date == "2024-01-01"
