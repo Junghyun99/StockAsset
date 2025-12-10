@@ -31,7 +31,7 @@ jobs:
     # 4. pytest 실행
     - name: Test with pytest
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # 아까 등록한 시크릿 사용
+        # SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # 아까 등록한 시크릿 사용
       run: |
         pytest --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=80 tests/
 
