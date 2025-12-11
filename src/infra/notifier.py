@@ -26,7 +26,7 @@ class TelegramNotifier(INotifier):
             print(f"[Telegram Error] Failed to send: {e}")
 
 class SlackNotifier(INotifier):
-    def __init__(self, webhook_url: str, logger=None):
+    def __init__(self, webhook_url: str, logger):
         self.webhook_url = webhook_url
         self.logger = logger
 
