@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock 
 from src.infra.notifier import TelegramNotifier, SlackNotifier
 
 @pytest.fixture
@@ -7,6 +7,11 @@ def mock_requests_post():
     with patch('src.infra.notifier.requests.post') as mock:
         yield mock
 
+
+@pytest.fixture
+def mock_logger():
+    """가짜 로거 생성"""
+    return MagicMock()
 def test_telegram_send_success(mock_requests_post):
     # 1. 정상 전송 테스트
     notifier = TelegramNotifier(token="1234:ABC", chat_id="999")
@@ -43,11 +48,11 @@ def test_telegram_network_error(mock_requests_post, capsys):
     assert "[Telegram Error]" in captured.out
 
 
-def test_slack_send_success(mock_requests_post):
+def test_slack_send_success(mock_requests_post,mock_logger):
     # 1. Mock 설정 (성공 응답 200)
     mock_requests_post.return_value.status_code = 200
     
-    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",mock_logger)
     notifier.send_message("Hello Slack")
     
     # 호출 검증
@@ -58,22 +63,22 @@ def test_slack_send_success(mock_requests_post):
     assert args[0] == "https://hooks.slack.com/test"
     assert "Hello Slack" in kwargs['json']['text']
 
-def test_slack_alert_channel_mention(mock_requests_post):
+def test_slack_alert_channel_mention(mock_requests_post,mock_logger):
     # 2. Alert 전송 시 <!channel> 멘션 포함 확인
     mock_requests_post.return_value.status_code = 200
     
-    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",mock_logger)
     notifier.send_alert("Emergency!")
     
     _, kwargs = mock_requests_post.call_args
     assert "<!channel>" in kwargs['json']['text']
 
-def test_slack_send_failure(mock_requests_post, capsys):
+def test_slack_send_failure(mock_requests_post, capsys, mock_logger):
     # 3. 슬랙 서버 에러 (500) 처리 확인
     mock_requests_post.return_value.status_code = 500
     mock_requests_post.return_value.text = "Internal Server Error"
     
-    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test")
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",mock_logger)
     notifier.send_message("Test")
     
     # 콘솔에 에러 로그가 찍혀야 함
