@@ -42,8 +42,8 @@ class SlackNotifier(INotifier):
         if not self.webhook_url:
             # URL이 없으면(테스트 환경 등) 콘솔에만 출력
             msg = f"[Slack Mock] {text}"
-            if self.logger: self.logger.info(msg)
-            else: print(msg) 
+            self.logger.info(msg)
+            
             return
 
         try:
@@ -59,12 +59,12 @@ class SlackNotifier(INotifier):
             if response.status_code != 200:
                 error_msg = f"[Slack Error] Status: {response.status_code}, Body: {response.text}"
                 # [핵심] 파일에 기록 남기기
-                if self.logger: self.logger.error(error_msg)
-                else: print(error_msg)
+                self.logger.error(error_msg)
+                
                 
                 
         except Exception as e:
             error_msg = f"[Slack Error] Connection failed: {e}"
             # [핵심] 파일에 기록 남기기
-            if self.logger: self.logger.error(error_msg)
-            else: print(error_msg)
+            self.logger.error(error_msg)
+            
