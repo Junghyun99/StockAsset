@@ -31,7 +31,7 @@ class TradingBot:
         self.data_loader = YFinanceLoader(self.logger)
         self.repo = JsonRepository(self.config.DATA_PATH)
         #self.notifier = TelegramNotifier(self.config.TELEGRAM_TOKEN, self.config.TELEGRAM_CHAT_ID)
-        self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL)
+        self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL, self.logger)
         
         # 브로커 선택 (실전 vs 모의)
         if self.config.IS_LIVE_TRADING:
