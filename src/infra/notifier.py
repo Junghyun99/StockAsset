@@ -26,8 +26,9 @@ class TelegramNotifier(INotifier):
             print(f"[Telegram Error] Failed to send: {e}")
 
 class SlackNotifier(INotifier):
-    def __init__(self, webhook_url: str):
+    def __init__(self, webhook_url: str, logger=None):
         self.webhook_url = webhook_url
+        self.logger = logger
 
     def send_message(self, message: str) -> None:
         # 일반 메시지
@@ -40,7 +41,9 @@ class SlackNotifier(INotifier):
     def _send(self, text: str):
         if not self.webhook_url:
             # URL이 없으면(테스트 환경 등) 콘솔에만 출력
-            print(f"[Slack Log] {text}")
+            msg = f"[Slack Mock] {text}"
+            if self.logger: self.logger.info(msg)
+            else: print(msg) 
             return
 
         try:
@@ -54,7 +57,14 @@ class SlackNotifier(INotifier):
             )
             
             if response.status_code != 200:
-                print(f"[Slack Error] Failed to send. Status: {response.status_code}, Body: {response.text}")
+                error_msg = f"[Slack Error] Status: {response.status_code}, Body: {response.text}"
+                # [핵심] 파일에 기록 남기기
+                if self.logger: self.logger.error(error_msg)
+                else: print(error_msg)
+                
                 
         except Exception as e:
-            print(f"[Slack Error] Connection failed: {e}")
+            error_msg = f"[Slack Error] Connection failed: {e}"
+            # [핵심] 파일에 기록 남기기
+            if self.logger: self.logger.error(error_msg)
+            else: print(error_msg)
