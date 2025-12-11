@@ -73,7 +73,7 @@ def test_slack_alert_channel_mention(mock_requests_post,mock_logger):
     _, kwargs = mock_requests_post.call_args
     assert "<!channel>" in kwargs['json']['text']
 
-def test_slack_send_failure(mock_requests_post, capsys, mock_logger):
+def test_slack_send_failure(mock_requests_post, mock_logger):
     # 3. 슬랙 서버 에러 (500) 처리 확인
     mock_requests_post.return_value.status_code = 500
     mock_requests_post.return_value.text = "Internal Server Error"
@@ -81,6 +81,8 @@ def test_slack_send_failure(mock_requests_post, capsys, mock_logger):
     notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",logger=mock_logger)
     notifier.send_message("Test")
     
-    # 콘솔에 에러 로그가 찍혀야 함
-    captured = capsys.readouterr()
-    assert "[Slack Error]" in captured.out
+    mock_logger.error.assert_called() # error 메서드가 호출되었나?
+    
+    # 호출된 메시지 내용 확인
+    args, _ = mock_logger.error.call_args
+    assert "[Slack Error]" in args[0] # 메시지 내용에 에러 태그가 있는가?
