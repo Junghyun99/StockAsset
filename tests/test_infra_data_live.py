@@ -143,19 +143,16 @@ def test_live_vix_sanity_check(live_loader):
     assert 5.0 < vix < 150.0, f"VIX value {vix} seems abnormal!"
 
 # ... (기존 코드 생략) ...
-
 def test_live_timezone_awareness(live_loader):
     """
-    [Live] 반환된 데이터의 인덱스(날짜)가 Timezone 정보를 포함하고 있는지 확인
+    [Live] 반환된 데이터의 인덱스(날짜)가 Timezone-naive(타임존 없음)인지 확인
+    (yfinance 일봉 데이터는 보통 타임존 없이 반환되며, 이는 파이썬 datetime과 비교하기 유리함)
     """
     df = live_loader.fetch_ohlcv(["SPY"], days=5)
     
-    # yfinance는 보통 'America/New_York' 등의 타임존 정보를 포함함
-    assert df.index.tz is not None, "Index should be timezone-aware"
-    
-    # 참고: 만약 로직 내부에서 tz_localize(None)을 수행한다면 
-    # 이 테스트는 assert df.index.tz is None 으로 수정되어야 함.
-    # 현재 YFinanceLoader는 원본 그대로 반환하므로 tz가 있어야 정상.
+    # 수정: tz가 None이어야 함 (Timezone-naive)
+    assert df.index.tz is None, "Index should be timezone-naive (no tz info) for easier comparison"
+
 
 def test_live_volume_validity(live_loader):
     """
