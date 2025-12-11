@@ -52,7 +52,7 @@ def test_slack_send_success(mock_requests_post,mock_logger):
     # 1. Mock 설정 (성공 응답 200)
     mock_requests_post.return_value.status_code = 200
     
-    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",mock_logger)
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",logger= mock_logger)
     notifier.send_message("Hello Slack")
     
     # 호출 검증
@@ -67,7 +67,7 @@ def test_slack_alert_channel_mention(mock_requests_post,mock_logger):
     # 2. Alert 전송 시 <!channel> 멘션 포함 확인
     mock_requests_post.return_value.status_code = 200
     
-    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",mock_logger)
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",logger=mock_logger)
     notifier.send_alert("Emergency!")
     
     _, kwargs = mock_requests_post.call_args
@@ -78,7 +78,7 @@ def test_slack_send_failure(mock_requests_post, capsys, mock_logger):
     mock_requests_post.return_value.status_code = 500
     mock_requests_post.return_value.text = "Internal Server Error"
     
-    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",mock_logger)
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test",logger=mock_logger)
     notifier.send_message("Test")
     
     # 콘솔에 에러 로그가 찍혀야 함
