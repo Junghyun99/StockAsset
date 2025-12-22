@@ -433,31 +433,47 @@ class KisBroker(IBrokerAdapter):
         return False
 
     def _get_pending_orders_count(self) -> int:
-        """미체결 내역 조회"""
-        # 실전: TTTS3018R, 모의: VTTT3018R
+        """
+        [해외주식] 미체결 내역 조회
+        NAS -> NYS -> AMS 순으로 조회하며, 미체결이 하나라도 발견되면 즉시 반환합니다.
+        (전체 개수 합산보다 존재 여부가 중요함)
+        """
         tr_id = "TTTS3018R" if self.is_real else "VTTT3018R"
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-nccs"
         
-        params = {
-            "CANO": self.cano,
-            "ACNT_PRDT_CD": self.acnt_prdt_cd,
-            "OVRS_EXCG_CD": "NAS",
-            "SORT_SQN": "DS",
-            "CTX_AREA_FK100": "",
-            "CTX_AREA_NK100": ""
-        }
-        headers = self._get_header(tr_id)
+        target_exchanges = ["NAS", "NYS", "AMS"]
         
-        try:
-            res = requests.get(url, headers=headers, params=params)
-            data = res.json()
-            if data['rt_cd'] == '0':
-                # output 리스트의 길이가 미체결 건수
-                return len(data['output'])
-        except:
-            pass
-        return 0
-
+        for exch in target_exchanges:
+            params = {
+                "CANO": self.cano,
+                "ACNT_PRDT_CD": self.acnt_prdt_cd,
+                "OVRS_EXCG_CD": exch,
+                "SORT_SQN": "DS",
+                "CTX_AREA_FK100": "",
+                "CTX_AREA_NK100": ""
+            }
+            
+            headers = self._get_header(tr_id)
+            
+            try:
+                time.sleep(0.2) # API 제한 고려
+                
+                res = requests.get(url, headers=headers, params=params)
+                data = res.json()
+                
+                if data['rt_cd'] == '0':
+                    count = len(data['output'])
+                    if count > 0:
+                        self.logger.info(f"[KisBroker] Found {count} pending orders in {exch}. Waiting...")
+                        return count # [핵심] 발견 즉시 리턴 (다른 거래소 조회 생략)
+                else:
+                    self.logger.warning(f"[KisBroker] Pending Check Failed ({exch}): {data.get('msg1')}")
+                    
+            except Exception as e:
+                self.logger.error(f"[KisBroker] Pending Check Error ({exch}): {e}")
+                
+        return 0 # 모든 거래소를 다 봤는데 미체결이 없음
+    
     def _get_exchange_code(self, ticker: str) -> str:
         """
         티커별 거래소 코드 매핑
