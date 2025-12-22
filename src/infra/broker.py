@@ -205,11 +205,93 @@ class KisBroker(IBrokerAdapter):
             return res.json()["HASH"]
         except Exception:
             return ""
+    
+    def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]:
+        """
+        해외주식 현재가 조회 (반복 호출)
+        """
+        prices = {}
+        # 실전 TR_ID: HHDFS00000300, 모의: FHKST01010100
+        tr_id = "HHDFS00000300" if self.is_real else "FHKST01010100"
+        url = f"{self.base_url}/uapi/overseas-price/v1/quotations/price" 
+        for ticker in tickers:
+            exch = self._get_exchange_code(ticker)
+            params = {
+                "AUTH": "",
+                "EXCD": exch,
+                "SYMB": ticker
+            }
+            # GET 요청은 HashKey 불필요
+            headers = self._get_header(tr_id)
+            try:
+                # 잦은 호출 방지 (초당 제한 고려)
+                time.sleep(0.1) 
+                res = requests.get(url, headers=headers, params=params)
+                data = res.json()
+                
+                if data['rt_cd'] == '0': # 성공
+                    # last: 현재가
+                    price = float(data['output']['last'])
+                    prices[ticker] = price
+                else:
+                    self.logger.warning(f"[KisBroker] Price fetch failed for {ticker}: {data.get('msg1')}")
+                    prices[ticker] = 0.0
+            except Exception as e:
+                self.logger.error(f"[KisBroker] Price fetch error {ticker}: {e}")
+                prices[ticker] = 0.0
+                
+        return prices
 
     def get_portfolio(self) -> Portfolio:
-        # 잔고 조회 API 호출 로직 (생략)
-        # response를 파싱하여 Portfolio 객체 생성
-        return Portfolio(0, {}, {})
+        """
+        해외주식 잔고 및 예수금 조회
+        """
+        # 해외주식 잔고지원 TR_ID (실전: TTTS3012R, 모의: VTTS3012R)
+        tr_id = "TTTS3012R" if self.is_real else "VTTS3012R"
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-balance"
+        # 환율구분: 000(전체), 국가: US(미국), 시장: NYSE
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "OVRS_EXCG_CD": "NAS", # 대표 시장
+            "TR_CRCY_CD": "USD",
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": ""
+        }
+        
+        headers = self._get_header(tr_id)
+        try:
+            res = requests.get(url, headers=headers, params=params)
+            data = res.json()
+            
+            if data['rt_cd'] != '0':
+                self.logger.error(f"[KisBroker] Get Portfolio Failed: {data.get('msg1')}")
+                return Portfolio(0, {}, {})
+            # 1. 예수금 (주문가능 외화금액) - output2의 'frcr_dncl_amt_2' (외화예수금) 또는 'ovrs_ord_psbl_amt'(주문가능)
+            # 안전하게 주문가능금액 사용
+            cash = float(data['output2']['ovrs_ord_psbl_amt'])
+            
+            # 2. 보유 종목 (output1)
+            holdings = {}
+            current_prices = {}
+            for item in data['output1']:
+                # ccls_qty: 체결 수량 (잔고)
+                qty = int(item['ovrs_cblc_qty'])
+                if qty > 0:
+                    ticker = item['ovrs_pdno'] # 티커
+                    holdings[ticker] = qty
+                    # 잔고 조회 시 현재가도 같이 옴 (now_pric2)
+                    current_prices[ticker] = float(item['now_pric2'])
+            return Portfolio(
+                total_cash=cash,
+                holdings=holdings,
+                current_prices=current_prices
+            )
+
+        except Exception as e:
+            self.logger.error(f"[KisBroker] Error getting portfolio: {e}")
+            return Portfolio(0, {}, {})
+
 
     def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
         results = []
