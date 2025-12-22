@@ -292,29 +292,174 @@ class KisBroker(IBrokerAdapter):
             self.logger.error(f"[KisBroker] Error getting portfolio: {e}")
             return Portfolio(0, {}, {})
 
-
     def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
-        results = []
-        
-        # 1. 정렬
+        executions = []
         sell_orders = [o for o in orders if o.action == "SELL"]
         buy_orders = [o for o in orders if o.action == "BUY"]
         
-        # 2. 매도 루프
-        for order in sell_orders:
-            res = self._send_api_order(order) # API 호출
-            results.append(res)
-            time.sleep(0.2) # 주문 간 텀 (API 제한 방지)
+        # === 1. 매도 실행 ===
+        if sell_orders:
+            self.logger.info(f"[KisBroker] Processing {len(sell_orders)} SELL orders...")
+            for order in sell_orders:
+                res = self._send_order(order)
+                if res: executions.append(res)
+                time.sleep(0.2) # API 제한 고려
             
-        # 3. [핵심] 매도 후 잔고 반영 대기
-        if sell_orders and buy_orders:
-            time.sleep(2) # 2초 정도 대기 (증권사 서버가 매도대금을 예수금으로 잡을 시간)
+            # 매도 후 체결 대기 (Polling)
+            if not self._wait_for_completion(timeout=60):
+                self.logger.warning("[KisBroker] Sell orders timed out or pending.")
+
+        # === 2. 잔고 갱신 및 매수 재계산 ===
+        if buy_orders:
+            # 매도가 있었다면 잔고가 변했을 것이므로 갱신 (API 재호출)
+            if sell_orders:
+                time.sleep(2) # 정산 대기
+                pf = self.get_portfolio()
+                current_cash = pf.total_cash
+            else:
+                # 매도가 없었다면 로컬에 저장된 잔고로는 불안하므로 한번 더 조회 권장
+                pf = self.get_portfolio()
+                current_cash = pf.total_cash
+
+            self.logger.info(f"[KisBroker] Available Cash for BUY: ${current_cash:,.2f}")
+
+            # === 3. 매수 실행 ===
+            for order in buy_orders:
+                # 안전 마진 (98%)
+                SAFE_MARGIN = 0.98
+                budget = current_cash * SAFE_MARGIN
+                
+                # 시장가(지정가) 매수 대비 2% 버퍼
+                estimated_price = order.price * 1.02
+                if estimated_price <= 0: continue
+                
+                # 수량 재계산
+                max_qty = int(budget / estimated_price)
+                
+                if max_qty < order.quantity:
+                    self.logger.warning(f"⚠️ Qty Adjusted: {order.ticker} {order.quantity} -> {max_qty}")
+                    order.quantity = max_qty
+                
+                if order.quantity > 0:
+                    res = self._send_order(order)
+                    if res:
+                        executions.append(res)
+                        # 메모리상 잔고 차감 (다음 주문을 위해)
+                        current_cash -= (res.price * res.quantity)
+                    time.sleep(0.2)
+
+        return executions
+
+    def _send_order(self, order: Order) -> Optional[TradeExecution]:
+        """실제 주문 API 호출"""
+        # 실전: TTTS1002U(매수), TTTS1006U(매도)
+        # 모의: VTTT1002U(매수), VTTT1006U(매도)
+        
+        tr_id = ""
+        if self.is_real:
+            tr_id = "TTTS1002U" if order.action == "BUY" else "TTTS1006U"
+        else:
+            tr_id = "VTTT1002U" if order.action == "BUY" else "VTTT1006U"
+
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
+        exch = self._get_exchange_code(order.ticker)
+        
+        # 가격: 시장가인 경우 0 (또는 Limit 가격)
+        # 미국주식은 보통 시장가(MKT)를 지원하지 않거나 조건이 까다로움.
+        # 전략상 계산된 price(현재가)로 지정가 주문을 내되, 
+        # Buy는 높게, Sell은 낮게 내서 즉시 체결을 유도하는 것이 일반적임.
+        
+        # 주문단가 (소수점 2자리)
+        order_price = round(order.price, 2)
+        
+        data = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "OVRS_EXCG_CD": exch,
+            "PDNO": order.ticker,
+            "ORD_QTY": str(order.quantity),
+            "OVRS_ORD_UNPR": str(order_price),
+            "ORD_SVR_DVSN_CD": "0",
+            "ORD_DVSN": "00" # 00: 지정가 (미국은 보통 지정가 사용)
+        }
+        
+        headers = self._get_header(tr_id, data)
+        
+        try:
+            res = requests.post(url, headers=headers, json=data)
+            resp_data = res.json()
             
-        # 4. 매수 루프
-        for order in buy_orders:
-            # (옵션) 여기서 현재 예수금을 API로 다시 조회해서 확인 후 주문 낼 수도 있음
-            res = self._send_api_order(order)
-            results.append(res)
-            time.sleep(0.2)
+            if resp_data['rt_cd'] != '0':
+                self.logger.error(f"[KisBroker] Order Failed: {resp_data.get('msg1')}")
+                return None
             
-        return results
+            self.logger.info(f"[KisBroker] Order Sent: {order.action} {order.ticker} {order.quantity} @ {order_price}")
+            
+            # 체결 정보 생성 (API는 주문 접수만 알려주므로, 일단 접수된 내용으로 Execution 생성)
+            # 정확히 하려면 체결조회 API를 별도로 호출해야 하지만, 여기선 주문접수=성공으로 간주하고 반환
+            return TradeExecution(
+                ticker=order.ticker,
+                action=order.action,
+                quantity=order.quantity,
+                price=order_price,
+                fee=0.0, # 수수료는 체결 조회 전엔 모름
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status="ORDERED"
+            )
+            
+        except Exception as e:
+            self.logger.error(f"[KisBroker] Order Error: {e}")
+            return None
+
+    def _wait_for_completion(self, timeout: int = 60) -> bool:
+        """미체결 내역이 없을 때까지 대기"""
+        start = time.time()
+        while (time.time() - start) < timeout:
+            count = self._get_pending_orders_count()
+            if count == 0:
+                return True
+            time.sleep(2)
+        return False
+
+    def _get_pending_orders_count(self) -> int:
+        """미체결 내역 조회"""
+        # 실전: TTTS3018R, 모의: VTTT3018R
+        tr_id = "TTTS3018R" if self.is_real else "VTTT3018R"
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-nccs"
+        
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "OVRS_EXCG_CD": "NAS",
+            "SORT_SQN": "DS",
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": ""
+        }
+        headers = self._get_header(tr_id)
+        
+        try:
+            res = requests.get(url, headers=headers, params=params)
+            data = res.json()
+            if data['rt_cd'] == '0':
+                # output 리스트의 길이가 미체결 건수
+                return len(data['output'])
+        except:
+            pass
+        return 0
+
+    def _get_exchange_code(self, ticker: str) -> str:
+        """
+        티커별 거래소 코드 매핑
+        (한투 API는 NAS, NYS, AMS를 구분해서 넣어야 함)
+        """
+        # 주요 ETF 매핑
+        mapping = {
+            'SPY': 'AMS', # AMEX (Arca)
+            'QLD': 'AMS', # ProShares는 보통 Arca
+            'SSO': 'AMS',
+            'IEF': 'NAS', # NASDAQ
+            'GLD': 'NYS', # NYSE
+            'PDBC': 'NAS',
+            'SHV': 'NAS'
+        }
+        return mapping.get(ticker, 'NAS') # 기본값
