@@ -164,6 +164,50 @@ class KisBroker(IBrokerAdapter):
     def _auth(self):
         # 토큰 발급 로직 (생략 - 필요시 구현)
         pass
+    def _auth(self) -> str:
+        """접근 토큰 발급"""
+        url = f"{self.base_url}/oauth2/tokenP"
+        payload = {
+            "grant_type": "client_credentials",
+            "appkey": self.app_key,
+            "appsecret": self.app_secret
+        }
+        try:
+            res = requests.post(url, json=payload)
+            data = res.json()
+            if 'access_token' not in data:
+                raise Exception(f"Auth Failed: {data}")
+            return data['access_token']
+        except Exception as e:
+            self.logger.error(f"[KisBroker] Auth Error: {e}")
+            raise e
+
+    def _get_header(self, tr_id: str, data: dict = None) -> dict:
+        """API 공통 헤더 생성 (HashKey 포함)"""
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "authorization": f"Bearer {self.access_token}",
+            "appkey": self.app_key,
+            "appsecret": self.app_secret,
+            "tr_id": tr_id,
+            "custtype": "P" # 개인
+        }
+        # 주문 등 POST 요청 시 HashKey 필요
+        if data:
+            headers["hashkey"] = self._get_hashkey(data)
+        return headers
+
+    def _get_hashkey(self, data: dict) -> str:
+        url = f"{self.base_url}/uapi/hashkey"
+        try:
+            res = requests.post(url, headers={
+                "content-type": "application/json",
+                "appkey": self.app_key,
+                "appsecret": self.app_secret
+            }, json=data)
+            return res.json()["HASH"]
+        except Exception:
+            return ""
 
     def get_portfolio(self) -> Portfolio:
         # 잔고 조회 API 호출 로직 (생략)
