@@ -159,11 +159,8 @@ class KisBroker(IBrokerAdapter):
         self.exchange = exchange
         self.base_url = "https://openapi.koreainvestment.com:9443" # 실전
         # self.base_url = "https://openapivts.koreainvestment.com:29443" # 모의
-        self.access_token = None
+        self.access_token = self._auth()
 
-    def _auth(self):
-        # 토큰 발급 로직 (생략 - 필요시 구현)
-        pass
     def _auth(self) -> str:
         """접근 토큰 발급"""
         url = f"{self.base_url}/oauth2/tokenP"
