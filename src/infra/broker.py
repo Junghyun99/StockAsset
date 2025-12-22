@@ -152,13 +152,24 @@ class MockBroker(IBrokerAdapter):
 # 실전용 (뼈대 코드)
 class KisBroker(IBrokerAdapter):
     """한국투자증권 REST API 구현체"""
-    def __init__(self, app_key: str, app_secret: str, acc_no: str, exchange: str = "NAS"):
+    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger, is_real: bool = False):
         self.app_key = app_key
         self.app_secret = app_secret
         self.acc_no = acc_no
-        self.exchange = exchange
-        self.base_url = "https://openapi.koreainvestment.com:9443" # 실전
-        # self.base_url = "https://openapivts.koreainvestment.com:29443" # 모의
+        self.logger = logger
+        self.is_real = is_real
+        
+        # 계좌번호 분리 (앞 8자리, 뒤 2자리)
+        self.cano = acc_no[:8]
+        self.acnt_prdt_cd = acc_no[8:]
+
+        # URL 설정
+        if is_real:
+            self.base_url = "https://openapi.koreainvestment.com:9443"
+            self.logger.info("[KisBroker] Mode: REAL TRADING")
+        else:
+            self.base_url = "https://openapivts.koreainvestment.com:29443"
+            self.logger.info("[KisBroker] Mode: PAPER TRADING (Virtual)")
         self.access_token = self._auth()
 
     def _auth(self) -> str:
