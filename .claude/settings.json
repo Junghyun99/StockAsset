@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pip install -r requirements.txt)",
       "Bash(pytest *)",
-      "Bash(python src/main.py)"
+      "Bash(python src/main.py)",
+      "Bash(python -c *from src.backtest*)"
     ],
     "deny": [
       "Read(.env)",
