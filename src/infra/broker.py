@@ -1,5 +1,5 @@
 # src/infra/broker.py
-from typing import List, Dict
+from typing import List, Dict, Optional
 from src.core.interfaces import IBrokerAdapter
 from src.core.models import Portfolio, Order, TradeExecution
 import time
