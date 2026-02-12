@@ -283,25 +283,26 @@ def test_repo_recover_from_corruption(repo, dummy_market_data, dummy_portfolio):
         data = json.load(f)
         assert data['strategy']['trigger_reason'] == "Recover"
 
+@pytest.mark.skipif(os.getuid() == 0, reason="root 사용자는 읽기 전용 파일에도 쓰기 가능")
 def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
     """
     [OS] 파일이 읽기 전용(Read-only)이라 쓸 수 없을 때, 명확한 에러 발생 확인
     (Linux/Mac 환경 기준)
     """
     import stat
-    
+
     # 1. 파일 생성
     signal = TradeSignal(0.8, True, [], "Test")
     repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
-    
+
     # 2. 읽기 전용으로 권한 변경 (Write 권한 제거)
     os.chmod(repo.summary_file, stat.S_IREAD)
-    
+
     try:
         # 3. 쓰기 시도 -> PermissionError 발생해야 함
         with pytest.raises(PermissionError):
             repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
-            
+
     finally:
         # 테스트 종료 후 권한 복구 (Cleanup) - 안 하면 임시 폴더 삭제 시 에러 날 수 있음
         os.chmod(repo.summary_file, stat.S_IWRITE | stat.S_IREAD)

@@ -3,6 +3,7 @@ from typing import List, Dict, Optional
 from src.core.interfaces import IBrokerAdapter
 from src.core.models import Portfolio, Order, TradeExecution
 import time
+import requests
 from datetime import datetime
 
 class MockBroker(IBrokerAdapter):
