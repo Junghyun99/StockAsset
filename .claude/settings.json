@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install -r requirements.txt)",
+      "Bash(pytest *)",
+      "Bash(python src/main.py)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)"
+    ]
+  }
+}
