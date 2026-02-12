@@ -2,14 +2,22 @@
 name: test
 description: 프로젝트 테스트를 실행하고 결과를 분석합니다. 테스트 실패 시 원인을 분석하고 수정 방안을 제시합니다.
 argument-hint: "[test-path] (예: tests/test_core_logic.py)"
-allowed-tools: Bash(pytest *), Read, Grep, Glob
+allowed-tools: Bash(pip install *), Bash(pytest *), Read, Grep, Glob
 ---
 
 # 테스트 실행 및 분석
 
 프로젝트의 테스트를 실행하고 결과를 분석하는 스킬입니다.
 
-## 실행 방법
+## 실행 절차
+
+### 1단계: 의존성 설치
+테스트 실행 전에 필요한 패키지를 설치합니다:
+```
+pip install -r requirements.txt
+```
+
+### 2단계: pytest 실행
 
 1. **인자가 없는 경우**: 전체 테스트를 실행합니다
    ```
