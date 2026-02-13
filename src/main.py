@@ -89,7 +89,7 @@ class TradingBot:
                 msg = self._build_crash_alert(market_data, pre_trade_pf)
                 self.logger.error(msg)
                 self.notifier.send_alert(msg)
-            elif signal.has_pending_orders:
+            elif signal.has_orders:
                 self.logger.info(f"Signal Generated: {signal.reason}")
                 self.logger.info(f"Executing {len(signal.orders)} orders...")
 

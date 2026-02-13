@@ -77,7 +77,7 @@ def test_bot_run_risk_condition_stop(mock_dependencies):
     mock_dependencies['analyzer'].analyze.return_value = MarketRegime.CRASH
     mock_dependencies['targeter'].calculate_exposure.return_value = 0.0
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
-        target_exposure=0.0, has_pending_orders=False, orders=[],
+        target_exposure=0.0, orders=[],
         reason="CRASH Detected: Emergency Stop. No Action."
     )
 

@@ -64,8 +64,7 @@ class Rebalancer:
         if regime == MarketRegime.CRASH:
             return TradeSignal(
                 target_exposure=target_exposure,
-                has_pending_orders=False,         # 매매 금지
-                orders=[],                       # 빈 주문 목록
+                orders=[],
                 reason="CRASH Detected: Emergency Stop. No Action."
             )
 
@@ -129,12 +128,9 @@ class Rebalancer:
         
         # 정렬된 최종 주문 리스트
         sorted_orders = sell_orders + buy_orders
-        
-        execution_needed = len(sorted_orders) > 0
-        
+
         return TradeSignal(
             target_exposure=target_exposure,
-            has_pending_orders=execution_needed,
             orders=sorted_orders,
             reason=reason
         )

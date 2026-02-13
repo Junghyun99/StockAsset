@@ -83,7 +83,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0):
             
             signal = rebalancer.generate_signal(current_pf, exposure, regime)
             
-            if signal.has_pending_orders:
+            if signal.has_orders:
                 broker.execute_orders(signal.orders)
             
             # 4. 결과 기록

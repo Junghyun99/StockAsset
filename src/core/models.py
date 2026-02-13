@@ -67,9 +67,12 @@ class Order:
 class TradeSignal:
     """전략 판단 결과"""
     target_exposure: float
-    has_pending_orders: bool
     orders: List[Order]
     reason: str
+
+    @property
+    def has_orders(self) -> bool:
+        return len(self.orders) > 0
 
 @dataclass
 class TradeExecution:
