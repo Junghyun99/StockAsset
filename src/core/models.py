@@ -22,7 +22,7 @@ class MarketData:
 
     def is_risk_condition(self) -> bool:
         """MDD -20% 이하 or VIX 30 이상"""
-        return self.spy_mdd < -0.20 or self.vix > 30
+        return self.spy_mdd <= -0.20 or self.vix >= 30
 
 @dataclass
 class Portfolio:
