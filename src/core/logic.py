@@ -114,7 +114,7 @@ class Rebalancer:
 
         # C는 나머지 전부 (Total - A - B)
         # 현금으로 두지 않고, C그룹 주식(SHV)으로 꽉 채우는 것을 목표로 함
-        target_val_c = portfolio.total_value - (target_val_a + target_val_b)
+        target_val_c = max(portfolio.total_value - (target_val_a + target_val_b), 0)
 
         # 4. 주문 생성
         orders = []

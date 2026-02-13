@@ -360,3 +360,29 @@ def test_rebalancer_order_sequence(create_portfolio):
     
     # 3. 그 뒤에 'BUY' 주문이 와야 함
     assert signal.orders[-1].action == OrderAction.BUY
+
+
+def test_rebalancer_c_group_target_not_negative(create_portfolio):
+    """
+    [C그룹 음수 방어 테스트]
+    target_exposure가 1.0을 초과하는 값이 전달되더라도
+    C그룹(SHV) 목표 금액이 음수가 되어서는 안 된다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}
+    rebalancer = Rebalancer(groups)
+
+    pf = create_portfolio(
+        cash=0.0,
+        holdings={'SPY': 50, 'IEF': 50, 'SHV': 10},
+        prices={'SPY': 100, 'IEF': 100, 'SHV': 100}
+    )
+    # total_value = 11,000
+    # target_exposure=1.5 -> A+B 목표 = 11,000 * 1.5 = 16,500 (총자산 초과)
+    # target_val_c가 음수가 되면 SHV에 음수 목표가 전달되어 비정상 매도 발생
+    signal = rebalancer.generate_signal(pf, target_exposure=1.5, regime=MarketRegime.BULL)
+
+    # C그룹 주문이 있다면, 최대 보유 수량까지만 매도해야 함
+    shv_orders = [o for o in signal.orders if o.ticker == 'SHV']
+    for o in shv_orders:
+        if o.action == OrderAction.SELL:
+            assert o.quantity <= 10  # 보유 수량 초과 매도 불가
