@@ -161,6 +161,7 @@ class Rebalancer:
                     orders.append(Order(ticker, "BUY", qty, price))
             elif diff_val < 0:
                 qty = math.ceil(abs(diff_val) / price)
+                qty = min(qty, current_qty)  # 보유 수량 초과 매도 방지
                 if qty > 0:
                     orders.append(Order(ticker, "SELL", qty, price))
                 

@@ -271,6 +271,42 @@ def test_rebalancer_sell_rounding_ceil(create_portfolio):
     assert orders[0].action == "SELL"
     assert orders[0].quantity == 35  # int()였다면 34
 
+def test_rebalancer_sell_quantity_capped_by_holdings(create_portfolio):
+    """
+    [매도 수량 상한 테스트]
+    매도 수량이 보유 수량을 초과하면 안 된다.
+    예: 3주 보유, 목표 금액이 현재가보다 약간 낮으면
+    ceil 반올림으로 4주 매도가 계산될 수 있으나, 3주로 제한되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # SPY 3주 × $95 = $285 보유
+    pf = create_portfolio(
+        holdings={'SPY': 3},
+        prices={'SPY': 95.0}
+    )
+
+    # 목표 금액 $50 -> 매도 필요: (285-50)/95 = 2.47주 -> ceil = 3주 (OK, 보유량과 같음)
+    orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=50.0)
+    assert len(orders) == 1
+    assert orders[0].action == "SELL"
+    assert orders[0].quantity <= 3
+
+    # 목표 금액 $1 -> 매도 필요: (285-1)/95 = 2.989주 -> ceil = 3주 (보유량과 같으므로 OK)
+    orders2 = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=1.0)
+    assert orders2[0].quantity <= 3
+
+    # 목표 금액 $0 -> 매도 필요: 285/95 = 3.0주 -> ceil = 3주 (정확히 보유량)
+    orders3 = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=0.0)
+    assert orders3[0].quantity == 3
+
+    # 핵심: 목표 금액이 음수(이론상 불가하지만 부동소수점 오차 등)
+    # -> 매도 필요: (285-(-10))/95 = 3.105주 -> ceil = 4주, 하지만 보유 3주이므로 3주로 제한
+    orders4 = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=-10.0)
+    assert orders4[0].quantity == 3  # 보유 수량 초과 방지
+
+
 def test_rebalancer_buy_rounding_floor(create_portfolio):
     """
     [매수 절삭 테스트]
