@@ -248,6 +248,52 @@ def test_rebalancer_small_balance_rounding(create_portfolio):
     # 주문이 생성되지 않아야 함
     assert len(orders) == 0   
 
+def test_rebalancer_sell_rounding_ceil(create_portfolio):
+    """
+    [매도 절삭 편향 수정 테스트]
+    매도 시 math.ceil을 사용하여 목표에 더 가깝게 매도하는지 확인.
+    예: 34.8주를 팔아야 할 때 -> 35주 매도 (기존 int()는 34주)
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # SPY 50주 × $33 = $1,650 보유
+    pf = create_portfolio(
+        holdings={'SPY': 50},
+        prices={'SPY': 33.0}
+    )
+
+    # 목표 금액 $500 -> 매도 필요: (1650-500)/33 = 34.84주
+    # math.ceil(34.84) = 35주 매도
+    orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=500.0)
+
+    assert len(orders) == 1
+    assert orders[0].action == "SELL"
+    assert orders[0].quantity == 35  # int()였다면 34
+
+def test_rebalancer_buy_rounding_floor(create_portfolio):
+    """
+    [매수 절삭 테스트]
+    매수 시 math.floor를 사용하여 자금 초과를 방지하는지 확인.
+    예: 30.3주를 사야 할 때 -> 30주 매수 (자금 초과 방지)
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # 현재 SPY 0주, 가격 $33
+    pf = create_portfolio(
+        holdings={},
+        prices={'SPY': 33.0}
+    )
+
+    # 목표 금액 $1,000 -> 매수 필요: 1000/33 = 30.30주
+    # math.floor(30.30) = 30주 매수
+    orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=1000.0)
+
+    assert len(orders) == 1
+    assert orders[0].action == "BUY"
+    assert orders[0].quantity == 30  # 자금 초과 방지
+
 def test_rebalancer_order_sequence(create_portfolio):
     """
     [주문 순서 테스트]

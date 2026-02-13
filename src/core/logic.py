@@ -1,3 +1,4 @@
+import math
 from typing import Dict, List
 from src.core.models import MarketRegime, MarketData, Portfolio, TradeSignal, Order
 
@@ -153,11 +154,14 @@ class Rebalancer:
             current_val = current_qty * price
             
             diff_val = per_stock_target - current_val
-            qty_diff = int(diff_val / price)
-            
-            if qty_diff > 0:
-                orders.append(Order(ticker, "BUY", qty_diff, price))
-            elif qty_diff < 0:
-                orders.append(Order(ticker, "SELL", abs(qty_diff), price))
+
+            if diff_val > 0:
+                qty = math.floor(diff_val / price)
+                if qty > 0:
+                    orders.append(Order(ticker, "BUY", qty, price))
+            elif diff_val < 0:
+                qty = math.ceil(abs(diff_val) / price)
+                if qty > 0:
+                    orders.append(Order(ticker, "SELL", qty, price))
                 
         return orders

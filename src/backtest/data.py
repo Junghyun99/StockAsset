@@ -1,5 +1,6 @@
 # src/backtest/data.py
 import pandas as pd
+from typing import List
 from src.core.interfaces import IDataProvider
 
 class HistoricalDataLoader(IDataProvider):
@@ -11,17 +12,21 @@ class HistoricalDataLoader(IDataProvider):
     def set_date(self, date):
         self.current_date = date
 
-    def fetch_ohlcv(self, tickers, days=400):
+    def fetch_ohlcv(self, tickers: List[str], days: int = 400):
         # [핵심] 전체 데이터에서 current_date 이전 days 만큼만 잘라서 리턴
-        # 마치 그 날짜에 API를 호출한 것처럼 속임
         end_idx = self.full_data.index.get_loc(self.current_date)
         start_idx = max(0, end_idx - days)
-        
-        # Slicing
+
         sliced_df = self.full_data.iloc[start_idx : end_idx + 1]
-        
-        # 필요한 종목만 필터링해서 리턴
-        return sliced_df # (구조에 맞게 가공 필요)
+
+        # 계약 준수: 단일 종목이면 SingleIndex로 변환
+        if len(tickers) == 1 and isinstance(sliced_df.columns, pd.MultiIndex):
+            try:
+                return sliced_df.xs(tickers[0], axis=1, level=1)
+            except KeyError:
+                return sliced_df
+
+        return sliced_df
 
     def fetch_vix(self):
         # current_date 시점의 VIX 값 리턴
