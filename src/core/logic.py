@@ -17,12 +17,12 @@ class RegimeAnalyzer:
             return MarketRegime.BEAR_WEAK
             
         # 3. Bull / Sideways Check
+        # 이 시점: momentum >= 0 AND price >= MA
         if data.spy_momentum >= 0.05:
             return MarketRegime.BULL
-        elif 0 < data.spy_momentum < 0.05:
+        else:
+            # momentum이 0 이상 0.05 미만 → 횡보장
             return MarketRegime.SIDEWAYS
-            
-        return MarketRegime.BEAR_WEAK # Fallback
 
 class VolatilityTargeter:
     def __init__(self, target_vol: float = 0.15):

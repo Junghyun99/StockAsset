@@ -48,6 +48,10 @@ def test_regime_bull_vs_sideways(create_market_data):
     data_bull = create_market_data(price=110, ma=100, mom=0.05)
     assert analyzer.analyze(data_bull) == MarketRegime.BULL
 
+    # Case 3: Sideways (모멘텀 == 0, 가격 > MA → 중립이므로 SIDEWAYS)
+    data_zero_mom = create_market_data(price=110, ma=100, mom=0.0)
+    assert analyzer.analyze(data_zero_mom) == MarketRegime.SIDEWAYS
+
 
 # ==========================================
 # 2. VolatilityTargeter 테스트 (비중 계산의 한계점)
