@@ -20,9 +20,9 @@ class IndicatorCalculator:
             raise ValueError(f"Data insufficient: Need at least {min_required} rows (trading days), but got {len(df)}.")
 
         # 1. 전처리 (종가 시리즈 추출)
-        # yfinance download 결과가 MultiIndex인 경우 대비
+        # IDataProvider 계약: 단일 종목 → SingleIndex ['Open','High','Low','Close','Volume']
+        # MultiIndex 분기는 계약 미준수 구현체에 대한 방어 코드
         if isinstance(df.columns, pd.MultiIndex):
-            # SPY 컬럼만 추출 (단일 종목 가정)
             close = df.xs('Close', axis=1, level=0).iloc[:, 0]
         else:
             close = df['Close']
