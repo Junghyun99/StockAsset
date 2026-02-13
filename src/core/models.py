@@ -22,13 +22,13 @@ class MarketData:
 
     def is_risk_condition(self) -> bool:
         """MDD -20% 이하 or VIX 30 이상"""
-        return self.spy_mdd < -0.20 or self.vix > 30
+        return self.spy_mdd <= -0.20 or self.vix >= 30
 
 @dataclass
 class Portfolio:
     """현재 계좌 상태"""
     total_cash: float
-    holdings: Dict[str, float]       # {ticker: quantity}
+    holdings: Dict[str, int]          # {ticker: quantity}
     current_prices: Dict[str, float] # {ticker: price}
 
     @property
@@ -51,7 +51,7 @@ class Order:
 class TradeSignal:
     """전략 판단 결과"""
     target_exposure: float
-    rebalance_needed: bool
+    has_pending_orders: bool
     orders: List[Order]
     reason: str
 

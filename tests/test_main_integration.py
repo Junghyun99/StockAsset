@@ -68,16 +68,40 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
     mock_dependencies['notifier'].send_message.assert_called()
 
 def test_bot_run_risk_condition_stop(mock_dependencies):
-    """[시나리오 2: 위험 감지]"""
+    """[시나리오 2: 위험 감지 → CRASH 파이프라인]
+    CRASH 시: core 파이프라인 정상 통과 → 매매 중단 → 포지션 포함 알림 → 데이터 저장
+    """
     mock_dependencies['calc'].calculate.return_value = MarketData(
         "2024-01-01", 100, 90, 0.1, 0.1, -0.30, 40.0
     )
-    
+    mock_dependencies['analyzer'].analyze.return_value = MarketRegime.CRASH
+    mock_dependencies['targeter'].calculate_exposure.return_value = 0.0
+    mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
+        target_exposure=0.0, has_pending_orders=False, orders=[],
+        reason="CRASH Detected: Emergency Stop. No Action."
+    )
+
     bot = TradingBot()
     bot.run()
-    
-    mock_dependencies['notifier'].send_alert.assert_called()
-    mock_dependencies['analyzer'].analyze.assert_not_called()
+
+    # 1. core 파이프라인 전체 통과 확인 (dead code 해소)
+    mock_dependencies['analyzer'].analyze.assert_called_once()
+    mock_dependencies['targeter'].calculate_exposure.assert_called_once()
+    mock_dependencies['rebalancer'].generate_signal.assert_called_once()
+
+    # 2. 매매 실행 없음
+    mock_dependencies['broker'].execute_orders.assert_not_called()
+
+    # 3. 포지션 정보 포함 알림 전송
+    mock_dependencies['notifier'].send_alert.assert_called_once()
+    alert_msg = mock_dependencies['notifier'].send_alert.call_args[0][0]
+    assert "CRASH Detected" in alert_msg
+    assert "현재 포지션" in alert_msg
+    assert "사용자 액션 대기" in alert_msg
+
+    # 4. 데이터 저장 (CRASH 날도 기록)
+    mock_dependencies['repo'].save_daily_summary.assert_called_once()
+    mock_dependencies['repo'].update_status.assert_called_once()
 
 def test_bot_run_rebalance_execution(mock_dependencies):
     """[시나리오 3: 매매 실행]"""

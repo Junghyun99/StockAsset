@@ -9,37 +9,35 @@ def test_market_data_boundary_conditions():
     """
     [경계값 테스트]
     MDD가 정확히 -20%이거나, VIX가 정확히 30일 때는 위험으로 간주하는가?
-    로직: mdd < -0.20 OR vix > 30
+    로직: mdd <= -0.20 OR vix >= 30 (경계값 포함, 보수적 판정)
     """
-    # Case 1: MDD -20% (Safe)
-    # -0.20 < -0.20 은 False이므로 안전함
+    # Case 1: MDD -20% (Risk) — 경계값 포함
     data_boundary_mdd = MarketData(
         date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
-        spy_mdd=-0.20, vix=20.0 
+        spy_mdd=-0.20, vix=20.0
     )
-    assert data_boundary_mdd.is_risk_condition() is False
+    assert data_boundary_mdd.is_risk_condition() is True
 
-    # Case 2: MDD -20.1% (Risk)
-    data_risk_mdd = MarketData(
+    # Case 2: MDD -19.9% (Safe) — 경계값 미달
+    data_safe_mdd = MarketData(
         date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
-        spy_mdd=-0.200001, vix=20.0 
+        spy_mdd=-0.199999, vix=20.0
     )
-    assert data_risk_mdd.is_risk_condition() is True
+    assert data_safe_mdd.is_risk_condition() is False
 
-    # Case 3: VIX 30.0 (Safe)
-    # 30 > 30 은 False이므로 안전함
+    # Case 3: VIX 30.0 (Risk) — 경계값 포함
     data_boundary_vix = MarketData(
         date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
         spy_mdd=-0.10, vix=30.0
     )
-    assert data_boundary_vix.is_risk_condition() is False
+    assert data_boundary_vix.is_risk_condition() is True
 
-    # Case 4: VIX 30.1 (Risk)
-    data_risk_vix = MarketData(
+    # Case 4: VIX 29.9 (Safe) — 경계값 미달
+    data_safe_vix = MarketData(
         date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
-        spy_mdd=-0.10, vix=30.1
+        spy_mdd=-0.10, vix=29.9
     )
-    assert data_risk_vix.is_risk_condition() is True
+    assert data_safe_vix.is_risk_condition() is False
 
 
 # ==========================================

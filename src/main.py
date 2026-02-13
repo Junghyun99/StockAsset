@@ -17,7 +17,7 @@ from src.infra.broker import MockBroker, KisBroker
 from src.infra.notifier import TelegramNotifier
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
-from src.core.models import MarketRegime
+from src.core.models import MarketRegime, Portfolio, MarketData
 
 class TradingBot:
     def __init__(self):
@@ -58,71 +58,94 @@ class TradingBot:
             # SPY 데이터 수집 (지표 계산용)
             spy_df = self.data_loader.fetch_ohlcv(["SPY"], days=400) # 여유있게 400일
             vix = self.data_loader.fetch_vix()
-            
+
             self.logger.info(">>> Step 2: Indicator Calculation")
             market_data = self.calculator.calculate(spy_df, vix)
             self.logger.info(f"Market Data: Price={market_data.spy_price}, VIX={market_data.vix}, MDD={market_data.spy_mdd:.2%}")
-            
-            # 위험 감지 (Circuit Breaker)
-            if market_data.is_risk_condition():
-                msg = f"🚨 DANGER: Market Crash Detected (MDD={market_data.spy_mdd:.1%}, VIX={market_data.vix}). Stopping."
-                self.logger.error(msg)
-                self.notifier.send_alert(msg)
-                return # 즉시 종료
 
             self.logger.info(">>> Step 3: Strategy Analysis")
             regime = self.analyzer.analyze(market_data)
             exposure = self.targeter.calculate_exposure(regime, market_data.spy_volatility)
             self.logger.info(f"Regime: {regime.value} | Target Exposure: {exposure:.2f}")
-            
+
             self.logger.info(">>> Step 4: Portfolio Rebalancing")
             pre_trade_pf = self.broker.get_portfolio()
             self.logger.info(f"Current Portfolio: Cash=${pre_trade_pf.total_cash:,.0f}, Value=${pre_trade_pf.total_value:,.0f}")
-            
+
             # 현재가 업데이트 (리밸런싱 계산을 위해 전체 티커 최신가 필요)
-            # 여기서는 편의상 YFinance로 전체 티커 현재가 조회 후 Portfolio에 주입
             self.logger.info("Fetching Real-time prices from Broker...")
             all_tickers = sum(self.config.ASSET_GROUPS.values(), [])
             real_time_prices = self.broker.fetch_current_prices(all_tickers)
-            # 주의: Broker가 가격을 못 가져온 종목이 있다면 기존 값 유지 등의 방어 로직 필요
             for t, price in real_time_prices.items():
                 if price > 0:
                     pre_trade_pf.current_prices[t] = price
 
             signal = self.rebalancer.generate_signal(pre_trade_pf, exposure, regime)
-            final_pf = pre_trade_pf 
-            if signal.rebalance_needed:
+            final_pf = pre_trade_pf
+            executions = []
+
+            if regime == MarketRegime.CRASH:
+                # CRASH: 매매 중단, 포지션 정보 포함 알림 전송, 사용자 액션 대기
+                msg = self._build_crash_alert(market_data, pre_trade_pf)
+                self.logger.error(msg)
+                self.notifier.send_alert(msg)
+            elif signal.has_pending_orders:
                 self.logger.info(f"Signal Generated: {signal.reason}")
                 self.logger.info(f"Executing {len(signal.orders)} orders...")
-                
+
                 executions = self.broker.execute_orders(signal.orders)
-                
+
                 if executions:
                     msg = f"✅ Orders Executed. Count: {len(executions)}"
                     self.notifier.send_message(msg)
                     if self.config.IS_LIVE_TRADING:
-                        time.sleep(3) 
-                    
+                        time.sleep(3)
+
                     final_pf = self.broker.get_portfolio()
                     self.logger.info(f"Updated Portfolio: Cash=${final_pf.total_cash:,.0f}, Value=${final_pf.total_value:,.0f}")
                 else:
                     self.notifier.send_alert("⚠️ Orders sent but NO execution result returned.")
-                    executions = []
             else:
                 self.logger.info("No Rebalance Needed.")
                 self.notifier.send_message(f"Bot Finished. Hold. ({regime.value})")
-                executions = []
 
             self.logger.info(">>> Step 5: Archiving Data")
             self.repo.save_daily_summary(market_data, signal, final_pf)
-            self.repo.save_trade_history(executions, final_pf)
+            self.repo.save_trade_history(executions, final_pf, signal.reason)
             self.repo.update_status(regime, exposure, final_pf, market_data, signal.reason)
-            
+
         except Exception as e:
             error_msg = f"Critical Error:\n{traceback.format_exc()}"
             self.logger.error(error_msg)
             self.notifier.send_alert(f"🔥 Bot Crashed!\n{str(e)}")
             raise e # GitHub Actions 실패 처리를 위해 raise
+
+    def _build_crash_alert(self, market_data: MarketData, portfolio: Portfolio) -> str:
+        """CRASH 알림 메시지 생성 (포지션 정보 포함)"""
+        holdings_lines = []
+        for ticker, qty in portfolio.holdings.items():
+            if qty > 0:
+                price = portfolio.current_prices.get(ticker, 0)
+                value = qty * price
+                holdings_lines.append(f"  • {ticker}: {qty}주 (${value:,.0f})")
+
+        if not holdings_lines:
+            holdings_lines.append("  • (보유 종목 없음)")
+
+        holdings_info = "\n".join(holdings_lines)
+
+        return (
+            f"🚨 CRASH Detected — 매매 중단\n"
+            f"MDD: {market_data.spy_mdd:.1%} | VIX: {market_data.vix:.1f}\n"
+            f"SPY: ${market_data.spy_price:.2f}\n"
+            f"\n"
+            f"📊 현재 포지션:\n"
+            f"{holdings_info}\n"
+            f"💰 현금: ${portfolio.total_cash:,.0f}\n"
+            f"📈 총 자산: ${portfolio.total_value:,.0f}\n"
+            f"\n"
+            f"⏸️ 사용자 액션 대기 중"
+        )
 
 if __name__ == "__main__":
     bot = TradingBot()

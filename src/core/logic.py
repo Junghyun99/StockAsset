@@ -17,12 +17,12 @@ class RegimeAnalyzer:
             return MarketRegime.BEAR_WEAK
             
         # 3. Bull / Sideways Check
+        # 이 시점: momentum >= 0 AND price >= MA
         if data.spy_momentum >= 0.05:
             return MarketRegime.BULL
-        elif 0 < data.spy_momentum < 0.05:
+        else:
+            # momentum이 0 이상 0.05 미만 → 횡보장
             return MarketRegime.SIDEWAYS
-            
-        return MarketRegime.BEAR_WEAK # Fallback
 
 class VolatilityTargeter:
     def __init__(self, target_vol: float = 0.15):
@@ -63,7 +63,7 @@ class Rebalancer:
         if regime == MarketRegime.CRASH:
             return TradeSignal(
                 target_exposure=target_exposure,
-                rebalance_needed=False,          # 매매 금지
+                has_pending_orders=False,         # 매매 금지
                 orders=[],                       # 빈 주문 목록
                 reason="CRASH Detected: Emergency Stop. No Action."
             )
@@ -82,11 +82,6 @@ class Rebalancer:
         val_b = portfolio.get_group_value(self.groups.get('B', []))
         val_risky = val_a + val_b
 
-        # [핵심 변경 1] 자산 C의 가치는 "보유종목(SHV 등) + 예수금(Cash)"의 합
-        # 리밸런싱 판단 시, 현금도 C 자산의 일부로 간주함
-        holdings_c = portfolio.get_group_value(self.groups.get('C', []))
-        val_c_total = holdings_c + portfolio.total_cash
-        
         # A, B 상대 비중
         if val_risky == 0:
             ratio_a = 0.5
@@ -138,7 +133,7 @@ class Rebalancer:
         
         return TradeSignal(
             target_exposure=target_exposure,
-            rebalance_needed=execution_needed,
+            has_pending_orders=execution_needed,
             orders=sorted_orders,
             reason=reason
         )
