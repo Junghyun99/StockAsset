@@ -11,7 +11,7 @@ class MockBroker(IBrokerAdapter):
     로컬 테스트용 가상 브로커
     실제 주문을 내지 않고 로그만 출력함
     """
-    def __init__(self, initial_cash: float = 10000.0, holdings: Dict[str, float] = None):
+    def __init__(self, initial_cash: float = 10000.0, holdings: Dict[str, int] = None):
         self.cash = initial_cash
         self.holdings = holdings if holdings else {}
         # 현재가는 외부에서 주입받거나, API 호출 시 업데이트된다고 가정

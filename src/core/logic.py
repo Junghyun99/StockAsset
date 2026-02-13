@@ -82,11 +82,6 @@ class Rebalancer:
         val_b = portfolio.get_group_value(self.groups.get('B', []))
         val_risky = val_a + val_b
 
-        # [핵심 변경 1] 자산 C의 가치는 "보유종목(SHV 등) + 예수금(Cash)"의 합
-        # 리밸런싱 판단 시, 현금도 C 자산의 일부로 간주함
-        holdings_c = portfolio.get_group_value(self.groups.get('C', []))
-        val_c_total = holdings_c + portfolio.total_cash
-        
         # A, B 상대 비중
         if val_risky == 0:
             ratio_a = 0.5

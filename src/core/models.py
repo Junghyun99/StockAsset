@@ -28,7 +28,7 @@ class MarketData:
 class Portfolio:
     """현재 계좌 상태"""
     total_cash: float
-    holdings: Dict[str, float]       # {ticker: quantity}
+    holdings: Dict[str, int]          # {ticker: quantity}
     current_prices: Dict[str, float] # {ticker: price}
 
     @property
