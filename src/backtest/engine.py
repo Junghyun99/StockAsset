@@ -55,7 +55,7 @@ class Backtester:
             
             signal = self.rebalancer.generate_signal(pf, exposure, regime)
             
-            if signal.rebalance_needed:
+            if signal.has_pending_orders:
                 self.broker.execute_orders(signal.orders)
                 
             # 6. 결과 기록

@@ -51,7 +51,7 @@ class Order:
 class TradeSignal:
     """전략 판단 결과"""
     target_exposure: float
-    rebalance_needed: bool
+    has_pending_orders: bool
     orders: List[Order]
     reason: str
 

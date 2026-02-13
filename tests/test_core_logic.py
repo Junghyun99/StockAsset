@@ -100,13 +100,13 @@ def test_rebalancer_threshold_logic(create_portfolio):
     
     # Case 1: 횡보장 (Threshold 0.05) -> 10% 차이이므로 리밸런싱 해야 함
     signal_side = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
-    assert signal_side.rebalance_needed is True
+    assert signal_side.has_pending_orders is True
     assert "Threshold" in signal_side.reason and "초과" in signal_side.reason
     
     # Case 2: 하락장 (Threshold 0.10) -> 10% 차이는 초과가 아님(GT). 유지.
     # 로직: diff > threshold. 0.10 > 0.10 is False.
     signal_bear = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BEAR_WEAK)
-    assert signal_bear.rebalance_needed is False
+    assert signal_bear.has_pending_orders is False
     assert len(signal_bear.orders) == 0
 
 def test_rebalancer_crash_emergency_stop(create_portfolio):
@@ -126,7 +126,7 @@ def test_rebalancer_crash_emergency_stop(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
     
     # 기대 결과: 리밸런싱 False, 주문 0건
-    assert signal.rebalance_needed is False
+    assert signal.has_pending_orders is False
     assert len(signal.orders) == 0
     assert "Emergency Stop" in signal.reason
 
@@ -141,7 +141,7 @@ def test_rebalancer_exposure_reduction(create_portfolio):
     # 목표: 비중 0.5 (500만원만 투자하고, 500만원은 현금화)
     signal = rebalancer.generate_signal(pf, target_exposure=0.5, regime=MarketRegime.BULL)
     
-    assert signal.rebalance_needed is True
+    assert signal.has_pending_orders is True
     
     # 목표 금액: A 250만, B 250만. (현재 각 500만)
     # 따라서 각각 절반씩 매도해야 함 (각 25주 매도)
@@ -178,7 +178,7 @@ def test_rebalancer_idempotency(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     
     # 리밸런싱 불필요 판단
-    assert signal.rebalance_needed is False
+    assert signal.has_pending_orders is False
     # 주문이 하나도 없어야 함
     assert len(signal.orders) == 0
 
@@ -202,11 +202,11 @@ def test_rebalancer_cash_injection(create_portfolio):
     # 목표: 투자비중 1.0 (400만원 모두 투자 원함)
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     
-    # 비율(50:50) 자체는 틀어지지 않았으므로 rebalance_needed는 False일 수 있음.
+    # 비율(50:50) 자체는 틀어지지 않았으므로 has_pending_orders는 False일 수 있음.
     # 하지만 'Exposure'를 맞추기 위해 주문은 생성되어야 함.
     
     # 로직 검증: 
-    # Logic에서 rebalance_needed가 False여도 target_exposure 계산은 수행함.
+    # Logic에서 has_pending_orders가 False여도 target_exposure 계산은 수행함.
     # Target A = 400만 * 1.0 * 0.5 = 200만
     # Current A = 100만 -> 100만 매수 필요 (10주)
     
