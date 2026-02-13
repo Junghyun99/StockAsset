@@ -3,7 +3,7 @@ import pytest
 import pandas as pd
 import numpy as np
 from src.backtest.components import BacktestDataLoader, BacktestBroker
-from src.core.models import Order
+from src.core.models import Order, OrderAction
 
 @pytest.fixture
 def mock_full_data():
@@ -56,7 +56,7 @@ def test_broker_price_injection():
     
     # 3. 매수 주문 실행
     # Order 객체의 price는 '예상가'일 뿐, Broker는 주입된 '200.0'으로 체결해야 함
-    order = Order('SPY', 'BUY', 10, 150.0) # 주문서엔 150이라 적혀있어도
+    order = Order('SPY', OrderAction.BUY, 10, 150.0) # 주문서엔 150이라 적혀있어도
     executions = broker.execute_orders([order])
     
     # 4. 체결 가격 검증 (MockBroker 로직상 슬리피지 1% 적용됨 -> 202.0)

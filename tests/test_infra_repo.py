@@ -2,7 +2,7 @@ import pytest
 import json
 import os
 from src.infra.repo import JsonRepository
-from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Order, TradeExecution
+from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Order, TradeExecution, OrderAction, ExecutionStatus
 
 @pytest.fixture
 def repo(tmp_path):
@@ -60,7 +60,7 @@ def test_save_history_only_when_orders_exist(repo, dummy_portfolio):
     # Case B: 체결 내역 있음
     # [수정] TradeExecution 객체 리스트 생성
     executions = [
-        TradeExecution("SPY", "BUY", 1, 100.0, 0.1, "2024-01-01", "FILLED")
+        TradeExecution("SPY", OrderAction.BUY, 1, 100.0, 0.1, "2024-01-01", ExecutionStatus.FILLED)
     ]
     
     repo.save_trade_history(executions, dummy_portfolio, "Trade Executed")
