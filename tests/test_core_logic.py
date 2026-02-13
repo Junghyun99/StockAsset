@@ -101,7 +101,7 @@ def test_rebalancer_threshold_logic(create_portfolio):
     # Case 1: 횡보장 (Threshold 0.05) -> 10% 차이이므로 리밸런싱 해야 함
     signal_side = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     assert signal_side.has_orders is True
-    assert "Threshold" in signal_side.reason and "초과" in signal_side.reason
+    assert "비율 재조정" in signal_side.reason and "초과" in signal_side.reason
     
     # Case 2: 하락장 (Threshold 0.10) -> 10% 차이는 초과가 아님(GT). 유지.
     # 로직: diff > threshold. 0.10 > 0.10 is False.
@@ -181,6 +181,7 @@ def test_rebalancer_idempotency(create_portfolio):
     assert signal.has_orders is False
     # 주문이 하나도 없어야 함
     assert len(signal.orders) == 0
+    assert "추가 주문 없음" in signal.reason
 
 def test_rebalancer_cash_injection(create_portfolio):
     """
@@ -202,11 +203,11 @@ def test_rebalancer_cash_injection(create_portfolio):
     # 목표: 투자비중 1.0 (400만원 모두 투자 원함)
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     
-    # 비율(50:50) 자체는 틀어지지 않았으므로 has_orders는 False일 수 있음.
+    # 비율(50:50) 자체는 틀어지지 않았으므로 리밸런싱 불필요.
     # 하지만 'Exposure'를 맞추기 위해 주문은 생성되어야 함.
-    
-    # 로직 검증: 
-    # Logic에서 has_orders가 False여도 target_exposure 계산은 수행함.
+    assert "exposure 조정" in signal.reason
+
+    # 로직 검증:
     # Target A = 400만 * 1.0 * 0.5 = 200만
     # Current A = 100만 -> 100만 매수 필요 (10주)
     
@@ -360,6 +361,29 @@ def test_rebalancer_order_sequence(create_portfolio):
     
     # 3. 그 뒤에 'BUY' 주문이 와야 함
     assert signal.orders[-1].action == OrderAction.BUY
+
+
+def test_rebalancer_reason_rebalance_but_no_orders(create_portfolio):
+    """
+    [케이스 4: 비율 재조정 필요하지만 주문 단위 미달]
+    첫 투자(val_risky=0 → needs_rebalance=True)인데,
+    주당 가격이 비싸서 매수 수량이 전부 floor → 0주.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # 현금 50만, 보유 종목 없음 (첫 투자 → needs_rebalance=True)
+    # 주당 가격 100만 → target 25만/종목 → floor(0.25) = 0주
+    pf = create_portfolio(
+        cash=500000,
+        holdings={},
+        prices={'SPY': 1000000, 'IEF': 1000000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    assert signal.has_orders is False
+    assert "단위 미달" in signal.reason
 
 
 def test_rebalancer_c_group_target_not_negative(create_portfolio):
