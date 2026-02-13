@@ -3,7 +3,7 @@ import pytest
 import logging
 from unittest.mock import patch, MagicMock
 from src.infra.broker import KisBroker, MockBroker
-from src.core.models import Order, Portfolio
+from src.core.models import Order, Portfolio, OrderAction, ExecutionStatus, TradeExecution
 
 
 # ==========================================
@@ -284,14 +284,14 @@ def test_kis_broker_send_order_buy_success(kis_broker, mock_requests):
     hash_response.json.return_value = {'HASH': 'hash123'}
     mock_requests.post.side_effect = [hash_response, order_response]
 
-    order = Order('SPY', 'BUY', 10, 150.0)
+    order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = kis_broker._send_order(order)
 
     assert result is not None
     assert result.ticker == 'SPY'
-    assert result.action == 'BUY'
+    assert result.action == OrderAction.BUY
     assert result.quantity == 10
-    assert result.status == 'ORDERED'
+    assert result.status == ExecutionStatus.ORDERED
 
 
 def test_kis_broker_send_order_sell_success(kis_broker, mock_requests):
@@ -302,11 +302,11 @@ def test_kis_broker_send_order_sell_success(kis_broker, mock_requests):
     hash_response.json.return_value = {'HASH': 'hash456'}
     mock_requests.post.side_effect = [hash_response, order_response]
 
-    order = Order('SPY', 'SELL', 5, 150.0)
+    order = Order('SPY', OrderAction.SELL, 5, 150.0)
     result = kis_broker._send_order(order)
 
     assert result is not None
-    assert result.action == 'SELL'
+    assert result.action == OrderAction.SELL
 
 
 def test_kis_broker_send_order_failure(kis_broker, mock_requests):
@@ -317,7 +317,7 @@ def test_kis_broker_send_order_failure(kis_broker, mock_requests):
     hash_response.json.return_value = {'HASH': 'hash'}
     mock_requests.post.side_effect = [hash_response, order_response]
 
-    order = Order('SPY', 'BUY', 10, 150.0)
+    order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = kis_broker._send_order(order)
 
     assert result is None
@@ -330,7 +330,7 @@ def test_kis_broker_send_order_exception(kis_broker, mock_requests):
     hash_response.json.return_value = {'HASH': 'hash'}
     mock_requests.post.side_effect = [hash_response, Exception("Network Down")]
 
-    order = Order('SPY', 'BUY', 5, 100.0)
+    order = Order('SPY', OrderAction.BUY, 5, 100.0)
     result = kis_broker._send_order(order)
 
     assert result is None
@@ -345,7 +345,7 @@ def test_kis_broker_send_order_real_mode_tr_ids(kis_broker_real, mock_requests):
 
     # 매수
     mock_requests.post.side_effect = [hash_response, order_response]
-    buy_order = Order('SPY', 'BUY', 1, 100.0)
+    buy_order = Order('SPY', OrderAction.BUY, 1, 100.0)
     kis_broker_real._send_order(buy_order)
     # 두 번째 post call의 headers에서 tr_id 확인
     call_args = mock_requests.post.call_args_list[1]
@@ -354,7 +354,7 @@ def test_kis_broker_send_order_real_mode_tr_ids(kis_broker_real, mock_requests):
     mock_requests.post.reset_mock()
     mock_requests.post.side_effect = [hash_response, order_response]
     # 매도
-    sell_order = Order('SPY', 'SELL', 1, 100.0)
+    sell_order = Order('SPY', OrderAction.SELL, 1, 100.0)
     kis_broker_real._send_order(sell_order)
     call_args = mock_requests.post.call_args_list[1]
     assert call_args[1]['headers']['tr_id'] == 'TTTS1006U'
@@ -371,8 +371,8 @@ def test_kis_broker_execute_sell_then_buy(mock_sleep, kis_broker, mock_requests)
          patch.object(kis_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        sell_exec = TradeExecution('SPY', 'SELL', 5, 150.0, 0.0, '2024-01-01', 'ORDERED')
-        buy_exec = TradeExecution('IEF', 'BUY', 10, 100.0, 0.0, '2024-01-01', 'ORDERED')
+        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
         mock_send.side_effect = [sell_exec, buy_exec]
 
         mock_get_pf.return_value = Portfolio(
@@ -382,8 +382,8 @@ def test_kis_broker_execute_sell_then_buy(mock_sleep, kis_broker, mock_requests)
         )
 
         orders = [
-            Order('SPY', 'SELL', 5, 150.0),
-            Order('IEF', 'BUY', 10, 100.0),
+            Order('SPY', OrderAction.SELL, 5, 150.0),
+            Order('IEF', OrderAction.BUY, 10, 100.0),
         ]
         executions = kis_broker.execute_orders(orders)
 
@@ -398,13 +398,13 @@ def test_kis_broker_execute_buy_only(mock_sleep, kis_broker, mock_requests):
          patch.object(kis_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        buy_exec = TradeExecution('SPY', 'BUY', 5, 100.0, 0.0, '2024-01-01', 'ORDERED')
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
         mock_send.return_value = buy_exec
         mock_get_pf.return_value = Portfolio(
             total_cash=50000.0, holdings={}, current_prices={}
         )
 
-        orders = [Order('SPY', 'BUY', 5, 100.0)]
+        orders = [Order('SPY', OrderAction.BUY, 5, 100.0)]
         executions = kis_broker.execute_orders(orders)
 
         assert len(executions) == 1
@@ -417,14 +417,14 @@ def test_kis_broker_execute_buy_qty_adjusted(mock_sleep, kis_broker, mock_reques
          patch.object(kis_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        buy_exec = TradeExecution('SPY', 'BUY', 1, 100.0, 0.0, '2024-01-01', 'ORDERED')
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 1, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
         mock_send.return_value = buy_exec
         # 현금이 적어서 수량이 조정되어야 함
         mock_get_pf.return_value = Portfolio(
             total_cash=200.0, holdings={}, current_prices={}
         )
 
-        orders = [Order('SPY', 'BUY', 100, 100.0)]  # 100주 요청하지만 돈이 부족
+        orders = [Order('SPY', OrderAction.BUY, 100, 100.0)]  # 100주 요청하지만 돈이 부족
         executions = kis_broker.execute_orders(orders)
 
         # 수량이 조정되어 실행됨 (200*0.98/102 = 1주)
@@ -442,7 +442,7 @@ def test_kis_broker_execute_buy_zero_price(mock_sleep, kis_broker, mock_requests
             total_cash=10000.0, holdings={}, current_prices={}
         )
 
-        orders = [Order('SPY', 'BUY', 10, 0.0)]  # 가격 0
+        orders = [Order('SPY', OrderAction.BUY, 10, 0.0)]  # 가격 0
         executions = kis_broker.execute_orders(orders)
 
         assert len(executions) == 0
@@ -459,7 +459,7 @@ def test_kis_broker_execute_buy_zero_qty_after_adjust(mock_sleep, kis_broker, mo
             total_cash=10.0, holdings={}, current_prices={}
         )
 
-        orders = [Order('SPY', 'BUY', 10, 500.0)]  # 수량 조정 후 0
+        orders = [Order('SPY', OrderAction.BUY, 10, 500.0)]  # 수량 조정 후 0
         executions = kis_broker.execute_orders(orders)
 
         assert len(executions) == 0
@@ -472,10 +472,10 @@ def test_kis_broker_execute_sell_timeout(mock_sleep, kis_broker, mock_requests):
          patch.object(kis_broker, '_wait_for_completion', return_value=False):
 
         from src.core.models import TradeExecution
-        sell_exec = TradeExecution('SPY', 'SELL', 5, 150.0, 0.0, '2024-01-01', 'ORDERED')
+        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
         mock_send.return_value = sell_exec
 
-        orders = [Order('SPY', 'SELL', 5, 150.0)]
+        orders = [Order('SPY', OrderAction.SELL, 5, 150.0)]
         executions = kis_broker.execute_orders(orders)
 
         # 타임아웃이어도 실행 결과는 반환
@@ -493,7 +493,7 @@ def test_kis_broker_execute_send_order_returns_none(mock_sleep, kis_broker, mock
             total_cash=50000.0, holdings={}, current_prices={}
         )
 
-        orders = [Order('SPY', 'BUY', 5, 100.0)]
+        orders = [Order('SPY', OrderAction.BUY, 5, 100.0)]
         executions = kis_broker.execute_orders(orders)
 
         assert len(executions) == 0
@@ -623,6 +623,6 @@ def test_mock_broker_wait_for_completion(mock_sleep):
 def test_mock_broker_buy_price_zero():
     """매수 가격이 0인 경우 스킵"""
     broker = MockBroker(initial_cash=1000.0)
-    orders = [Order('SPY', 'BUY', 10, 0.0)]
+    orders = [Order('SPY', OrderAction.BUY, 10, 0.0)]
     executions = broker.execute_orders(orders)
     assert len(executions) == 0

@@ -1,6 +1,6 @@
 import math
 from typing import Dict, List
-from src.core.models import MarketRegime, MarketData, Portfolio, TradeSignal, Order
+from src.core.models import MarketRegime, MarketData, Portfolio, TradeSignal, Order, OrderAction
 
 class RegimeAnalyzer:
     def analyze(self, data: MarketData) -> MarketRegime:
@@ -124,8 +124,8 @@ class Rebalancer:
         orders.extend(self._create_group_orders(portfolio, self.groups.get('C', []), target_val_c))
         
         # 예수금이 없는 상황을 대비하여, 무조건 매도 주문을 먼저 실행해서 현금을 확보해야 함.
-        sell_orders = [o for o in orders if o.action == "SELL"]
-        buy_orders = [o for o in orders if o.action == "BUY"]
+        sell_orders = [o for o in orders if o.action == OrderAction.SELL]
+        buy_orders = [o for o in orders if o.action == OrderAction.BUY]
         
         # 정렬된 최종 주문 리스트
         sorted_orders = sell_orders + buy_orders
@@ -158,11 +158,11 @@ class Rebalancer:
             if diff_val > 0:
                 qty = math.floor(diff_val / price)
                 if qty > 0:
-                    orders.append(Order(ticker, "BUY", qty, price))
+                    orders.append(Order(ticker, OrderAction.BUY, qty, price))
             elif diff_val < 0:
                 qty = math.ceil(abs(diff_val) / price)
                 qty = min(qty, current_qty)  # 보유 수량 초과 매도 방지
                 if qty > 0:
-                    orders.append(Order(ticker, "SELL", qty, price))
+                    orders.append(Order(ticker, OrderAction.SELL, qty, price))
                 
         return orders

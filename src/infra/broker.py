@@ -1,7 +1,7 @@
 # src/infra/broker.py
 from typing import List, Dict, Optional
 from src.core.interfaces import IBrokerAdapter
-from src.core.models import Portfolio, Order, TradeExecution
+from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
 import time
 import requests
 from datetime import datetime
@@ -32,8 +32,8 @@ class MockBroker(IBrokerAdapter):
         executions = []
         
         # 1. 매도/매수 분리
-        sell_orders = [o for o in orders if o.action == "SELL"]
-        buy_orders = [o for o in orders if o.action == "BUY"]
+        sell_orders = [o for o in orders if o.action == OrderAction.SELL]
+        buy_orders = [o for o in orders if o.action == OrderAction.BUY]
         
         # ==========================================
         # Phase 1: 매도 집행 (Sell Execution)
@@ -93,7 +93,7 @@ class MockBroker(IBrokerAdapter):
     def _process_order_internal(self, order: Order) -> TradeExecution:
         """단일 주문 처리 및 Mock 잔고 갱신 헬퍼"""
         # 슬리피지 시뮬레이션
-        slippage = 1.01 if order.action == "BUY" else 0.99
+        slippage = 1.01 if order.action == OrderAction.BUY else 0.99
         exec_price = order.price * slippage
         
         # 수수료 시뮬레이션 (0.1%)
@@ -104,10 +104,10 @@ class MockBroker(IBrokerAdapter):
         amount = exec_price * order.quantity
         
         # 잔고 반영
-        if order.action == "BUY":
+        if order.action == OrderAction.BUY:
             self.cash -= (amount + fee)
             self.holdings[order.ticker] = self.holdings.get(order.ticker, 0) + order.quantity
-        elif order.action == "SELL":
+        elif order.action == OrderAction.SELL:
             self.cash += (amount - fee)
             current_qty = self.holdings.get(order.ticker, 0)
             self.holdings[order.ticker] = max(0, current_qty - order.quantity)
@@ -119,7 +119,7 @@ class MockBroker(IBrokerAdapter):
             price=round(exec_price, 2),
             fee=round(fee, 2),
             date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            status="FILLED"
+            status=ExecutionStatus.FILLED
         )
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         """
@@ -306,9 +306,9 @@ class KisBroker(IBrokerAdapter):
 
     def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
         executions = []
-        sell_orders = [o for o in orders if o.action == "SELL"]
-        buy_orders = [o for o in orders if o.action == "BUY"]
-        
+        sell_orders = [o for o in orders if o.action == OrderAction.SELL]
+        buy_orders = [o for o in orders if o.action == OrderAction.BUY]
+
         # === 1. 매도 실행 ===
         if sell_orders:
             self.logger.info(f"[KisBroker] Processing {len(sell_orders)} SELL orders...")
@@ -369,9 +369,9 @@ class KisBroker(IBrokerAdapter):
         
         tr_id = ""
         if self.is_real:
-            tr_id = "TTTS1002U" if order.action == "BUY" else "TTTS1006U"
+            tr_id = "TTTS1002U" if order.action == OrderAction.BUY else "TTTS1006U"
         else:
-            tr_id = "VTTT1002U" if order.action == "BUY" else "VTTT1006U"
+            tr_id = "VTTT1002U" if order.action == OrderAction.BUY else "VTTT1006U"
 
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
         exch = self._get_exchange_code(order.ticker)
@@ -416,7 +416,7 @@ class KisBroker(IBrokerAdapter):
                 price=order_price,
                 fee=0.0, # 수수료는 체결 조회 전엔 모름
                 date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                status="ORDERED"
+                status=ExecutionStatus.ORDERED
             )
             
         except Exception as e:

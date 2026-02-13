@@ -1,7 +1,7 @@
 # tests/test_core_logic.py
 import pytest
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
-from src.core.models import MarketRegime, Order
+from src.core.models import MarketRegime, Order, OrderAction
 
 # ==========================================
 # 1. RegimeAnalyzer 테스트 (국면 판단의 정교함)
@@ -148,9 +148,9 @@ def test_rebalancer_exposure_reduction(create_portfolio):
     spy_order = next(o for o in signal.orders if o.ticker == 'SPY')
     ief_order = next(o for o in signal.orders if o.ticker == 'IEF')
     
-    assert spy_order.action == "SELL"
+    assert spy_order.action == OrderAction.SELL
     assert spy_order.quantity == 25
-    assert ief_order.action == "SELL"
+    assert ief_order.action == OrderAction.SELL
     assert ief_order.quantity == 25
 
 
@@ -214,11 +214,11 @@ def test_rebalancer_cash_injection(create_portfolio):
     ief_order = next((o for o in signal.orders if o.ticker == 'IEF'), None)
     
     assert spy_order is not None
-    assert spy_order.action == "BUY"
+    assert spy_order.action == OrderAction.BUY
     assert spy_order.quantity == 10 # 100만원어치 추가 매수
     
     assert ief_order is not None
-    assert ief_order.action == "BUY"
+    assert ief_order.action == OrderAction.BUY
     assert ief_order.quantity == 10
 
 def test_rebalancer_small_balance_rounding(create_portfolio):
@@ -268,7 +268,7 @@ def test_rebalancer_sell_rounding_ceil(create_portfolio):
     orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=500.0)
 
     assert len(orders) == 1
-    assert orders[0].action == "SELL"
+    assert orders[0].action == OrderAction.SELL
     assert orders[0].quantity == 35  # int()였다면 34
 
 def test_rebalancer_sell_quantity_capped_by_holdings(create_portfolio):
@@ -290,7 +290,7 @@ def test_rebalancer_sell_quantity_capped_by_holdings(create_portfolio):
     # 목표 금액 $50 -> 매도 필요: (285-50)/95 = 2.47주 -> ceil = 3주 (OK, 보유량과 같음)
     orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=50.0)
     assert len(orders) == 1
-    assert orders[0].action == "SELL"
+    assert orders[0].action == OrderAction.SELL
     assert orders[0].quantity <= 3
 
     # 목표 금액 $1 -> 매도 필요: (285-1)/95 = 2.989주 -> ceil = 3주 (보유량과 같으므로 OK)
@@ -327,7 +327,7 @@ def test_rebalancer_buy_rounding_floor(create_portfolio):
     orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=1000.0)
 
     assert len(orders) == 1
-    assert orders[0].action == "BUY"
+    assert orders[0].action == OrderAction.BUY
     assert orders[0].quantity == 30  # 자금 초과 방지
 
 def test_rebalancer_order_sequence(create_portfolio):
@@ -355,8 +355,8 @@ def test_rebalancer_order_sequence(create_portfolio):
     assert len(signal.orders) > 0
     
     # 2. 첫 번째 주문이 반드시 'SELL' 이어야 함 (SHV 매도)
-    assert signal.orders[0].action == "SELL"
+    assert signal.orders[0].action == OrderAction.SELL
     assert signal.orders[0].ticker == "SHV"
     
     # 3. 그 뒤에 'BUY' 주문이 와야 함
-    assert signal.orders[-1].action == "BUY"
+    assert signal.orders[-1].action == OrderAction.BUY

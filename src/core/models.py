@@ -9,6 +9,22 @@ class MarketRegime(Enum):
     SIDEWAYS = "Sideways"
     CRASH = "Crash"
 
+class OrderAction(str, Enum):
+    BUY = "BUY"
+    SELL = "SELL"
+
+    def __str__(self):
+        return self.value
+
+class ExecutionStatus(str, Enum):
+    FILLED = "FILLED"
+    PARTIAL = "PARTIAL"
+    REJECTED = "REJECTED"
+    ORDERED = "ORDERED"
+
+    def __str__(self):
+        return self.value
+
 @dataclass(frozen=True)
 class MarketData:
     """오늘의 시장 지표 스냅샷"""
@@ -43,7 +59,7 @@ class Portfolio:
 @dataclass
 class Order:
     ticker: str
-    action: str  # "BUY" or "SELL"
+    action: OrderAction
     quantity: int
     price: float # 예상가
 
@@ -59,10 +75,10 @@ class TradeSignal:
 class TradeExecution:
     """실제 체결된 매매 결과 (영수증)"""
     ticker: str
-    action: str   # "BUY" or "SELL"
+    action: OrderAction
     quantity: int # 실제 체결 수량
     price: float  # 실제 체결 단가 (평균단가)
     fee: float    # 수수료
     date: str     # 체결 시간
-    status: str   # "FILLED" (체결), "PARTIAL" (부분체결), "REJECTED" (거부)
+    status: ExecutionStatus
     reason: str = "" # 거부 사유 등

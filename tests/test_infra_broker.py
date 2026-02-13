@@ -1,6 +1,6 @@
 import pytest
 from src.infra.broker import MockBroker
-from src.core.models import Order
+from src.core.models import Order, OrderAction
 
 def test_mock_broker_initialization():
     # 1. 초기 상태 확인
@@ -15,7 +15,7 @@ def test_mock_broker_buy_execution():
     broker = MockBroker(initial_cash=1000.0)
     
     # 100원짜리 5주 매수
-    orders = [Order(ticker='SPY', action='BUY', quantity=5, price=100.0)]
+    orders = [Order(ticker='SPY', action=OrderAction.BUY, quantity=5, price=100.0)]
     broker.execute_orders(orders)
     
     pf = broker.get_portfolio()
@@ -36,7 +36,7 @@ def test_mock_broker_sell_execution():
     broker = MockBroker(initial_cash=0.0, holdings={'SPY': 10})
     
     # 100원짜리 3주 매도
-    orders = [Order(ticker='SPY', action='SELL', quantity=3, price=100.0)]
+    orders = [Order(ticker='SPY', action=OrderAction.SELL, quantity=3, price=100.0)]
     broker.execute_orders(orders)
     
     pf = broker.get_portfolio()
@@ -56,8 +56,8 @@ def test_mock_broker_mixed_orders():
     broker = MockBroker(initial_cash=1000.0, holdings={'OLD': 10})
     
     orders = [
-        Order(ticker='NEW', action='BUY', quantity=2, price=100.0), 
-        Order(ticker='OLD', action='SELL', quantity=5, price=10.0)
+        Order(ticker='NEW', action=OrderAction.BUY, quantity=2, price=100.0), 
+        Order(ticker='OLD', action=OrderAction.SELL, quantity=5, price=10.0)
     ]
     broker.execute_orders(orders)
     
@@ -79,7 +79,7 @@ def test_mock_broker_sell_more_than_owned():
     broker = MockBroker(initial_cash=0.0, holdings={'SPY': 5})
     
     # 10주 매도 시도
-    orders = [Order('SPY', 'SELL', 10, 100.0)]
+    orders = [Order('SPY', OrderAction.SELL, 10, 100.0)]
     broker.execute_orders(orders)
     
     pf = broker.get_portfolio()
@@ -99,7 +99,7 @@ def test_mock_broker_insufficient_funds():
     # Price = 100 * 1.01 = 101.0
     # Max Qty = int(98 / 101) = 0
     
-    orders = [Order('SPY', 'BUY', 10, 100.0)] 
+    orders = [Order('SPY', OrderAction.BUY, 10, 100.0)] 
     executions = broker.execute_orders(orders)
     
     pf = broker.get_portfolio()
@@ -124,8 +124,8 @@ def test_mock_broker_cash_recycling_logic():
     # 2. 주문 목록: Sell A -> Buy B
     # (Rebalancer가 정렬해준 순서대로 들어온다고 가정)
     orders = [
-        Order('StockA', 'SELL', 10, 100.0),
-        Order('StockB', 'BUY', 10, 100.0)
+        Order('StockA', OrderAction.SELL, 10, 100.0),
+        Order('StockB', OrderAction.BUY, 10, 100.0)
     ]
     
     # 3. 실행
