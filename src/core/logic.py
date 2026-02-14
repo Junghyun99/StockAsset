@@ -1,6 +1,7 @@
 import math
-from typing import Dict, List
+from typing import Dict, List, Optional
 from src.core.models import MarketRegime, MarketData, Portfolio, TradeSignal, Order, OrderAction
+from src.core.interfaces import ILogger
 
 class RegimeAnalyzer:
     def analyze(self, data: MarketData) -> MarketRegime:
@@ -52,8 +53,9 @@ class VolatilityTargeter:
 
 class Rebalancer:
     """리밸런싱 및 주문 생성기"""
-    def __init__(self, asset_groups: Dict[str, List[str]]):
+    def __init__(self, asset_groups: Dict[str, List[str]], logger: Optional[ILogger] = None):
         self.groups = asset_groups
+        self._logger = logger
 
     def generate_signal(self, 
                         portfolio: Portfolio, 
@@ -152,7 +154,10 @@ class Rebalancer:
         
         for ticker in tickers:
             price = pf.current_prices.get(ticker, 0)
-            if price <= 0: continue
+            if price <= 0:
+                if self._logger:
+                    self._logger.warning(f"종목 {ticker}의 가격이 유효하지 않습니다 (price={price}). 주문 생성을 건너뜁니다.")
+                continue
             
             current_qty = pf.holdings.get(ticker, 0)
             current_val = current_qty * price
