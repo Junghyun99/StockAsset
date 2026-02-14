@@ -57,7 +57,7 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
     mock_dependencies['analyzer'].analyze.return_value = MarketRegime.BULL
     mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
-        1.0, False, [], "Hold"
+        1.0, [], "Hold"
     )
     
     bot = TradingBot()
@@ -114,7 +114,7 @@ def test_bot_run_rebalance_execution(mock_dependencies):
     mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
     
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
-        1.0, True, [MagicMock()], "Rebalance Needed"
+        1.0, [MagicMock()], "Rebalance Needed"
     )
     mock_dependencies['broker'].execute_orders.return_value = [MagicMock()] 
     mock_dependencies['broker'].fetch_current_prices.return_value = {
@@ -151,7 +151,7 @@ def test_bot_order_execution_failure(mock_dependencies):
     mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
 
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
-        1.0, True, [MagicMock()], "Go Trade"
+        1.0, [MagicMock()], "Go Trade"
     )
     mock_dependencies['broker'].execute_orders.return_value = []
     
@@ -185,7 +185,7 @@ def test_bot_repo_save_permission_error(mock_dependencies):
     mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
 
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
-        1.0, True, [MagicMock()], "Trade Done"
+        1.0, [MagicMock()], "Trade Done"
     )
     mock_dependencies['broker'].execute_orders.return_value = [MagicMock()]
     mock_dependencies['repo'].save_daily_summary.side_effect = PermissionError("Disk Read-only")

@@ -282,7 +282,7 @@ class TestTradingBotEdgeCases:
         mock_deps_live['analyzer'].analyze.return_value = MarketRegime.BULL
         mock_deps_live['targeter'].calculate_exposure.return_value = 1.0
         mock_deps_live['rebalancer'].generate_signal.return_value = TradeSignal(
-            1.0, False, [], "Hold"
+            1.0, [], "Hold"
         )
 
         bot = TradingBot()
@@ -302,7 +302,7 @@ class TestTradingBotEdgeCases:
         mock_deps_live['analyzer'].analyze.return_value = MarketRegime.BULL
         mock_deps_live['targeter'].calculate_exposure.return_value = 1.0
         mock_deps_live['rebalancer'].generate_signal.return_value = TradeSignal(
-            1.0, True, [MagicMock()], "Rebalance"
+            1.0, [MagicMock()], "Rebalance"
         )
         mock_deps_live['broker'].execute_orders.return_value = [MagicMock()]
         mock_deps_live['broker'].fetch_current_prices.return_value = {'SPY': 101.0}
