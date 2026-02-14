@@ -37,7 +37,7 @@ def test_save_and_load_status(repo, dummy_portfolio, dummy_market_data):
 def test_save_summary_append(repo):
     # 2. Summary 이어쓰기(Append) 테스트
     market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
-    signal = TradeSignal(0.8, True, [], "Test")
+    signal = TradeSignal(0.8, [], "Test")
     pf = Portfolio(1000, {}, {})
     
     # 두 번 저장
@@ -152,7 +152,7 @@ def test_save_summary_large_file_performance(repo, dummy_market_data, dummy_port
     repo._save_json(repo.summary_file, large_data)
     
     # 2. 새로운 데이터 저장 시도 (Append)
-    signal = TradeSignal(0.8, True, [], "Performance Test")
+    signal = TradeSignal(0.8, [], "Performance Test")
     
     # 시간 측정 가능 (선택사항)
     import time
@@ -180,7 +180,7 @@ def test_repo_encoding_support(repo, dummy_portfolio, dummy_market_data):
     """
     # 1. 특수문자가 포함된 사유
     reason_msg = "전략 변경: 하락장 진입 📉 (위험해!)"
-    signal = TradeSignal(0.5, True, [], reason_msg)
+    signal = TradeSignal(0.5, [], reason_msg)
     
     # 2. 저장
     repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
@@ -206,7 +206,7 @@ def test_repo_schema_evolution(repo, dummy_market_data, dummy_portfolio):
     repo._save_json(repo.summary_file, old_data)
     
     # 2. 신버전 데이터 저장 (필드가 많음: spy_price, mdd 등)
-    signal = TradeSignal(0.8, True, [], "New Version")
+    signal = TradeSignal(0.8, [], "New Version")
     repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
     
     # 3. 로드 및 검증
@@ -253,7 +253,7 @@ def test_repo_serialization_error(repo, dummy_portfolio, dummy_market_data):
     invalid_reason = datetime.now() 
     
     # Python은 동적 타이핑이라 여기까진 에러 안 남
-    signal = TradeSignal(0.8, True, [], invalid_reason) 
+    signal = TradeSignal(0.8, [], invalid_reason)
     
     # 저장 시도 시 TypeError 발생해야 함 (만약 커스텀 인코더를 구현했다면 성공해야 함)
     # 현재 구현은 기본 json.dump를 쓰므로 에러가 나는 것이 정상 동작임 -> 이를 알고 있어야 함
@@ -292,7 +292,7 @@ def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
     import stat
 
     # 1. 파일 생성
-    signal = TradeSignal(0.8, True, [], "Test")
+    signal = TradeSignal(0.8, [], "Test")
     repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
 
     # 2. 읽기 전용으로 권한 변경 (Write 권한 제거)
@@ -361,7 +361,7 @@ def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
     for i in range(days):
         # 날짜를 바꿔가며 데이터 생성
         market_data = MarketData(f"2024-01-0{i+1}", 100+i, 100, 0.1, 0.1, 0, 15)
-        signal = TradeSignal(1.0, False, [], f"Day {i+1}")
+        signal = TradeSignal(1.0, [], f"Day {i+1}")
         
         # 저장 (Append)
         repo.save_daily_summary(market_data, signal, dummy_portfolio)
