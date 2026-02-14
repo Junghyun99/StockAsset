@@ -3,8 +3,9 @@ import logging
 import os
 from datetime import datetime
 from typing import Any
+from src.core.interfaces import ILogger
 
-class TradeLogger:
+class TradeLogger(ILogger):
     def __init__(self, log_dir: str = "logs"):
         os.makedirs(log_dir, exist_ok=True)
         self.log_file = os.path.join(log_dir, f"{datetime.now().strftime('%Y-%m-%d')}.log")

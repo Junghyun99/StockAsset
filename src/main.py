@@ -50,7 +50,7 @@ class TradingBot:
         self.calculator = IndicatorCalculator()
         self.analyzer = RegimeAnalyzer()
         self.targeter = VolatilityTargeter(target_vol=0.15)
-        self.rebalancer = Rebalancer(self.config.ASSET_GROUPS)
+        self.rebalancer = Rebalancer(self.config.ASSET_GROUPS, logger=self.logger)
 
     def run(self):
         try:
