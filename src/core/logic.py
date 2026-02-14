@@ -64,8 +64,7 @@ class Rebalancer:
         if regime == MarketRegime.CRASH:
             return TradeSignal(
                 target_exposure=target_exposure,
-                has_pending_orders=False,         # 매매 금지
-                orders=[],                       # 빈 주문 목록
+                orders=[],
                 reason="CRASH Detected: Emergency Stop. No Action."
             )
 
@@ -102,11 +101,9 @@ class Rebalancer:
         if needs_rebalance:
             target_ratio_a = 0.5
             target_ratio_b = 0.5
-            reason = f"Threshold {threshold:.0%} 초과 (Diff: {current_diff:.1%})"
         else:
             target_ratio_a = ratio_a
             target_ratio_b = ratio_b
-            reason = "Threshold 미만, 비율 유지"
 
         # 최종 목표 금액 = 전체자산 * Exposure * 상대비중
         target_val_a = portfolio.total_value * target_exposure * target_ratio_a
@@ -114,7 +111,7 @@ class Rebalancer:
 
         # C는 나머지 전부 (Total - A - B)
         # 현금으로 두지 않고, C그룹 주식(SHV)으로 꽉 채우는 것을 목표로 함
-        target_val_c = portfolio.total_value - (target_val_a + target_val_b)
+        target_val_c = max(portfolio.total_value - (target_val_a + target_val_b), 0)
 
         # 4. 주문 생성
         orders = []
@@ -122,19 +119,26 @@ class Rebalancer:
         orders.extend(self._create_group_orders(portfolio, self.groups.get('B', []), target_val_b))
         # 남는 현금을 모두 SHV 매수에 사용하거나, 현금이 부족하면 SHV를 매도함
         orders.extend(self._create_group_orders(portfolio, self.groups.get('C', []), target_val_c))
-        
+
         # 예수금이 없는 상황을 대비하여, 무조건 매도 주문을 먼저 실행해서 현금을 확보해야 함.
         sell_orders = [o for o in orders if o.action == OrderAction.SELL]
         buy_orders = [o for o in orders if o.action == OrderAction.BUY]
-        
+
         # 정렬된 최종 주문 리스트
         sorted_orders = sell_orders + buy_orders
-        
-        execution_needed = len(sorted_orders) > 0
-        
+
+        # 5. reason 결정 (주문 생성 결과를 반영)
+        if needs_rebalance and sorted_orders:
+            reason = f"비율 재조정: Threshold {threshold:.0%} 초과 (Diff: {current_diff:.1%})"
+        elif needs_rebalance and not sorted_orders:
+            reason = f"비율 재조정 필요하나 주문 단위 미달 (Diff: {current_diff:.1%})"
+        elif not needs_rebalance and sorted_orders:
+            reason = "비율 유지, exposure 조정으로 주문 발생"
+        else:
+            reason = "비율 유지, 추가 주문 없음"
+
         return TradeSignal(
             target_exposure=target_exposure,
-            has_pending_orders=execution_needed,
             orders=sorted_orders,
             reason=reason
         )

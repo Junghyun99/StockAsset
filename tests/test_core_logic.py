@@ -100,13 +100,13 @@ def test_rebalancer_threshold_logic(create_portfolio):
     
     # Case 1: 횡보장 (Threshold 0.05) -> 10% 차이이므로 리밸런싱 해야 함
     signal_side = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
-    assert signal_side.has_pending_orders is True
-    assert "Threshold" in signal_side.reason and "초과" in signal_side.reason
+    assert signal_side.has_orders is True
+    assert "비율 재조정" in signal_side.reason and "초과" in signal_side.reason
     
     # Case 2: 하락장 (Threshold 0.10) -> 10% 차이는 초과가 아님(GT). 유지.
     # 로직: diff > threshold. 0.10 > 0.10 is False.
     signal_bear = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BEAR_WEAK)
-    assert signal_bear.has_pending_orders is False
+    assert signal_bear.has_orders is False
     assert len(signal_bear.orders) == 0
 
 def test_rebalancer_crash_emergency_stop(create_portfolio):
@@ -126,7 +126,7 @@ def test_rebalancer_crash_emergency_stop(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
     
     # 기대 결과: 리밸런싱 False, 주문 0건
-    assert signal.has_pending_orders is False
+    assert signal.has_orders is False
     assert len(signal.orders) == 0
     assert "Emergency Stop" in signal.reason
 
@@ -141,7 +141,7 @@ def test_rebalancer_exposure_reduction(create_portfolio):
     # 목표: 비중 0.5 (500만원만 투자하고, 500만원은 현금화)
     signal = rebalancer.generate_signal(pf, target_exposure=0.5, regime=MarketRegime.BULL)
     
-    assert signal.has_pending_orders is True
+    assert signal.has_orders is True
     
     # 목표 금액: A 250만, B 250만. (현재 각 500만)
     # 따라서 각각 절반씩 매도해야 함 (각 25주 매도)
@@ -178,9 +178,10 @@ def test_rebalancer_idempotency(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     
     # 리밸런싱 불필요 판단
-    assert signal.has_pending_orders is False
+    assert signal.has_orders is False
     # 주문이 하나도 없어야 함
     assert len(signal.orders) == 0
+    assert "추가 주문 없음" in signal.reason
 
 def test_rebalancer_cash_injection(create_portfolio):
     """
@@ -202,11 +203,11 @@ def test_rebalancer_cash_injection(create_portfolio):
     # 목표: 투자비중 1.0 (400만원 모두 투자 원함)
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     
-    # 비율(50:50) 자체는 틀어지지 않았으므로 has_pending_orders는 False일 수 있음.
+    # 비율(50:50) 자체는 틀어지지 않았으므로 리밸런싱 불필요.
     # 하지만 'Exposure'를 맞추기 위해 주문은 생성되어야 함.
-    
-    # 로직 검증: 
-    # Logic에서 has_pending_orders가 False여도 target_exposure 계산은 수행함.
+    assert "exposure 조정" in signal.reason
+
+    # 로직 검증:
     # Target A = 400만 * 1.0 * 0.5 = 200만
     # Current A = 100만 -> 100만 매수 필요 (10주)
     
@@ -360,3 +361,52 @@ def test_rebalancer_order_sequence(create_portfolio):
     
     # 3. 그 뒤에 'BUY' 주문이 와야 함
     assert signal.orders[-1].action == OrderAction.BUY
+
+
+def test_rebalancer_reason_rebalance_but_no_orders(create_portfolio):
+    """
+    [케이스 4: 비율 재조정 필요하지만 주문 단위 미달]
+    첫 투자(val_risky=0 → needs_rebalance=True)인데,
+    주당 가격이 비싸서 매수 수량이 전부 floor → 0주.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # 현금 50만, 보유 종목 없음 (첫 투자 → needs_rebalance=True)
+    # 주당 가격 100만 → target 25만/종목 → floor(0.25) = 0주
+    pf = create_portfolio(
+        cash=500000,
+        holdings={},
+        prices={'SPY': 1000000, 'IEF': 1000000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    assert signal.has_orders is False
+    assert "단위 미달" in signal.reason
+
+
+def test_rebalancer_c_group_target_not_negative(create_portfolio):
+    """
+    [C그룹 음수 방어 테스트]
+    target_exposure가 1.0을 초과하는 값이 전달되더라도
+    C그룹(SHV) 목표 금액이 음수가 되어서는 안 된다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}
+    rebalancer = Rebalancer(groups)
+
+    pf = create_portfolio(
+        cash=0.0,
+        holdings={'SPY': 50, 'IEF': 50, 'SHV': 10},
+        prices={'SPY': 100, 'IEF': 100, 'SHV': 100}
+    )
+    # total_value = 11,000
+    # target_exposure=1.5 -> A+B 목표 = 11,000 * 1.5 = 16,500 (총자산 초과)
+    # target_val_c가 음수가 되면 SHV에 음수 목표가 전달되어 비정상 매도 발생
+    signal = rebalancer.generate_signal(pf, target_exposure=1.5, regime=MarketRegime.BULL)
+
+    # C그룹 주문이 있다면, 최대 보유 수량까지만 매도해야 함
+    shv_orders = [o for o in signal.orders if o.ticker == 'SHV']
+    for o in shv_orders:
+        if o.action == OrderAction.SELL:
+            assert o.quantity <= 10  # 보유 수량 초과 매도 불가
