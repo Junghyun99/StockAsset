@@ -1,6 +1,9 @@
+import logging
 import math
 from typing import Dict, List
 from src.core.models import MarketRegime, MarketData, Portfolio, TradeSignal, Order, OrderAction
+
+logger = logging.getLogger(__name__)
 
 class RegimeAnalyzer:
     def analyze(self, data: MarketData) -> MarketRegime:
@@ -152,7 +155,9 @@ class Rebalancer:
         
         for ticker in tickers:
             price = pf.current_prices.get(ticker, 0)
-            if price <= 0: continue
+            if price <= 0:
+                logger.warning("종목 %s의 가격이 유효하지 않습니다 (price=%s). 주문 생성을 건너뜁니다.", ticker, price)
+                continue
             
             current_qty = pf.holdings.get(ticker, 0)
             current_val = current_qty * price
