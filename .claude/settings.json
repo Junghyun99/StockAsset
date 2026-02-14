@@ -4,7 +4,10 @@
       "Bash(pip install -r requirements.txt)",
       "Bash(pytest *)",
       "Bash(python src/main.py)",
-      "Bash(python -c *from src.backtest*)"
+      "Bash(python -c *from src.backtest*)",
+      "Bash(gh issue create *)",
+      "Bash(gh issue list *)",
+      "Bash(gh auth status *)"
     ],
     "deny": [
       "Read(.env)",
