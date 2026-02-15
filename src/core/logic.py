@@ -79,7 +79,13 @@ class Rebalancer:
         }
         threshold = threshold_map.get(regime, 0.10)
         
-        # 2. 현재 자산군(A, B) 평가액 및 비중 계산
+        # 2. 가격 누락 종목 경고
+        if self._logger:
+            for t, q in portfolio.holdings.items():
+                if q > 0 and t not in portfolio.current_prices:
+                    self._logger.warning(f"보유 종목 {t}의 가격 정보가 누락되어 평가액이 0으로 계산됩니다.")
+
+        # 3. 현재 자산군(A, B) 평가액 및 비중 계산
         val_a = portfolio.get_group_value(self.groups.get('A', []))
         val_b = portfolio.get_group_value(self.groups.get('B', []))
         val_risky = val_a + val_b
