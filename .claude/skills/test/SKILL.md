@@ -14,6 +14,7 @@ allowed-tools: Bash(pip install *), Bash(pytest *), Read, Grep, Glob
 ### 1단계: 의존성 설치
 테스트 실행 전에 필요한 패키지를 설치합니다:
 ```
+pip install --upgrade setuptools
 pip install -r requirements.txt
 ```
 
