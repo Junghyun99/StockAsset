@@ -79,8 +79,30 @@ def test_vol_targeter_caps_and_floors():
 def test_vol_targeter_zero_division():
     targeter = VolatilityTargeter()
     # 변동성이 0이어도 에러 없이 1.0(Cap)이나 적절한 값이 나와야 함
-    # 로직 내부에서 0.001로 보정하므로: 0.15 / 0.001 = 150 -> Cap 1.0
+    # 로직 내부에서 MIN_VOLATILITY_FLOOR로 보정하므로: 0.15 / 0.001 = 150 -> Cap 1.0
     assert targeter.calculate_exposure(MarketRegime.BULL, 0.0) == 1.0
+
+def test_vol_targeter_min_volatility_floor_boundary():
+    """MIN_VOLATILITY_FLOOR 경계값 테스트"""
+    targeter = VolatilityTargeter(target_vol=0.15)
+    floor = VolatilityTargeter.MIN_VOLATILITY_FLOOR
+
+    # Case 1: 정확히 MIN_VOLATILITY_FLOOR → 보정 적용 (조건: > floor이 아님)
+    # vol = 0.001이므로 base_ratio = 0.15 / 0.001 = 150 → Cap 1.0
+    assert targeter.calculate_exposure(MarketRegime.BULL, floor) == 1.0
+
+    # Case 2: MIN_VOLATILITY_FLOOR보다 약간 큰 값 → 보정 없이 원래 값 사용
+    slightly_above = floor + 1e-6
+    result = targeter.calculate_exposure(MarketRegime.BULL, slightly_above)
+    expected = min(0.15 / slightly_above, 1.0)
+    expected = max(expected, 0.2)
+    assert abs(result - expected) < 1e-9
+
+    # Case 3: 음수 변동성 → MIN_VOLATILITY_FLOOR로 보정
+    assert targeter.calculate_exposure(MarketRegime.BULL, -0.05) == 1.0
+
+    # Case 4: 상수 값이 0.001인지 확인
+    assert VolatilityTargeter.MIN_VOLATILITY_FLOOR == 0.001
 
 
 # ==========================================
