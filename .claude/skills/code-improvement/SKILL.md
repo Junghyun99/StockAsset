@@ -28,6 +28,9 @@ argument-hint: "[이슈 번호] (생략 시 가장 중요한 이슈를 자동 �
 ## 실행 절차
 
 ### 1단계: GitHub 인증 및 이슈 조회
+gh cli를 사용하기 위해 curl로 gh cli 설치한다.
+
+curl -fsSL https://github.com/cli/cli/releases/download/version
 
 gh cli를 사용하기 위해 환경변수를 설정합니다.
 
