@@ -9,7 +9,7 @@
 - pytest + pytest-cov (테스트)
 
 ## 주요 명령어
-- 테스트: `pytest --cov=src --cov-report=term-missing --cov-fail-under=80 tests/`
+- 테스트: '.claude/skills/test' 스킬 참조
 - 봇 실행: `python src/main.py`
 - 의존성 설치: `pip install -r requirements.txt`
 
