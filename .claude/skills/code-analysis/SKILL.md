@@ -80,6 +80,10 @@ argument-hint: <분석 대상 경로> (예: src/core/, src/infra/broker.py)
 
 ### 5단계: GitHub 이슈 등록
 
+gh cli를 사용하기 위해 gh 설치를 하고 아래 명령어로 토큰 인증을 실행한다.
+
+export GITHUB_TOKEN=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
+
 각 문제를 개별 GitHub 이슈로 생성합니다:
 
 ```bash
