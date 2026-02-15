@@ -1,6 +1,9 @@
+import logging
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 class MarketRegime(Enum):
     BULL = "Bull"
@@ -49,12 +52,22 @@ class Portfolio:
 
     @property
     def total_value(self) -> float:
-        stock_val = sum(q * self.current_prices.get(t, 0) for t, q in self.holdings.items())
+        stock_val = 0.0
+        for t, q in self.holdings.items():
+            if t not in self.current_prices:
+                logger.warning(f"보유 종목 {t}의 가격 정보가 누락되어 평가액이 0으로 계산됩니다.")
+            stock_val += q * self.current_prices.get(t, 0)
         return self.total_cash + stock_val
 
     def get_group_value(self, tickers: List[str]) -> float:
         """특정 종목 그룹의 평가액 합계"""
-        return sum(self.holdings.get(t, 0) * self.current_prices.get(t, 0) for t in tickers)
+        total = 0.0
+        for t in tickers:
+            qty = self.holdings.get(t, 0)
+            if qty > 0 and t not in self.current_prices:
+                logger.warning(f"보유 종목 {t}의 가격 정보가 누락되어 평가액이 0으로 계산됩니다.")
+            total += qty * self.current_prices.get(t, 0)
+        return total
 
 @dataclass
 class Order:
