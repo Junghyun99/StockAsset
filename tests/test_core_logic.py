@@ -1,5 +1,6 @@
 # tests/test_core_logic.py
 import pytest
+from unittest.mock import MagicMock
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.core.models import MarketRegime, Order, OrderAction
 
@@ -410,3 +411,52 @@ def test_rebalancer_c_group_target_not_negative(create_portfolio):
     for o in shv_orders:
         if o.action == OrderAction.SELL:
             assert o.quantity <= 10  # 보유 수량 초과 매도 불가
+
+
+# ==========================================
+# 6. 가격 누락 경고 테스트
+# ==========================================
+
+def test_rebalancer_warns_on_missing_price(create_portfolio):
+    """
+    [가격 누락 경고 테스트]
+    보유 종목의 가격 정보가 누락되면 Rebalancer가 ILogger를 통해 경고해야 한다.
+    """
+    mock_logger = MagicMock()
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, logger=mock_logger)
+
+    # MISSING 종목을 보유하고 있지만 가격 정보가 없음
+    pf = create_portfolio(
+        cash=1000.0,
+        holdings={'SPY': 10, 'MISSING': 5},
+        prices={'SPY': 100.0, 'IEF': 100.0}
+    )
+
+    rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    # ILogger.warning이 MISSING 종목에 대해 호출되었는지 확인
+    mock_logger.warning.assert_called()
+    warning_messages = [call.args[0] for call in mock_logger.warning.call_args_list]
+    assert any("MISSING" in msg for msg in warning_messages)
+
+
+def test_rebalancer_no_warning_when_all_prices_present(create_portfolio):
+    """
+    [가격 정상 시 경고 미발생 테스트]
+    모든 보유 종목의 가격이 있으면 경고가 발생하지 않아야 한다.
+    """
+    mock_logger = MagicMock()
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, logger=mock_logger)
+
+    pf = create_portfolio(
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100.0, 'IEF': 100.0}
+    )
+
+    rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    # 가격 누락 관련 warning이 없어야 함
+    warning_messages = [call.args[0] for call in mock_logger.warning.call_args_list]
+    assert not any("누락" in msg for msg in warning_messages)

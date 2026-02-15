@@ -1,4 +1,3 @@
-import logging
 import pytest
 from src.core.models import MarketData, Portfolio
 
@@ -91,61 +90,3 @@ def test_portfolio_query_non_existent_ticker():
     
     # GLD는 가격 정보는 있지만, 내 holdings에는 없음 -> 가치는 0이어야 함
     assert pf.get_group_value(['GLD']) == 0.0
-
-
-# ==========================================
-# 3. Portfolio 가격 누락 경고 테스트
-# ==========================================
-
-def test_portfolio_total_value_warns_on_missing_price(caplog):
-    """
-    [가격 누락 경고 테스트]
-    보유 종목의 가격 정보가 누락되면 경고 로그가 출력되어야 한다.
-    """
-    pf = Portfolio(
-        total_cash=1000.0,
-        holdings={'SPY': 10, 'MISSING': 5},
-        current_prices={'SPY': 100.0}
-    )
-
-    with caplog.at_level(logging.WARNING, logger="src.core.models"):
-        value = pf.total_value
-
-    assert value == 2000.0
-    assert any("MISSING" in record.message for record in caplog.records)
-
-
-def test_portfolio_get_group_value_warns_on_missing_price(caplog):
-    """
-    [그룹 가치 가격 누락 경고 테스트]
-    보유 중인 종목의 가격이 누락되면 get_group_value에서도 경고가 출력되어야 한다.
-    """
-    pf = Portfolio(
-        total_cash=1000.0,
-        holdings={'GLD': 10},
-        current_prices={'SPY': 100.0}  # GLD 가격 누락
-    )
-
-    with caplog.at_level(logging.WARNING, logger="src.core.models"):
-        value = pf.get_group_value(['GLD'])
-
-    assert value == 0.0
-    assert any("GLD" in record.message for record in caplog.records)
-
-
-def test_portfolio_get_group_value_no_warning_when_not_holding(caplog):
-    """
-    [비보유 종목 경고 미발생 테스트]
-    보유하지 않은 종목의 가격이 누락되어도 경고가 발생하지 않아야 한다.
-    """
-    pf = Portfolio(
-        total_cash=1000.0,
-        holdings={},
-        current_prices={}
-    )
-
-    with caplog.at_level(logging.WARNING, logger="src.core.models"):
-        value = pf.get_group_value(['GLD'])
-
-    assert value == 0.0
-    assert len(caplog.records) == 0
