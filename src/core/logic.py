@@ -56,9 +56,21 @@ class VolatilityTargeter:
 
 class Rebalancer:
     """리밸런싱 및 주문 생성기"""
-    def __init__(self, asset_groups: Dict[str, List[str]], logger: Optional[ILogger] = None):
+
+    # 국면별 리밸런싱 임계치 기본값
+    DEFAULT_THRESHOLD_MAP: Dict[MarketRegime, float] = {
+        MarketRegime.BULL: 0.15,
+        MarketRegime.SIDEWAYS: 0.05,
+        MarketRegime.BEAR_WEAK: 0.10,
+        MarketRegime.BEAR_STRONG: 0.10,
+    }
+
+    def __init__(self, asset_groups: Dict[str, List[str]],
+                 logger: Optional[ILogger] = None,
+                 threshold_map: Optional[Dict[MarketRegime, float]] = None):
         self.groups = asset_groups
         self._logger = logger
+        self._threshold_map = threshold_map if threshold_map is not None else dict(self.DEFAULT_THRESHOLD_MAP)
 
     def generate_signal(self, 
                         portfolio: Portfolio, 
@@ -74,13 +86,7 @@ class Rebalancer:
             )
 
         # 1. 국면별 리밸런싱 임계치 설정
-        threshold_map = {
-            MarketRegime.BULL: 0.15,
-            MarketRegime.SIDEWAYS: 0.05,
-            MarketRegime.BEAR_WEAK: 0.10,
-            MarketRegime.BEAR_STRONG: 0.10,
-        }
-        threshold = threshold_map.get(regime, 0.10)
+        threshold = self._threshold_map.get(regime, 0.10)
         
         # 2. 가격 누락 종목 경고
         if self._logger:
