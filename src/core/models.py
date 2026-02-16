@@ -1,3 +1,4 @@
+import math
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional
@@ -35,6 +36,11 @@ class MarketData:
     spy_momentum: float
     spy_mdd: float
     vix: float
+
+    def nan_fields(self) -> List[str]:
+        """NaN인 필드명 리스트 반환"""
+        fields = ['spy_price', 'spy_ma180', 'spy_volatility', 'spy_momentum', 'spy_mdd', 'vix']
+        return [f for f in fields if math.isnan(getattr(self, f))]
 
     def is_risk_condition(self) -> bool:
         """MDD -20% 이하 or VIX 30 이상"""

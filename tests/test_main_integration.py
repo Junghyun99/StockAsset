@@ -177,6 +177,35 @@ def test_bot_current_price_fetch_failure(mock_dependencies):
     
     mock_dependencies['notifier'].send_alert.assert_called()
 
+def test_bot_nan_data_treated_as_crash(mock_dependencies):
+    """[시나리오: NaN 데이터 감지 → CRASH처럼 매매 중단 + 알림]
+    변동성 등 핵심 지표가 NaN이면 매매를 중단하고 알림만 전송한다.
+    """
+    # NaN 변동성을 가진 MarketData
+    mock_dependencies['calc'].calculate.return_value = MarketData(
+        "2024-01-01", 100, 90, float('nan'), 0.1, -0.05, 15.0
+    )
+
+    bot = TradingBot()
+    bot.run()
+
+    # 1. 전략 분석 스킵 (NaN이므로 analyzer/targeter 호출 안 함)
+    mock_dependencies['analyzer'].analyze.assert_not_called()
+    mock_dependencies['targeter'].calculate_exposure.assert_not_called()
+
+    # 2. 매매 실행 없음
+    mock_dependencies['broker'].execute_orders.assert_not_called()
+
+    # 3. NaN 알림 전송
+    mock_dependencies['notifier'].send_alert.assert_called_once()
+    alert_msg = mock_dependencies['notifier'].send_alert.call_args[0][0]
+    assert "Data Quality Alert" in alert_msg
+    assert "spy_volatility" in alert_msg
+
+    # 4. 데이터 저장은 정상 수행
+    mock_dependencies['repo'].save_daily_summary.assert_called_once()
+    mock_dependencies['repo'].update_status.assert_called_once()
+
 def test_bot_repo_save_permission_error(mock_dependencies):
     """[예외 시나리오: 저장 실패]"""
     # [수정] 필수 Mock 반환값 설정

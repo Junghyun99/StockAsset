@@ -64,8 +64,14 @@ class TradingBot:
             self.logger.info(f"Market Data: Price={market_data.spy_price}, VIX={market_data.vix}, MDD={market_data.spy_mdd:.2%}")
 
             self.logger.info(">>> Step 3: Strategy Analysis")
-            regime = self.analyzer.analyze(market_data)
-            exposure = self.targeter.calculate_exposure(regime, market_data.spy_volatility)
+            nan_fields = market_data.nan_fields()
+            if nan_fields:
+                self.logger.error(f"NaN detected in: {', '.join(nan_fields)}. Treating as CRASH.")
+                regime = MarketRegime.CRASH
+                exposure = 0.0
+            else:
+                regime = self.analyzer.analyze(market_data)
+                exposure = self.targeter.calculate_exposure(regime, market_data.spy_volatility)
             self.logger.info(f"Regime: {regime.value} | Target Exposure: {exposure:.2f}")
 
             self.logger.info(">>> Step 4: Portfolio Rebalancing")
@@ -84,7 +90,17 @@ class TradingBot:
             final_pf = pre_trade_pf
             executions = []
 
-            if regime == MarketRegime.CRASH:
+            if nan_fields:
+                # NaN: 데이터 품질 이상 → CRASH와 동일하게 매매 중단, 알림만 전송
+                msg = (
+                    f"⚠️ Data Quality Alert — 매매 중단\n"
+                    f"날짜: {market_data.date}\n"
+                    f"NaN 필드: {', '.join(nan_fields)}\n"
+                    f"데이터 품질 이상으로 매매를 중단합니다."
+                )
+                self.logger.error(msg)
+                self.notifier.send_alert(msg)
+            elif regime == MarketRegime.CRASH:
                 # CRASH: 매매 중단, 포지션 정보 포함 알림 전송, 사용자 액션 대기
                 msg = self._build_crash_alert(market_data, pre_trade_pf)
                 self.logger.error(msg)

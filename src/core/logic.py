@@ -27,15 +27,18 @@ class RegimeAnalyzer:
             return MarketRegime.SIDEWAYS
 
 class VolatilityTargeter:
+    # 변동성이 이 값 이하일 경우 보정하여 0으로 나누기를 방지
+    MIN_VOLATILITY_FLOOR = 0.001
+
     def __init__(self, target_vol: float = 0.15):
         self.target_vol = target_vol
 
     def calculate_exposure(self, regime: MarketRegime, current_vol: float) -> float:
         if regime == MarketRegime.CRASH:
             return 0.0
-            
-        # 0으로 나누기 방지
-        vol = current_vol if current_vol > 0.001 else 0.001
+
+        # 0으로 나누기 방지: 극소 변동성을 최솟값으로 보정
+        vol = current_vol if current_vol > self.MIN_VOLATILITY_FLOOR else self.MIN_VOLATILITY_FLOOR
         
         # 기본 비율 (Target Vol / Current Vol)
         base_ratio = self.target_vol / vol
