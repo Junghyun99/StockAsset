@@ -482,3 +482,56 @@ def test_rebalancer_no_warning_when_all_prices_present(create_portfolio):
     # 가격 누락 관련 warning이 없어야 함
     warning_messages = [call.args[0] for call in mock_logger.warning.call_args_list]
     assert not any("누락" in msg for msg in warning_messages)
+
+
+# ==========================================
+# 7. Rebalancer 커스텀 임계치 주입 테스트
+# ==========================================
+
+def test_rebalancer_custom_threshold_map(create_portfolio):
+    """
+    [커스텀 임계치 테스트]
+    threshold_map을 외부에서 주입하면 해당 임계치가 적용되어야 한다.
+    기본 BULL 임계치 0.15에서는 리밸런싱이 발생하지 않는 10% 차이가,
+    커스텀 임계치 0.05로 변경하면 리밸런싱이 발생해야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+
+    # 차이 10%인 포트폴리오
+    pf = create_portfolio(
+        holdings={'SPY': 550, 'IEF': 450},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    # Case 1: 기본 임계치 (BULL=0.15) → 10% 차이이므로 리밸런싱 불필요
+    rebalancer_default = Rebalancer(groups)
+    signal_default = rebalancer_default.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal_default.has_orders is False
+
+    # Case 2: 커스텀 임계치 (BULL=0.05) → 10% 차이이므로 리밸런싱 필요
+    custom_thresholds = {
+        MarketRegime.BULL: 0.05,
+        MarketRegime.SIDEWAYS: 0.05,
+        MarketRegime.BEAR_WEAK: 0.10,
+        MarketRegime.BEAR_STRONG: 0.10,
+    }
+    rebalancer_custom = Rebalancer(groups, threshold_map=custom_thresholds)
+    signal_custom = rebalancer_custom.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal_custom.has_orders is True
+    assert "비율 재조정" in signal_custom.reason
+
+
+def test_rebalancer_default_threshold_map_unchanged(create_portfolio):
+    """
+    [기본 임계치 유지 테스트]
+    threshold_map을 지정하지 않으면 기존 기본값이 그대로 적용되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+
+    # 기본 임계치가 클래스 상수와 동일한지 확인
+    rebalancer = Rebalancer(groups)
+    assert rebalancer._threshold_map == Rebalancer.DEFAULT_THRESHOLD_MAP
+
+    # 인스턴스의 threshold_map 수정이 클래스 상수에 영향을 주지 않는지 확인
+    rebalancer._threshold_map[MarketRegime.BULL] = 0.99
+    assert Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.BULL] == 0.15
