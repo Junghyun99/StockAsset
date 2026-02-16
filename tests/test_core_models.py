@@ -1,3 +1,4 @@
+import math
 import pytest
 from src.core.models import MarketData, Portfolio
 
@@ -90,3 +91,36 @@ def test_portfolio_query_non_existent_ticker():
     
     # GLD는 가격 정보는 있지만, 내 holdings에는 없음 -> 가치는 0이어야 함
     assert pf.get_group_value(['GLD']) == 0.0
+
+
+# ==========================================
+# 3. MarketData NaN 감지 테스트
+# ==========================================
+
+def test_nan_fields_normal_data():
+    """정상 데이터 → NaN 필드 없음"""
+    data = MarketData(
+        date="2024-01-01", spy_price=100, spy_ma180=90,
+        spy_volatility=0.15, spy_momentum=0.05, spy_mdd=-0.05, vix=20.0
+    )
+    assert data.nan_fields() == []
+
+def test_nan_fields_single_nan():
+    """변동성만 NaN → 해당 필드만 반환"""
+    data = MarketData(
+        date="2024-01-01", spy_price=100, spy_ma180=90,
+        spy_volatility=float('nan'), spy_momentum=0.05, spy_mdd=-0.05, vix=20.0
+    )
+    assert data.nan_fields() == ['spy_volatility']
+
+def test_nan_fields_multiple_nan():
+    """여러 필드 NaN → 모든 NaN 필드 반환"""
+    data = MarketData(
+        date="2024-01-01", spy_price=float('nan'), spy_ma180=90,
+        spy_volatility=float('nan'), spy_momentum=0.05, spy_mdd=-0.05, vix=float('nan')
+    )
+    result = data.nan_fields()
+    assert 'spy_price' in result
+    assert 'spy_volatility' in result
+    assert 'vix' in result
+    assert len(result) == 3
