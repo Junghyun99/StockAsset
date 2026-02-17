@@ -36,8 +36,26 @@ class VolatilityTargeter:
     # 변동성이 이 값 이하일 경우 보정하여 0으로 나누기를 방지
     MIN_VOLATILITY_FLOOR = 0.001
 
-    def __init__(self, target_vol: float = 0.15):
+    # 국면별 exposure 상한선 기본값
+    DEFAULT_REGIME_CAPS: Dict[MarketRegime, float] = {
+        MarketRegime.BEAR_STRONG: 0.4,
+        MarketRegime.BEAR_WEAK: 0.6,
+    }
+
+    # 최소 exposure 하한선 기본값
+    DEFAULT_MIN_EXPOSURE = 0.2
+
+    # 기본 상한선 (regime_caps에 없는 국면에 적용)
+    DEFAULT_MAX_CAP = 1.0
+
+    def __init__(self, target_vol: float = 0.15,
+                 min_exposure: float = DEFAULT_MIN_EXPOSURE,
+                 regime_caps: Optional[Dict[MarketRegime, float]] = None,
+                 default_cap: float = DEFAULT_MAX_CAP):
         self.target_vol = target_vol
+        self.min_exposure = min_exposure
+        self._regime_caps = dict(regime_caps) if regime_caps is not None else dict(self.DEFAULT_REGIME_CAPS)
+        self.default_cap = default_cap
 
     def calculate_exposure(self, regime: MarketRegime, current_vol: float) -> float:
         if regime == MarketRegime.CRASH:
@@ -45,20 +63,16 @@ class VolatilityTargeter:
 
         # 0으로 나누기 방지: 극소 변동성을 최솟값으로 보정
         vol = current_vol if current_vol > self.MIN_VOLATILITY_FLOOR else self.MIN_VOLATILITY_FLOOR
-        
+
         # 기본 비율 (Target Vol / Current Vol)
         base_ratio = self.target_vol / vol
-        
+
         # 국면별 상한선(Cap)
-        max_cap = 1.0
-        if regime == MarketRegime.BEAR_STRONG:
-            max_cap = 0.4
-        elif regime == MarketRegime.BEAR_WEAK:
-            max_cap = 0.6
-            
-        # Cap 적용 및 하한선(Floor, 0.2) 적용
+        max_cap = self._regime_caps.get(regime, self.default_cap)
+
+        # Cap 적용 및 하한선(Floor) 적용
         exposure = min(base_ratio, max_cap)
-        return max(exposure, 0.2)
+        return max(exposure, self.min_exposure)
 
 class Rebalancer:
     """리밸런싱 및 주문 생성기"""

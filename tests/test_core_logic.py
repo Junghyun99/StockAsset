@@ -136,6 +136,72 @@ def test_vol_targeter_min_volatility_floor_boundary():
     assert VolatilityTargeter.MIN_VOLATILITY_FLOOR == 0.001
 
 
+def test_vol_targeter_custom_regime_caps():
+    """
+    [커스텀 국면별 상한선 테스트]
+    regime_caps를 외부에서 주입하면 해당 상한선이 적용되어야 한다.
+    """
+    custom_caps = {
+        MarketRegime.BEAR_STRONG: 0.3,
+        MarketRegime.BEAR_WEAK: 0.5,
+    }
+    targeter = VolatilityTargeter(target_vol=0.15, regime_caps=custom_caps)
+
+    # BEAR_STRONG: 0.15/0.10 = 1.5 → cap 0.3
+    assert targeter.calculate_exposure(MarketRegime.BEAR_STRONG, 0.10) == 0.3
+
+    # BEAR_WEAK: 0.15/0.10 = 1.5 → cap 0.5
+    assert targeter.calculate_exposure(MarketRegime.BEAR_WEAK, 0.10) == 0.5
+
+
+def test_vol_targeter_custom_min_exposure():
+    """
+    [커스텀 최소 exposure 하한선 테스트]
+    min_exposure를 외부에서 주입하면 해당 하한선이 적용되어야 한다.
+    """
+    targeter = VolatilityTargeter(target_vol=0.15, min_exposure=0.1)
+
+    # 변동성 100% → 0.15/1.0 = 0.15 → 기본 min 0.2면 0.2인데, 커스텀 0.1이므로 0.15
+    assert targeter.calculate_exposure(MarketRegime.BULL, 1.0) == 0.15
+
+    # 변동성 200% → 0.15/2.0 = 0.075 → min 0.1 적용
+    assert targeter.calculate_exposure(MarketRegime.BULL, 2.0) == 0.1
+
+
+def test_vol_targeter_custom_default_cap():
+    """
+    [커스텀 기본 상한선 테스트]
+    default_cap을 변경하면 regime_caps에 없는 국면에 해당 값이 적용되어야 한다.
+    """
+    targeter = VolatilityTargeter(target_vol=0.15, default_cap=0.8)
+
+    # BULL: 0.15/0.01 = 15.0 → 기본 cap 1.0이 아닌 0.8로 제한
+    assert targeter.calculate_exposure(MarketRegime.BULL, 0.01) == 0.8
+
+
+def test_vol_targeter_default_values_unchanged():
+    """
+    [기본값 유지 테스트]
+    파라미터를 지정하지 않으면 기존 기본값이 그대로 적용되어야 한다.
+    """
+    targeter = VolatilityTargeter()
+
+    # 기본 min_exposure
+    assert targeter.min_exposure == 0.2
+    assert targeter.min_exposure == VolatilityTargeter.DEFAULT_MIN_EXPOSURE
+
+    # 기본 regime_caps
+    assert targeter._regime_caps == VolatilityTargeter.DEFAULT_REGIME_CAPS
+
+    # 기본 default_cap
+    assert targeter.default_cap == 1.0
+    assert targeter.default_cap == VolatilityTargeter.DEFAULT_MAX_CAP
+
+    # 인스턴스의 regime_caps 수정이 클래스 상수에 영향을 주지 않는지 확인
+    targeter._regime_caps[MarketRegime.BEAR_STRONG] = 0.99
+    assert VolatilityTargeter.DEFAULT_REGIME_CAPS[MarketRegime.BEAR_STRONG] == 0.4
+
+
 # ==========================================
 # 3. Rebalancer 테스트 (리밸런싱 조건과 주문)
 # ==========================================
