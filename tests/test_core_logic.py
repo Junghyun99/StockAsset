@@ -54,6 +54,37 @@ def test_regime_bull_vs_sideways(create_market_data):
     assert analyzer.analyze(data_zero_mom) == MarketRegime.SIDEWAYS
 
 
+def test_regime_custom_bull_threshold(create_market_data):
+    """
+    [커스텀 BULL 임계치 테스트]
+    bull_momentum_threshold를 외부에서 주입하면 해당 임계치가 적용되어야 한다.
+    기본 임계치 0.05에서는 BULL인 모멘텀 0.08이,
+    커스텀 임계치 0.10에서는 SIDEWAYS가 되어야 한다.
+    """
+    # Case 1: 기본 임계치 (0.05) → 모멘텀 0.08은 BULL
+    analyzer_default = RegimeAnalyzer()
+    data = create_market_data(price=110, ma=100, mom=0.08)
+    assert analyzer_default.analyze(data) == MarketRegime.BULL
+
+    # Case 2: 커스텀 임계치 (0.10) → 모멘텀 0.08은 SIDEWAYS
+    analyzer_custom = RegimeAnalyzer(bull_momentum_threshold=0.10)
+    assert analyzer_custom.analyze(data) == MarketRegime.SIDEWAYS
+
+    # Case 3: 커스텀 임계치 (0.10) → 모멘텀 0.10은 BULL (경계값)
+    data_boundary = create_market_data(price=110, ma=100, mom=0.10)
+    assert analyzer_custom.analyze(data_boundary) == MarketRegime.BULL
+
+
+def test_regime_default_bull_threshold_unchanged():
+    """
+    [기본 BULL 임계치 유지 테스트]
+    bull_momentum_threshold를 지정하지 않으면 기본값 0.05가 적용되어야 한다.
+    """
+    analyzer = RegimeAnalyzer()
+    assert analyzer.bull_momentum_threshold == 0.05
+    assert analyzer.bull_momentum_threshold == RegimeAnalyzer.DEFAULT_BULL_MOMENTUM_THRESHOLD
+
+
 # ==========================================
 # 2. VolatilityTargeter 테스트 (비중 계산의 한계점)
 # ==========================================

@@ -4,26 +4,32 @@ from src.core.models import MarketRegime, MarketData, Portfolio, TradeSignal, Or
 from src.core.interfaces import ILogger
 
 class RegimeAnalyzer:
+    # BULL/SIDEWAYS 판정 기본 모멘텀 임계치 (SPY 6개월 수익률 기준)
+    DEFAULT_BULL_MOMENTUM_THRESHOLD = 0.05
+
+    def __init__(self, bull_momentum_threshold: float = 0.05):
+        self.bull_momentum_threshold = bull_momentum_threshold
+
     def analyze(self, data: MarketData) -> MarketRegime:
         # 1. Crash Check
         if data.is_risk_condition():
             return MarketRegime.CRASH
-            
+
         is_bear_momentum = data.spy_momentum < 0
         is_below_ma = data.spy_price < data.spy_ma180
-        
+
         # 2. Bear Check
         if is_bear_momentum and is_below_ma:
             return MarketRegime.BEAR_STRONG
         elif is_bear_momentum or is_below_ma:
             return MarketRegime.BEAR_WEAK
-            
+
         # 3. Bull / Sideways Check
         # 이 시점: momentum >= 0 AND price >= MA
-        if data.spy_momentum >= 0.05:
+        if data.spy_momentum >= self.bull_momentum_threshold:
             return MarketRegime.BULL
         else:
-            # momentum이 0 이상 0.05 미만 → 횡보장
+            # momentum이 0 이상 임계치 미만 → 횡보장
             return MarketRegime.SIDEWAYS
 
 class VolatilityTargeter:
