@@ -119,19 +119,22 @@ class Rebalancer:
         val_b = portfolio.get_group_value(self.groups.get('B', []))
         val_risky = val_a + val_b
 
+        # 첫 투자 여부 판별 (위험자산 보유액이 0이면 첫 투자)
+        is_first_investment = (val_risky == 0)
+
         # A, B 상대 비중
-        if val_risky == 0:
+        if is_first_investment:
             ratio_a = 0.5
             ratio_b = 0.5
-            needs_rebalance = True # 첫 투자
+            needs_rebalance = True
             current_diff = 0.0
         else:
             ratio_a = val_a / val_risky
             ratio_b = val_b / val_risky
-            
+
             # 부동소수점 오차 해결
             current_diff = round(abs(ratio_a - ratio_b), 6)
-            
+
             needs_rebalance = current_diff > threshold
             
         # 3. 목표 금액 계산
@@ -165,7 +168,11 @@ class Rebalancer:
         sorted_orders = sell_orders + buy_orders
 
         # 5. reason 결정 (주문 생성 결과를 반영)
-        if needs_rebalance and sorted_orders:
+        if is_first_investment and sorted_orders:
+            reason = "첫 투자: 50:50 비율로 진입"
+        elif is_first_investment and not sorted_orders:
+            reason = "첫 투자: 주문 단위 미달로 진입 불가"
+        elif needs_rebalance and sorted_orders:
             reason = f"비율 재조정: Threshold {threshold:.0%} 초과 (Diff: {current_diff:.1%})"
         elif needs_rebalance and not sorted_orders:
             reason = f"비율 재조정 필요하나 주문 단위 미달 (Diff: {current_diff:.1%})"

@@ -485,14 +485,14 @@ def test_rebalancer_order_sequence(create_portfolio):
 
 def test_rebalancer_reason_rebalance_but_no_orders(create_portfolio):
     """
-    [케이스 4: 비율 재조정 필요하지만 주문 단위 미달]
-    첫 투자(val_risky=0 → needs_rebalance=True)인데,
+    [케이스 4: 첫 투자이지만 주문 단위 미달]
+    첫 투자(val_risky=0 → is_first_investment=True)인데,
     주당 가격이 비싸서 매수 수량이 전부 floor → 0주.
     """
     groups = {'A': ['SPY'], 'B': ['IEF']}
     rebalancer = Rebalancer(groups)
 
-    # 현금 50만, 보유 종목 없음 (첫 투자 → needs_rebalance=True)
+    # 현금 50만, 보유 종목 없음 (첫 투자 → is_first_investment=True)
     # 주당 가격 100만 → target 25만/종목 → floor(0.25) = 0주
     pf = create_portfolio(
         cash=500000,
@@ -503,7 +503,30 @@ def test_rebalancer_reason_rebalance_but_no_orders(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
 
     assert signal.has_orders is False
+    assert "첫 투자" in signal.reason
     assert "단위 미달" in signal.reason
+
+
+def test_rebalancer_first_investment_reason(create_portfolio):
+    """
+    [첫 투자 reason 메시지 테스트]
+    위험자산(A+B) 보유액이 0인 경우 첫 투자 전용 reason이 설정되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # 현금 100만, 보유 종목 없음 (첫 투자)
+    pf = create_portfolio(
+        cash=1000000,
+        holdings={},
+        prices={'SPY': 100000, 'IEF': 100000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    assert signal.has_orders is True
+    assert "첫 투자" in signal.reason
+    assert "50:50" in signal.reason
 
 
 def test_rebalancer_c_group_target_not_negative(create_portfolio):
