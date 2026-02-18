@@ -12,7 +12,7 @@ class HistoricalDataLoader(IDataProvider):
     def set_date(self, date):
         self.current_date = date
 
-    def fetch_ohlcv(self, tickers: List[str], days: int = 400):
+    def fetch_ohlcv(self, tickers: List[str], days: int = 400) -> pd.DataFrame:
         # [핵심] 전체 데이터에서 current_date 이전 days 만큼만 잘라서 리턴
         end_idx = self.full_data.index.get_loc(self.current_date)
         start_idx = max(0, end_idx - days)
@@ -28,6 +28,6 @@ class HistoricalDataLoader(IDataProvider):
 
         return sliced_df
 
-    def fetch_vix(self):
+    def fetch_vix(self) -> float:
         # current_date 시점의 VIX 값 리턴
         return self.full_vix.loc[self.current_date]['Close']

@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any, List, Dict
+from typing import List, Dict
+import pandas as pd
 from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution
 
 class IDataProvider(ABC):
     @abstractmethod
-    def fetch_ohlcv(self, tickers: List[str], days: int = 365) -> Any:
+    def fetch_ohlcv(self, tickers: List[str], days: int = 365) -> pd.DataFrame:
         """OHLCV 데이터를 반환한다.
 
         Args:
