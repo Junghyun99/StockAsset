@@ -11,7 +11,7 @@ class IndicatorCalculator:
         """
         # [수정] 결측치 전처리 (ffill -> bfill)
         # 중간에 빈 데이터가 있으면 직전 값으로 채워서 계산 연속성 보장
-        df = df.ffill().bfill()
+        df = df.copy().ffill().bfill()
         # 물리적으로 253개가 안 되면 12개월 모멘텀 계산 불가
         min_required = 253
         
