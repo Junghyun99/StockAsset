@@ -2,6 +2,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 from src.config import Config
+from src.core.models import MarketRegime
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
 from src.backtest.fetcher import download_historical_data
@@ -73,19 +74,36 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0):
             vix_val = loader.fetch_vix()
             market_data = calculator.calculate(df_slice, vix_val)
             
-            # 2. 전략 판단
-            regime = analyzer.analyze(market_data)
-            exposure = targeter.calculate_exposure(regime, market_data.spy_volatility)
-            
+            # 2. 전략 판단 (main.py와 동일한 NaN 체크 + CRASH 처리)
+            nan_fields = market_data.nan_fields()
+            if nan_fields:
+                regime = MarketRegime.CRASH
+                exposure = 0.0
+            else:
+                regime = analyzer.analyze(market_data)
+                exposure = targeter.calculate_exposure(regime, market_data.spy_volatility)
+
+            # CRASH: 리밸런싱 없이 현재 상태 기록 후 스킵
+            if regime == MarketRegime.CRASH:
+                final_pf = broker.get_portfolio()
+                history.append({
+                    "date": today,
+                    "total_value": final_pf.total_value,
+                    "cash": final_pf.total_cash,
+                    "exposure": 0.0,
+                    "regime": regime.value
+                })
+                continue
+
             # 3. 리밸런싱
             current_pf = broker.get_portfolio()
             current_pf.current_prices = current_prices # 가격 동기화
-            
+
             signal = rebalancer.generate_signal(current_pf, exposure, regime)
-            
+
             if signal.has_orders:
                 broker.execute_orders(signal.orders)
-            
+
             # 4. 결과 기록
             final_pf = broker.get_portfolio()
             history.append({

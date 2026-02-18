@@ -2,8 +2,10 @@
 import pytest
 import pandas as pd
 import numpy as np
+import math
 from unittest.mock import patch, MagicMock
 from src.backtest.runner import run_backtest
+from src.core.models import MarketRegime
 
 
 @pytest.fixture
@@ -46,3 +48,37 @@ def test_run_backtest_flow(mock_show, mock_download, mock_fetcher_return):
     
     # 로그 등을 통해 루프가 돌았는지 간접 확인할 수 있지만,
     # 에러 없이 여기까지 왔다면 로직 흐름은 정상임.
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.show")
+def test_nan_data_skips_rebalancing(mock_show, mock_download, mock_fetcher_return):
+    """
+    [Runner] NaN 데이터가 감지되면 regime을 CRASH로 강제하고 리밸런싱을 실행하지 않아야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    nan_market_data = MagicMock()
+    nan_market_data.nan_fields.return_value = ['spy_volatility']
+    nan_market_data.spy_volatility = math.nan
+
+    with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data), \
+         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+        run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
+        # NaN으로 인해 CRASH 처리 → generate_signal이 호출되지 않아야 함
+        mock_signal.assert_not_called()
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.show")
+def test_crash_regime_skips_rebalancing(mock_show, mock_download, mock_fetcher_return):
+    """
+    [Runner] analyzer가 CRASH를 반환하면 리밸런싱을 실행하지 않고 history에 exposure=0으로 기록해야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH), \
+         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+        run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
+        # CRASH regime → generate_signal이 호출되지 않아야 함
+        mock_signal.assert_not_called()

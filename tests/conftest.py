@@ -1,5 +1,14 @@
 # tests/conftest.py
+import sys
+import types
 import pytest
+
+# yfinance가 설치되지 않은 환경을 위한 mock 모듈 등록
+if 'yfinance' not in sys.modules:
+    yf_mock = types.ModuleType('yfinance')
+    yf_mock.download = lambda *a, **kw: None
+    sys.modules['yfinance'] = yf_mock
+
 from src.core.models import MarketData, Portfolio
 
 @pytest.fixture
