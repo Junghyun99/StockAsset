@@ -124,7 +124,7 @@ class JsonRepository:
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 return json.load(f)
-        except:
+        except (json.JSONDecodeError, IOError, OSError):
             return default
 
     def _save_json(self, path: str, data):
