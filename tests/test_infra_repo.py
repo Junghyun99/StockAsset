@@ -351,6 +351,46 @@ def test_repo_status_overwrite_clean(repo, dummy_portfolio, dummy_market_data):
     assert "extra_field" not in data
     assert data['strategy']['trigger_reason'] == "Overwrite"
 
+def test_load_json_propagates_keyboard_interrupt(repo, monkeypatch):
+    """
+    [안전] bare except가 제거된 후 KeyboardInterrupt가 _load_json에서 전파되는지 확인
+    실거래 봇에서 Ctrl+C 신호가 무시되지 않아야 함
+    """
+    import json
+
+    # 파일 생성 (os.path.exists 체크를 통과하도록)
+    with open(repo.status_file, 'w') as f:
+        f.write("{}")
+
+    # json.load가 KeyboardInterrupt를 발생시키도록 패치
+    def raise_keyboard_interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(json, "load", raise_keyboard_interrupt)
+
+    # KeyboardInterrupt가 삼켜지지 않고 전파되어야 함
+    with pytest.raises(KeyboardInterrupt):
+        repo._load_json(repo.status_file, default={})
+
+
+def test_load_json_propagates_system_exit(repo, monkeypatch):
+    """
+    [안전] bare except가 제거된 후 SystemExit이 _load_json에서 전파되는지 확인
+    """
+    import json
+
+    with open(repo.status_file, 'w') as f:
+        f.write("{}")
+
+    def raise_system_exit(*args, **kwargs):
+        raise SystemExit(0)
+
+    monkeypatch.setattr(json, "load", raise_system_exit)
+
+    with pytest.raises(SystemExit):
+        repo._load_json(repo.status_file, default={})
+
+
 def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
     """
     [시나리오] 일주일(7일) 동안 봇이 매일 실행되어 데이터를 쌓는 상황 시뮬레이션
