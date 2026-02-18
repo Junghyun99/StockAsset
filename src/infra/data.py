@@ -62,10 +62,3 @@ class YFinanceLoader(IDataProvider):
             # 3. 에러 발생 시
             self.logger.error(f"[Data] ❌ Error fetching VIX: {e}. Returning safety default: 20.0")
             return 20.0
-        print("[Data] Fetching VIX...")
-        vix_df = yf.download("^VIX", period="5d", progress=False)
-        if vix_df.empty:
-            return 20.0 # 실패 시 안전값 반환
-            
-        # 최신 종가 반환
-        return float(vix_df['Close'].iloc[-1])   
