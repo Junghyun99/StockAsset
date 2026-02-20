@@ -17,8 +17,8 @@ class YFinanceLoader(IDataProvider):
         self.logger.info(f"[Data] Fetching {tickers} history for {days} days...")
         try:
             df = yf.download(tickers, period=f"{days}d", auto_adjust=True, progress=False)
-            
-            if df.empty:
+
+            if df is None or df.empty:
                 raise ValueError("No data fetched from Yahoo Finance.")
                 
             if len(tickers) == 1:
@@ -38,9 +38,9 @@ class YFinanceLoader(IDataProvider):
 
         try:
             vix_df = yf.download("^VIX", period="5d",auto_adjust=True,  progress=False)
-            
+
             # 1. 데이터가 비어있는 경우
-            if vix_df.empty:
+            if vix_df is None or vix_df.empty:
                 self.logger.warning("[Data] ⚠️ VIX DataFrame is empty! Returning safety default: 20.0")
                 return 20.0
             

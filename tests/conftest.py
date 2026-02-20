@@ -4,7 +4,9 @@ import types
 import pytest
 
 # yfinance가 설치되지 않은 환경을 위한 mock 모듈 등록
-if 'yfinance' not in sys.modules:
+try:
+    import yfinance  # noqa: F401 - 설치 여부만 확인
+except ImportError:
     yf_mock = types.ModuleType('yfinance')
     yf_mock.download = lambda *a, **kw: None
     sys.modules['yfinance'] = yf_mock
