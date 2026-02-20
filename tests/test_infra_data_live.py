@@ -1,3 +1,4 @@
+import socket
 import pytest
 import pandas as pd
 from datetime import datetime, timedelta
@@ -6,6 +7,21 @@ from src.infra.data import YFinanceLoader
 
 # 이 테스트들은 실제 네트워크 호출을 하므로 속도가 느릴 수 있습니다.
 # CI/CD 환경이나 네트워크가 없는 곳에서는 실패할 수 있습니다.
+
+def _is_network_available() -> bool:
+    """Yahoo Finance 서버에 연결 가능한지 확인"""
+    try:
+        socket.create_connection(("query1.finance.yahoo.com", 443), timeout=3)
+        return True
+    except OSError:
+        return False
+
+NETWORK_AVAILABLE = _is_network_available()
+
+pytestmark = pytest.mark.skipif(
+    not NETWORK_AVAILABLE,
+    reason="네트워크 연결 불가 - Yahoo Finance에 접근할 수 없어 Live 테스트를 건너뜁니다."
+)
 
 @pytest.fixture
 def live_loader():
