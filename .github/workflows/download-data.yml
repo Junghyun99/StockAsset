@@ -53,12 +53,12 @@ jobs:
         print(f'OHLCV range: {ohlcv.index.min()} ~ {ohlcv.index.max()}')
         print(f'OHLCV info : {ohlcv.info}')
         print(f'OHLCV column : {ohlcv.columns}')
-        print(ohlcv.head(5))
+        print(ohlcv.head(10))
         print(f'VIX shape: {vix.shape}')
         print(f'VIX range: {vix.index.min()} ~ {vix.index.max()}')
         print(f'VIX info : {vix.info}')
-        print(f'VIX column : {ohlcv.columns}')
-        print(vix.head(5))
+        print(f'VIX column : {vix.columns}')
+        print(vix.head(10))
         "
 
     - name: Commit and push data
