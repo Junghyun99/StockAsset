@@ -3,9 +3,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from dataclasses import dataclass
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from src.config import Config
-from src.core.models import MarketRegime
+from src.core.models import MarketRegime, TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
 from src.backtest.fetcher import download_historical_data
@@ -24,6 +24,7 @@ class BacktestResult:
     spy_cagr: Optional[float]          # SPY Buy&Hold 연환산 수익률 (None = 데이터 없음)
     regime_returns: Dict[str, float]   # 국면별 연환산 평균 수익률
     chart_path: Optional[str]          # 저장된 차트 파일 경로
+    trade_executions: Optional[List[TradeExecution]] = None  # 전체 매매 체결 기록
 
 
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) -> Optional[BacktestResult]:
@@ -55,6 +56,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
 
     history = []
+    all_executions: List[TradeExecution] = []
     print(f"--- Starting Backtest ({len(sim_days)} trading days) ---")
 
     for today in sim_days:
@@ -99,7 +101,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                     "total_value": final_pf.total_value,
                     "cash": final_pf.total_cash,
                     "exposure": 0.0,
-                    "regime": regime.value
+                    "regime": regime.value,
+                    "trade_count": 0,
                 })
                 continue
 
@@ -109,8 +112,10 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
             signal = rebalancer.generate_signal(current_pf, exposure, regime)
 
+            day_executions: List[TradeExecution] = []
             if signal.has_orders:
-                broker.execute_orders(signal.orders)
+                day_executions = broker.execute_orders(signal.orders)
+                all_executions.extend(day_executions)
 
             # 4. 결과 기록
             final_pf = broker.get_portfolio()
@@ -119,7 +124,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                 "total_value": final_pf.total_value,
                 "cash": final_pf.total_cash,
                 "exposure": exposure,
-                "regime": regime.value
+                "regime": regime.value,
+                "trade_count": len(day_executions),
             })
 
         except Exception as e:
@@ -179,6 +185,15 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
         for regime_name, regime_ret in regime_returns.items():
             print(f"  {regime_name}: {regime_ret:.2%}")
 
+    # 거래 통계 출력
+    print(f"Total Executions: {len(all_executions)}")
+    if all_executions:
+        from collections import Counter
+        ticker_counts = Counter(e.ticker for e in all_executions)
+        action_counts = Counter(f"{e.ticker}/{e.action}" for e in all_executions)
+        print("Trade Frequency by Ticker:", dict(ticker_counts))
+        print("Trade Frequency by Ticker/Action:", dict(action_counts))
+
     # 차트 저장 (plt.show() 대신 파일로 저장)
     chart_path = f"docs/backtest_{start_date}_{end_date}.png"
     plt.figure(figsize=(12, 6))
@@ -207,6 +222,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
         spy_cagr=spy_cagr,
         regime_returns=regime_returns,
         chart_path=chart_path,
+        trade_executions=all_executions,
     )
 
 
