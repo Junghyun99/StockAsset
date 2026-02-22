@@ -86,11 +86,13 @@ class TestBacktestDataLoaderEdgeCases:
 class TestBacktestRunnerEdgeCases:
     @pytest.fixture
     def mock_fetcher_data(self):
-        """러너 테스트용 대량 데이터"""
+        """러너 테스트용 대량 데이터 (모든 필수 티커 포함)"""
         dates = pd.date_range(start="2022-01-01", end="2023-02-15")
-        prices = np.linspace(100, 200, len(dates)).reshape(-1, 1)
-        columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
-        df = pd.DataFrame(prices, index=dates, columns=columns)
+        all_tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'PDBC', 'SHV', 'SPY']
+        prices = np.linspace(100, 200, len(dates))
+        data = {('Close', ticker): prices for ticker in all_tickers}
+        df = pd.DataFrame(data, index=dates)
+        df.columns = pd.MultiIndex.from_tuples(df.columns)
         vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
         return df, vix
 
@@ -111,15 +113,17 @@ class TestBacktestRunnerEdgeCases:
         """리밸런싱이 실행되는 시나리오"""
         from src.backtest.runner import run_backtest
 
-        # 충분한 데이터와 변동성이 높은 시나리오
+        # 충분한 데이터와 변동성이 높은 시나리오 (모든 필수 티커 포함)
         dates = pd.date_range(start="2022-01-01", end="2023-06-15")
+        all_tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'PDBC', 'SHV', 'SPY']
         # 가격이 크게 변동하도록 설정
         prices = np.concatenate([
             np.linspace(100, 200, len(dates) // 2),
             np.linspace(200, 80, len(dates) - len(dates) // 2)
-        ]).reshape(-1, 1)
-        columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
-        df = pd.DataFrame(prices, index=dates, columns=columns)
+        ])
+        data = {('Close', ticker): prices for ticker in all_tickers}
+        df = pd.DataFrame(data, index=dates)
+        df.columns = pd.MultiIndex.from_tuples(df.columns)
         vix = pd.DataFrame({'Close': [25.0] * len(dates)}, index=dates)
         mock_download.return_value = (df, vix)
 
