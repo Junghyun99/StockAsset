@@ -8,22 +8,43 @@ from src.backtest.runner import run_backtest, BacktestResult, _validate_tickers
 from src.core.models import MarketRegime, TradeExecution, OrderAction, ExecutionStatus
 
 
+ALL_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "PDBC", "SHV"]
+
+
 @pytest.fixture
 def mock_fetcher_return():
-    """fetcher가 반환할 가짜 대량 데이터 (253일 이상 필요)"""
-    # [수정] 10일 -> 400일로 증가
-    dates = pd.date_range(start="2022-01-01", end="2023-02-15") # 400+일
+    """fetcher가 반환할 가짜 대량 데이터 (253일 이상 필요).
+    ASSET_GROUPS 전체 티커 + SPY를 포함해야 _validate_tickers를 통과한다.
+    """
+    dates = pd.date_range(start="2022-01-01", end="2023-02-15")  # 400+일
 
-    # 가격 데이터 생성 (서서히 오르는 추세)
-    prices = np.linspace(100, 200, len(dates)).reshape(-1, 1)
+    n = len(dates)
+    price_data = {
+        ticker: np.linspace(100, 200, n)
+        for ticker in ALL_TICKERS
+    }
+    columns = pd.MultiIndex.from_product([["Close"], ALL_TICKERS])
+    df = pd.DataFrame(
+        np.column_stack(list(price_data.values())),
+        index=dates,
+        columns=columns,
+    )
 
-    # 주가 데이터
-    columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
-    df = pd.DataFrame(prices, index=dates, columns=columns)
+    vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
+    return df, vix
 
-    # VIX 데이터
-    vix = pd.DataFrame({'Close': [15.0]*len(dates)}, index=dates)
 
+@pytest.fixture
+def mock_fetcher_spy_only():
+    """SPY만 있는 데이터 — _validate_tickers 실패를 재현하기 위한 fixture."""
+    dates = pd.date_range(start="2022-01-01", end="2023-02-15")
+    columns = pd.MultiIndex.from_product([["Close"], ["SPY"]])
+    df = pd.DataFrame(
+        np.linspace(100, 200, len(dates)).reshape(-1, 1),
+        index=dates,
+        columns=columns,
+    )
+    vix = pd.DataFrame({"Close": [15.0] * len(dates)}, index=dates)
     return df, vix
 
 
@@ -143,19 +164,18 @@ def test_validate_tickers_some_missing(capsys):
 
 
 @patch("src.backtest.runner.download_historical_data")
-@patch("src.backtest.runner.plt.savefig")
-def test_run_backtest_warns_when_asset_group_tickers_missing(mock_savefig, mock_download, mock_fetcher_return, capsys):
+def test_run_backtest_aborts_when_tickers_missing(mock_download, mock_fetcher_spy_only, capsys):
     """
-    [Validate] full_df에 ASSET_GROUPS 티커(SSO, QLD 등)가 없으면
-    run_backtest가 실행 중 경고를 출력해야 한다.
-    fixture는 SPY만 있는 데이터를 반환하므로 나머지 티커는 모두 누락 상태다.
+    [Validate] full_df에 ASSET_GROUPS 티커가 일부 누락되면
+    경고를 출력하고 None을 반환해 백테스트를 중단해야 한다.
     """
-    mock_download.return_value = mock_fetcher_return  # SPY 데이터만 포함
+    mock_download.return_value = mock_fetcher_spy_only  # SPY만 포함
 
-    run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
+    assert result is None, "티커 누락 시 None을 반환해 백테스트를 중단해야 함"
     captured = capsys.readouterr()
-    assert "⚠️" in captured.out, "ASSET_GROUPS 티커 누락 시 경고가 출력되어야 함"
+    assert "⚠️" in captured.out, "누락 티커에 대한 경고가 출력되어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -236,10 +256,14 @@ def test_cagr_single_day_does_not_raise(mock_savefig, mock_download):
     """
     # 데이터가 딱 1일치만 있어서 start == end
     dates = pd.date_range(start="2021-06-01", end="2023-06-30")
-    prices = np.linspace(100, 200, len(dates)).reshape(-1, 1)
-    columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
-    df = pd.DataFrame(prices, index=dates, columns=columns)
-    vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
+    n = len(dates)
+    columns = pd.MultiIndex.from_product([["Close"], ALL_TICKERS])
+    df = pd.DataFrame(
+        np.column_stack([np.linspace(100, 200, n) for _ in ALL_TICKERS]),
+        index=dates,
+        columns=columns,
+    )
+    vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
     mock_download.return_value = (df, vix)
 
     # 단 하루만 실행
