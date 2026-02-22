@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import math
 from unittest.mock import patch, MagicMock
-from src.backtest.runner import run_backtest, BacktestResult
+from src.backtest.runner import run_backtest, BacktestResult, _validate_tickers
 from src.core.models import MarketRegime, TradeExecution, OrderAction, ExecutionStatus
 
 
@@ -110,6 +110,52 @@ def test_spy_cagr_not_none_when_spy_data_present(mock_savefig, mock_download, mo
 
     assert result is not None
     assert result.spy_cagr is not None, "SPY 데이터가 있으면 spy_cagr이 None이 아니어야 함"
+
+
+def test_validate_tickers_all_present():
+    """
+    [Validate] 요청 티커가 full_df에 모두 있으면 빈 리스트를 반환해야 한다.
+    """
+    dates = pd.date_range("2023-01-01", periods=5)
+    cols = pd.MultiIndex.from_product([["Close"], ["SPY", "SSO"]])
+    df = pd.DataFrame([[100.0, 200.0]] * 5, index=dates, columns=cols)
+
+    missing = _validate_tickers(df, ["SPY", "SSO"])
+
+    assert missing == []
+
+
+def test_validate_tickers_some_missing(capsys):
+    """
+    [Validate] 일부 티커가 full_df에 없으면 누락 목록을 반환하고 경고를 출력해야 한다.
+    """
+    dates = pd.date_range("2023-01-01", periods=5)
+    cols = pd.MultiIndex.from_product([["Close"], ["SPY"]])
+    df = pd.DataFrame([[100.0]] * 5, index=dates, columns=cols)
+
+    missing = _validate_tickers(df, ["SPY", "SSO", "QLD"])
+
+    assert "SSO" in missing
+    assert "QLD" in missing
+    assert "SPY" not in missing
+    captured = capsys.readouterr()
+    assert "⚠️" in captured.out
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_run_backtest_warns_when_asset_group_tickers_missing(mock_savefig, mock_download, mock_fetcher_return, capsys):
+    """
+    [Validate] full_df에 ASSET_GROUPS 티커(SSO, QLD 등)가 없으면
+    run_backtest가 실행 중 경고를 출력해야 한다.
+    fixture는 SPY만 있는 데이터를 반환하므로 나머지 티커는 모두 누락 상태다.
+    """
+    mock_download.return_value = mock_fetcher_return  # SPY 데이터만 포함
+
+    run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    captured = capsys.readouterr()
+    assert "⚠️" in captured.out, "ASSET_GROUPS 티커 누락 시 경고가 출력되어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
