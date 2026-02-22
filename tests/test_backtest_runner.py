@@ -119,3 +119,59 @@ def test_empty_history_returns_none_when_all_prices_fail(mock_download, mock_fet
     result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     assert result is None
+
+
+def test_cagr_formula_actual_dates_vs_data_points():
+    """
+    [Bug #44] CAGR 공식이 데이터 포인트 수가 아닌 실제 날짜 기간을 사용하는지 검증한다.
+
+    시나리오: 정확히 1년 기간(2022-01-03 ~ 2023-01-03)에 포트폴리오가 2배(100% 수익).
+    단, 중간 데이터 포인트가 3개뿐인 희소 데이터를 사용.
+
+    - 구 공식 (252 / len(res_df)): 252/3 = 84 → 비현실적 CAGR (수백만%)
+    - 신 공식 (실제 날짜 기반): 약 1년 → CAGR ≈ 100%
+    """
+    # 1년 기간에 3개 포인트만 있는 희소 데이터 (누락일이 많은 상황 재현)
+    index = pd.DatetimeIndex(["2022-01-03", "2022-07-01", "2023-01-03"])
+    initial_cash = 10000.0
+    final_value = 20000.0  # 2배 수익
+
+    # 신 공식: 실제 날짜 기간 기반
+    years = (index[-1] - index[0]).days / 365.25
+    cagr_new = (final_value / initial_cash) ** (1 / years) - 1 if years > 0 else 0.0
+
+    # 구 공식: 데이터 포인트 수 기반
+    cagr_old = (final_value / initial_cash) ** (252 / len(index)) - 1
+
+    # 신 공식: 1년 2배 → CAGR ≈ 100% (±5% 허용)
+    assert abs(cagr_new - 1.0) < 0.05, (
+        f"신 공식 CAGR이 100%에 근접해야 함: {cagr_new:.2%}"
+    )
+    # 구 공식: 3포인트로 84배 연환산 → 심각한 과대 추정 (100배 이상)
+    assert cagr_old > 100.0, (
+        f"구 공식은 데이터 누락 시 CAGR을 과대 추정함: {cagr_old:.2%}"
+    )
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.show")
+def test_cagr_single_day_does_not_raise(mock_show, mock_download):
+    """
+    [Bug #44] history가 1개 행(같은 날)이면 years=0이 되는 엣지 케이스에서
+    ZeroDivisionError 없이 CAGR=0.0을 반환해야 한다.
+    """
+    # 데이터가 딱 1일치만 있어서 start == end
+    dates = pd.date_range(start="2021-06-01", end="2023-06-30")
+    prices = np.linspace(100, 200, len(dates)).reshape(-1, 1)
+    columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
+    df = pd.DataFrame(prices, index=dates, columns=columns)
+    vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
+    mock_download.return_value = (df, vix)
+
+    # 단 하루만 실행
+    with patch("builtins.print") as mock_print:
+        run_backtest(start_date="2023-01-03", end_date="2023-01-03", initial_cash=10000.0)
+
+        # CAGR 출력에서 0.00% 확인 (단 하루 → years=0 → cagr=0.0)
+        printed = " ".join(str(c) for c in mock_print.call_args_list)
+        assert "0.00%" in printed, f"단일 날짜 시 CAGR=0.00%이어야 함. 출력: {printed}"

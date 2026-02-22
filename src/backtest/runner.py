@@ -126,9 +126,10 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0):
 
     res_df = pd.DataFrame(history).set_index("date")
 
-    # 수익률 계산
+    # 수익률 계산 (실제 날짜 기간 기반으로 연환산)
     final_value = res_df.iloc[-1]['total_value']
-    cagr = (final_value / initial_cash) ** (252 / len(res_df)) - 1
+    years = (res_df.index[-1] - res_df.index[0]).days / 365.25
+    cagr = (final_value / initial_cash) ** (1 / years) - 1 if years > 0 else 0.0
     print(f"Initial: ${initial_cash:,.0f} -> Final: ${final_value:,.0f}")
     print(f"CAGR: {cagr:.2%}")
     
