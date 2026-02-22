@@ -43,7 +43,7 @@ class BacktestDataLoader(IDataProvider):
             # asof: 인덱스에 딱 맞는 값이 없으면 직전 값을 가져옴
             idx = self.full_vix.index.get_indexer([self.current_date], method='pad')[0]
             return float(self.full_vix.iloc[idx]['Close'])
-        except:
+        except (IndexError, KeyError, TypeError, ValueError):
             return 20.0
 
 class BacktestBroker(MockBroker):
