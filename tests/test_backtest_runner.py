@@ -82,3 +82,40 @@ def test_crash_regime_skips_rebalancing(mock_show, mock_download, mock_fetcher_r
         run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
         # CRASH regime → generate_signal이 호출되지 않아야 함
         mock_signal.assert_not_called()
+
+
+@patch("src.backtest.runner.download_historical_data")
+def test_empty_history_returns_none_when_no_trading_days(mock_download):
+    """
+    [Runner] 날짜 범위에 거래일이 없으면 history가 비어 None을 반환해야 한다 (#43).
+    다운로드된 데이터의 날짜 범위가 요청 기간과 겹치지 않는 경우를 재현한다.
+    """
+    # 요청 기간(2099년)과 전혀 겹치지 않는 데이터 반환
+    dates = pd.date_range(start="2020-01-01", end="2020-01-10")
+    columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
+    df = pd.DataFrame([[100.0]] * len(dates), index=dates, columns=columns)
+    vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
+    mock_download.return_value = (df, vix)
+
+    result = run_backtest(start_date="2099-01-01", end_date="2099-01-05", initial_cash=10000.0)
+
+    assert result is None
+
+
+@patch("src.backtest.runner.download_historical_data")
+def test_empty_history_returns_none_when_all_prices_fail(mock_download, mock_fetcher_return):
+    """
+    [Runner] 모든 날 가격 데이터 추출이 실패하면 history가 비어 None을 반환해야 한다 (#43).
+    full_df['Close'] 접근 시 항상 KeyError를 발생시켜 continue 분기를 재현한다.
+    """
+    mock_df, mock_vix = mock_fetcher_return
+
+    # full_df['Close'] 접근 시 항상 KeyError 발생 → 매일 except → continue
+    bad_df = MagicMock()
+    bad_df.index = mock_df.index
+    bad_df.__getitem__ = MagicMock(side_effect=KeyError("Close"))
+    mock_download.return_value = (bad_df, mock_vix)
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is None
