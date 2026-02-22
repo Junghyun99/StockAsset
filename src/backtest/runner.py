@@ -2,7 +2,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from collections import Counter
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional
 from src.config import Config
 from src.core.models import MarketRegime, TradeExecution
@@ -210,7 +212,6 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     # 거래 통계 출력
     print(f"Total Executions: {len(all_executions)}")
     if all_executions:
-        from collections import Counter
         ticker_counts = Counter(e.ticker for e in all_executions)
         action_counts = Counter(f"{e.ticker}/{e.action}" for e in all_executions)
         print("Trade Frequency by Ticker:", dict(ticker_counts))
@@ -218,6 +219,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
     # 차트 저장 (plt.show() 대신 파일로 저장)
     chart_path = f"docs/backtest_{start_date}_{end_date}.png"
+    Path("docs").mkdir(parents=True, exist_ok=True)
     plt.figure(figsize=(12, 6))
     plt.plot(res_df['total_value'], label='Portfolio Value')
     if spy_cagr is not None:

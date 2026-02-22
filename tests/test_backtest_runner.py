@@ -390,6 +390,25 @@ def test_trade_count_in_history(mock_savefig, mock_download, mock_fetcher_return
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
+@patch("src.backtest.runner.Path")
+def test_docs_directory_created_if_missing(mock_path_cls, mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #52] run_backtest가 차트 저장 전에 docs/ 디렉토리를 자동 생성해야 한다.
+    docs/ 가 없어도 FileNotFoundError 없이 plt.savefig가 호출되어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+    mock_path_instance = MagicMock()
+    mock_path_cls.return_value = mock_path_instance
+
+    run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    mock_path_cls.assert_called_with("docs")
+    mock_path_instance.mkdir.assert_called_once_with(parents=True, exist_ok=True)
+    mock_savefig.assert_called_once()
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
 def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock_fetcher_return):
     """
     [Issue #45] execute_orders 반환값(TradeExecution 리스트)이 누락 없이 수집되어야 한다.
