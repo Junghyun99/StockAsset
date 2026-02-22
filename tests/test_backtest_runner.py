@@ -84,6 +84,35 @@ def test_crash_regime_skips_rebalancing(mock_savefig, mock_download, mock_fetche
 
 
 @patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_spy_included_in_download_tickers(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #51] ASSET_GROUPS에 SPY가 없어도 download_historical_data 호출 시
+    tickers에 SPY가 포함되어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    tickers_called = mock_download.call_args[0][0]
+    assert "SPY" in tickers_called, f"SPY가 tickers에 포함되어야 함: {tickers_called}"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_spy_cagr_not_none_when_spy_data_present(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #51] full_df에 SPY 데이터가 있으면 spy_cagr이 None이 아닌 값으로 계산되어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    assert result.spy_cagr is not None, "SPY 데이터가 있으면 spy_cagr이 None이 아니어야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
 def test_empty_history_returns_none_when_no_trading_days(mock_download):
     """
     [Runner] 날짜 범위에 거래일이 없으면 history가 비어 None을 반환해야 한다 (#43).

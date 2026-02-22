@@ -34,6 +34,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     for group in config.ASSET_GROUPS.values():
         tickers.extend(group)
     tickers = list(set(tickers)) # 중복 제거
+    if "SPY" not in tickers:
+        tickers.append("SPY")  # 벤치마크 계산에 필요
 
     # 2. 데이터 준비 (10년치 한방에 로딩)
     print("--- Preparing Data ---")
