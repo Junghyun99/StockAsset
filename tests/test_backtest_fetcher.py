@@ -1,15 +1,15 @@
 # tests/test_backtest_fetcher.py
 import pytest
 import pandas as pd
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
 from src.backtest.fetcher import download_historical_data
 
 
 @pytest.fixture
 def mock_cache():
-    """BacktestDataCache.get_data를 Mock"""
-    with patch('src.backtest.fetcher._cache') as mock:
-        yield mock
+    """BacktestDataCache mock 인스턴스 직접 주입"""
+    mock = MagicMock()
+    return mock
 
 
 def test_download_historical_data_basic(mock_cache):
@@ -21,7 +21,7 @@ def test_download_historical_data_basic(mock_cache):
     mock_cache.get_data.return_value = (price_df, vix_df)
 
     tickers = ['SPY', 'IEF']
-    df, vix = download_historical_data(tickers, "2023-01-01", "2023-12-31")
+    df, vix = download_historical_data(tickers, "2023-01-01", "2023-12-31", cache=mock_cache)
 
     # 반환값 확인
     assert not df.empty
@@ -42,7 +42,7 @@ def test_download_historical_data_start_offset(mock_cache):
     mock_df = pd.DataFrame({'Close': [100]})
     mock_cache.get_data.return_value = (mock_df, mock_df)
 
-    download_historical_data(['SPY'], "2023-06-01", "2023-12-31")
+    download_historical_data(['SPY'], "2023-06-01", "2023-12-31", cache=mock_cache)
 
     # cache.get_data의 start_date 인자가 500일 앞인지 확인
     call_args = mock_cache.get_data.call_args
@@ -56,7 +56,54 @@ def test_download_historical_data_returns_tuple(mock_cache):
     mock_df = pd.DataFrame({'Close': [100]})
     mock_cache.get_data.return_value = (mock_df, mock_df)
 
-    result = download_historical_data(['SPY'], "2023-01-01", "2023-12-31")
+    result = download_historical_data(['SPY'], "2023-01-01", "2023-12-31", cache=mock_cache)
 
     assert isinstance(result, tuple)
     assert len(result) == 2
+
+
+def test_download_historical_data_cache_isolation():
+    """cache 파라미터를 각각 독립적으로 주입하면 서로 영향을 주지 않는지 확인"""
+    mock_a = MagicMock()
+    mock_b = MagicMock()
+
+    df_a = pd.DataFrame({'Close': [1]})
+    df_b = pd.DataFrame({'Close': [2]})
+
+    mock_a.get_data.return_value = (df_a, df_a)
+    mock_b.get_data.return_value = (df_b, df_b)
+
+    result_a, _ = download_historical_data(['SPY'], "2023-01-01", "2023-12-31", cache=mock_a)
+    result_b, _ = download_historical_data(['QLD'], "2023-01-01", "2023-12-31", cache=mock_b)
+
+    # 각 mock은 독립적으로 1번씩 호출
+    mock_a.get_data.assert_called_once()
+    mock_b.get_data.assert_called_once()
+
+    # 결과값이 서로 다른 mock에서 온 것임을 확인
+    assert result_a['Close'].iloc[0] == 1
+    assert result_b['Close'].iloc[0] == 2
+
+
+def test_download_historical_data_default_cache_created(monkeypatch):
+    """cache 파라미터 미전달 시 BacktestDataCache가 내부에서 생성되는지 확인"""
+    from src.backtest import fetcher
+    from src.backtest.cache import BacktestDataCache
+
+    created_instances = []
+
+    class FakeCache:
+        def __init__(self, cache_dir=None):
+            self.mock = MagicMock()
+            created_instances.append(self)
+
+        def get_data(self, *args, **kwargs):
+            df = pd.DataFrame({'Close': [100]})
+            return df, df
+
+    monkeypatch.setattr(fetcher, "BacktestDataCache", FakeCache)
+
+    download_historical_data(['SPY'], "2023-01-01", "2023-12-31")
+
+    # 내부에서 BacktestDataCache가 생성되었는지 확인
+    assert len(created_instances) == 1
