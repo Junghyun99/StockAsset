@@ -119,8 +119,13 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0):
 
     # 5. 결과 분석 및 시각화
     print("--- Backtest Finished ---")
+
+    if not history:
+        print("No trading data available for the given period.")
+        return None
+
     res_df = pd.DataFrame(history).set_index("date")
-    
+
     # 수익률 계산
     final_value = res_df.iloc[-1]['total_value']
     cagr = (final_value / initial_cash) ** (252 / len(res_df)) - 1
