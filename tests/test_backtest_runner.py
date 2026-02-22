@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import math
 from unittest.mock import patch, MagicMock
-from src.backtest.runner import run_backtest
+from src.backtest.runner import run_backtest, BacktestResult
 from src.core.models import MarketRegime
 
 
@@ -13,46 +13,45 @@ def mock_fetcher_return():
     """fetcher가 반환할 가짜 대량 데이터 (253일 이상 필요)"""
     # [수정] 10일 -> 400일로 증가
     dates = pd.date_range(start="2022-01-01", end="2023-02-15") # 400+일
-    
+
     # 가격 데이터 생성 (서서히 오르는 추세)
     prices = np.linspace(100, 200, len(dates)).reshape(-1, 1)
-    
+
     # 주가 데이터
     columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
     df = pd.DataFrame(prices, index=dates, columns=columns)
-    
+
     # VIX 데이터
     vix = pd.DataFrame({'Close': [15.0]*len(dates)}, index=dates)
-    
+
     return df, vix
 
 
 @patch("src.backtest.runner.download_historical_data")
-@patch("src.backtest.runner.plt.show") # 그래프 팝업 차단
-def test_run_backtest_flow(mock_show, mock_download, mock_fetcher_return):
+@patch("src.backtest.runner.plt.savefig")  # 차트 파일 저장 차단
+def test_run_backtest_flow(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Runner] 전체 백테스팅 루프가 에러 없이 돌아가는지 확인
+    [Runner] 전체 백테스팅 루프가 에러 없이 돌아가고 BacktestResult를 반환하는지 확인
     """
     # 1. Mock 데이터 연결
     mock_download.return_value = mock_fetcher_return
-    
+
     # 2. 백테스트 실행 (1월 2일부터 1월 5일까지)
-    # 실제로는 download_historical_data가 호출되지 않고 mock 데이터를 씀
-    run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
-    
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
     # 3. 검증
     # 다운로드가 호출되었는가?
     mock_download.assert_called_once()
-    # 그래프가 그려졌는가? (plt.show 호출 여부)
-    mock_show.assert_called_once()
-    
-    # 로그 등을 통해 루프가 돌았는지 간접 확인할 수 있지만,
-    # 에러 없이 여기까지 왔다면 로직 흐름은 정상임.
+    # 차트가 저장되었는가? (plt.savefig 호출 여부)
+    mock_savefig.assert_called_once()
+    # BacktestResult 반환 확인
+    assert result is not None
+    assert isinstance(result, BacktestResult)
 
 
 @patch("src.backtest.runner.download_historical_data")
-@patch("src.backtest.runner.plt.show")
-def test_nan_data_skips_rebalancing(mock_show, mock_download, mock_fetcher_return):
+@patch("src.backtest.runner.plt.savefig")
+def test_nan_data_skips_rebalancing(mock_savefig, mock_download, mock_fetcher_return):
     """
     [Runner] NaN 데이터가 감지되면 regime을 CRASH로 강제하고 리밸런싱을 실행하지 않아야 한다.
     """
@@ -70,8 +69,8 @@ def test_nan_data_skips_rebalancing(mock_show, mock_download, mock_fetcher_retur
 
 
 @patch("src.backtest.runner.download_historical_data")
-@patch("src.backtest.runner.plt.show")
-def test_crash_regime_skips_rebalancing(mock_show, mock_download, mock_fetcher_return):
+@patch("src.backtest.runner.plt.savefig")
+def test_crash_regime_skips_rebalancing(mock_savefig, mock_download, mock_fetcher_return):
     """
     [Runner] analyzer가 CRASH를 반환하면 리밸런싱을 실행하지 않고 history에 exposure=0으로 기록해야 한다.
     """
@@ -154,11 +153,11 @@ def test_cagr_formula_actual_dates_vs_data_points():
 
 
 @patch("src.backtest.runner.download_historical_data")
-@patch("src.backtest.runner.plt.show")
-def test_cagr_single_day_does_not_raise(mock_show, mock_download):
+@patch("src.backtest.runner.plt.savefig")
+def test_cagr_single_day_does_not_raise(mock_savefig, mock_download):
     """
     [Bug #44] history가 1개 행(같은 날)이면 years=0이 되는 엣지 케이스에서
-    ZeroDivisionError 없이 CAGR=0.0을 반환해야 한다.
+    ZeroDivisionError 없이 cagr=0.0을 반환해야 한다.
     """
     # 데이터가 딱 1일치만 있어서 start == end
     dates = pd.date_range(start="2021-06-01", end="2023-06-30")
@@ -169,9 +168,92 @@ def test_cagr_single_day_does_not_raise(mock_show, mock_download):
     mock_download.return_value = (df, vix)
 
     # 단 하루만 실행
-    with patch("builtins.print") as mock_print:
-        run_backtest(start_date="2023-01-03", end_date="2023-01-03", initial_cash=10000.0)
+    result = run_backtest(start_date="2023-01-03", end_date="2023-01-03", initial_cash=10000.0)
 
-        # CAGR 출력에서 0.00% 확인 (단 하루 → years=0 → cagr=0.0)
-        printed = " ".join(str(c) for c in mock_print.call_args_list)
-        assert "0.00%" in printed, f"단일 날짜 시 CAGR=0.00%이어야 함. 출력: {printed}"
+    # 단일 날짜 → years=0 → cagr=0.0
+    assert result is not None
+    assert result.cagr == 0.0
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_backtest_result_structure(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #41] BacktestResult 구조체의 모든 필드가 올바른 타입으로 채워지는지 확인한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert isinstance(result, BacktestResult)
+    assert isinstance(result.history, pd.DataFrame)
+    assert isinstance(result.initial_cash, float)
+    assert isinstance(result.final_value, float)
+    assert isinstance(result.cagr, float)
+    assert isinstance(result.mdd, float)
+    assert isinstance(result.sharpe_ratio, float)
+    assert isinstance(result.regime_returns, dict)
+    # chart_path는 str 또는 None
+    assert result.chart_path is None or isinstance(result.chart_path, str)
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_mdd_is_non_positive(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #42] MDD(최대 낙폭)는 항상 0 이하(non-positive)여야 한다.
+    상승 추세 데이터라도 MDD = 0.0 (낙폭 없음).
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    assert result.mdd <= 0.0, f"MDD는 0 이하여야 함: {result.mdd}"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_sharpe_ratio_positive_for_uptrend(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #42] 지속 상승 추세 데이터에서 Sharpe Ratio는 양수여야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-10", initial_cash=10000.0)
+
+    assert result is not None
+    # 상승 추세이므로 Sharpe >= 0 (단일 날짜 등 edge case는 0 허용)
+    assert result.sharpe_ratio >= 0.0, f"상승 추세에서 Sharpe >= 0이어야 함: {result.sharpe_ratio}"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_regime_returns_populated(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #42] 백테스트 실행 후 regime_returns에 적어도 하나의 국면이 기록되어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    assert len(result.regime_returns) >= 1, "최소 1개의 국면 수익률이 기록되어야 함"
+    # 모든 값이 float인지 확인
+    for regime_name, ret in result.regime_returns.items():
+        assert isinstance(ret, float), f"{regime_name}의 수익률이 float이어야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_chart_saved_not_shown(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #42] plt.savefig()가 호출되고 plt.show()는 호출되지 않아야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    with patch("src.backtest.runner.plt.show") as mock_show:
+        run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    mock_savefig.assert_called_once()
+    mock_show.assert_not_called()

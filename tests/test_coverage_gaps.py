@@ -95,19 +95,19 @@ class TestBacktestRunnerEdgeCases:
         return df, vix
 
     @patch("src.backtest.runner.download_historical_data")
-    @patch("src.backtest.runner.plt.show")
-    def test_runner_with_data_error_on_some_days(self, mock_show, mock_download, mock_fetcher_data):
+    @patch("src.backtest.runner.plt.savefig")
+    def test_runner_with_data_error_on_some_days(self, mock_savefig, mock_download, mock_fetcher_data):
         """일부 날짜에서 데이터 추출 실패해도 계속 진행"""
         from src.backtest.runner import run_backtest
 
         mock_download.return_value = mock_fetcher_data
         # 에러 없이 실행되면 OK (내부에서 continue 처리)
         run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
-        mock_show.assert_called_once()
+        mock_savefig.assert_called_once()
 
     @patch("src.backtest.runner.download_historical_data")
-    @patch("src.backtest.runner.plt.show")
-    def test_runner_rebalance_execution(self, mock_show, mock_download):
+    @patch("src.backtest.runner.plt.savefig")
+    def test_runner_rebalance_execution(self, mock_savefig, mock_download):
         """리밸런싱이 실행되는 시나리오"""
         from src.backtest.runner import run_backtest
 
@@ -124,7 +124,7 @@ class TestBacktestRunnerEdgeCases:
         mock_download.return_value = (df, vix)
 
         run_backtest(start_date="2023-01-02", end_date="2023-06-01", initial_cash=10000.0)
-        mock_show.assert_called_once()
+        mock_savefig.assert_called_once()
 
 
 # ==========================================
