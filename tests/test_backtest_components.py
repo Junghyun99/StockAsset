@@ -112,3 +112,20 @@ def test_broker_price_injection():
     
     # 잔고 차감 확인: 10000 - (202 * 10 + 수수료)
     assert broker.get_portfolio().total_cash < 8000.0
+
+
+def test_broker_execute_orders_does_not_mutate_original_order():
+    """
+    [Broker] execute_orders 호출 후 원본 Order 객체의 price가 변경되지 않는지 확인
+    (이슈 #54: Order 직접 수정 부작용 방지)
+    """
+    broker = BacktestBroker(initial_cash=10000.0)
+    broker.set_prices({'SPY': 200.0})
+
+    original_price = 150.0
+    order = Order('SPY', OrderAction.BUY, 5, original_price)
+
+    broker.execute_orders([order])
+
+    # 원본 객체 price가 변경되지 않아야 함
+    assert order.price == original_price

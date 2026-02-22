@@ -1,5 +1,6 @@
 # src/backtest/components.py
 import pandas as pd
+from dataclasses import replace
 from typing import List, Dict
 from src.core.interfaces import IDataProvider, IBrokerAdapter
 from src.core.models import Portfolio, Order, TradeExecution
@@ -65,11 +66,8 @@ class BacktestBroker(MockBroker):
         # 주문 객체의 price는 '예상가'일 뿐이므로, 
         # 체결은 'simulation_prices'(실제 종가)로 이루어져야 함.
         
-        updated_orders = []
-        for order in orders:
-            real_price = self.simulation_prices.get(order.ticker, order.price)
-            # 주문 객체의 가격을 그 날의 실제 종가로 강제 수정 (시장가 체결 시뮬레이션)
-            order.price = real_price 
-            updated_orders.append(order)
-            
+        updated_orders = [
+            replace(order, price=self.simulation_prices.get(order.ticker, order.price))
+            for order in orders
+        ]
         return super().execute_orders(updated_orders)
