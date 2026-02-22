@@ -17,14 +17,11 @@ class BacktestDataLoader(IDataProvider):
     def fetch_ohlcv(self, tickers: List[str], days: int = 365) -> pd.DataFrame:
         # [Time Travel] current_date 기준 과거 days 만큼 Slicing
         # full_df의 인덱스는 DatetimeIndex여야 함
-        
-        # 데이터가 없는 날짜(휴장일 등) 처리
-        if self.current_date not in self.full_df.index:
-            # 해당 날짜가 없으면 가장 가까운 과거 데이터 사용 (ffill 개념)
-            # 여기서는 로직 단순화를 위해 해당 날짜까지의 데이터를 자름
-            cutoff_df = self.full_df.loc[:self.current_date]
-        else:
-            cutoff_df = self.full_df.loc[:self.current_date]
+
+        # current_date 이하의 행 전체 선택
+        # loc[:date] 슬라이싱은 날짜가 인덱스에 없는 경우(휴장일 등)에도
+        # 해당 날짜 이전의 마지막 데이터까지 올바르게 반환 (ffill 효과)
+        cutoff_df = self.full_df.loc[:self.current_date]
             
         # 최근 days 만큼 자르기
         sliced = cutoff_df.tail(days)
