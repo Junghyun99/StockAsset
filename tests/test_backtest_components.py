@@ -114,6 +114,37 @@ def test_broker_price_injection():
     assert broker.get_portfolio().total_cash < 8000.0
 
 
+def test_fetch_vix_returns_correct_value(mock_full_data):
+    """
+    [Loader] fetch_vix가 current_date에 해당하는 VIX 값을 올바르게 반환하는지 확인
+    """
+    full_df, full_vix = mock_full_data
+    loader = BacktestDataLoader(full_df, full_vix)
+
+    target_date = pd.Timestamp("2024-01-03")
+    loader.set_date(target_date)
+
+    vix = loader.fetch_vix()
+    assert vix == pytest.approx(20.0)
+
+
+def test_fetch_vix_returns_default_on_empty_dataframe():
+    """
+    [Loader] VIX 데이터가 비어 있을 때 기본값 20.0을 반환하는지 확인
+    (이슈 #53: bare except 수정 후 명시적 예외로 기본값 반환 동작 유지 검증)
+    """
+    dates = pd.date_range(start="2024-01-01", periods=5)
+    columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
+    full_df = pd.DataFrame([[100.0]] * 5, index=dates, columns=columns)
+
+    empty_vix = pd.DataFrame({'Close': []})
+    loader = BacktestDataLoader(full_df, empty_vix)
+    loader.set_date(pd.Timestamp("2024-01-03"))
+
+    vix = loader.fetch_vix()
+    assert vix == pytest.approx(20.0)
+
+
 def test_broker_execute_orders_does_not_mutate_original_order():
     """
     [Broker] execute_orders 호출 후 원본 Order 객체의 price가 변경되지 않는지 확인
