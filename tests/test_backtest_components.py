@@ -41,6 +41,53 @@ def test_loader_time_travel_slicing(mock_full_data):
     assert df.index[-1] == target_date
     assert df.iloc[-1].item() == 140.0 # 5번째 값 (100, 110, 120, 130, 140)
 
+def test_loader_fetch_ohlcv_date_not_in_index(mock_full_data):
+    """
+    [Loader] current_date가 인덱스에 없는 날짜(휴장일 등)일 때도
+    이전 날짜까지의 데이터를 올바르게 반환하는지 확인
+    """
+    full_df, full_vix = mock_full_data
+    loader = BacktestDataLoader(full_df, full_vix)
+
+    # full_df 인덱스: 2024-01-01 ~ 2024-01-10 (영업일 기준)
+    # 2024-01-06은 토요일로 인덱스에 없을 수 있지만, 테스트용으로 임의 날짜 사용
+    # full_df의 마지막 날짜는 2024-01-10이므로 2024-01-07(존재)과 2024-01-11(미존재) 테스트
+    non_existent_date = pd.Timestamp("2024-01-11")  # 인덱스에 없는 날짜
+    loader.set_date(non_existent_date)
+
+    # 인덱스에 없는 날짜임을 확인
+    assert non_existent_date not in full_df.index
+
+    # 해당 날짜 이전 데이터가 반환되어야 함 (인덱스에 없어도 에러 없이 동작)
+    df = loader.fetch_ohlcv(["SPY"], days=5)
+
+    # full_df는 2024-01-01 ~ 2024-01-10 (10개), 그 중 마지막 5개
+    assert len(df) == 5
+    # 마지막 날짜는 full_df의 마지막 날짜인 2024-01-10이어야 함
+    assert df.index[-1] == pd.Timestamp("2024-01-10")
+
+
+def test_loader_fetch_ohlcv_no_future_data_leak(mock_full_data):
+    """
+    [Loader] fetch_ohlcv가 current_date 이후 데이터를 포함하지 않는지 확인 (미래 데이터 누출 방지)
+    """
+    full_df, full_vix = mock_full_data
+    loader = BacktestDataLoader(full_df, full_vix)
+
+    # 중간 날짜로 설정 (2024-01-05, 5번째)
+    target_date = pd.Timestamp("2024-01-05")
+    loader.set_date(target_date)
+
+    # 충분히 많은 days 요청 (전체 데이터보다 많음)
+    df = loader.fetch_ohlcv(["SPY"], days=100)
+
+    # target_date 이후 데이터가 포함되면 안 됨
+    assert df.index[-1] <= target_date
+    # 2024-01-06 ~ 2024-01-10 데이터가 없어야 함
+    future_dates = [d for d in df.index if d > target_date]
+    assert len(future_dates) == 0
+
+
 def test_broker_price_injection():
     """
     [Broker] 외부에서 주입한 가격이 체결에 반영되는지 확인
