@@ -5,7 +5,7 @@ import numpy as np
 import math
 from unittest.mock import patch, MagicMock
 from src.backtest.runner import run_backtest, BacktestResult
-from src.core.models import MarketRegime
+from src.core.models import MarketRegime, TradeExecution, OrderAction, ExecutionStatus
 
 
 @pytest.fixture
@@ -257,3 +257,71 @@ def test_chart_saved_not_shown(mock_savefig, mock_download, mock_fetcher_return)
 
     mock_savefig.assert_called_once()
     mock_show.assert_not_called()
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_trade_executions_in_result(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #45] BacktestResult에 trade_executions 필드가 존재하고 리스트 타입이어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    assert hasattr(result, "trade_executions"), "BacktestResult에 trade_executions 필드가 있어야 함"
+    assert isinstance(result.trade_executions, list), "trade_executions는 리스트여야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_trade_count_in_history(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #45] history DataFrame에 trade_count 컬럼이 존재하고 0 이상의 정수여야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    assert "trade_count" in result.history.columns, "history에 trade_count 컬럼이 있어야 함"
+    assert (result.history["trade_count"] >= 0).all(), "trade_count는 0 이상이어야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #45] execute_orders 반환값(TradeExecution 리스트)이 누락 없이 수집되어야 한다.
+    신호가 발생하면 result.trade_executions에 해당 체결 기록이 포함되어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    fake_execution = TradeExecution(
+        ticker="SSO",
+        action=OrderAction.BUY,
+        quantity=5,
+        price=100.0,
+        fee=0.1,
+        date="2023-01-02",
+        status=ExecutionStatus.FILLED,
+    )
+
+    with patch("src.backtest.components.BacktestBroker.execute_orders",
+               return_value=[fake_execution]) as mock_exec, \
+         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+
+        mock_signal_obj = MagicMock()
+        mock_signal_obj.has_orders = True
+        mock_signal_obj.orders = [MagicMock()]
+        mock_signal_obj.reason = "test"
+        mock_signal.return_value = mock_signal_obj
+
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    # execute_orders가 최소 1회 호출되어야 함
+    assert mock_exec.call_count >= 1, "execute_orders가 최소 1회 호출되어야 함"
+    # 반환된 실행 기록이 누적되어야 함
+    assert len(result.trade_executions) >= 1, "trade_executions에 체결 기록이 누적되어야 함"
