@@ -35,48 +35,8 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run backtest
-      run: |
-        python -c "
-        from src.backtest.runner import run_backtest
-        import os
-
-        start  = '${{ inputs.start }}'
-        end    = '${{ inputs.end }}'
-        cash   = float('${{ inputs.initial_cash }}')
-
-        print(f'=== 백테스트 시작: {start} ~ {end}, 초기자본: {cash:,.0f} ===')
-        result = run_backtest(start, end, cash)
-
-        if result is None:
-            print('ERROR: 백테스트 결과 없음 (데이터 부족 또는 거래일 없음)')
-            exit(1)
-
-        spy_cagr_str = f'{result.spy_cagr:.2%}' if result.spy_cagr is not None else 'N/A'
-
-        summary = f'''## 백테스트 결과 ({start} ~ {end})
-
-| 항목 | 값 |
-|------|-----|
-| 초기 자본 | \${result.initial_cash:,.0f} |
-| 최종 자산 | \${result.final_value:,.0f} |
-| CAGR | {result.cagr:.2%} |
-| MDD | {result.mdd:.2%} |
-| Sharpe Ratio | {result.sharpe_ratio:.2f} |
-| SPY Buy&Hold CAGR | {spy_cagr_str} |
-
-### 국면별 수익률
-'''
-        for regime, ret in result.regime_returns.items():
-            summary += f'- **{regime}**: {ret:.2%}\n'
-
-        if result.chart_path:
-            summary += f'\n차트 저장 경로: \`{result.chart_path}\`\n'
-
-        # GitHub Actions Job Summary 출력
-        summary_file = os.environ.get('GITHUB_STEP_SUMMARY', '')
-        if summary_file:
-            with open(summary_file, 'w') as f:
-                f.write(summary)
-
-        print(summary)
-        "
+      env:
+        BACKTEST_START: ${{ inputs.start }}
+        BACKTEST_END: ${{ inputs.end }}
+        BACKTEST_CASH: ${{ inputs.initial_cash }}
+      run: python scripts/run_backtest_ci.py
