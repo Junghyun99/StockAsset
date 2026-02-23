@@ -201,3 +201,32 @@ def test_broker_get_portfolio_total_value_without_prices():
     assert pf.total_cash == pytest.approx(5000.0)
     assert pf.total_value == pytest.approx(5000.0)
     assert pf.current_prices == {}
+
+
+def test_backtest_broker_no_sleep_on_sell_orders():
+    """
+    [이슈 #67] BacktestBroker는 매도 주문 실행 시 time.sleep을 호출하지 않아야 함.
+    MockBroker는 _refresh_balance_from_api()에서 time.sleep(1)을 사용하지만,
+    BacktestBroker는 이 메서드를 오버라이드하여 딜레이가 없어야 한다.
+    """
+    from unittest.mock import patch
+
+    broker = BacktestBroker(initial_cash=5000.0)
+    broker.set_prices({'SPY': 100.0})
+    broker.holdings['SPY'] = 10  # 매도 가능 수량 설정
+
+    sell_order = Order('SPY', OrderAction.SELL, 5, 100.0)
+
+    with patch('time.sleep') as mock_sleep:
+        broker.execute_orders([sell_order])
+        # BacktestBroker에서는 time.sleep이 호출되지 않아야 함
+        mock_sleep.assert_not_called()
+
+
+def test_backtest_broker_wait_for_completion_returns_immediately():
+    """
+    [이슈 #67] BacktestBroker._wait_for_completion()이 즉시 True를 반환하는지 확인.
+    """
+    broker = BacktestBroker(initial_cash=5000.0)
+    result = broker._wait_for_completion(timeout=60)
+    assert result is True
