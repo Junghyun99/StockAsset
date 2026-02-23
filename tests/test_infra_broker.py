@@ -136,6 +136,61 @@ def test_mock_broker_insufficient_funds():
 
 
 
+def test_mock_broker_order_not_mutated_on_qty_adjustment():
+    """
+    [버그 방지: #71] 잔고 부족으로 수량 조정 시 원본 Order 객체가 변경되지 않아야 함.
+    MockBroker가 order.quantity를 직접 수정하면 호출자가 보유한 동일 객체 참조도 오염된다.
+    """
+    broker = MockBroker(initial_cash=500.0)
+
+    # 500원으로 100원짜리 10주 매수 시도 -> 잔고 부족으로 수량 조정 필요
+    original_order = Order(ticker='SPY', action=OrderAction.BUY, quantity=10, price=100.0)
+    original_qty = original_order.quantity  # 수정 전 수량 저장
+
+    broker.execute_orders([original_order])
+
+    # 원본 Order 객체의 quantity는 변하지 않아야 함
+    assert original_order.quantity == original_qty, (
+        f"원본 Order.quantity가 변경됨: {original_qty} -> {original_order.quantity}"
+    )
+
+
+def test_mock_broker_order_not_mutated_when_sufficient_funds():
+    """
+    [버그 방지: #71] 잔고가 충분할 때도 원본 Order 객체가 변경되지 않아야 함.
+    """
+    broker = MockBroker(initial_cash=10000.0)
+
+    original_order = Order(ticker='SPY', action=OrderAction.BUY, quantity=5, price=100.0)
+    original_qty = original_order.quantity
+
+    broker.execute_orders([original_order])
+
+    # 정상 체결 후에도 원본 quantity 불변
+    assert original_order.quantity == original_qty
+
+
+def test_mock_broker_tradesignal_orders_integrity():
+    """
+    [버그 방지: #71] TradeSignal.orders 목록의 Order 객체들이
+    execute_orders 호출 후에도 원래 수량을 유지해야 함.
+    """
+    from src.core.models import TradeSignal
+
+    broker = MockBroker(initial_cash=150.0)
+
+    # 잔고: 150원, 주문: 100원짜리 10주 (총 1000원 필요) -> 수량 조정됨
+    order = Order(ticker='SPY', action=OrderAction.BUY, quantity=10, price=100.0)
+    signal = TradeSignal(target_exposure=0.8, orders=[order], reason="테스트")
+
+    original_qty_in_signal = signal.orders[0].quantity
+
+    broker.execute_orders(signal.orders)
+
+    # TradeSignal 내 Order 수량이 변하지 않아야 함
+    assert signal.orders[0].quantity == original_qty_in_signal
+
+
 def test_mock_broker_cash_recycling_logic():
     """
     [심화] 매도 대금이 즉시 매수 재원으로 활용되는지 검증

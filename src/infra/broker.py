@@ -78,13 +78,16 @@ class MockBroker(IBrokerAdapter):
                 if estimated_price <= 0: continue
 
                 max_qty = int(budget / estimated_price)
-                
+                # 원본 Order 객체를 변경하지 않고 조정된 수량으로 로컬 변수 사용
+                actual_qty = min(order.quantity, max_qty)
+
                 if max_qty < order.quantity:
-                    print(f"⚠️ [Safety] Qty Adjusted: {order.ticker} {order.quantity} -> {max_qty} (Budget: ${budget:.2f})")
-                    order.quantity = max_qty
-                
-                if order.quantity > 0:
-                    res = self._process_order_internal(order)
+                    print(f"⚠️ [Safety] Qty Adjusted: {order.ticker} {order.quantity} -> {actual_qty} (Budget: ${budget:.2f})")
+
+                if actual_qty > 0:
+                    # 조정된 수량으로 새 Order 생성 (원본 불변 유지)
+                    adjusted_order = Order(ticker=order.ticker, action=order.action, quantity=actual_qty, price=order.price)
+                    res = self._process_order_internal(adjusted_order)
                     executions.append(res)
         
         return executions
@@ -350,13 +353,16 @@ class KisBroker(IBrokerAdapter):
                 
                 # 수량 재계산
                 max_qty = int(budget / estimated_price)
-                
+                # 원본 Order 객체를 변경하지 않고 조정된 수량으로 로컬 변수 사용
+                actual_qty = min(order.quantity, max_qty)
+
                 if max_qty < order.quantity:
-                    self.logger.warning(f"⚠️ Qty Adjusted: {order.ticker} {order.quantity} -> {max_qty}")
-                    order.quantity = max_qty
-                
-                if order.quantity > 0:
-                    res = self._send_order(order)
+                    self.logger.warning(f"⚠️ Qty Adjusted: {order.ticker} {order.quantity} -> {actual_qty}")
+
+                if actual_qty > 0:
+                    # 조정된 수량으로 새 Order 생성 (원본 불변 유지)
+                    adjusted_order = Order(ticker=order.ticker, action=order.action, quantity=actual_qty, price=order.price)
+                    res = self._send_order(adjusted_order)
                     if res:
                         executions.append(res)
                         # 메모리상 잔고 차감 (다음 주문을 위해)
