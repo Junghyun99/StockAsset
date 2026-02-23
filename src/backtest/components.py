@@ -62,10 +62,18 @@ class BacktestBroker(MockBroker):
         # 백테스터가 설정해준 가격 리턴
         return {t: self.simulation_prices.get(t, 0.0) for t in tickers}
 
+    def get_portfolio(self) -> Portfolio:
+        # 백테스터가 주입한 simulation_prices를 current_prices로 반영
+        return Portfolio(
+            total_cash=self.cash,
+            holdings=self.holdings,
+            current_prices=self.simulation_prices
+        )
+
     def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
-        # 주문 객체의 price는 '예상가'일 뿐이므로, 
+        # 주문 객체의 price는 '예상가'일 뿐이므로,
         # 체결은 'simulation_prices'(실제 종가)로 이루어져야 함.
-        
+
         updated_orders = [
             replace(order, price=self.simulation_prices.get(order.ticker, order.price))
             for order in orders

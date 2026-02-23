@@ -160,3 +160,44 @@ def test_broker_execute_orders_does_not_mutate_original_order():
 
     # 원본 객체 price가 변경되지 않아야 함
     assert order.price == original_price
+
+
+def test_broker_get_portfolio_reflects_simulation_prices():
+    """
+    [Broker] get_portfolio()가 simulation_prices를 current_prices로 반영하여
+    total_value에 보유 주식 평가액이 올바르게 포함되는지 확인
+    (이슈 #64: BacktestBroker.get_portfolio()에 current_prices 미주입으로 total_value 계산 오류)
+    """
+    broker = BacktestBroker(initial_cash=10000.0)
+
+    # 시뮬레이션 가격 주입: SPY = 200달러
+    broker.set_prices({'SPY': 200.0})
+
+    # SPY 10주 매수 → 현금 감소, 보유량 증가
+    order = Order('SPY', OrderAction.BUY, 10, 200.0)
+    broker.execute_orders([order])
+
+    pf = broker.get_portfolio()
+
+    # 보유 주식 평가액이 current_prices에 반영되어야 함
+    assert pf.current_prices.get('SPY') == pytest.approx(200.0)
+
+    # total_value = cash + (10주 × 200달러)
+    # 슬리피지 1% 적용으로 체결가 202달러, 수수료 0.1%
+    # cash = 10000 - (202 * 10 * 1.001) = 10000 - 2022.02 = 7977.98
+    # stock_val = 10 * 200 = 2000 (simulation_prices 기준)
+    # total_value = 7977.98 + 2000 = 9977.98
+    assert pf.total_value == pytest.approx(pf.total_cash + 10 * 200.0)
+
+
+def test_broker_get_portfolio_total_value_without_prices():
+    """
+    [Broker] simulation_prices가 설정되지 않은 경우 total_value는 현금만 반영
+    """
+    broker = BacktestBroker(initial_cash=5000.0)
+    # 가격 주입 없이 포트폴리오 조회
+    pf = broker.get_portfolio()
+
+    assert pf.total_cash == pytest.approx(5000.0)
+    assert pf.total_value == pytest.approx(5000.0)
+    assert pf.current_prices == {}
