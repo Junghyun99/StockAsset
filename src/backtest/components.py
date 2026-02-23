@@ -79,3 +79,11 @@ class BacktestBroker(MockBroker):
             for order in orders
         ]
         return super().execute_orders(updated_orders)
+
+    def _wait_for_completion(self, timeout: int = 60) -> bool:
+        # 백테스트에서는 모든 주문이 즉시 체결됨 (폴링 불필요)
+        return True
+
+    def _refresh_balance_from_api(self):
+        # 백테스트에서는 API 갱신 및 딜레이 불필요
+        pass

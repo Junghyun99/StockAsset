@@ -57,8 +57,7 @@ class MockBroker(IBrokerAdapter):
         if sell_orders:
             # 매도가 있었으면 예수금이 변했을 테니, API로 정확한 현재 잔고를 다시 가져옴
             print("[Broker] Refreshing Cash Balance...")
-            time.sleep(1) # API 반영 딜레이 고려
-            self._refresh_balance_from_api() 
+            self._refresh_balance_from_api()
         
         # ==========================================
         # Phase 3: 매수 집행 (Buy Execution)
@@ -149,8 +148,9 @@ class MockBroker(IBrokerAdapter):
         return 0 
 
     def _refresh_balance_from_api(self):
+        # 실전 브로커에서 오버라이드: API로 정확한 잔고를 가져오기 전 반영 대기
+        time.sleep(1) # API 반영 딜레이 고려
         # 실제 구현 시: KIS API 잔고 조회 후 self.cash 업데이트
-        pass
 
 
 # 실전용 (뼈대 코드)
