@@ -230,3 +230,61 @@ def test_backtest_broker_wait_for_completion_returns_immediately():
     broker = BacktestBroker(initial_cash=5000.0)
     result = broker._wait_for_completion(timeout=60)
     assert result is True
+
+
+def test_backtest_broker_execution_date_uses_simulation_date():
+    """
+    [이슈 #66] BacktestBroker.set_date()로 설정한 시뮬레이션 날짜가
+    TradeExecution.date에 기록되는지 확인 (datetime.now() 사용 금지).
+    """
+    broker = BacktestBroker(initial_cash=10000.0)
+    broker.set_prices({'SPY': 100.0})
+
+    sim_date = pd.Timestamp("2018-03-15")
+    broker.set_date(sim_date)
+
+    order = Order('SPY', OrderAction.BUY, 5, 100.0)
+    executions = broker.execute_orders([order])
+
+    assert len(executions) == 1
+    assert executions[0].date == "2018-03-15"
+
+
+def test_backtest_broker_execution_date_fallback_without_set_date():
+    """
+    [이슈 #66] set_date()를 호출하지 않으면 current_date가 None이므로
+    기본 MockBroker 동작(datetime.now() 기반 날짜)이 그대로 사용되어야 함.
+    즉, date 필드는 빈 문자열이 아니어야 한다.
+    """
+    broker = BacktestBroker(initial_cash=10000.0)
+    broker.set_prices({'SPY': 100.0})
+    # set_date() 호출 없이 주문 실행
+
+    order = Order('SPY', OrderAction.BUY, 5, 100.0)
+    executions = broker.execute_orders([order])
+
+    assert len(executions) == 1
+    # current_date가 None이면 MockBroker의 datetime.now() 결과가 그대로 사용됨
+    assert executions[0].date != ""
+
+
+def test_backtest_broker_set_date_updates_per_day():
+    """
+    [이슈 #66] 날짜를 변경할 때마다 다음 체결의 date가 갱신되는지 확인.
+    """
+    broker = BacktestBroker(initial_cash=50000.0)
+    broker.set_prices({'SPY': 100.0})
+
+    # 첫 번째 거래일: 2020-01-02
+    broker.set_date(pd.Timestamp("2020-01-02"))
+    broker.holdings['SPY'] = 10
+    sell_order = Order('SPY', OrderAction.SELL, 5, 100.0)
+    executions_day1 = broker.execute_orders([sell_order])
+
+    # 두 번째 거래일: 2020-01-03
+    broker.set_date(pd.Timestamp("2020-01-03"))
+    buy_order = Order('SPY', OrderAction.BUY, 3, 100.0)
+    executions_day2 = broker.execute_orders([buy_order])
+
+    assert executions_day1[0].date == "2020-01-02"
+    assert executions_day2[0].date == "2020-01-03"

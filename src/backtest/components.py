@@ -48,12 +48,17 @@ class BacktestDataLoader(IDataProvider):
 
 class BacktestBroker(MockBroker):
     """
-    MockBroker를 상속받되, '현재가'를 API가 아닌 
+    MockBroker를 상속받되, '현재가'를 API가 아닌
     백테스터가 주입해준 가격(simulation_prices)으로 처리
     """
     def __init__(self, initial_cash: float):
         super().__init__(initial_cash=initial_cash)
         self.simulation_prices = {} # {ticker: price}
+        self.current_date = None    # 시뮬레이션 상의 '오늘'
+
+    def set_date(self, date):
+        """시뮬레이션 날짜를 설정한다. runner가 매 거래일마다 호출해야 한다."""
+        self.current_date = date
 
     def set_prices(self, prices: Dict[str, float]):
         self.simulation_prices = prices
@@ -79,6 +84,14 @@ class BacktestBroker(MockBroker):
             for order in orders
         ]
         return super().execute_orders(updated_orders)
+
+    def _process_order_internal(self, order: Order) -> TradeExecution:
+        """체결 날짜를 실제 현재 시각이 아닌 시뮬레이션 날짜로 기록한다."""
+        result = super()._process_order_internal(order)
+        if self.current_date is not None:
+            sim_date = self.current_date.strftime("%Y-%m-%d")
+            return replace(result, date=sim_date)
+        return result
 
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         # 백테스트에서는 모든 주문이 즉시 체결됨 (폴링 불필요)
