@@ -74,17 +74,42 @@ def test_mock_broker_mixed_orders():
 def test_mock_broker_sell_more_than_owned():
     """
     [예외 시나리오: 과매도]
-    보유 수량보다 더 많이 팔려고 하면 0에서 멈추는지 확인
+    보유 수량보다 더 많이 팔려고 하면 실제 보유량만 체결되어야 함.
+    현금은 실제 체결된 수량(5주)만큼만 지급되어야 한다 (10주분 지급 금지).
     """
     broker = MockBroker(initial_cash=0.0, holdings={'SPY': 5})
-    
-    # 10주 매도 시도
+
+    # 10주 매도 시도 (보유는 5주)
     orders = [Order('SPY', OrderAction.SELL, 10, 100.0)]
     broker.execute_orders(orders)
-    
+
     pf = broker.get_portfolio()
-    
+
+    # 보유량은 0으로 감소 (5주 전량 매도)
     assert pf.holdings['SPY'] == 0
+
+    # 현금은 실제 체결 수량(5주)만큼만 지급되어야 함
+    # 체결가: 100 * 0.99 = 99.0
+    # 금액: 99.0 * 5 = 495.0
+    # 수수료: 495.0 * 0.001 = 0.495
+    # 입금액: 495.0 - 0.495 = 494.505
+    assert pf.total_cash == pytest.approx(494.505)
+
+
+def test_mock_broker_sell_more_than_owned_execution_qty():
+    """
+    [예외 시나리오: 과매도 체결 수량]
+    보유 수량보다 더 많이 팔려고 할 때 TradeExecution의 quantity가
+    실제 체결된 수량(보유량)으로 기록되어야 함.
+    """
+    broker = MockBroker(initial_cash=0.0, holdings={'SPY': 5})
+
+    orders = [Order('SPY', OrderAction.SELL, 10, 100.0)]
+    executions = broker.execute_orders(orders)
+
+    assert len(executions) == 1
+    # 실제 체결 수량은 보유량인 5주여야 함 (주문 수량 10주가 아님)
+    assert executions[0].quantity == 5
 
 def test_mock_broker_insufficient_funds():
     """

@@ -101,21 +101,24 @@ class MockBroker(IBrokerAdapter):
         
         print(f" > [FILLED] {order.action} {order.ticker}: {order.quantity} @ ${exec_price:.2f} (Fee: ${fee:.2f})")
         
-        amount = exec_price * order.quantity
-        
         # 잔고 반영
         if order.action == OrderAction.BUY:
+            amount = exec_price * order.quantity
             self.cash -= (amount + fee)
             self.holdings[order.ticker] = self.holdings.get(order.ticker, 0) + order.quantity
+            actual_qty = order.quantity
         elif order.action == OrderAction.SELL:
-            self.cash += (amount - fee)
             current_qty = self.holdings.get(order.ticker, 0)
-            self.holdings[order.ticker] = max(0, current_qty - order.quantity)
-            
+            actual_qty = min(order.quantity, current_qty)  # 보유량 한도 제한
+            amount = exec_price * actual_qty
+            fee = amount * 0.001
+            self.cash += (amount - fee)
+            self.holdings[order.ticker] = current_qty - actual_qty
+
         return TradeExecution(
             ticker=order.ticker,
             action=order.action,
-            quantity=order.quantity,
+            quantity=actual_qty,
             price=round(exec_price, 2),
             fee=round(fee, 2),
             date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
