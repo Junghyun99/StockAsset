@@ -86,6 +86,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     for today in sim_days:
         # [Time Setting] 오늘 날짜 설정
         loader.set_date(today)
+        broker.set_date(today)
 
         # [Price Injection] 오늘 종가를 브로커에 주입 (종가 매매 가정)
         current_prices = {}
