@@ -762,3 +762,53 @@ def test_rebalancer_default_min_order_pct_unchanged():
     rebalancer = Rebalancer(groups)
     assert rebalancer.min_order_pct == 0.05
     assert rebalancer.min_order_pct == Rebalancer.DEFAULT_MIN_ORDER_PCT
+
+
+def test_create_group_orders_logs_ticker_detail(create_portfolio):
+    """_create_group_orders는 group_name과 종목별 현재/목표/주문 정보를 logger.info로 출력해야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY', 'QLD']}, logger=mock_logger)
+
+    pf = create_portfolio(
+        holdings={'SPY': 3, 'QLD': 0},
+        prices={'SPY': 100.0, 'QLD': 50.0}
+    )
+    # 목표: 각 $400 (SPY: 현재 $300 → +$100 매수, QLD: 현재 $0 → +$400 매수)
+    rebalancer._create_group_orders(pf, ['SPY', 'QLD'], group_target_amt=800.0, group_name='A그룹')
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+
+    # 그룹 헤더 출력 확인
+    assert any('A그룹' in msg for msg in info_calls)
+    # 각 종목 로그 포함 확인
+    assert any('SPY' in msg for msg in info_calls)
+    assert any('QLD' in msg for msg in info_calls)
+    # 현재가치/목표/diff/주문방향 포함 확인
+    assert any('BUY' in msg for msg in info_calls)
+
+
+def test_create_group_orders_logs_no_order_reason(create_portfolio):
+    """주문 수량이 0일 때 '주문 없음' 사유가 로깅되어야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY']}, logger=mock_logger)
+
+    pf = create_portfolio(
+        holdings={'SPY': 10},
+        prices={'SPY': 500000.0}   # 주당 50만원 → 매수 수량 0
+    )
+    # 목표 510만원 → 차이 10만원 → floor(10만/50만)=0주 → 주문 없음
+    rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=5100000.0, group_name='A그룹')
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    assert any('주문 없음' in msg or '수량 미달' in msg for msg in info_calls)
+
+
+def test_create_group_orders_no_log_without_logger(create_portfolio):
+    """logger가 None이면 _create_group_orders는 아무 로그도 출력하지 않아야 한다."""
+    rebalancer = Rebalancer({'A': ['SPY']}, logger=None)
+    pf = create_portfolio(holdings={'SPY': 5}, prices={'SPY': 100.0})
+    # 예외 없이 실행되어야 함
+    orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=1000.0, group_name='A그룹')
+    assert isinstance(orders, list)

@@ -160,10 +160,10 @@ class Rebalancer:
 
         # 4. 주문 생성
         orders = []
-        orders.extend(self._create_group_orders(portfolio, self.groups.get('A', []), target_val_a))
-        orders.extend(self._create_group_orders(portfolio, self.groups.get('B', []), target_val_b))
+        orders.extend(self._create_group_orders(portfolio, self.groups.get('A', []), target_val_a, group_name='A그룹(성장)'))
+        orders.extend(self._create_group_orders(portfolio, self.groups.get('B', []), target_val_b, group_name='B그룹(안전)'))
         # 남는 현금을 모두 SHV 매수에 사용하거나, 현금이 부족하면 SHV를 매도함
-        orders.extend(self._create_group_orders(portfolio, self.groups.get('C', []), target_val_c))
+        orders.extend(self._create_group_orders(portfolio, self.groups.get('C', []), target_val_c, group_name='C그룹(현금)'))
 
         # 예수금이 없는 상황을 대비하여, 무조건 매도 주문을 먼저 실행해서 현금을 확보해야 함.
         sell_orders = [o for o in orders if o.action == OrderAction.SELL]
@@ -200,33 +200,45 @@ class Rebalancer:
             reason=reason
         )
 
-    def _create_group_orders(self, pf: Portfolio, tickers: List[str], group_target_amt: float) -> List[Order]:
+    def _create_group_orders(self, pf: Portfolio, tickers: List[str], group_target_amt: float, group_name: str = "") -> List[Order]:
         orders = []
         count = len(tickers)
         if count == 0: return orders
-        
+
         per_stock_target = group_target_amt / count
-        
+
+        if self._logger and group_name:
+            self._logger.info(f"[{group_name} 종목별]")
+
         for ticker in tickers:
             price = pf.current_prices.get(ticker, 0)
             if price <= 0:
                 if self._logger:
                     self._logger.warning(f"종목 {ticker}의 가격이 유효하지 않습니다 (price={price}). 주문 생성을 건너뜁니다.")
                 continue
-            
+
             current_qty = pf.holdings.get(ticker, 0)
             current_val = current_qty * price
-            
+
             diff_val = per_stock_target - current_val
 
+            order_desc = "→ 주문 없음 (수량 미달)"
             if diff_val > 0:
                 qty = math.floor(diff_val / price)
                 if qty > 0:
                     orders.append(Order(ticker, OrderAction.BUY, qty, price))
+                    order_desc = f"→ BUY {qty}주 @${price:.2f}"
             elif diff_val < 0:
                 qty = math.ceil(abs(diff_val) / price)
                 qty = min(qty, current_qty)  # 보유 수량 초과 매도 방지
                 if qty > 0:
                     orders.append(Order(ticker, OrderAction.SELL, qty, price))
-                
+                    order_desc = f"→ SELL {qty}주 @${price:.2f}"
+
+            if self._logger:
+                self._logger.info(
+                    f"  {ticker}: 보유 {current_qty}주 ${current_val:,.2f} → 목표 ${per_stock_target:,.2f} "
+                    f"| diff={diff_val:+,.2f} {order_desc}"
+                )
+
         return orders
