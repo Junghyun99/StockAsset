@@ -85,12 +85,17 @@ class Rebalancer:
         MarketRegime.BEAR_STRONG: 0.10,
     }
 
+    # 비율 유지 시 미세 주문 필터링 임계치 (총 주문 금액 / 총 자산 비율)
+    DEFAULT_MIN_ORDER_PCT = 0.05
+
     def __init__(self, asset_groups: Dict[str, List[str]],
                  logger: Optional[ILogger] = None,
-                 threshold_map: Optional[Dict[MarketRegime, float]] = None):
+                 threshold_map: Optional[Dict[MarketRegime, float]] = None,
+                 min_order_pct: float = DEFAULT_MIN_ORDER_PCT):
         self.groups = asset_groups
         self._logger = logger
         self._threshold_map = threshold_map if threshold_map is not None else dict(self.DEFAULT_THRESHOLD_MAP)
+        self.min_order_pct = min_order_pct
 
     def generate_signal(self, 
                         portfolio: Portfolio, 
@@ -166,6 +171,14 @@ class Rebalancer:
 
         # 정렬된 최종 주문 리스트
         sorted_orders = sell_orders + buy_orders
+
+        # 4-1. 비율 유지 시 미세 주문 필터링
+        # needs_rebalance=False인데 소액 주문만 발생하면 노이즈 트레이딩 방지
+        if not needs_rebalance and not is_first_investment and sorted_orders:
+            total_order_value = sum(o.quantity * o.price for o in sorted_orders)
+            min_order_value = portfolio.total_value * self.min_order_pct
+            if total_order_value < min_order_value:
+                sorted_orders = []
 
         # 5. reason 결정 (주문 생성 결과를 반영)
         if is_first_investment and sorted_orders:
