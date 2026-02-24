@@ -655,3 +655,110 @@ def test_rebalancer_default_threshold_map_unchanged(create_portfolio):
     # 인스턴스의 threshold_map 수정이 클래스 상수에 영향을 주지 않는지 확인
     rebalancer._threshold_map[MarketRegime.BULL] = 0.99
     assert Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.BULL] == 0.15
+
+
+# ==========================================
+# 8. 미세 주문 필터링 테스트 (Issue #85)
+# ==========================================
+
+def test_rebalancer_filters_micro_orders_on_small_cash(create_portfolio):
+    """
+    [미세 주문 필터링 테스트]
+    비율 유지(needs_rebalance=False) 상태에서 소액 현금 유입 시
+    총 주문 금액이 min_order_pct 미만이면 주문이 필터링되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)  # min_order_pct=0.05 (5%)
+
+    # 상황: SPY 50만(500@1000), IEF 50만(500@1000), 소액 현금 1만원
+    # total = 1,010,000. ratio_a=0.5, ratio_b=0.5 → needs_rebalance=False
+    # target_val_a = 505,000 → diff = 5,000 → floor(5000/1000)=5주 매수
+    # 총 주문 금액 = 10,000 < 1,010,000 * 0.05 = 50,500 → 필터링
+    pf = create_portfolio(
+        cash=10000,
+        holdings={'SPY': 500, 'IEF': 500},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    assert signal.has_orders is False
+    assert "추가 주문 없음" in signal.reason
+
+
+def test_rebalancer_allows_large_exposure_orders(create_portfolio):
+    """
+    [대규모 주문 허용 테스트]
+    비율 유지 상태에서도 대규모 현금 유입(5% 초과) 시 주문이 실행되어야 한다.
+    기존 test_rebalancer_cash_injection 시나리오와 동일.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)  # min_order_pct=0.05 (5%)
+
+    # 상황: SPY 100만, IEF 100만, 현금 200만 추가 (총 400만)
+    # 총 주문 금액 ≈ 200만 = 50% >> 5% → 필터링되지 않음
+    pf = create_portfolio(
+        cash=2000000,
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100000, 'IEF': 100000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    assert signal.has_orders is True
+    assert "exposure 조정" in signal.reason
+
+
+def test_rebalancer_no_filter_when_rebalance_needed(create_portfolio):
+    """
+    [리밸런싱 필요 시 필터 미적용 테스트]
+    needs_rebalance=True이면 미세 주문 필터가 적용되지 않아야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # SPY 55만(55%), IEF 45만(45%) → diff=10% > SIDEWAYS threshold 5%
+    pf = create_portfolio(
+        holdings={'SPY': 550, 'IEF': 450},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    assert signal.has_orders is True
+    assert "비율 재조정" in signal.reason
+
+
+def test_rebalancer_custom_min_order_pct(create_portfolio):
+    """
+    [커스텀 min_order_pct 테스트]
+    min_order_pct를 0으로 설정하면 미세 주문 필터가 비활성화되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, min_order_pct=0.0)
+
+    # 소액 현금 유입 시 min_order_pct=0이면 필터링하지 않음
+    # SPY 500@1000 = 50만, IEF 500@1000 = 50만, 현금 1만
+    # diff per stock = 5,000 → floor(5000/1000) = 5주 → 주문 생성됨
+    pf = create_portfolio(
+        cash=10000,
+        holdings={'SPY': 500, 'IEF': 500},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    # min_order_pct=0 → 필터 비활성화 → 소액이라도 주문 생성
+    assert signal.has_orders is True
+    assert "exposure 조정" in signal.reason
+
+
+def test_rebalancer_default_min_order_pct_unchanged():
+    """
+    [기본 min_order_pct 유지 테스트]
+    min_order_pct를 지정하지 않으면 기본값 0.05가 적용되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+    assert rebalancer.min_order_pct == 0.05
+    assert rebalancer.min_order_pct == Rebalancer.DEFAULT_MIN_ORDER_PCT
