@@ -766,7 +766,6 @@ def test_rebalancer_default_min_order_pct_unchanged():
 
 def test_create_group_orders_logs_ticker_detail(create_portfolio):
     """_create_group_orders는 group_name과 종목별 현재/목표/주문 정보를 logger.info로 출력해야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY', 'QLD']}, logger=mock_logger)
 
@@ -790,7 +789,6 @@ def test_create_group_orders_logs_ticker_detail(create_portfolio):
 
 def test_create_group_orders_logs_no_order_reason(create_portfolio):
     """주문 수량이 0일 때 '주문 없음' 사유가 로깅되어야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY']}, logger=mock_logger)
 
@@ -816,7 +814,6 @@ def test_create_group_orders_no_log_without_logger(create_portfolio):
 
 def test_generate_signal_logs_entry_context(create_portfolio):
     """generate_signal은 시작 시 구분선, regime, exposure, total_value를 로깅해야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
     pf = create_portfolio(
@@ -837,7 +834,6 @@ def test_generate_signal_logs_entry_context(create_portfolio):
 
 def test_generate_signal_logs_portfolio_section(create_portfolio):
     """generate_signal은 A/B/C 그룹별 평가액과 비중을 로깅해야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}, logger=mock_logger)
     pf = create_portfolio(
@@ -859,7 +855,6 @@ def test_generate_signal_logs_portfolio_section(create_portfolio):
 
 def test_generate_signal_logs_ratio_judgment(create_portfolio):
     """generate_signal은 ratio_A, ratio_B, diff, threshold, 판정 결과를 로깅해야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
     # ratio_A=0.55, ratio_B=0.45, diff=10% → BULL threshold 15% → 비율 유지
@@ -874,13 +869,12 @@ def test_generate_signal_logs_ratio_judgment(create_portfolio):
     # 비중 판정 섹션
     assert any('비중 판정' in msg for msg in info_calls)
     # diff와 threshold 수치 포함
-    assert any('10.0%' in msg or '10%' in msg or '0.100' in msg or 'diff' in msg.lower() for msg in info_calls)
-    assert any('15.0%' in msg or '15%' in msg or '0.150' in msg or 'threshold' in msg.lower() for msg in info_calls)
+    assert any('10.0%' in msg or '10%' in msg or '0.100' in msg or '현재 차이' in msg for msg in info_calls)
+    assert any('15.0%' in msg or '15%' in msg or '0.150' in msg or '임계치' in msg for msg in info_calls)
 
 
 def test_generate_signal_logs_target_amounts(create_portfolio):
     """generate_signal은 A/B/C 그룹별 현재 금액과 목표 금액을 로깅해야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
     pf = create_portfolio(
@@ -899,7 +893,6 @@ def test_generate_signal_logs_target_amounts(create_portfolio):
 
 def test_generate_signal_logs_final_summary(create_portfolio):
     """generate_signal은 최종 주문 건수, 총 주문금액, reason을 로깅해야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
     pf = create_portfolio(
@@ -930,7 +923,6 @@ def test_generate_signal_no_log_without_logger(create_portfolio):
 
 def test_generate_signal_logs_crash_early_return(create_portfolio):
     """CRASH 시 조기 리턴되지만 구분선과 입력 정보는 로깅되어야 한다."""
-    from unittest.mock import MagicMock
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
     pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0})

@@ -139,9 +139,9 @@ class Rebalancer:
         val_risky = val_a + val_b
 
         # ── 섹션 2: 포트폴리오 현황 ───────────────────────────────────────────
+        total = portfolio.total_value
+        def pct(v): return (v / total * 100) if total > 0 else 0.0
         if self._logger:
-            total = portfolio.total_value
-            def pct(v): return (v / total * 100) if total > 0 else 0.0
             self._logger.info("[포트폴리오 현황]")
             self._logger.info(f"  A그룹(성장): ${val_a:>12,.2f} ({pct(val_a):5.1f}%)")
             self._logger.info(f"  B그룹(안전): ${val_b:>12,.2f} ({pct(val_b):5.1f}%)")
