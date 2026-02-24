@@ -40,3 +40,13 @@ jobs:
         BACKTEST_END: ${{ inputs.end }}
         BACKTEST_CASH: ${{ inputs.initial_cash }}
       run: python scripts/run_backtest_ci.py
+
+    - name: Upload backtest artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: backtest-results-${{ inputs.start }}-${{ inputs.end }}
+        path: |
+          logs/backtest/
+          docs/backtest_*.png
+        retention-days: 30
