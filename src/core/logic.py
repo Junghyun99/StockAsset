@@ -97,13 +97,26 @@ class Rebalancer:
         self._threshold_map = threshold_map if threshold_map is not None else dict(self.DEFAULT_THRESHOLD_MAP)
         self.min_order_pct = min_order_pct
 
-    def generate_signal(self, 
-                        portfolio: Portfolio, 
-                        target_exposure: float, 
+    def generate_signal(self,
+                        portfolio: Portfolio,
+                        target_exposure: float,
                         regime: MarketRegime) -> TradeSignal:
-        
+
+        # ── 섹션 1: 시작 구분선 + 입력 컨텍스트 ──────────────────────────────
+        if self._logger:
+            self._logger.info("═" * 48)
+            self._logger.info(" Rebalancer.generate_signal 시작")
+            self._logger.info("═" * 48)
+            self._logger.info(
+                f"[입력] Regime={regime.value} | TargetExposure={target_exposure:.2f} "
+                f"| TotalValue=${portfolio.total_value:,.2f} | Cash=${portfolio.total_cash:,.2f}"
+            )
+
         # [핵심 수정] CRASH 발생 시 즉시 리턴 (가드 절)
         if regime == MarketRegime.CRASH:
+            if self._logger:
+                self._logger.info("[CRASH] Emergency Stop. 주문 생성을 건너뜁니다.")
+                self._logger.info("═" * 48)
             return TradeSignal(
                 target_exposure=target_exposure,
                 orders=[],
@@ -112,7 +125,7 @@ class Rebalancer:
 
         # 1. 국면별 리밸런싱 임계치 설정
         threshold = self._threshold_map.get(regime, 0.10)
-        
+
         # 2. 가격 누락 종목 경고
         if self._logger:
             for t, q in portfolio.holdings.items():
@@ -122,7 +135,18 @@ class Rebalancer:
         # 3. 현재 자산군(A, B) 평가액 및 비중 계산
         val_a = portfolio.get_group_value(self.groups.get('A', []))
         val_b = portfolio.get_group_value(self.groups.get('B', []))
+        val_c = portfolio.get_group_value(self.groups.get('C', []))
         val_risky = val_a + val_b
+
+        # ── 섹션 2: 포트폴리오 현황 ───────────────────────────────────────────
+        if self._logger:
+            total = portfolio.total_value
+            def pct(v): return (v / total * 100) if total > 0 else 0.0
+            self._logger.info("[포트폴리오 현황]")
+            self._logger.info(f"  A그룹(성장): ${val_a:>12,.2f} ({pct(val_a):5.1f}%)")
+            self._logger.info(f"  B그룹(안전): ${val_b:>12,.2f} ({pct(val_b):5.1f}%)")
+            self._logger.info(f"  C그룹(현금): ${val_c:>12,.2f} ({pct(val_c):5.1f}%)")
+            self._logger.info(f"  현금(예수금): ${portfolio.total_cash:>11,.2f} ({pct(portfolio.total_cash):5.1f}%)")
 
         # 첫 투자 여부 판별 (위험자산 보유액이 0이면 첫 투자)
         is_first_investment = (val_risky == 0)
@@ -141,7 +165,20 @@ class Rebalancer:
             current_diff = round(abs(ratio_a - ratio_b), 6)
 
             needs_rebalance = current_diff > threshold
-            
+
+        # ── 섹션 3: 비중 판정 ────────────────────────────────────────────────
+        if self._logger:
+            if is_first_investment:
+                self._logger.info("[비중 판정] 첫 투자 → 50:50 초기 비율 적용")
+            else:
+                verdict = "임계치 초과 → 50:50 재조정" if needs_rebalance else "비율 유지 (리밸런싱 불필요)"
+                self._logger.info(
+                    f"[비중 판정] ratio_A={ratio_a:.3f}  ratio_B={ratio_b:.3f}"
+                )
+                self._logger.info(
+                    f"  현재 차이: {current_diff:.1%} | 임계치: {threshold:.1%} → {verdict}"
+                )
+
         # 3. 목표 금액 계산
         if needs_rebalance:
             target_ratio_a = 0.5
@@ -158,7 +195,22 @@ class Rebalancer:
         # 현금으로 두지 않고, C그룹 주식(SHV)으로 꽉 채우는 것을 목표로 함
         target_val_c = max(portfolio.total_value - (target_val_a + target_val_b), 0)
 
-        # 4. 주문 생성
+        # ── 섹션 4: 목표 금액 ────────────────────────────────────────────────
+        if self._logger:
+            self._logger.info("[목표 금액]")
+            self._logger.info(
+                f"  A그룹: 현재 ${val_a:>10,.2f} → 목표 ${target_val_a:>10,.2f}"
+                f"  (exposure {target_exposure:.2f} × ratio {target_ratio_a:.2f})"
+            )
+            self._logger.info(
+                f"  B그룹: 현재 ${val_b:>10,.2f} → 목표 ${target_val_b:>10,.2f}"
+                f"  (exposure {target_exposure:.2f} × ratio {target_ratio_b:.2f})"
+            )
+            self._logger.info(
+                f"  C그룹: 현재 ${val_c:>10,.2f} → 목표 ${target_val_c:>10,.2f}  (잔여)"
+            )
+
+        # 4. 주문 생성 (섹션 5 로그는 _create_group_orders 내부에서 출력)
         orders = []
         orders.extend(self._create_group_orders(portfolio, self.groups.get('A', []), target_val_a, group_name='A그룹(성장)'))
         orders.extend(self._create_group_orders(portfolio, self.groups.get('B', []), target_val_b, group_name='B그룹(안전)'))
@@ -193,6 +245,22 @@ class Rebalancer:
             reason = "비율 유지, exposure 조정으로 주문 발생"
         else:
             reason = "비율 유지, 추가 주문 없음"
+
+        # ── 섹션 6: 최종 요약 + 종료 구분선 ────────────────────────────────
+        if self._logger:
+            sell_cnt = len(sell_orders)
+            buy_cnt  = len(buy_orders)
+            total_order_val = sum(o.quantity * o.price for o in sorted_orders)
+            order_pct = (total_order_val / portfolio.total_value * 100) if portfolio.total_value > 0 else 0.0
+            if sorted_orders:
+                self._logger.info(
+                    f"[최종 주문] SELL {sell_cnt}건 + BUY {buy_cnt}건 "
+                    f"(총 주문금액: ${total_order_val:,.2f} / 자산대비 {order_pct:.1f}%)"
+                )
+            else:
+                self._logger.info("[최종 주문] 주문 없음")
+            self._logger.info(f"[결정 사유] {reason}")
+            self._logger.info("═" * 48)
 
         return TradeSignal(
             target_exposure=target_exposure,

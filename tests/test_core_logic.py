@@ -812,3 +812,130 @@ def test_create_group_orders_no_log_without_logger(create_portfolio):
     # 예외 없이 실행되어야 함
     orders = rebalancer._create_group_orders(pf, ['SPY'], group_target_amt=1000.0, group_name='A그룹')
     assert isinstance(orders, list)
+
+
+def test_generate_signal_logs_entry_context(create_portfolio):
+    """generate_signal은 시작 시 구분선, regime, exposure, total_value를 로깅해야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
+    pf = create_portfolio(
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100.0, 'IEF': 100.0}
+    )
+
+    rebalancer.generate_signal(pf, target_exposure=0.8, regime=MarketRegime.BULL)
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    # 구분선 출력 확인
+    assert any('═' in msg or '====' in msg for msg in info_calls)
+    # regime 로깅
+    assert any('Bull' in msg or 'Regime' in msg for msg in info_calls)
+    # exposure 로깅
+    assert any('0.80' in msg or '0.8' in msg or 'Exposure' in msg for msg in info_calls)
+
+
+def test_generate_signal_logs_portfolio_section(create_portfolio):
+    """generate_signal은 A/B/C 그룹별 평가액과 비중을 로깅해야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}, logger=mock_logger)
+    pf = create_portfolio(
+        cash=2000.0,
+        holdings={'SPY': 10, 'IEF': 8, 'SHV': 5},
+        prices={'SPY': 100.0, 'IEF': 100.0, 'SHV': 100.0}
+    )
+
+    rebalancer.generate_signal(pf, target_exposure=0.8, regime=MarketRegime.BULL)
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    # 포트폴리오 섹션 헤더
+    assert any('포트폴리오' in msg for msg in info_calls)
+    # A, B, C 그룹 각각 언급
+    assert any('A그룹' in msg for msg in info_calls)
+    assert any('B그룹' in msg for msg in info_calls)
+    assert any('C그룹' in msg for msg in info_calls)
+
+
+def test_generate_signal_logs_ratio_judgment(create_portfolio):
+    """generate_signal은 ratio_A, ratio_B, diff, threshold, 판정 결과를 로깅해야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
+    # ratio_A=0.55, ratio_B=0.45, diff=10% → BULL threshold 15% → 비율 유지
+    pf = create_portfolio(
+        holdings={'SPY': 550, 'IEF': 450},
+        prices={'SPY': 1000.0, 'IEF': 1000.0}
+    )
+
+    rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    # 비중 판정 섹션
+    assert any('비중 판정' in msg for msg in info_calls)
+    # diff와 threshold 수치 포함
+    assert any('10.0%' in msg or '10%' in msg or '0.100' in msg or 'diff' in msg.lower() for msg in info_calls)
+    assert any('15.0%' in msg or '15%' in msg or '0.150' in msg or 'threshold' in msg.lower() for msg in info_calls)
+
+
+def test_generate_signal_logs_target_amounts(create_portfolio):
+    """generate_signal은 A/B/C 그룹별 현재 금액과 목표 금액을 로깅해야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
+    pf = create_portfolio(
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100.0, 'IEF': 100.0}
+    )
+
+    rebalancer.generate_signal(pf, target_exposure=0.8, regime=MarketRegime.BULL)
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    # 목표 금액 섹션
+    assert any('목표 금액' in msg for msg in info_calls)
+    # exposure와 ratio 계산 근거 포함
+    assert any('0.80' in msg or '0.8' in msg or 'exposure' in msg.lower() for msg in info_calls)
+
+
+def test_generate_signal_logs_final_summary(create_portfolio):
+    """generate_signal은 최종 주문 건수, 총 주문금액, reason을 로깅해야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
+    pf = create_portfolio(
+        cash=2000000.0,
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100000.0, 'IEF': 100000.0}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    # 최종 주문 섹션 (BUY/SELL 건수 또는 주문 없음)
+    assert any('최종 주문' in msg or '주문' in msg for msg in info_calls)
+    # reason이 로그에 포함됨
+    assert any(signal.reason in msg or '결정 사유' in msg for msg in info_calls)
+
+
+def test_generate_signal_no_log_without_logger(create_portfolio):
+    """logger=None이면 generate_signal은 어떤 로그도 시도하지 않고 정상 동작해야 한다."""
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=None)
+    pf = create_portfolio(
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100.0, 'IEF': 100.0}
+    )
+    signal = rebalancer.generate_signal(pf, target_exposure=0.8, regime=MarketRegime.BULL)
+    assert isinstance(signal.reason, str)
+
+
+def test_generate_signal_logs_crash_early_return(create_portfolio):
+    """CRASH 시 조기 리턴되지만 구분선과 입력 정보는 로깅되어야 한다."""
+    from unittest.mock import MagicMock
+    mock_logger = MagicMock()
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
+    pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0})
+
+    rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
+
+    info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
+    assert any('CRASH' in msg or 'Crash' in msg or 'Emergency' in msg for msg in info_calls)
