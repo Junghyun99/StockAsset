@@ -44,7 +44,7 @@ class TradingBot:
             )
         else:
             self.logger.info("Mode: PAPER TRADING (MockBroker)")
-            self.broker = MockBroker(initial_cash=10000.0) # 테스트용 초기자금
+            self.broker = MockBroker(initial_cash=10000.0, logger=self.logger) # 테스트용 초기자금
 
         # 3. 도메인 서비스 및 유틸 생성
         self.calculator = IndicatorCalculator()

@@ -1,8 +1,8 @@
 # src/backtest/components.py
 import pandas as pd
 from dataclasses import replace
-from typing import List, Dict
-from src.core.interfaces import IDataProvider, IBrokerAdapter
+from typing import List, Dict, Optional
+from src.core.interfaces import IDataProvider, IBrokerAdapter, ILogger
 from src.core.models import Portfolio, Order, TradeExecution
 from src.infra.broker import MockBroker # 기능 재사용
 
@@ -51,8 +51,8 @@ class BacktestBroker(MockBroker):
     MockBroker를 상속받되, '현재가'를 API가 아닌
     백테스터가 주입해준 가격(simulation_prices)으로 처리
     """
-    def __init__(self, initial_cash: float):
-        super().__init__(initial_cash=initial_cash)
+    def __init__(self, initial_cash: float, logger: Optional[ILogger] = None):
+        super().__init__(initial_cash=initial_cash, logger=logger)
         self.simulation_prices = {} # {ticker: price}
         self.current_date = None    # 시뮬레이션 상의 '오늘'
 
