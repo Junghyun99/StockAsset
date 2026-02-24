@@ -41,6 +41,17 @@ jobs:
         BACKTEST_CASH: ${{ inputs.initial_cash }}
       run: python scripts/run_backtest_ci.py
 
+    - name: Print backtest log
+      if: always()
+      run: |
+        LOG_FILE=$(ls logs/backtest/*.log 2>/dev/null | head -1)
+        if [ -n "$LOG_FILE" ]; then
+          echo "=== 백테스트 로그: $LOG_FILE ==="
+          cat "$LOG_FILE"
+        else
+          echo "로그 파일이 생성되지 않았습니다."
+        fi
+
     - name: Upload backtest artifacts
       if: always()
       uses: actions/upload-artifact@v4
