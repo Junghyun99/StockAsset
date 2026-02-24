@@ -74,7 +74,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     calculator = IndicatorCalculator()
     analyzer = RegimeAnalyzer()
     targeter = VolatilityTargeter(target_vol=0.15)
-    rebalancer = Rebalancer(config.ASSET_GROUPS)
+    rebalancer = Rebalancer(config.ASSET_GROUPS, logger=self.logger)
 
     # 4. 루프 실행 (Time Travel)
     # 실제 데이터가 있는 날짜(거래일)만 루프
