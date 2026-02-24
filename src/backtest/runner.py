@@ -89,6 +89,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     logger.info(f"--- Starting Backtest ({len(sim_days)} trading days) ---")
 
     for today in sim_days:
+        logger.info(f"[{today.date()}]시작")
         # [Time Setting] 오늘 날짜 설정
         loader.set_date(today)
         broker.set_date(today)
