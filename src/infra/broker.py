@@ -2,6 +2,7 @@
 from typing import List, Dict, Optional
 from src.core.interfaces import IBrokerAdapter
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
+import logging
 import time
 import requests
 from datetime import datetime
@@ -14,6 +15,7 @@ class MockBroker(IBrokerAdapter):
     def __init__(self, initial_cash: float = 10000.0, holdings: Dict[str, int] = None):
         self.cash = initial_cash
         self.holdings = holdings if holdings else {}
+        self.logger = logging.getLogger(__name__)
         # 현재가는 외부에서 주입받거나, API 호출 시 업데이트된다고 가정
     
     def get_portfolio(self) -> Portfolio:
@@ -39,15 +41,15 @@ class MockBroker(IBrokerAdapter):
         # Phase 1: 매도 집행 (Sell Execution)
         # ==========================================
         if sell_orders:
-            print("[Broker] Sending SELL orders...")
+            self.logger.debug("[Broker] Sending SELL orders...")
             for order in sell_orders:
                 # API로 매도 주문 전송
                 res = self._process_order_internal(order)
                 executions.append(res)
-            
+
             # [핵심] 매도 체결 확인 루프 (Polling)
             if not self._wait_for_completion(timeout=60):
-                print("⚠️ [Warning] Sell orders timed out. Some might be partial/unfilled.")
+                self.logger.warning("[Broker] Sell orders timed out. Some might be partial/unfilled.")
                 # (선택사항) 미체결 주문 취소 로직 추가 가능
                 # self._cancel_all_pending_sells()
         
@@ -56,14 +58,14 @@ class MockBroker(IBrokerAdapter):
         # ==========================================
         if sell_orders:
             # 매도가 있었으면 예수금이 변했을 테니, API로 정확한 현재 잔고를 다시 가져옴
-            print("[Broker] Refreshing Cash Balance...")
+            self.logger.debug("[Broker] Refreshing Cash Balance...")
             self._refresh_balance_from_api()
         
         # ==========================================
         # Phase 3: 매수 집행 (Buy Execution)
         # ==========================================
         if buy_orders:
-            print("[Broker] Sending BUY orders...")
+            self.logger.debug("[Broker] Sending BUY orders...")
             for order in buy_orders:
                 # 안전 마진: 현금의 98%만 사용 (환율 변동, 수수료, 슬리피지 대비)
                 SAFE_MARGIN = 0.98
@@ -82,7 +84,7 @@ class MockBroker(IBrokerAdapter):
                 actual_qty = min(order.quantity, max_qty)
 
                 if max_qty < order.quantity:
-                    print(f"⚠️ [Safety] Qty Adjusted: {order.ticker} {order.quantity} -> {actual_qty} (Budget: ${budget:.2f})")
+                    self.logger.warning(f"[Broker] Qty Adjusted: {order.ticker} {order.quantity} -> {actual_qty} (Budget: ${budget:.2f})")
 
                 if actual_qty > 0:
                     # 조정된 수량으로 새 Order 생성 (원본 불변 유지)
@@ -101,7 +103,7 @@ class MockBroker(IBrokerAdapter):
         # 수수료 시뮬레이션 (0.1%)
         fee = (exec_price * order.quantity) * 0.001
         
-        print(f" > [FILLED] {order.action} {order.ticker}: {order.quantity} @ ${exec_price:.2f} (Fee: ${fee:.2f})")
+        self.logger.debug(f"[FILLED] {order.action} {order.ticker}: {order.quantity} @ ${exec_price:.2f} (Fee: ${fee:.2f})")
         
         # 잔고 반영
         if order.action == OrderAction.BUY:
@@ -137,10 +139,10 @@ class MockBroker(IBrokerAdapter):
             pending_orders = self._get_pending_orders_count()
             
             if pending_orders == 0:
-                print("[Broker] All sell orders filled!")
+                self.logger.debug("[Broker] All sell orders filled!")
                 return True
-            
-            print(f"... Waiting for fills ({pending_orders} pending) ...")
+
+            self.logger.debug(f"[Broker] Waiting for fills ({pending_orders} pending) ...")
             time.sleep(2) # 2초 간격 polling
             
         return False
