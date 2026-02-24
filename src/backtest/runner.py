@@ -28,6 +28,7 @@ class BacktestResult:
     regime_returns: Dict[str, float]   # 국면별 연환산 평균 수익률
     chart_path: Optional[str]          # 저장된 차트 파일 경로
     trade_executions: Optional[List[TradeExecution]] = None  # 전체 매매 체결 기록
+    trade_reason_summary: Optional[Dict[str, int]] = None  # 매매 사유별 발생 횟수
 
 
 def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeLogger) -> List[str]:
@@ -83,6 +84,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
     history = []
     all_executions: List[TradeExecution] = []
+    trade_reason_counter: Dict[str, int] = {}  # 매매 사유별 카운터
+    prev_regime: Optional[MarketRegime] = None  # 국면 변화 추적
     logger.info(f"--- Starting Backtest ({len(sim_days)} trading days) ---")
 
     for today in sim_days:
@@ -122,9 +125,21 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                 regime = analyzer.analyze(market_data)
                 exposure = targeter.calculate_exposure(regime, market_data.spy_volatility)
 
+            # 국면 변화 로그
+            if prev_regime is not None and regime != prev_regime:
+                logger.info(
+                    f"[{today.date()}] Regime Change: {prev_regime.value} → {regime.value} "
+                    f"(Price={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
+                    f"Momentum={market_data.spy_momentum:.4f}, VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%})"
+                )
+            prev_regime = regime
+
             # CRASH 또는 NaN: 리밸런싱 없이 현재 상태 기록 후 스킵
             # main.py와 달리 알림/대기 대신 기록으로 대체하되, NaN과 CRASH를 구분하여 저장
             if regime == MarketRegime.CRASH:
+                crash_reason = "NaN 데이터 → CRASH 처리" if nan_triggered else (
+                    f"CRASH: MDD={market_data.spy_mdd:.2%}, VIX={market_data.vix:.1f}"
+                )
                 final_pf = broker.get_portfolio()
                 history.append({
                     "date": today,
@@ -134,6 +149,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                     "regime": regime.value,
                     "trade_count": 0,
                     "nan_triggered": nan_triggered,  # NaN 원인 여부 구분
+                    "signal_reason": crash_reason,
                 })
                 continue
 
@@ -145,8 +161,24 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
             day_executions: List[TradeExecution] = []
             if signal.has_orders:
+                # 매매 사유 로그: 왜 매수/매도하는지 기록
+                logger.info(
+                    f"[{today.date()}] {regime.value} | Exposure={exposure:.2f} | "
+                    f"Reason: {signal.reason}"
+                )
+                logger.info(
+                    f"  Market: SPY={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
+                    f"Momentum={market_data.spy_momentum:.4f}, Vol={market_data.spy_volatility:.4f}, "
+                    f"VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%}"
+                )
+                for order in signal.orders:
+                    logger.info(
+                        f"  → {order.action} {order.ticker} x{order.quantity} @${order.price:.2f}"
+                    )
                 day_executions = broker.execute_orders(signal.orders)
                 all_executions.extend(day_executions)
+                # 매매 사유 카운터 집계
+                trade_reason_counter[signal.reason] = trade_reason_counter.get(signal.reason, 0) + 1
 
             # 4. 결과 기록
             final_pf = broker.get_portfolio()
@@ -158,6 +190,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                 "regime": regime.value,
                 "trade_count": len(day_executions),
                 "nan_triggered": False,  # 정상 처리 (NaN 없음)
+                "signal_reason": signal.reason,
             })
 
         except Exception as e:
@@ -225,6 +258,12 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
         logger.info(f"Trade Frequency by Ticker: {dict(ticker_counts)}")
         logger.info(f"Trade Frequency by Ticker/Action: {dict(action_counts)}")
 
+    # 매매 사유별 통계 출력
+    if trade_reason_counter:
+        logger.info("Trade Reasons:")
+        for reason, count in sorted(trade_reason_counter.items(), key=lambda x: -x[1]):
+            logger.info(f"  {reason}: {count}회")
+
     # 차트 저장 (plt.show() 대신 파일로 저장)
     chart_path = f"docs/backtest_{start_date}_{end_date}.png"
     Path("docs").mkdir(parents=True, exist_ok=True)
@@ -255,6 +294,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
         regime_returns=regime_returns,
         chart_path=chart_path,
         trade_executions=all_executions,
+        trade_reason_summary=trade_reason_counter if trade_reason_counter else None,
     )
 
 

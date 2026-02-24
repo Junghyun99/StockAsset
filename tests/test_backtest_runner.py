@@ -5,7 +5,7 @@ import numpy as np
 import math
 from unittest.mock import patch, MagicMock
 from src.backtest.runner import run_backtest, BacktestResult, _validate_tickers
-from src.core.models import MarketRegime, TradeExecution, OrderAction, ExecutionStatus
+from src.core.models import MarketRegime, TradeExecution, OrderAction, ExecutionStatus, Order
 
 
 ALL_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "PDBC", "SHV"]
@@ -476,7 +476,7 @@ def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock
 
         mock_signal_obj = MagicMock()
         mock_signal_obj.has_orders = True
-        mock_signal_obj.orders = [MagicMock()]
+        mock_signal_obj.orders = [Order(ticker="SSO", action=OrderAction.BUY, quantity=5, price=100.0)]
         mock_signal_obj.reason = "test"
         mock_signal.return_value = mock_signal_obj
 
