@@ -193,9 +193,8 @@ def test_mock_broker_tradesignal_orders_integrity():
 
 def test_mock_broker_no_print_on_execute(capsys):
     """
-    [이슈 #69] MockBroker.execute_orders()가 print()를 사용하지 않아야 함.
-    백테스트 중 수만 건의 주문 처리 시 콘솔 오염을 방지하기 위해
-    모든 출력은 logging 모듈(DEBUG 레벨)로만 이루어져야 함.
+    [이슈 #69] logger 미전달 시 MockBroker.execute_orders()가 콘솔에 아무것도 출력하지 않아야 함.
+    백테스트 중 수만 건의 주문이 조용히 처리되어야 한다.
     """
     broker = MockBroker(initial_cash=1000.0, holdings={'SPY': 5})
     orders = [
@@ -209,20 +208,23 @@ def test_mock_broker_no_print_on_execute(capsys):
     assert captured.err == "", f"예상치 못한 stderr 출력: {captured.err!r}"
 
 
-def test_mock_broker_qty_adjustment_uses_warning_log(caplog):
+def test_mock_broker_qty_adjustment_uses_logger_warning():
     """
-    [이슈 #69] 잔고 부족으로 수량 조정 시 logging.warning이 발생해야 함.
+    [이슈 #69] 잔고 부족으로 수량 조정 시 ILogger.warning()이 호출되어야 함.
     """
-    import logging
-    broker = MockBroker(initial_cash=100.0)
+    from unittest.mock import MagicMock
+    from src.core.interfaces import ILogger
+
+    mock_logger = MagicMock(spec=ILogger)
+    broker = MockBroker(initial_cash=100.0, logger=mock_logger)
 
     # 잔고 부족으로 수량 조정이 필요한 주문
     orders = [Order(ticker='SPY', action=OrderAction.BUY, quantity=10, price=100.0)]
-    with caplog.at_level(logging.WARNING, logger='src.infra.broker'):
-        broker.execute_orders(orders)
+    broker.execute_orders(orders)
 
-    assert any("Qty Adjusted" in record.message for record in caplog.records), \
-        "수량 조정 시 WARNING 로그가 기록되어야 함"
+    warning_calls = [str(call) for call in mock_logger.warning.call_args_list]
+    assert any("Qty Adjusted" in call for call in warning_calls), \
+        "수량 조정 시 ILogger.warning()이 호출되어야 함"
 
 
 def test_mock_broker_cash_recycling_logic():
