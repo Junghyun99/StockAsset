@@ -111,14 +111,17 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
             # 2. 전략 판단 (main.py와 동일한 NaN 체크 + CRASH 처리)
             nan_fields = market_data.nan_fields()
-            if nan_fields:
+            nan_triggered = bool(nan_fields)  # NaN 여부를 별도로 추적
+            if nan_triggered:
+                # main.py와 동일: NaN → 데이터 품질 이상으로 CRASH 처리
                 regime = MarketRegime.CRASH
                 exposure = 0.0
             else:
                 regime = analyzer.analyze(market_data)
                 exposure = targeter.calculate_exposure(regime, market_data.spy_volatility)
 
-            # CRASH: 리밸런싱 없이 현재 상태 기록 후 스킵
+            # CRASH 또는 NaN: 리밸런싱 없이 현재 상태 기록 후 스킵
+            # main.py와 달리 알림/대기 대신 기록으로 대체하되, NaN과 CRASH를 구분하여 저장
             if regime == MarketRegime.CRASH:
                 final_pf = broker.get_portfolio()
                 history.append({
@@ -128,6 +131,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                     "exposure": 0.0,
                     "regime": regime.value,
                     "trade_count": 0,
+                    "nan_triggered": nan_triggered,  # NaN 원인 여부 구분
                 })
                 continue
 
@@ -151,6 +155,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                 "exposure": exposure,
                 "regime": regime.value,
                 "trade_count": len(day_executions),
+                "nan_triggered": False,  # 정상 처리 (NaN 없음)
             })
 
         except Exception as e:
