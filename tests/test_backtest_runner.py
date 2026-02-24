@@ -409,6 +409,46 @@ def test_docs_directory_created_if_missing(mock_path_cls, mock_savefig, mock_dow
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
+def test_nan_triggered_flag_true_when_nan_occurs(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #68] NaN 데이터 발생 시 history에 nan_triggered=True가 기록되어야 한다.
+    이를 통해 실제 CRASH와 데이터 품질 오류(NaN)를 사후 분석에서 구분할 수 있다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    nan_market_data = MagicMock()
+    nan_market_data.nan_fields.return_value = ['spy_volatility']
+    nan_market_data.spy_volatility = math.nan
+
+    with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data):
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
+
+    assert result is not None
+    assert "nan_triggered" in result.history.columns, "history에 nan_triggered 컬럼이 있어야 함"
+    # NaN 발생일은 nan_triggered=True
+    assert result.history["nan_triggered"].any(), "NaN 발생 시 nan_triggered=True인 행이 있어야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_nan_triggered_flag_false_for_real_crash(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #68] 실제 CRASH 국면(NaN 없음)에서는 nan_triggered=False로 기록되어야 한다.
+    NaN 원인 없는 CRASH와 NaN으로 인한 CRASH를 구분할 수 있어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
+
+    assert result is not None
+    assert "nan_triggered" in result.history.columns, "history에 nan_triggered 컬럼이 있어야 함"
+    # 실제 CRASH(NaN 없음)는 nan_triggered=False
+    assert not result.history["nan_triggered"].any(), "NaN 없는 CRASH에서 nan_triggered=False이어야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
 def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock_fetcher_return):
     """
     [Issue #45] execute_orders 반환값(TradeExecution 리스트)이 누락 없이 수집되어야 한다.
