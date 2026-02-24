@@ -141,12 +141,14 @@ def test_validate_tickers_all_present():
     cols = pd.MultiIndex.from_product([["Close"], ["SPY", "SSO"]])
     df = pd.DataFrame([[100.0, 200.0]] * 5, index=dates, columns=cols)
 
-    missing = _validate_tickers(df, ["SPY", "SSO"])
+    mock_logger = MagicMock()
+    missing = _validate_tickers(df, ["SPY", "SSO"], mock_logger)
 
     assert missing == []
+    mock_logger.warning.assert_not_called()
 
 
-def test_validate_tickers_some_missing(capsys):
+def test_validate_tickers_some_missing():
     """
     [Validate] 일부 티커가 full_df에 없으면 누락 목록을 반환하고 경고를 출력해야 한다.
     """
@@ -154,28 +156,30 @@ def test_validate_tickers_some_missing(capsys):
     cols = pd.MultiIndex.from_product([["Close"], ["SPY"]])
     df = pd.DataFrame([[100.0]] * 5, index=dates, columns=cols)
 
-    missing = _validate_tickers(df, ["SPY", "SSO", "QLD"])
+    mock_logger = MagicMock()
+    missing = _validate_tickers(df, ["SPY", "SSO", "QLD"], mock_logger)
 
     assert "SSO" in missing
     assert "QLD" in missing
     assert "SPY" not in missing
-    captured = capsys.readouterr()
-    assert "⚠️" in captured.out
+    mock_logger.warning.assert_called_once()
+    assert "⚠️" in mock_logger.warning.call_args[0][0]
 
 
 @patch("src.backtest.runner.download_historical_data")
-def test_run_backtest_aborts_when_tickers_missing(mock_download, mock_fetcher_spy_only, capsys):
+def test_run_backtest_aborts_when_tickers_missing(mock_download, mock_fetcher_spy_only, caplog):
     """
     [Validate] full_df에 ASSET_GROUPS 티커가 일부 누락되면
     경고를 출력하고 None을 반환해 백테스트를 중단해야 한다.
     """
+    import logging
     mock_download.return_value = mock_fetcher_spy_only  # SPY만 포함
 
-    result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+    with caplog.at_level(logging.WARNING, logger="SolidQuant"):
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     assert result is None, "티커 누락 시 None을 반환해 백테스트를 중단해야 함"
-    captured = capsys.readouterr()
-    assert "⚠️" in captured.out, "누락 티커에 대한 경고가 출력되어야 함"
+    assert "⚠️" in caplog.text, "누락 티커에 대한 경고가 출력되어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")

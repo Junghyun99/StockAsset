@@ -42,7 +42,7 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
 
     missing = [t for t in required if t not in available]
     if missing:
-        logger.warning(f"데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
+        logger.warning(f"⚠️ 데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
     return missing
 
 
