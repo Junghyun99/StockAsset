@@ -222,18 +222,22 @@ class Rebalancer:
 
             diff_val = per_stock_target - current_val
 
-            order_desc = "→ 주문 없음 (수량 미달)"
+            order_desc = "→ 주문 없음"
             if diff_val > 0:
                 qty = math.floor(diff_val / price)
                 if qty > 0:
                     orders.append(Order(ticker, OrderAction.BUY, qty, price))
                     order_desc = f"→ BUY {qty}주 @${price:.2f}"
+                else:
+                    order_desc = "→ 주문 없음 (수량 미달)"
             elif diff_val < 0:
                 qty = math.ceil(abs(diff_val) / price)
                 qty = min(qty, current_qty)  # 보유 수량 초과 매도 방지
                 if qty > 0:
                     orders.append(Order(ticker, OrderAction.SELL, qty, price))
                     order_desc = f"→ SELL {qty}주 @${price:.2f}"
+                else:
+                    order_desc = "→ 주문 없음 (수량 미달)"
 
             if self._logger:
                 self._logger.info(

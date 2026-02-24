@@ -785,7 +785,7 @@ def test_create_group_orders_logs_ticker_detail(create_portfolio):
     assert any('SPY' in msg for msg in info_calls)
     assert any('QLD' in msg for msg in info_calls)
     # 현재가치/목표/diff/주문방향 포함 확인
-    assert any('BUY' in msg for msg in info_calls)
+    assert any('→ BUY' in msg for msg in info_calls)
 
 
 def test_create_group_orders_logs_no_order_reason(create_portfolio):
