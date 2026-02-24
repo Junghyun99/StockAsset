@@ -30,7 +30,7 @@ class BacktestResult:
     trade_executions: Optional[List[TradeExecution]] = None  # 전체 매매 체결 기록
 
 
-def _validate_tickers(full_df: pd.DataFrame, required: List[str]) -> List[str]:
+def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeLogger) -> List[str]:
     """
     full_df에 실제로 수신된 티커와 required를 비교해 누락된 티커를 반환한다.
     누락이 있으면 경고를 출력하고, 호출자가 처리 방식을 결정한다.
@@ -42,7 +42,7 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str]) -> List[str]:
 
     missing = [t for t in required if t not in available]
     if missing:
-        print(f"⚠️ 데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
+        logger.warning(f"⚠️ 데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
     return missing
 
 
@@ -62,7 +62,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     full_df, full_vix = download_historical_data(tickers, start_date, end_date)
 
     # 2-1. 수신 티커 검증: 누락 티커가 하나라도 있으면 즉시 종료
-    if _validate_tickers(full_df, tickers):
+    if _validate_tickers(full_df, tickers, logger):
         return None
 
     # 3. 컴포넌트 조립
