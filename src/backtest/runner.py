@@ -10,6 +10,7 @@ from src.config import Config
 from src.core.models import MarketRegime, TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
+from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
 from src.backtest.components import BacktestDataLoader, BacktestBroker
 
@@ -29,7 +30,7 @@ class BacktestResult:
     trade_executions: Optional[List[TradeExecution]] = None  # 전체 매매 체결 기록
 
 
-def _validate_tickers(full_df: pd.DataFrame, required: List[str]) -> List[str]:
+def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeLogger) -> List[str]:
     """
     full_df에 실제로 수신된 티커와 required를 비교해 누락된 티커를 반환한다.
     누락이 있으면 경고를 출력하고, 호출자가 처리 방식을 결정한다.
@@ -41,13 +42,14 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str]) -> List[str]:
 
     missing = [t for t in required if t not in available]
     if missing:
-        print(f"⚠️ 데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
+        logger.warning(f"데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
     return missing
 
 
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) -> Optional[BacktestResult]:
     # 1. 설정 로드
     config = Config()
+    logger = TradeLogger(log_dir="logs/backtest")
     tickers = []
     for group in config.ASSET_GROUPS.values():
         tickers.extend(group)
@@ -56,16 +58,16 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
         tickers.append("SPY")  # 벤치마크 계산에 필요
 
     # 2. 데이터 준비 (10년치 한방에 로딩)
-    print("--- Preparing Data ---")
+    logger.info("--- Preparing Data ---")
     full_df, full_vix = download_historical_data(tickers, start_date, end_date)
 
     # 2-1. 수신 티커 검증: 누락 티커가 하나라도 있으면 즉시 종료
-    if _validate_tickers(full_df, tickers):
+    if _validate_tickers(full_df, tickers, logger):
         return None
 
     # 3. 컴포넌트 조립
     loader = BacktestDataLoader(full_df, full_vix)
-    broker = BacktestBroker(initial_cash)
+    broker = BacktestBroker(initial_cash, logger=logger)
 
     # Core Logic (그대로 재사용!)
     calculator = IndicatorCalculator()
@@ -81,7 +83,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
     history = []
     all_executions: List[TradeExecution] = []
-    print(f"--- Starting Backtest ({len(sim_days)} trading days) ---")
+    logger.info(f"--- Starting Backtest ({len(sim_days)} trading days) ---")
 
     for today in sim_days:
         # [Time Setting] 오늘 날짜 설정
@@ -159,13 +161,13 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
             })
 
         except Exception as e:
-            print(f"Error on {today.date()}: {e}")
+            logger.error(f"Error on {today.date()}: {e}")
 
     # 5. 결과 분석 및 시각화
-    print("--- Backtest Finished ---")
+    logger.info("--- Backtest Finished ---")
 
     if not history:
-        print("No trading data available for the given period.")
+        logger.warning("No trading data available for the given period.")
         return None
 
     res_df = pd.DataFrame(history).set_index("date")
@@ -206,22 +208,22 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
             regime_returns[str(regime_val)] = float(regime_daily.mean() * 252)
 
     # 결과 출력
-    print(f"Initial: ${initial_cash:,.0f} -> Final: ${final_value:,.0f}")
-    print(f"CAGR: {cagr:.2%} | MDD: {mdd:.2%} | Sharpe: {sharpe_ratio:.2f}")
+    logger.info(f"Initial: ${initial_cash:,.0f} -> Final: ${final_value:,.0f}")
+    logger.info(f"CAGR: {cagr:.2%} | MDD: {mdd:.2%} | Sharpe: {sharpe_ratio:.2f}")
     if spy_cagr is not None:
-        print(f"SPY Buy&Hold CAGR: {spy_cagr:.2%} | Excess CAGR: {cagr - spy_cagr:.2%}")
+        logger.info(f"SPY Buy&Hold CAGR: {spy_cagr:.2%} | Excess CAGR: {cagr - spy_cagr:.2%}")
     if regime_returns:
-        print("Regime Returns (annualized avg daily):")
+        logger.info("Regime Returns (annualized avg daily):")
         for regime_name, regime_ret in regime_returns.items():
-            print(f"  {regime_name}: {regime_ret:.2%}")
+            logger.info(f"  {regime_name}: {regime_ret:.2%}")
 
     # 거래 통계 출력
-    print(f"Total Executions: {len(all_executions)}")
+    logger.info(f"Total Executions: {len(all_executions)}")
     if all_executions:
         ticker_counts = Counter(e.ticker for e in all_executions)
         action_counts = Counter(f"{e.ticker}/{e.action}" for e in all_executions)
-        print("Trade Frequency by Ticker:", dict(ticker_counts))
-        print("Trade Frequency by Ticker/Action:", dict(action_counts))
+        logger.info(f"Trade Frequency by Ticker: {dict(ticker_counts)}")
+        logger.info(f"Trade Frequency by Ticker/Action: {dict(action_counts)}")
 
     # 차트 저장 (plt.show() 대신 파일로 저장)
     chart_path = f"docs/backtest_{start_date}_{end_date}.png"
@@ -240,7 +242,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     plt.legend()
     plt.savefig(chart_path)
     plt.close()
-    print(f"Chart saved: {chart_path}")
+    logger.info(f"Chart saved: {chart_path}")
 
     return BacktestResult(
         history=res_df,
