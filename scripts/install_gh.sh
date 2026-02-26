@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 # GitHub CLI (gh) 설치 스크립트
-# 지원 OS: Ubuntu/Debian, Fedora/RHEL/CentOS, macOS, Arch Linux
+# GitHub Releases에서 최신 바이너리를 직접 다운로드하여 설치합니다.
+# 지원 OS: Linux (amd64/arm64), macOS (amd64/arm64)
 
 set -euo pipefail
 
-GH_VERSION="latest"
+INSTALL_DIR="/usr/local/bin"
+GH_RELEASES_API="https://api.github.com/repos/cli/cli/releases/latest"
+GH_DOWNLOAD_BASE="https://github.com/cli/cli/releases/download"
 
 info()  { echo "[INFO]  $*"; }
 error() { echo "[ERROR] $*" >&2; exit 1; }
@@ -16,80 +19,88 @@ already_installed() {
     fi
 }
 
-install_debian() {
-    info "Ubuntu/Debian 환경에서 gh 설치 중..."
-    sudo apt-get update -q
-    sudo apt-get install -y curl gpg
+# GitHub API로 최신 버전 태그 조회 (v2.x.x 형식)
+fetch_latest_version() {
+    local version
+    version="$(curl -fsSL "$GH_RELEASES_API" \
+        | grep '"tag_name"' \
+        | sed 's/.*"tag_name": *"v\([^"]*\)".*/\1/')"
 
-    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-        | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-    sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] \
-https://cli.github.com/packages stable main" \
-        | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-
-    sudo apt-get update -q
-    sudo apt-get install -y gh
-}
-
-install_fedora() {
-    info "Fedora/RHEL/CentOS 환경에서 gh 설치 중..."
-    sudo dnf install -y 'dnf-command(config-manager)'
-    sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
-    sudo dnf install -y gh
-}
-
-install_macos() {
-    info "macOS 환경에서 gh 설치 중..."
-    if ! command -v brew &>/dev/null; then
-        error "Homebrew가 설치되어 있지 않습니다. https://brew.sh 를 참고하여 먼저 설치하세요."
+    if [ -z "$version" ]; then
+        error "최신 버전을 가져오지 못했습니다. 네트워크 상태를 확인하세요."
     fi
-    brew install gh
+
+    echo "$version"
 }
 
-install_arch() {
-    info "Arch Linux 환경에서 gh 설치 중..."
-    sudo pacman -S --noconfirm github-cli
-}
+# OS / 아키텍처 감지 → gh 릴리즈 파일명 형식에 맞게 변환
+detect_platform() {
+    local os arch
 
-detect_and_install() {
-    local os
-    os="$(uname -s)"
-
-    case "$os" in
-        Darwin)
-            install_macos
-            ;;
-        Linux)
-            if [ -f /etc/os-release ]; then
-                # shellcheck source=/dev/null
-                . /etc/os-release
-                case "${ID:-}" in
-                    ubuntu|debian|linuxmint|pop)
-                        install_debian
-                        ;;
-                    fedora)
-                        install_fedora
-                        ;;
-                    rhel|centos|rocky|almalinux)
-                        install_fedora
-                        ;;
-                    arch|manjaro)
-                        install_arch
-                        ;;
-                    *)
-                        error "지원하지 않는 Linux 배포판입니다: ${ID:-unknown}. 수동으로 설치하세요: https://github.com/cli/cli#installation"
-                        ;;
-                esac
-            else
-                error "/etc/os-release 파일을 찾을 수 없습니다. Linux 배포판을 확인할 수 없습니다."
-            fi
-            ;;
-        *)
-            error "지원하지 않는 OS입니다: $os"
-            ;;
+    case "$(uname -s)" in
+        Linux)  os="linux"  ;;
+        Darwin) os="macOS"  ;;
+        *)      error "지원하지 않는 OS: $(uname -s)" ;;
     esac
+
+    case "$(uname -m)" in
+        x86_64|amd64) arch="amd64" ;;
+        arm64|aarch64) arch="arm64" ;;
+        *)             error "지원하지 않는 아키텍처: $(uname -m)" ;;
+    esac
+
+    echo "${os}_${arch}"
+}
+
+install_gh() {
+    local version platform os ext tmpdir tarball
+
+    version="$(fetch_latest_version)"
+    platform="$(detect_platform)"
+    os="${platform%%_*}"   # linux 또는 macOS
+
+    # 파일 확장자: macOS → .zip, Linux → .tar.gz
+    if [ "$os" = "macOS" ]; then
+        ext="zip"
+    else
+        ext="tar.gz"
+    fi
+
+    local filename="gh_${version}_${platform}.${ext}"
+    local url="${GH_DOWNLOAD_BASE}/v${version}/${filename}"
+
+    info "최신 버전: v${version}"
+    info "다운로드: ${url}"
+
+    tmpdir="$(mktemp -d)"
+    trap 'rm -rf "$tmpdir"' EXIT
+
+    curl -fsSL "$url" -o "${tmpdir}/${filename}"
+
+    # 압축 해제
+    if [ "$ext" = "zip" ]; then
+        unzip -q "${tmpdir}/${filename}" -d "$tmpdir"
+    else
+        tar -xzf "${tmpdir}/${filename}" -C "$tmpdir"
+    fi
+
+    # 추출된 디렉토리 안의 bin/gh 를 INSTALL_DIR 로 복사
+    local gh_bin
+    gh_bin="$(find "$tmpdir" -type f -name "gh" | head -n1)"
+
+    if [ -z "$gh_bin" ]; then
+        error "압축 파일 안에서 gh 바이너리를 찾을 수 없습니다."
+    fi
+
+    if [ -w "$INSTALL_DIR" ]; then
+        cp "$gh_bin" "${INSTALL_DIR}/gh"
+        chmod +x "${INSTALL_DIR}/gh"
+    else
+        sudo cp "$gh_bin" "${INSTALL_DIR}/gh"
+        sudo chmod +x "${INSTALL_DIR}/gh"
+    fi
+
+    info "gh를 ${INSTALL_DIR}/gh 에 설치했습니다."
 }
 
 verify_installation() {
@@ -97,13 +108,13 @@ verify_installation() {
         info "설치 완료: $(gh --version | head -n1)"
         info "로그인하려면 'gh auth login' 을 실행하세요."
     else
-        error "설치 후에도 gh 명령어를 찾을 수 없습니다."
+        error "설치 후에도 gh 명령어를 찾을 수 없습니다. ${INSTALL_DIR} 이 PATH에 포함되어 있는지 확인하세요."
     fi
 }
 
 main() {
     already_installed
-    detect_and_install
+    install_gh
     verify_installation
 }
 
