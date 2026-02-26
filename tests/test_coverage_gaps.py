@@ -39,16 +39,16 @@ class TestBacktestDataLoaderEdgeCases:
         assert len(df) == 5
 
     def test_loader_fetch_ohlcv_keyerror(self, loader_data):
-        """단일 종목 요청인데 해당 종목이 MultiIndex에 없는 경우"""
+        """단일 종목 요청인데 해당 종목이 MultiIndex에 없는 경우 ValueError 발생 (이슈 #89)"""
         from src.backtest.components import BacktestDataLoader
 
         full_df, full_vix = loader_data
         loader = BacktestDataLoader(full_df, full_vix)
         loader.set_date(pd.Timestamp("2024-01-05"))
 
-        # 'IEF'는 데이터에 없음 -> KeyError -> except 분기로 원본 반환
-        df = loader.fetch_ohlcv(["IEF"], days=3)
-        assert len(df) == 3  # 원본 슬라이스가 그대로 반환
+        # 'IEF'는 데이터에 없음 -> KeyError -> ValueError로 전파 (계약 준수)
+        with pytest.raises(ValueError, match="IEF"):
+            loader.fetch_ohlcv(["IEF"], days=3)
 
     def test_loader_fetch_vix_fallback(self, loader_data):
         """VIX 데이터가 비정상적일 때 기본값 20.0 반환"""

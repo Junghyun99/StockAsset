@@ -33,7 +33,11 @@ class BacktestDataLoader(IDataProvider):
              try:
                  return sliced.xs(tickers[0], axis=1, level=1)
              except KeyError:
-                 return sliced # 이미 처리된 경우
+                 available = list(sliced.columns.get_level_values(1).unique())
+                 raise ValueError(
+                     f"Ticker '{tickers[0]}' not found in DataFrame. "
+                     f"Available tickers: {available}"
+                 )
                  
         return sliced
 
