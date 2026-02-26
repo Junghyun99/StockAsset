@@ -85,7 +85,7 @@ gh cli를 사용하기 위해 curl로 gh cli 설치한다.
 curl -fsSL https://github.com/cli/cli/releases/download/version
 
 아래 환경변수 설정으로 토큰 인증을 한다.
-export GITHUB_TOKEN=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
+export GITHUB_TOKEN=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
 
 
 각 문제를 개별 GitHub 이슈로 생성합니다:

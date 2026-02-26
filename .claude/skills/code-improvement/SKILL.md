@@ -35,7 +35,7 @@ curl -fsSL https://github.com/cli/cli/releases/download/version
 gh cli를 사용하기 위해 환경변수를 설정합니다.
 
 ```bash
-export GITHUB_TOKEN=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
+export GITHUB_TOKEN=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
 ```
 
 인자로 이슈 번호가 주어진 경우:
