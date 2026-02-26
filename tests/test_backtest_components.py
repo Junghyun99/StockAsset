@@ -288,3 +288,61 @@ def test_backtest_broker_set_date_updates_per_day():
 
     assert executions_day1[0].date == "2020-01-02"
     assert executions_day2[0].date == "2020-01-03"
+
+
+def test_fetch_ohlcv_raises_value_error_when_ticker_not_in_multiindex():
+    """
+    [이슈 #89] 단일 종목 요청 시 해당 티커가 MultiIndex에 없으면 ValueError를 발생시켜야 함.
+    전체 MultiIndex DataFrame을 그대로 반환하면 IDataProvider 계약 위반.
+    """
+    dates = pd.date_range(start="2024-01-01", periods=5)
+    # AAPL 데이터만 있는 MultiIndex DataFrame
+    columns = pd.MultiIndex.from_product([['Close'], ['AAPL']])
+    df = pd.DataFrame([[100.0]] * 5, index=dates, columns=columns)
+    vix_df = pd.DataFrame({'Close': [20.0] * 5}, index=dates)
+
+    loader = BacktestDataLoader(df, vix_df)
+    loader.set_date(pd.Timestamp("2024-01-05"))
+
+    # SPY는 데이터에 없으므로 ValueError가 발생해야 함
+    with pytest.raises(ValueError, match="SPY"):
+        loader.fetch_ohlcv(["SPY"], days=5)
+
+
+def test_fetch_ohlcv_error_message_contains_available_tickers():
+    """
+    [이슈 #89] ValueError 메시지에 사용 가능한 티커 목록이 포함되어야 함.
+    """
+    dates = pd.date_range(start="2024-01-01", periods=5)
+    columns = pd.MultiIndex.from_product([['Close'], ['QLD']])
+    df = pd.DataFrame([[50.0]] * 5, index=dates, columns=columns)
+    vix_df = pd.DataFrame({'Close': [20.0] * 5}, index=dates)
+
+    loader = BacktestDataLoader(df, vix_df)
+    loader.set_date(pd.Timestamp("2024-01-05"))
+
+    with pytest.raises(ValueError) as exc_info:
+        loader.fetch_ohlcv(["SSO"], days=5)
+
+    assert "QLD" in str(exc_info.value)  # 사용 가능한 티커가 메시지에 포함
+
+
+def test_fetch_ohlcv_single_ticker_returns_single_index_when_found():
+    """
+    [이슈 #89] 단일 종목 요청 시 해당 티커가 존재하면 SingleIndex DataFrame을 반환해야 함.
+    KeyError 수정이 정상 케이스에 영향을 주지 않는지 확인.
+    """
+    dates = pd.date_range(start="2024-01-01", periods=5)
+    columns = pd.MultiIndex.from_product([['Close', 'Open'], ['SPY']])
+    data = [[100.0, 99.0]] * 5
+    df = pd.DataFrame(data, index=dates, columns=columns)
+    vix_df = pd.DataFrame({'Close': [20.0] * 5}, index=dates)
+
+    loader = BacktestDataLoader(df, vix_df)
+    loader.set_date(pd.Timestamp("2024-01-05"))
+
+    result = loader.fetch_ohlcv(["SPY"], days=5)
+
+    # SingleIndex여야 함 (MultiIndex가 아닌)
+    assert not isinstance(result.columns, pd.MultiIndex)
+    assert "Close" in result.columns
