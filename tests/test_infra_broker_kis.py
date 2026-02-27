@@ -228,8 +228,9 @@ def test_paper_broker_fetch_prices_uses_overseas_tr_id(mock_sleep, paper_broker,
 
 # --- get_portfolio 테스트 ---
 
-def test_paper_broker_get_portfolio_success(paper_broker, mock_requests):
-    """잔고 조회 성공"""
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_success(mock_sleep, paper_broker, mock_requests):
+    """잔고 조회 성공 — NAS/NYS/AMS 3개 거래소 모두 호출"""
     portfolio_response = MagicMock()
     portfolio_response.json.return_value = {
         'rt_cd': '0',
@@ -249,10 +250,13 @@ def test_paper_broker_get_portfolio_success(paper_broker, mock_requests):
     assert pf.holdings['IEF'] == 5
     assert 'OLD' not in pf.holdings  # 0주는 제외
     assert pf.current_prices['SPY'] == 150.0
+    # NAS, NYS, AMS 3개 거래소 모두 조회
+    assert mock_requests.get.call_count == 3
 
 
-def test_paper_broker_get_portfolio_api_failure(paper_broker, mock_requests):
-    """잔고 조회 API 실패"""
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_api_failure(mock_sleep, paper_broker, mock_requests):
+    """잔고 조회 API 실패 — 모든 거래소 실패 시 빈 포트폴리오 반환"""
     fail_response = MagicMock()
     fail_response.json.return_value = {
         'rt_cd': '1',
@@ -264,9 +268,12 @@ def test_paper_broker_get_portfolio_api_failure(paper_broker, mock_requests):
 
     assert pf.total_cash == 0
     assert pf.holdings == {}
+    # 각 거래소별 warning 로그 확인
+    assert paper_broker.logger.warning.call_count == 3
 
 
-def test_paper_broker_get_portfolio_exception(paper_broker, mock_requests):
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_exception(mock_sleep, paper_broker, mock_requests):
     """잔고 조회 중 예외 발생"""
     mock_requests.get.side_effect = Exception("Connection Error")
 
@@ -276,7 +283,8 @@ def test_paper_broker_get_portfolio_exception(paper_broker, mock_requests):
     paper_broker.logger.error.assert_called()
 
 
-def test_paper_broker_get_portfolio_real_mode(live_broker, mock_requests):
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_real_mode(mock_sleep, live_broker, mock_requests):
     """실전 모드에서 TR_ID 확인"""
     portfolio_response = MagicMock()
     portfolio_response.json.return_value = {
@@ -290,6 +298,100 @@ def test_paper_broker_get_portfolio_real_mode(live_broker, mock_requests):
 
     args, kwargs = mock_requests.get.call_args
     assert kwargs['headers']['tr_id'] == 'TTTS3012R'
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_merges_all_exchanges(mock_sleep, paper_broker, mock_requests):
+    """NAS/NYS/AMS 거래소별 보유종목이 정상 병합되는지 확인"""
+    # NAS: IEF, SHV
+    nas_response = MagicMock()
+    nas_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [
+            {'ovrs_pdno': 'IEF', 'ovrs_cblc_qty': '5', 'now_pric2': '100.0'},
+            {'ovrs_pdno': 'SHV', 'ovrs_cblc_qty': '3', 'now_pric2': '110.0'},
+        ],
+        'output2': {'ovrs_ord_psbl_amt': '8000.0'}
+    }
+    # NYS: GLD
+    nys_response = MagicMock()
+    nys_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [
+            {'ovrs_pdno': 'GLD', 'ovrs_cblc_qty': '2', 'now_pric2': '180.0'},
+        ],
+        'output2': {'ovrs_ord_psbl_amt': '8000.0'}  # 동일 계좌 잔고 (무시됨)
+    }
+    # AMS: SSO, QLD
+    ams_response = MagicMock()
+    ams_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [
+            {'ovrs_pdno': 'SSO', 'ovrs_cblc_qty': '10', 'now_pric2': '55.0'},
+            {'ovrs_pdno': 'QLD', 'ovrs_cblc_qty': '8', 'now_pric2': '75.0'},
+        ],
+        'output2': {'ovrs_ord_psbl_amt': '8000.0'}  # 동일 계좌 잔고 (무시됨)
+    }
+    mock_requests.get.side_effect = [nas_response, nys_response, ams_response]
+
+    pf = paper_broker.get_portfolio()
+
+    # 예수금은 최초(NAS) 응답에서만 가져옴
+    assert pf.total_cash == 8000.0
+    # 전 거래소 보유종목 병합 확인
+    assert pf.holdings == {'IEF': 5, 'SHV': 3, 'GLD': 2, 'SSO': 10, 'QLD': 8}
+    assert pf.current_prices['GLD'] == 180.0
+    assert pf.current_prices['SSO'] == 55.0
+    assert mock_requests.get.call_count == 3
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_partial_exchange_failure(mock_sleep, paper_broker, mock_requests):
+    """일부 거래소 실패 시 성공한 거래소 결과만 반환"""
+    # NAS: 성공
+    nas_response = MagicMock()
+    nas_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [{'ovrs_pdno': 'IEF', 'ovrs_cblc_qty': '5', 'now_pric2': '100.0'}],
+        'output2': {'ovrs_ord_psbl_amt': '3000.0'}
+    }
+    # NYS: API 오류
+    nys_response = MagicMock()
+    nys_response.json.return_value = {'rt_cd': '1', 'msg1': 'Market Closed'}
+    # AMS: 성공
+    ams_response = MagicMock()
+    ams_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [{'ovrs_pdno': 'SSO', 'ovrs_cblc_qty': '10', 'now_pric2': '55.0'}],
+        'output2': {'ovrs_ord_psbl_amt': '3000.0'}
+    }
+    mock_requests.get.side_effect = [nas_response, nys_response, ams_response]
+
+    pf = paper_broker.get_portfolio()
+
+    # NAS와 AMS 성공 결과만 포함
+    assert pf.total_cash == 3000.0
+    assert pf.holdings == {'IEF': 5, 'SSO': 10}
+    # NYS 실패에 대한 warning 로그 1회
+    assert paper_broker.logger.warning.call_count == 1
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_cash_not_duplicated(mock_sleep, paper_broker, mock_requests):
+    """예수금이 3개 거래소 합산이 아닌 최초 성공 응답에서만 가져오는지 확인"""
+    # 모든 거래소가 동일한 cash를 반환하더라도 첫 번째 것만 사용
+    response = MagicMock()
+    response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [],
+        'output2': {'ovrs_ord_psbl_amt': '1000.0'}
+    }
+    mock_requests.get.return_value = response
+
+    pf = paper_broker.get_portfolio()
+
+    # 1000 * 3 = 3000이 아닌 1000이어야 함
+    assert pf.total_cash == 1000.0
 
 
 # --- _send_order 테스트 ---

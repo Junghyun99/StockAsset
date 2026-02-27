@@ -264,52 +264,59 @@ class KisBrokerBase(IBrokerAdapter):
 
     def get_portfolio(self) -> Portfolio:
         """
-        해외주식 잔고 및 예수금 조회
+        해외주식 잔고 및 예수금 조회 (NAS/NYS/AMS 전 거래소 통합)
+        _get_pending_orders_count()와 동일하게 모든 거래소를 순회하여 누락 없이 수집한다.
         """
         tr_id = self.PORTFOLIO_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-balance"
-        # 환율구분: 000(전체), 국가: US(미국), 시장: NYSE
-        params = {
-            "CANO": self.cano,
-            "ACNT_PRDT_CD": self.acnt_prdt_cd,
-            "OVRS_EXCG_CD": "NAS", # 대표 시장
-            "TR_CRCY_CD": "USD",
-            "CTX_AREA_FK100": "",
-            "CTX_AREA_NK100": ""
-        }
-        
-        headers = self._get_header(tr_id)
-        try:
-            res = requests.get(url, headers=headers, params=params)
-            data = res.json()
-            
-            if data['rt_cd'] != '0':
-                self.logger.error(f"[KisBroker] Get Portfolio Failed: {data.get('msg1')}")
-                return Portfolio(0, {}, {})
-            # 1. 예수금 (주문가능 외화금액) - output2의 'frcr_dncl_amt_2' (외화예수금) 또는 'ovrs_ord_psbl_amt'(주문가능)
-            # 안전하게 주문가능금액 사용
-            cash = float(data['output2']['ovrs_ord_psbl_amt'])
-            
-            # 2. 보유 종목 (output1)
-            holdings = {}
-            current_prices = {}
-            for item in data['output1']:
-                # ccls_qty: 체결 수량 (잔고)
-                qty = int(item['ovrs_cblc_qty'])
-                if qty > 0:
-                    ticker = item['ovrs_pdno'] # 티커
-                    holdings[ticker] = qty
-                    # 잔고 조회 시 현재가도 같이 옴 (now_pric2)
-                    current_prices[ticker] = float(item['now_pric2'])
-            return Portfolio(
-                total_cash=cash,
-                holdings=holdings,
-                current_prices=current_prices
-            )
 
-        except Exception as e:
-            self.logger.error(f"[KisBroker] Error getting portfolio: {e}")
-            return Portfolio(0, {}, {})
+        target_exchanges = ["NAS", "NYS", "AMS"]
+
+        total_cash = 0.0
+        cash_fetched = False
+        all_holdings: Dict[str, int] = {}
+        all_prices: Dict[str, float] = {}
+
+        for exch in target_exchanges:
+            params = {
+                "CANO": self.cano,
+                "ACNT_PRDT_CD": self.acnt_prdt_cd,
+                "OVRS_EXCG_CD": exch,
+                "TR_CRCY_CD": "USD",
+                "CTX_AREA_FK100": "",
+                "CTX_AREA_NK100": ""
+            }
+            headers = self._get_header(tr_id)
+            try:
+                time.sleep(0.2)  # API 제한 고려
+                res = requests.get(url, headers=headers, params=params)
+                data = res.json()
+
+                if data['rt_cd'] != '0':
+                    self.logger.warning(f"[KisBroker] Get Portfolio Failed ({exch}): {data.get('msg1')}")
+                    continue
+
+                # 예수금은 최초 성공 응답에서만 가져옴 (거래소 무관하게 계좌 전체 금액 동일)
+                if not cash_fetched:
+                    total_cash = float(data['output2']['ovrs_ord_psbl_amt'])
+                    cash_fetched = True
+
+                # 보유 종목 병합
+                for item in data['output1']:
+                    qty = int(item['ovrs_cblc_qty'])
+                    if qty > 0:
+                        ticker = item['ovrs_pdno']
+                        all_holdings[ticker] = qty
+                        all_prices[ticker] = float(item['now_pric2'])
+
+            except Exception as e:
+                self.logger.error(f"[KisBroker] Error getting portfolio ({exch}): {e}")
+
+        return Portfolio(
+            total_cash=total_cash,
+            holdings=all_holdings,
+            current_prices=all_prices
+        )
 
     def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
         executions = []
