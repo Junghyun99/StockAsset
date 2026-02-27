@@ -196,6 +196,21 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
 
         except Exception as e:
             logger.error(f"Error on {today.date()}: {e}")
+            # 예외 발생 시에도 현재 포트폴리오 상태를 history에 기록 (브로커 불일치 방지)
+            try:
+                error_pf = broker.get_portfolio()
+                history.append({
+                    "date": today,
+                    "total_value": error_pf.total_value,
+                    "cash": error_pf.total_cash,
+                    "exposure": 0.0,
+                    "regime": "ERROR",
+                    "trade_count": 0,
+                    "nan_triggered": False,
+                    "signal_reason": f"ERROR: {type(e).__name__}",
+                })
+            except Exception as inner_e:
+                logger.error(f"  Failed to record portfolio state after error: {inner_e}")
 
     # 5. 결과 분석 및 시각화
     logger.info("--- Backtest Finished ---")
