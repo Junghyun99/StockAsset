@@ -286,3 +286,92 @@ class TestDownloadFailure:
         df, vix = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
         assert df is None
         assert vix is None
+
+
+class TestLogger:
+    """ILogger 의존성 주입 테스트"""
+
+    def _make_mock_logger(self):
+        from unittest.mock import MagicMock
+        logger = MagicMock()
+        logger.info = MagicMock()
+        logger.warning = MagicMock()
+        logger.error = MagicMock()
+        return logger
+
+    @patch("src.backtest.cache.yf.download")
+    def test_logger_info_called_on_cache_miss(self, mock_download, tmp_cache_dir):
+        """캐시 미스 시 logger.info가 호출되어야 한다"""
+        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-12-31")
+        vix = _make_vix("2023-01-01", "2023-12-31")
+        mock_download.side_effect = [ohlcv, vix]
+
+        logger = self._make_mock_logger()
+        cache = BacktestDataCache(cache_dir=tmp_cache_dir, logger=logger)
+        cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        assert logger.info.called
+
+    @patch("src.backtest.cache.yf.download")
+    def test_logger_info_called_on_cache_hit(self, mock_download, tmp_cache_dir):
+        """캐시 히트 시 logger.info가 호출되어야 한다"""
+        ohlcv = _make_ohlcv(["SPY"], "2022-01-01", "2023-12-31")
+        vix = _make_vix("2022-01-01", "2023-12-31")
+        mock_download.side_effect = [ohlcv, vix]
+
+        logger = self._make_mock_logger()
+        cache = BacktestDataCache(cache_dir=tmp_cache_dir, logger=logger)
+
+        # 1차: 넓은 범위로 캐시 생성
+        cache.get_data(["SPY"], "2022-01-01", "2023-12-31")
+        logger.info.reset_mock()
+
+        # 2차: 더 좁은 범위 요청 → 캐시 히트
+        cache.get_data(["SPY"], "2022-06-01", "2023-06-30")
+
+        # "캐시 히트" 메시지가 포함된 info 호출이 있어야 함
+        info_messages = [call.args[0] for call in logger.info.call_args_list]
+        assert any("히트" in msg for msg in info_messages)
+
+    @patch("src.backtest.cache.yf.download")
+    def test_logger_warning_called_on_download_failure(self, mock_download, tmp_cache_dir):
+        """다운로드 실패 시 logger.warning이 호출되어야 한다"""
+        mock_download.side_effect = Exception("Network error")
+
+        logger = self._make_mock_logger()
+        cache = BacktestDataCache(cache_dir=tmp_cache_dir, logger=logger)
+        cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        assert logger.warning.called
+        warning_messages = [call.args[0] for call in logger.warning.call_args_list]
+        assert any("다운로드 실패" in msg for msg in warning_messages)
+
+    @patch("src.backtest.cache.yf.download")
+    def test_logger_info_called_on_clear(self, mock_download, tmp_cache_dir):
+        """캐시 삭제 시 logger.info가 호출되어야 한다"""
+        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-03-31")
+        vix = _make_vix("2023-01-01", "2023-03-31")
+        mock_download.side_effect = [ohlcv, vix]
+
+        logger = self._make_mock_logger()
+        cache = BacktestDataCache(cache_dir=tmp_cache_dir, logger=logger)
+        cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
+        logger.info.reset_mock()
+
+        cache.clear()
+
+        info_messages = [call.args[0] for call in logger.info.call_args_list]
+        assert any("삭제" in msg for msg in info_messages)
+
+    @patch("src.backtest.cache.yf.download")
+    def test_no_logger_works_with_null_logger(self, mock_download, tmp_cache_dir):
+        """logger를 전달하지 않아도 오류 없이 동작해야 한다 (NullLogger 사용)"""
+        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-12-31")
+        vix = _make_vix("2023-01-01", "2023-12-31")
+        mock_download.side_effect = [ohlcv, vix]
+
+        cache = BacktestDataCache(cache_dir=tmp_cache_dir)  # logger=None
+        df, vix_df = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        assert not df.empty
+        assert not vix_df.empty

@@ -4,11 +4,19 @@ import yfinance as yf
 from datetime import timedelta
 from pathlib import Path
 from typing import List, Tuple, Optional
+from src.core.interfaces import ILogger
 
 CACHE_DIR = Path(__file__).parent / "cache"
 
 # 주말/공휴일로 인한 날짜 차이 허용 범위 (캘린더 일수)
 _DATE_TOLERANCE = timedelta(days=7)
+
+
+class _NullLogger:
+    """로거가 없을 때 사용하는 아무것도 하지 않는 로거"""
+    def info(self, msg: str) -> None: pass
+    def warning(self, msg: str) -> None: pass
+    def error(self, msg: str) -> None: pass
 
 
 class BacktestDataCache:
@@ -21,10 +29,11 @@ class BacktestDataCache:
       - vix.parquet: VIX 데이터
     """
 
-    def __init__(self, cache_dir: Path = CACHE_DIR):
+    def __init__(self, cache_dir: Path = CACHE_DIR, logger: Optional[ILogger] = None):
         self.cache_dir = Path(cache_dir)
         self.ohlcv_path = self.cache_dir / "ohlcv.parquet"
         self.vix_path = self.cache_dir / "vix.parquet"
+        self._logger: ILogger = logger if logger is not None else _NullLogger()
 
     def get_data(
         self, tickers: List[str], start_date: str, end_date: str
@@ -51,7 +60,7 @@ class BacktestDataCache:
         cached = self._load_parquet(self.ohlcv_path)
 
         if cached is None or cached.empty:
-            print(f"📥 캐시 없음. 전체 다운로드: {tickers}")
+            self._logger.info(f"캐시 없음. 전체 다운로드: {tickers}")
             ohlcv = self._download_ohlcv(tickers, need_start, need_end)
             self._save_parquet(ohlcv, self.ohlcv_path)
             return ohlcv
@@ -98,13 +107,13 @@ class BacktestDataCache:
             ))
 
         if not downloads:
-            print("✅ OHLCV 캐시 히트 (다운로드 불필요)")
+            self._logger.info("OHLCV 캐시 히트 (다운로드 불필요)")
             return cached
 
         # 다운로드 및 병합
         result = cached
         for dl_tickers, dl_start, dl_end, reason in downloads:
-            print(f"📥 {reason}: {dl_tickers} ({dl_start.date()} ~ {dl_end.date()})")
+            self._logger.info(f"{reason}: {dl_tickers} ({dl_start.date()} ~ {dl_end.date()})")
             new_data = self._download_ohlcv(dl_tickers, dl_start, dl_end)
             if new_data is not None and not new_data.empty:
                 result = self._merge_dataframes(result, new_data)
@@ -120,7 +129,7 @@ class BacktestDataCache:
         cached = self._load_parquet(self.vix_path)
 
         if cached is None or cached.empty:
-            print("📥 VIX 캐시 없음. 전체 다운로드")
+            self._logger.info("VIX 캐시 없음. 전체 다운로드")
             vix = self._download_vix(need_start, need_end)
             self._save_parquet(vix, self.vix_path)
             return vix
@@ -135,12 +144,12 @@ class BacktestDataCache:
             downloads.append((cache_end + timedelta(days=1), need_end))
 
         if not downloads:
-            print("✅ VIX 캐시 히트 (다운로드 불필요)")
+            self._logger.info("VIX 캐시 히트 (다운로드 불필요)")
             return cached
 
         result = cached
         for dl_start, dl_end in downloads:
-            print(f"📥 VIX 보충: {dl_start.date()} ~ {dl_end.date()}")
+            self._logger.info(f"VIX 보충: {dl_start.date()} ~ {dl_end.date()}")
             new_data = self._download_vix(dl_start, dl_end)
             if new_data is not None and not new_data.empty:
                 result = self._merge_dataframes(result, new_data)
@@ -164,7 +173,7 @@ class BacktestDataCache:
                 return df
             return None
         except Exception as e:
-            print(f"❌ OHLCV 다운로드 실패: {e}")
+            self._logger.warning(f"OHLCV 다운로드 실패: {e}")
             return None
 
     def _download_vix(
@@ -174,7 +183,7 @@ class BacktestDataCache:
             df = yf.download("^VIX", start=start, end=end, progress=False)
             return df if df is not None and not df.empty else None
         except Exception as e:
-            print(f"❌ VIX 다운로드 실패: {e}")
+            self._logger.warning(f"VIX 다운로드 실패: {e}")
             return None
 
     # ── 유틸리티 ───────────────────────────────────────────
@@ -203,7 +212,7 @@ class BacktestDataCache:
             try:
                 return pd.read_parquet(path)
             except Exception as e:
-                print(f"⚠️ 캐시 로드 실패 ({path.name}): {e}")
+                self._logger.warning(f"캐시 로드 실패 ({path.name}): {e}")
                 return None
         return None
 
@@ -212,11 +221,11 @@ class BacktestDataCache:
             try:
                 df.to_parquet(path)
             except Exception as e:
-                print(f"⚠️ 캐시 저장 실패 ({path.name}): {e}")
+                self._logger.warning(f"캐시 저장 실패 ({path.name}): {e}")
 
     def clear(self):
         """캐시 파일 삭제"""
         for p in [self.ohlcv_path, self.vix_path]:
             if p.exists():
                 p.unlink()
-        print("🗑️ 캐시 삭제 완료")
+        self._logger.info("캐시 삭제 완료")
