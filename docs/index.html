@@ -130,14 +130,28 @@
         </div>
 
         <!-- 3. 전략 상세 차트 (Strategy Detail) -->
+        <!-- docs/index.html 내 Strategy Analysis 섹션 부분 수정 -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Strategy Analysis (Market Timing)</h5>
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Strategy Analysis & Decision Logic</h5>
+                        <span class="text-muted small">마우스를 그래프에 올리면 상세 지표가 표시됩니다.</span>
                     </div>
                     <div class="card-body">
-                        <canvas id="strategyChart" height="80"></canvas>
+                        <div class="row">
+                        <!-- 왼쪽: 업그레이드된 그래프 -->
+                            <div class="col-lg-9">
+                                <canvas id="strategyChart" height="150"></canvas>
+                            </div>
+                            <!-- 오른쪽: 전략 인사이트 (판단 근거) -->
+                            <div class="col-lg-3 border-start">
+                                <h6 class="fw-bold mb-3"><i class="fas fa-search-dollar me-2"></i>Decision Factors</h6>
+                                <ul class="list-group list-group-flush small" id="decision-logic-list">
+                            <!-- JS에서 실시간으로 채워짐 -->
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
