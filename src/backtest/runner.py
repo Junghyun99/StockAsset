@@ -9,6 +9,7 @@ from typing import Dict, List, Optional
 from src.config import Config
 from src.core.models import MarketRegime, TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
+from src.infra.repo import JsonRepository
 from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
@@ -69,6 +70,10 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     # 3. 컴포넌트 조립
     loader = BacktestDataLoader(full_df, full_vix)
     broker = BacktestBroker(initial_cash, logger=logger)
+    backtest_data_path = Path("docs/data/backtest")
+    if backtest_data_path.exists():
+        shutil.rmtree(backtest_data_path)
+    backtest_repo = JsonRepository(str(backtest_data_path))
 
     # Core Logic (그대로 재사용!)
     calculator = IndicatorCalculator()
@@ -193,6 +198,10 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
                 "nan_triggered": False,  # 정상 처리 (NaN 없음)
                 "signal_reason": signal.reason,
             })
+            backtest_repo.save_daily_summary(market_data, signal, final_pf)
+            if day_executions:
+                backtest_repo.save_trade_history(day_executions, final_pf, signal.reason)
+            backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason)
 
         except Exception as e:
             logger.error(f"Error on {today.date()}: {e}")
@@ -281,8 +290,9 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
             logger.info(f"  {reason}: {count}회")
 
     # 차트 저장 (plt.show() 대신 파일로 저장)
-    chart_path = f"docs/backtest_{start_date}_{end_date}.png"
-    Path("docs").mkdir(parents=True, exist_ok=True)
+    chart_dir = Path("docs/data/backtest")
+    chart_dir.mkdir(parents=True, exist_ok=True)
+    chart_path = str(chart_dir / f"backtest_{start_date}_{end_date}.png")
     plt.figure(figsize=(12, 6))
     plt.plot(res_df['total_value'], label='Portfolio Value')
     if spy_cagr is not None:
