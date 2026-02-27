@@ -23,3 +23,4 @@ jobs:
         clientId: ${{ secrets.GDRIVE_CLIENT_ID }}
         clientSecret: ${{ secrets.GDRIVE_CLIENT_SECRET }}
         refreshToken: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+        authType: oauth
