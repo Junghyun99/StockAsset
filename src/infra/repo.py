@@ -5,6 +5,7 @@ from typing import List, Dict
 from dataclasses import asdict
 from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
+from src.config import Config
 
 class JsonRepository:
     def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100):
@@ -19,14 +20,37 @@ class JsonRepository:
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio):
         """일별 요약 저장 (Append 방식)"""
+        conf = Config()
         
+자산군 C에 현금(Cash)을 포함하여 **"방어자산 그룹"**으로 묶으면, 그래프가 훨씬 간결해지면서 봇의 자금 관리 능력을 더 명확하게 보여줄 수 있습니다.
+즉, Layer 1: 자산군 C(SHV + 현금), Layer 2: 자산군 B(안전), **Layer 3: 자산군 A(성장)**로 구성된 누적 영역 차트를 구성하겠습니다.
+1단계: 데이터 저장 로직 수정 (src/infra/repo.py)
+summary.json에 저장할 때 **자산군 C의 가치를 (SHV 평가액 + 예수금)**으로 합산하여 저장합니다.
+code
+Python
+# src/infra/repo.py
+
+    def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio):
+        from src.config import Config
+        conf = Config()
+        
+        # 각 그룹 순수 주식 평가액
+        val_a = pf.get_group_value(conf.ASSET_GROUPS['A'])
+        val_b = pf.get_group_value(conf.ASSET_GROUPS['B'])
+        
+        # [수정] 그룹 C = SHV 등 종목 평가액 + 현재 보유 현금(예수금)
+        val_c_pure_stock = pf.get_group_value(conf.ASSET_GROUPS['C'])
+        val_c_total = val_c_pure_stock + pf.total_cash
+
         record = {
             "date": market.date,
             
             # [자산 정보]
             "total_value": pf.total_value,
             "cash_balance": pf.total_cash,  # [추가]
-            
+            "group_a": val_a,
+            "group_b": val_b,
+            "group_c": val_c_total,
             # [시장 지표]
             "spy_price": market.spy_price,
             "spy_ma180": market.spy_ma180,          # [추가]
