@@ -7,13 +7,14 @@ def main() -> None:
     start = os.environ["BACKTEST_START"]
     end = os.environ["BACKTEST_END"]
     cash = float(os.environ.get("BACKTEST_CASH", "10000"))
+    interval = int(os.environ.get("BACKTEST_INTERVAL", "1"))
 
     # backtest runner import는 src 경로 설정 후
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
     from src.backtest.runner import run_backtest  # noqa: PLC0415
 
-    print(f"=== 백테스트 시작: {start} ~ {end}, 초기자본: {cash:,.0f} ===")
-    result = run_backtest(start, end, cash)
+    print(f"=== 백테스트 시작: {start} ~ {end}, 초기자본: {cash:,.0f}, 실행간격: {interval}거래일 ===")
+    result = run_backtest(start, end, cash, execution_interval=interval)
 
     if result is None:
         print("ERROR: 백테스트 결과 없음 (데이터 부족 또는 거래일 없음)")

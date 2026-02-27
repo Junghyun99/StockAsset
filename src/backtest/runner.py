@@ -48,7 +48,12 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
     return missing
 
 
-def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) -> Optional[BacktestResult]:
+def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
+                  execution_interval: int = 1) -> Optional[BacktestResult]:
+    # 0. 파라미터 검증
+    if execution_interval < 1:
+        raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
+
     # 1. 설정 로드
     config = Config()
     logger = TradeLogger(log_dir="logs/backtest")
@@ -91,7 +96,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
     all_executions: List[TradeExecution] = []
     trade_reason_counter: Dict[str, int] = {}  # 매매 사유별 카운터
     prev_regime: Optional[MarketRegime] = None  # 국면 변화 추적
-    logger.info(f"--- Starting Backtest ({len(sim_days)} trading days) ---")
+    days_since_last_execution = execution_interval  # 첫날 즉시 실행되도록 초기화
+    logger.info(f"--- Starting Backtest ({len(sim_days)} trading days, interval={execution_interval}) ---")
 
     for today in sim_days:
         logger.info(f"[{today.date()}]시작")
@@ -111,6 +117,24 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
             continue
 
         broker.set_prices(current_prices)
+
+        # 실행 간격 체크: 실행일이 아니면 포트폴리오 상태만 기록하고 넘어감
+        days_since_last_execution += 1
+        if days_since_last_execution < execution_interval:
+            final_pf = broker.get_portfolio()
+            history.append({
+                "date": today,
+                "total_value": final_pf.total_value,
+                "cash": final_pf.total_cash,
+                "exposure": history[-1]["exposure"] if history else 0.0,
+                "regime": history[-1]["regime"] if history else "N/A",
+                "trade_count": 0,
+                "nan_triggered": False,
+                "signal_reason": "비실행일 (간격 대기)",
+            })
+            continue
+
+        days_since_last_execution = 0  # 실행일: 카운터 리셋
 
         # === 봇 로직 실행 (Main.py와 동일 흐름) ===
         try:

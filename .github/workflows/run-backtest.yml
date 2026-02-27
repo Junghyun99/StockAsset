@@ -16,6 +16,12 @@ on:
         required: false
         type: string
         default: '10000'
+      interval:
+        description: '실행 간격 - 거래일 기준 (기본값: 1, 예: 5 = 5거래일마다 실행)'
+        required: false
+        type: string
+        default: '1'
+
 permissions:
   contents: write
 jobs:
@@ -40,6 +46,7 @@ jobs:
         BACKTEST_START: ${{ inputs.start }}
         BACKTEST_END: ${{ inputs.end }}
         BACKTEST_CASH: ${{ inputs.initial_cash }}
+        BACKTEST_INTERVAL: ${{ inputs.interval }}
       run: python scripts/run_backtest_ci.py
 
     - name: Commit and Push Backtest Results
