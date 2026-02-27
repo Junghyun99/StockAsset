@@ -28,15 +28,10 @@ argument-hint: "[이슈 번호] (생략 시 가장 중요한 이슈를 자동 �
 ## 실행 절차
 
 ### 1단계: GitHub 인증 및 이슈 조회
-gh cli를 사용하기 위해 curl로 gh cli 설치한다.
+gh cli를 사용하기 위해 curl로 gh cli 설치여부를 확인하고 미설치시 아래경로에서 다운로드한다.
 
 curl -fsSL https://github.com/cli/cli/releases/download/version
 
-gh cli를 사용하기 위해 환경변수를 설정합니다.
-
-```bash
-export GITHUB_TOKEN=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
-```
 
 인자로 이슈 번호가 주어진 경우:
 - 해당 이슈를 직접 조회합니다: `gh issue view <번호>`
