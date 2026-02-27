@@ -44,12 +44,16 @@ export GITHUB_TOKEN=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
 인자가 없는 경우:
 - 열려 있는 이슈 목록을 가져옵니다:
 ```bash
-gh issue list --state open --limit 20 --json number,title,labels,createdAt,body
+gh issue list --state open --limit 20 --json number,title,labels,createdAt,body,locked
 ```
 
 ### 2단계: 이슈 우선순위 결정
 
 인자가 없는 경우 아래 기준으로 가장 중요한 이슈 하나를 선택합니다:
+
+#### 사전 필터링
+- `locked: true`인 이슈는 수정 대상에서 **제외**합니다.
+- 필터링 후 남은 이슈를 대상으로 우선순위를 결정합니다.
 
 #### 우선순위 기준 (높은 순)
 1. **라벨 기반 우선순위**:
