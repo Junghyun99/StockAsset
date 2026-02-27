@@ -2,7 +2,7 @@ name: Backup to Google Drive
 
 on:
   push:
-    branches:[ "main" ]  # 필요시 master로 변경
+    branches: [ "main" ]  # 필요시 master로 변경
 
 jobs:
   backup:
