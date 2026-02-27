@@ -7,6 +7,7 @@ allowed-tools:
   - Bash(gh issue edit *)
   - Bash(gh issue close *)
   - Bash(gh auth status *)
+  - Bash(gh api *)
   - Bash(git diff *)
   - Bash(git log *)
   - Bash(git add *)
@@ -37,17 +38,18 @@ curl -fsSL https://github.com/cli/cli/releases/download/version
 - 해당 이슈를 직접 조회합니다: `gh issue view <번호>`
 
 인자가 없는 경우:
-- 열려 있는 이슈 목록을 가져옵니다:
+- `git remote get-url origin`으로 owner/repo를 파싱한 후 열려 있는 이슈 목록을 가져옵니다:
 ```bash
-gh issue list --state open --limit 20 --json number,title,labels,createdAt,body
+gh api repos/{owner}/{repo}/issues?state=open\&per_page=20
 ```
+- `locked`, `number`, `title`, `labels`, `created_at`, `body` 필드를 활용합니다.
 
 ### 2단계: 이슈 우선순위 결정
 
 인자가 없는 경우 아래 기준으로 가장 중요한 이슈 하나를 선택합니다:
 
 #### 사전 필터링
-- 이미 작업 중인 이슈(라벨 `in-progress`)는 수정 대상에서 **제외**합니다.
+- `locked: true`인 이슈는 수정 대상에서 **제외**합니다.
 - 필터링 후 남은 이슈를 대상으로 우선순위를 결정합니다.
 
 #### 우선순위 기준 (높은 순)
