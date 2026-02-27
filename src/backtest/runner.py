@@ -1,4 +1,5 @@
 # src/backtest/runner.py
+import shutil
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -75,10 +76,9 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     # 3. 컴포넌트 조립
     loader = BacktestDataLoader(full_df, full_vix)
     broker = BacktestBroker(initial_cash, logger=logger)
-    backtest_data_path = Path("docs/data/backtest")
-    if backtest_data_path.exists():
-        shutil.rmtree(backtest_data_path)
-    backtest_repo = JsonRepository(str(backtest_data_path))
+    backtest_data_path = "docs/data/backtest"
+    shutil.rmtree(backtest_data_path, ignore_errors=True)
+    backtest_repo = JsonRepository(backtest_data_path)
 
     # Core Logic (그대로 재사용!)
     calculator = IndicatorCalculator()
@@ -314,9 +314,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             logger.info(f"  {reason}: {count}회")
 
     # 차트 저장 (plt.show() 대신 파일로 저장)
-    chart_dir = Path("docs/data/backtest")
-    chart_dir.mkdir(parents=True, exist_ok=True)
-    chart_path = str(chart_dir / f"backtest_{start_date}_{end_date}.png")
+    Path("docs").mkdir(parents=True, exist_ok=True)
+    chart_path = f"docs/data/backtest/backtest_{start_date}_{end_date}.png"
     plt.figure(figsize=(12, 6))
     plt.plot(res_df['total_value'], label='Portfolio Value')
     if spy_cagr is not None:
