@@ -357,3 +357,84 @@ function getRegimeColorClass(regime) {
     if (regime.includes('crash')) return 'text-white bg-danger px-2 rounded';
     return 'text-muted';
 }
+
+
+// docs/js/dashboard.js에 추가 및 수정
+
+let allocHistoryChart;
+
+function renderAllocationHistory(summaryData) {
+    const labels = summaryData.map(d => d.date);
+    
+    // 전체 자산 대비 각 그룹의 비중(%) 계산
+    // 데이터가 없는 초기 상태를 대비해 0 처리 로직 포함
+    const groupA = summaryData.map(d => (d.group_a / d.total_value * 100) || 0);
+    const groupB = summaryData.map(d => (d.group_b / d.total_value * 100) || 0);
+    const groupC = summaryData.map(d => (d.group_c / d.total_value * 100) || 0);
+
+    if (allocHistoryChart) allocHistoryChart.destroy();
+    
+    const ctx = document.getElementById('allocationHistoryChart').getContext('2d');
+    allocHistoryChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Group C (Cash & SHV)',
+                    data: groupC,
+                    backgroundColor: 'rgba(255, 193, 7, 0.7)', // 따뜻한 노란색 (안전)
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    fill: true,
+                    stacked: true
+                },
+                {
+                    label: 'Group B (Safety - GLD, IEF..)',
+                    data: groupB,
+                    backgroundColor: 'rgba(32, 201, 151, 0.7)', // 민트색 (중립)
+                    borderColor: 'rgba(32, 201, 151, 1)',
+                    fill: true,
+                    stacked: true
+                },
+                {
+                    label: 'Group A (Growth - SSO, QLD)',
+                    data: groupA,
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)', // 선명한 파란색 (공격)
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    fill: true,
+                    stacked: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { display: true },
+                y: {
+                    stacked: true, // 누적 설정
+                    min: 0,
+                    max: 100,
+                    title: { display: true, text: 'Percentage (%)' },
+                    ticks: { callback: v => v + '%' }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.raw.toFixed(1)}%`;
+                        }
+                    }
+                },
+                legend: { position: 'bottom' }
+            },
+            elements: {
+                point: { radius: 0 }, // 선의 점 제거
+                line: { borderWidth: 1 }
+            }
+        }
+    });
+}
