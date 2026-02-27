@@ -13,7 +13,7 @@ from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
-from src.infra.broker import MockBroker, KisBroker
+from src.infra.broker import MockBroker, KisPaperBroker, KisLiveBroker
 from src.infra.notifier import TelegramNotifier
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
@@ -35,12 +35,12 @@ class TradingBot:
         
         # 브로커 선택 (실전 vs 모의)
         if self.config.IS_LIVE_TRADING:
-            self.logger.info("Mode: LIVE TRADING (KisBroker)")
-            # 주의: 실제 계좌 연동 시에는 acc_no 포맷 확인 필요
-            self.broker = KisBroker(
-                self.config.KIS_APP_KEY, 
-                self.config.KIS_APP_SECRET, 
-                self.config.KIS_ACC_NO
+            self.logger.info("Mode: LIVE TRADING (KisLiveBroker)")
+            self.broker = KisLiveBroker(
+                self.config.KIS_APP_KEY,
+                self.config.KIS_APP_SECRET,
+                self.config.KIS_ACC_NO,
+                self.logger
             )
         else:
             self.logger.info("Mode: PAPER TRADING (MockBroker)")

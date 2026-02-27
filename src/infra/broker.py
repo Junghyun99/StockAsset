@@ -157,27 +157,29 @@ class MockBroker(IBrokerAdapter):
         # 실제 구현 시: KIS API 잔고 조회 후 self.cash 업데이트
 
 
-# 실전용 (뼈대 코드)
-class KisBroker(IBrokerAdapter):
-    """한국투자증권 REST API 구현체"""
-    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger, is_real: bool = False):
+class KisBrokerBase(IBrokerAdapter):
+    """한국투자증권 REST API 공통 베이스 클래스.
+    서브클래스에서 BASE_URL 및 TR_* 상수를 반드시 정의해야 한다.
+    """
+    BASE_URL: str = ""
+    PRICE_TR_ID: str = ""
+    PORTFOLIO_TR_ID: str = ""
+    BUY_TR_ID: str = ""
+    SELL_TR_ID: str = ""
+    PENDING_TR_ID: str = ""
+
+    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         self.app_key = app_key
         self.app_secret = app_secret
         self.acc_no = acc_no
         self.logger = logger
-        self.is_real = is_real
-        
+
         # 계좌번호 분리 (앞 8자리, 뒤 2자리)
         self.cano = acc_no[:8]
         self.acnt_prdt_cd = acc_no[8:]
 
-        # URL 설정
-        if is_real:
-            self.base_url = "https://openapi.koreainvestment.com:9443"
-            self.logger.info("[KisBroker] Mode: REAL TRADING")
-        else:
-            self.base_url = "https://openapivts.koreainvestment.com:29443"
-            self.logger.info("[KisBroker] Mode: PAPER TRADING (Virtual)")
+        # URL은 서브클래스 클래스 상수에서 설정
+        self.base_url = self.BASE_URL
         self.access_token = self._auth()
 
     def _auth(self) -> str:
@@ -230,8 +232,7 @@ class KisBroker(IBrokerAdapter):
         해외주식 현재가 조회 (반복 호출)
         """
         prices = {}
-        # 실전 TR_ID: HHDFS00000300, 모의: FHKST01010100
-        tr_id = "HHDFS00000300" if self.is_real else "FHKST01010100"
+        tr_id = self.PRICE_TR_ID
         url = f"{self.base_url}/uapi/overseas-price/v1/quotations/price" 
         for ticker in tickers:
             exch = self._get_exchange_code(ticker)
@@ -265,8 +266,7 @@ class KisBroker(IBrokerAdapter):
         """
         해외주식 잔고 및 예수금 조회
         """
-        # 해외주식 잔고지원 TR_ID (실전: TTTS3012R, 모의: VTTS3012R)
-        tr_id = "TTTS3012R" if self.is_real else "VTTS3012R"
+        tr_id = self.PORTFOLIO_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-balance"
         # 환율구분: 000(전체), 국가: US(미국), 시장: NYSE
         params = {
@@ -374,14 +374,7 @@ class KisBroker(IBrokerAdapter):
 
     def _send_order(self, order: Order) -> Optional[TradeExecution]:
         """실제 주문 API 호출"""
-        # 실전: TTTS1002U(매수), TTTS1006U(매도)
-        # 모의: VTTT1002U(매수), VTTT1006U(매도)
-        
-        tr_id = ""
-        if self.is_real:
-            tr_id = "TTTS1002U" if order.action == OrderAction.BUY else "TTTS1006U"
-        else:
-            tr_id = "VTTT1002U" if order.action == OrderAction.BUY else "VTTT1006U"
+        tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
 
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
         exch = self._get_exchange_code(order.ticker)
@@ -449,7 +442,7 @@ class KisBroker(IBrokerAdapter):
         NAS -> NYS -> AMS 순으로 조회하며, 미체결이 하나라도 발견되면 즉시 반환합니다.
         (전체 개수 합산보다 존재 여부가 중요함)
         """
-        tr_id = "TTTS3018R" if self.is_real else "VTTT3018R"
+        tr_id = self.PENDING_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-nccs"
         
         target_exchanges = ["NAS", "NYS", "AMS"]
@@ -501,3 +494,31 @@ class KisBroker(IBrokerAdapter):
             'SHV': 'NAS'
         }
         return mapping.get(ticker, 'NAS') # 기본값
+
+
+class KisPaperBroker(KisBrokerBase):
+    """한국투자증권 모의투자 브로커 (가상거래 서버)"""
+    BASE_URL = "https://openapivts.koreainvestment.com:29443"
+    PRICE_TR_ID = "FHKST01010100"
+    PORTFOLIO_TR_ID = "VTTS3012R"
+    BUY_TR_ID = "VTTT1002U"
+    SELL_TR_ID = "VTTT1006U"
+    PENDING_TR_ID = "VTTT3018R"
+
+    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
+        super().__init__(app_key, app_secret, acc_no, logger)
+        self.logger.info("[KisPaperBroker] Mode: PAPER TRADING (Virtual)")
+
+
+class KisLiveBroker(KisBrokerBase):
+    """한국투자증권 실전투자 브로커 (실거래 서버)"""
+    BASE_URL = "https://openapi.koreainvestment.com:9443"
+    PRICE_TR_ID = "HHDFS00000300"
+    PORTFOLIO_TR_ID = "TTTS3012R"
+    BUY_TR_ID = "TTTS1002U"
+    SELL_TR_ID = "TTTS1006U"
+    PENDING_TR_ID = "TTTS3018R"
+
+    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
+        super().__init__(app_key, app_secret, acc_no, logger)
+        self.logger.info("[KisLiveBroker] Mode: LIVE TRADING")

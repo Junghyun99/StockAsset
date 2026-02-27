@@ -242,7 +242,7 @@ class TestTradingBotEdgeCases:
         with patch('src.main.YFinanceLoader') as MockLoader, \
              patch('src.main.JsonRepository') as MockRepo, \
              patch('src.main.SlackNotifier') as MockNotifier, \
-             patch('src.main.KisBroker') as MockKisBroker, \
+             patch('src.main.KisLiveBroker') as MockKisBroker, \
              patch('src.main.IndicatorCalculator') as MockCalc, \
              patch('src.main.RegimeAnalyzer') as MockAnalyzer, \
              patch('src.main.VolatilityTargeter') as MockTargeter, \
@@ -277,7 +277,7 @@ class TestTradingBotEdgeCases:
 
     @patch('src.main.time.sleep')
     def test_bot_live_trading_mode_init(self, mock_sleep, mock_deps_live):
-        """실전 모드에서 KisBroker가 초기화되는지 확인 (lines 38-40)"""
+        """실전 모드에서 KisLiveBroker가 초기화되는지 확인 (lines 38-40)"""
         from src.main import TradingBot
 
         mock_deps_live['calc'].calculate.return_value = MarketData(
@@ -292,7 +292,7 @@ class TestTradingBotEdgeCases:
         bot = TradingBot()
         bot.run()
 
-        # KisBroker가 사용되었는지 확인
+        # KisLiveBroker가 사용되었는지 확인
         mock_deps_live['repo'].save_daily_summary.assert_called()
 
     @patch('src.main.time.sleep')
