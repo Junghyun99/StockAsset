@@ -7,8 +7,10 @@ from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
 
 class JsonRepository:
-    def __init__(self, root_path: str = "docs/data"):
+    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100):
         self.root = root_path
+        self.max_summary_records = max_summary_records
+        self.max_history_records = max_history_records
         os.makedirs(self.root, exist_ok=True)
         
         self.status_file = os.path.join(self.root, "status.json")
@@ -39,10 +41,10 @@ class JsonRepository:
         
         data = self._load_json(self.summary_file, default=[])
         data.append(record)
-        
-        # 파일이 너무 커지는 것을 방지하려면 여기서 최근 N개(예: 2000개)만 유지하는 로직 추가 가능
-        # data = data[-2000:] 
-        
+
+        if self.max_summary_records > 0:
+            data = data[-self.max_summary_records:]
+
         self._save_json(self.summary_file, data)
     def save_trade_history(self, executions: List[TradeExecution], pf: Portfolio, reason: str):
         """매매 내역 저장 - Append"""
@@ -66,13 +68,13 @@ class JsonRepository:
         }
         
         data = self._load_json(self.history_file, default=[])
-        
+
         # 최신 내역이 위로 오게 할지, 아래로 가게 할지 결정 (여기선 Append -> 아래)
         data.append(record)
-        
-        # 히스토리가 무한정 길어지는 것 방지 (예: 최근 100건만 유지) - 선택사항
-        # if len(data) > 100: data = data[-100:]
-        
+
+        if self.max_history_records > 0:
+            data = data[-self.max_history_records:]
+
         self._save_json(self.history_file, data)
     def update_status(self, 
                       regime: MarketRegime, 

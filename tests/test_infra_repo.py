@@ -134,43 +134,89 @@ def test_repo_resilience_malformed_json(repo):
 
 
 
-def test_save_summary_large_file_performance(repo, dummy_market_data, dummy_portfolio):
+def test_save_summary_large_file_performance(tmp_path, dummy_market_data, dummy_portfolio):
     """
     [성능] summary.json에 데이터가 10,000개 쌓여있어도 정상적으로 Append 되는지 확인
+    (크기 제한을 11000으로 설정하여 10001건 전체가 유지되는 것을 검증)
     """
+    # max_summary_records를 충분히 크게 설정
+    large_repo = JsonRepository(root_path=str(tmp_path), max_summary_records=11000)
+
     # 1. 가짜 대용량 데이터 생성 (10,000일치)
     large_data = [
         {
-            "date": f"2020-01-{i%30+1:02d}", 
+            "date": f"2020-01-{i%30+1:02d}",
             "total_value": 10000 + i,
             "spy_price": 100 + i
-        } 
+        }
         for i in range(10000)
     ]
-    
+
     # 파일에 강제 쓰기
-    repo._save_json(repo.summary_file, large_data)
-    
+    large_repo._save_json(large_repo.summary_file, large_data)
+
     # 2. 새로운 데이터 저장 시도 (Append)
     signal = TradeSignal(0.8, [], "Performance Test")
-    
+
     # 시간 측정 가능 (선택사항)
     import time
     start = time.time()
-    
-    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
-    
+
+    large_repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+
     end = time.time()
-    
+
     # 3. 검증
     # 에러 없이 저장되었는지
-    with open(repo.summary_file, 'r') as f:
+    with open(large_repo.summary_file, 'r') as f:
         data = json.load(f)
         assert len(data) == 10001
-        
+
     # 속도 체크 (JSON 파싱 및 쓰기가 1초 이내여야 함)
     # 로컬 디스크 I/O에 따라 다르지만, 10000건 정도는 순식간이어야 함
     assert (end - start) < 1.0
+
+
+def test_summary_size_limit_applied(tmp_path, dummy_market_data, dummy_portfolio):
+    """
+    [크기 제한] summary.json이 max_summary_records를 초과하면 오래된 레코드를 잘라내는지 확인
+    """
+    limit = 5
+    repo = JsonRepository(root_path=str(tmp_path), max_summary_records=limit)
+
+    # limit + 2건 저장 → limit건만 남아야 함
+    for i in range(limit + 2):
+        market = MarketData(f"2024-01-{i+1:02d}", 100 + i, 90, 0.1, 0.1, -0.05, 15)
+        signal = TradeSignal(0.8, [], f"Day {i+1}")
+        repo.save_daily_summary(market, signal, dummy_portfolio)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+
+    assert len(data) == limit
+    # 최신 데이터가 유지되어야 함
+    assert data[-1]['date'] == f"2024-01-{limit+2:02d}"
+
+
+def test_history_size_limit_applied(tmp_path, dummy_portfolio):
+    """
+    [크기 제한] history.json이 max_history_records를 초과하면 오래된 레코드를 잘라내는지 확인
+    """
+    limit = 3
+    repo = JsonRepository(root_path=str(tmp_path), max_history_records=limit)
+
+    execution = TradeExecution("SPY", OrderAction.BUY, 1, 100.0, 0.1, "2024-01-01", ExecutionStatus.FILLED)
+
+    # limit + 1건 저장 → limit건만 남아야 함
+    for i in range(limit + 1):
+        repo.save_trade_history([execution], dummy_portfolio, f"Trade {i+1}")
+
+    with open(repo.history_file, 'r') as f:
+        data = json.load(f)
+
+    assert len(data) == limit
+    # 최신 레코드가 유지되어야 함
+    assert data[-1]['reason'] == f"Trade {limit+1}"
 
 # ... (기존 임포트 및 Fixture 생략) ...
 
