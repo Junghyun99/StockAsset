@@ -143,9 +143,7 @@ class BacktestDataCache:
             print(f"📥 VIX 보충: {dl_start.date()} ~ {dl_end.date()}")
             new_data = self._download_vix(dl_start, dl_end)
             if new_data is not None and not new_data.empty:
-                result = pd.concat([result, new_data])
-                result = result[~result.index.duplicated(keep="last")]
-                result = result.sort_index()
+                result = self._merge_dataframes(result, new_data)
 
         self._save_parquet(result, self.vix_path)
         return result

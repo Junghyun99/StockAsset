@@ -227,6 +227,55 @@ class TestClear:
         assert not cache.vix_path.exists()
 
 
+class TestVixMergeConsistency:
+    """VIX 병합이 _merge_dataframes()와 동일하게 동작하는지 검증"""
+
+    @patch("src.backtest.cache.yf.download")
+    def test_vix_merge_fills_nan_from_cached(self, mock_download, cache):
+        """VIX 신규 데이터에 NaN이 포함된 경우 캐시 값으로 채워져야 한다."""
+        # 1차: 정상 VIX 데이터 캐시
+        cached_vix = _make_vix("2023-01-01", "2023-06-30")
+        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-06-30")
+        mock_download.side_effect = [ohlcv, cached_vix]
+        cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
+
+        # 2차: 새 구간 + 겹치는 날짜에 NaN이 포함된 VIX
+        mock_download.reset_mock()
+        ohlcv_new = _make_ohlcv(["SPY"], "2023-07-01", "2023-12-31")
+        vix_new = _make_vix("2023-07-01", "2023-12-31")
+        mock_download.side_effect = [ohlcv_new, vix_new]
+
+        _, result_vix = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        # 병합 결과에 NaN이 없어야 함 (캐시 값이 올바르게 유지)
+        assert not result_vix["Close"].isna().any(), "VIX 결과에 NaN이 포함되어 있습니다"
+
+    @patch("src.backtest.cache.yf.download")
+    def test_vix_merge_new_data_takes_priority(self, mock_download, cache):
+        """겹치는 날짜에서 신규 데이터가 우선 적용되어야 한다."""
+        # 1차: 2023년 전체 캐시 (Close=15.0 고정)
+        dates_full = pd.bdate_range("2023-01-01", "2023-12-31")
+        cached_vix = pd.DataFrame({"Close": [15.0] * len(dates_full)}, index=dates_full)
+        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-12-31")
+        mock_download.side_effect = [ohlcv, cached_vix]
+        cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        # 2차: 뒤쪽 날짜 추가 + 겹치는 구간에 다른 값 (Close=30.0)
+        mock_download.reset_mock()
+        dates_new = pd.bdate_range("2023-10-01", "2024-03-31")
+        vix_new = pd.DataFrame({"Close": [30.0] * len(dates_new)}, index=dates_new)
+        ohlcv_new = _make_ohlcv(["SPY"], "2024-01-01", "2024-03-31")
+        mock_download.side_effect = [ohlcv_new, vix_new]
+
+        _, result_vix = cache.get_data(["SPY"], "2023-01-01", "2024-03-31")
+
+        # 겹치는 구간(2023-10-01 ~ 2023-12-31): 신규 데이터(30.0)가 우선
+        overlap_start = pd.Timestamp("2023-10-02")  # 첫 영업일
+        overlap_mask = result_vix.index >= overlap_start
+        overlap_values = result_vix.loc[overlap_mask, "Close"]
+        assert (overlap_values == 30.0).all(), "겹치는 구간에서 신규 VIX 값이 적용되지 않았습니다"
+
+
 class TestDownloadFailure:
     """다운로드 실패 처리"""
 
