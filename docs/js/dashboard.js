@@ -129,44 +129,67 @@ function updateSummaryCards(statusData, summaryData) {
 /**
  * Performance 차트 및 전략 노출 비중 차트 렌더링
  */
+
 function renderCharts(summaryData) {
     const labels = summaryData.map(d => d.date);
+    
+    // Performance 데이터 준비 (상단 그래프용)
     const portfolioValues = summaryData.map(d => d.total_value);
     const spyPrices = summaryData.map(d => d.spy_price);
-    const exposures = summaryData.map(d => d.target_exposure * 100);
-
-    // 수익률 비교를 위해 첫 번째 가격을 100으로 지수화
     const initialPort = portfolioValues[0];
     const initialSpy = spyPrices[0];
     const portReturns = portfolioValues.map(v => (v / initialPort - 1) * 100);
     const spyReturns = spyPrices.map(v => (v / initialSpy - 1) * 100);
 
-    // (1) Performance History 차트
+    // Strategy 데이터 준비 (하단 그래프용)
+    const exposures = summaryData.map(d => d.target_exposure * 100);
+    // [정보 추가] VIX와 모멘텀 지표를 함께 시각화
+    // VIX는 스케일이 다르므로 보조축을 사용하거나 비율로 표시
+    const spyMomentums = summaryData.map(d => d.spy_momentum * 100); 
+
+    // (1) Performance History 차트 (기존과 유사하지만 툴팁 강화)
     if (perfChart) perfChart.destroy();
-    const ctxPerf = document.getElementById('performanceChart').getContext('2d');
-    perfChart = new Chart(ctxPerf, {
+    perfChart = new Chart(document.getElementById('performanceChart'), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Portfolio (%)', data: portReturns, borderColor: '#0d6efd', fill: true, backgroundColor: 'rgba(13, 110, 253, 0.05)', tension: 0.1 },
+                { label: 'SPY Benchmark (%)', data: spyReturns, borderColor: '#adb5bd', borderDash: [5, 5], tension: 0.1, pointRadius: 0 }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { tooltip: { mode: 'index', intersect: false } }
+        }
+    });
+
+    // (2) Strategy Analysis 차트 (대폭 업그레이드)
+    if (stratChart) stratChart.destroy();
+    stratChart = new Chart(document.getElementById('strategyChart'), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
                 {
-                    label: 'Portfolio Return (%)',
-                    data: portReturns,
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    borderWidth: 2,
+                    label: 'Investment Exposure (%)',
+                    data: exposures,
+                    borderColor: '#17a2b8',
+                    backgroundColor: 'rgba(23, 162, 184, 0.1)',
                     fill: true,
-                    tension: 0.1,
-                    pointRadius: 2
+                    stepped: true,
+                    yAxisID: 'y',
+                    zIndex: 2
                 },
                 {
-                    label: 'SPY Benchmark (%)',
-                    data: spyReturns,
-                    borderColor: '#adb5bd',
-                    borderDash: [5, 5],
+                    label: 'Momentum Score (%)',
+                    data: spyMomentums,
+                    borderColor: '#ffc107',
+                    borderWidth: 1,
                     fill: false,
-                    tension: 0.1,
-                    pointRadius: 0
+                    pointRadius: 0,
+                    yAxisID: 'y1',
+                    zIndex: 1
                 }
             ]
         },
@@ -175,40 +198,77 @@ function renderCharts(summaryData) {
             maintainAspectRatio: false,
             interaction: { mode: 'index', intersect: false },
             scales: {
-                y: { ticks: { callback: value => value + '%' } }
+                y: { // 왼쪽 축: 비중
+                    beginAtZero: true, max: 110,
+                    title: { display: true, text: 'Exposure (%)' }
+                },
+                y1: { // 오른쪽 축: 지표
+                    position: 'right',
+                    title: { display: true, text: 'Momentum (%)' },
+                    grid: { drawOnChartArea: false }
+                }
             },
-            plugins: { legend: { position: 'top' } }
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        // 툴팁에서 모든 전략적 근거 데이터 표시
+                        afterBody: function(context) {
+                            const dataIndex = context[0].dataIndex;
+                            const d = summaryData[dataIndex];
+                            return [
+                                `--------------------`,
+                                `VIX: ${d.vix ? d.vix.toFixed(2) : 'N/A'}`,
+                                `SPY Price: $${d.spy_price.toFixed(2)}`,
+                                `MA180: $${d.spy_ma180 ? d.spy_ma180.toFixed(2) : 'N/A'}`,
+                                `MDD: ${(d.mdd * 100).toFixed(2)}%`,
+                                `Regime: ${d.regime}`
+                            ];
+                        }
+                    }
+                }
+            }
         }
     });
 
-    // (2) Strategy Analysis (Exposure) 차트
-    if (stratChart) stratChart.destroy();
-    const ctxStrat = document.getElementById('strategyChart').getContext('2d');
-    stratChart = new Chart(ctxStrat, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Target Exposure (%)',
-                data: exposures,
-                borderColor: '#17a2b8',
-                backgroundColor: 'rgba(23, 162, 184, 0.2)',
-                fill: true,
-                stepped: true, // 계단식 그래프
-                pointRadius: 0
-            }]
-        },
-        options: { 
-            responsive: true, 
-            maintainAspectRatio: false,
-            scales: { 
-                y: { min: 0, max: 110, ticks: { stepSize: 20 } }
-            },
-            plugins: { legend: { display: false } }
-        }
-    });
+    // 인사이트 리스트 업데이트 (가장 최신일 기준)
+    updateDecisionLogic(summaryData[summaryData.length - 1]);
 }
 
+/**
+ * 전략 판단 근거 리스트 업데이트
+ */
+function updateDecisionLogic(lastData) {
+    const list = document.getElementById('decision-logic-list');
+    if (!lastData) return;
+
+    const isAboveMA = lastData.spy_price > lastData.spy_ma180;
+    const isMomPositive = lastData.spy_momentum > 0;
+    const isVixSafe = lastData.vix < 30;
+
+    list.innerHTML = `
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Price > MA180
+            <i class="fas ${isAboveMA ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'}"></i>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            Momentum (+)
+            <i class="fas ${isMomPositive ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'}"></i>
+        </li>
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            VIX Safe (<30)
+            <i class="fas ${isVixSafe ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'}"></i>
+        </li>
+        <li class="list-group-item mt-2 bg-light p-2 rounded">
+            <small class="text-muted d-block">Current Logic:</small>
+            <strong class="small">${lastData.regime}</strong>
+        </li>
+    `;
+}   
+            
+    
+      
+            
+            
 /**
  * 현재 보유 자산 구성 차트 (Doughnut)
  */
