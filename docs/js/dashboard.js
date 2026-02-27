@@ -1,15 +1,14 @@
+// docs/js/dashboard.js
+
+// 차트 객체를 저장할 변수 (모드 전환 시 기존 차트 삭제용)
+let perfChart, allocChart, stratChart;
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. 모드 설정 확인
     const urlParams = new URLSearchParams(window.location.search);
     const isBacktest = urlParams.get('mode') === 'backtest';
-    
-    // 데이터 경로 결정
     const dataPath = isBacktest ? 'data/backtest/' : 'data/';
     
-    // UI 업데이트 (버튼 활성화 및 배지 변경)
     updateModeUI(isBacktest);
-
-    // 2. 데이터 로드 시작
     initDashboard(dataPath);
 });
 
@@ -31,227 +30,191 @@ function updateModeUI(isBacktest) {
 
 async function initDashboard(dataPath) {
     try {
-        // status.json 로드
-        const statusResponse = await fetch(`${dataPath}status.json`);
-        const statusData = await statusResponse.json();
+        // 1. 상태 데이터 로드
+        const statusRes = await fetch(`${dataPath}status.json`);
+        const statusData = await statusRes.json();
         updateSummaryCards(statusData);
+        renderAllocationChart(statusData);
 
-        // summary.json 로드 (차트용)
-        const summaryResponse = await fetch(`${dataPath}summary.json`);
-        const summaryData = await summaryResponse.json();
+        // 2. 요약 데이터 로드 (시계열 차트용)
+        const summaryRes = await fetch(`${dataPath}summary.json`);
+        const summaryData = await summaryRes.json();
         renderCharts(summaryData);
 
-        // history.json 로드 (테이블용)
-        const historyResponse = await fetch(`${dataPath}history.json`);
-        const historyData = await historyResponse.json();
+        // 3. 히스토리 로드 (테이블용)
+        const historyRes = await fetch(`${dataPath}history.json`);
+        const historyData = await historyRes.json();
         renderTradeHistory(historyData);
 
         document.getElementById('last-updated').innerText = `Last Update: ${statusData.last_updated || 'Unknown'}`;
 
     } catch (error) {
         console.error("Data loading failed:", error);
-        alert("데이터를 불러오는 데 실패했습니다. 파일이 존재하는지 확인해주세요.");
+        // 파일이 없을 경우 대비 (처음 세팅 시)
+        document.body.innerHTML += `<div class="alert alert-danger position-fixed bottom-0 end-0 m-3">
+            데이터 파일(${dataPath})을 찾을 수 없습니다.</div>`;
     }
 }
 
-// 캐시 방지용 타임스탬프
-const ts = new Date().getTime();
-
-
-// 1. 상단 상태 카드 렌더링
-function renderStatus(status, summary) {
-    const s = status.strategy;
-    const p = status.portfolio;
-    const m = s.market_score;
-
-    // 업데이트 시간
-    document.getElementById('last-updated').innerText = `Last Update: ${status.last_updated}`;
+// 1. 상단 카드 요약 정보 업데이트
+function updateSummaryCards(data) {
+    const strategy = data.strategy;
+    const portfolio = data.portfolio;
 
     // 총 자산
-    document.getElementById('total-value').innerText = formatCurrency(p.total_value);
-
-    // 일간 수익률 계산 (Summary의 마지막 데이터와 비교)
-    let dailyRet = 0;
-    if (summary.length > 0) {
-        const lastSummary = summary[summary.length - 1];
-        // 만약 오늘 날짜가 summary에 이미 반영되어 있다면 그 전날과 비교해야 정확함.
-        // 여기서는 단순화를 위해 summary 마지막 값(어제 확정분)과 현재 status(오늘 라이브)를 비교
-        const prevValue = lastSummary.total_value;
-        dailyRet = ((p.total_value - prevValue) / prevValue) * 100;
-    }
+    document.getElementById('total-value').innerText = `$${portfolio.total_value.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
     
-    const retEl = document.getElementById('daily-return');
-    retEl.innerText = `${dailyRet >= 0 ? '+' : ''}${dailyRet.toFixed(2)}%`;
-    retEl.className = `badge rounded-pill ${dailyRet >= 0 ? 'bg-success' : 'bg-danger'}`;
+    // 현금
+    document.getElementById('cash-value').innerText = `$${portfolio.cash_balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
-    // 국면 (Regime)
+    // 시장 국면
     const regimeEl = document.getElementById('regime-text');
-    regimeEl.innerText = s.regime.replace('_', ' '); // Bear_Weak -> Bear Weak
-    
-    // 국면별 스타일 적용
-    if (s.regime.includes("Bull")) regimeEl.className = "fw-bold mb-0 regime-bull";
-    else if (s.regime.includes("Bear")) regimeEl.className = "fw-bold mb-0 regime-bear";
-    else if (s.regime.includes("Crash")) regimeEl.className = "fw-bold mb-0 regime-crash";
-    else regimeEl.className = "fw-bold mb-0 regime-sideways";
+    regimeEl.innerText = strategy.regime.replace('_', ' ');
+    regimeEl.className = 'fw-bold mb-0 ' + getRegimeColorClass(strategy.regime);
 
-    document.getElementById('momentum-score').innerText = m.spy_momentum.toFixed(4);
+    // 모멘텀 스코어
+    document.getElementById('momentum-score').innerText = (strategy.market_score.spy_momentum * 100).toFixed(2) + '%';
 
-    // 타겟 비중
-    document.getElementById('target-exposure').innerText = `${(s.target_exposure * 100).toFixed(0)}%`;
-    document.getElementById('exposure-bar').style.width = `${s.target_exposure * 100}%`;
+    // 목표 노출 비중
+    const exposure = (strategy.target_exposure * 100).toFixed(0);
+    document.getElementById('target-exposure').innerText = exposure + '%';
+    document.getElementById('exposure-bar').style.width = exposure + '%';
 
-    // 위험 지표
-    document.getElementById('vix-value').innerText = m.vix.toFixed(2);
+    // 리스크 지표
+    document.getElementById('vix-value').innerText = strategy.market_score.vix.toFixed(2);
+    const mddVal = (strategy.market_score.spy_mdd * 100).toFixed(2);
     const mddEl = document.getElementById('mdd-value');
-    mddEl.innerText = `${(m.spy_mdd * 100).toFixed(2)}%`;
-    if (m.spy_mdd < -0.15) mddEl.classList.add('text-danger'); // 위험 강조
+    mddEl.innerText = mddVal + '%';
+    mddEl.className = 'fw-bold ' + (mddVal < -10 ? 'text-danger' : 'text-dark');
 }
 
-// 2. 보유 종목 (파이 차트 & 텍스트)
-function renderHoldings(status) {
-    const pf = status.portfolio;
-    document.getElementById('cash-value').innerText = formatCurrency(pf.cash_balance);
+// 2. 차트 렌더링 (Performance & Strategy)
+function renderCharts(summaryData) {
+    const labels = summaryData.map(d => d.date);
+    const portfolioValues = summaryData.map(d => d.total_value);
+    const spyPrices = summaryData.map(d => d.spy_price);
+    const exposures = summaryData.map(d => d.target_exposure * 100);
 
-    const labels = ['Cash'];
-    const data = [pf.cash_balance];
-    const colors = ['#e9ecef']; // Cash color
+    // 지수화를 위한 첫 번째 값 기준 계산 (수익률 비교용)
+    const initialPort = portfolioValues[0];
+    const initialSpy = spyPrices[0];
+    const portReturns = portfolioValues.map(v => (v / initialPort - 1) * 100);
+    const spyReturns = spyPrices.map(v => (v / initialSpy - 1) * 100);
 
-    // 보유 종목 추가
-    pf.holdings.forEach(h => {
-        labels.push(h.ticker);
-        data.push(h.value);
-        // 간단한 색상 할당 (랜덤 or 고정)
-        if (h.ticker === 'SHV') colors.push('#adb5bd'); // Safe asset
-        else colors.push('#0d6efd'); // Risky asset
+    // Performance Chart
+    if (perfChart) perfChart.destroy();
+    const ctxPerf = document.getElementById('performanceChart').getContext('2d');
+    perfChart = new Chart(ctxPerf, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Portfolio Return (%)',
+                    data: portReturns,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                },
+                {
+                    label: 'SPY (Benchmark) (%)',
+                    data: spyReturns,
+                    borderColor: '#adb5bd',
+                    borderDash: [5, 5],
+                    fill: false,
+                    tension: 0.1
+                }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
     });
 
-    const ctx = document.getElementById('allocationChart').getContext('2d');
-    new Chart(ctx, {
+    // Strategy Chart (Exposure)
+    if (stratChart) stratChart.destroy();
+    const ctxStrat = document.getElementById('strategyChart').getContext('2d');
+    stratChart = new Chart(ctxStrat, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Target Exposure (%)',
+                data: exposures,
+                borderColor: '#17a2b8',
+                backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                fill: true,
+                stepped: true
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            scales: { y: { min: 0, max: 110 } }
+        }
+    });
+}
+
+// 3. 포트폴리오 비중 차트 (Pie)
+function renderAllocationChart(statusData) {
+    const holdings = statusData.portfolio.holdings;
+    const cash = statusData.portfolio.cash_balance;
+    
+    const labels = holdings.map(h => h.ticker);
+    const values = holdings.map(h => h.value);
+    
+    if (cash > 0) {
+        labels.push('Cash');
+        values.push(cash);
+    }
+
+    if (allocChart) allocChart.destroy();
+    const ctxAlloc = document.getElementById('allocationChart').getContext('2d');
+    allocChart = new Chart(ctxAlloc, {
         type: 'doughnut',
         data: {
             labels: labels,
             datasets: [{
-                data: data,
-                backgroundColor: colors,
-                borderWidth: 1
+                data: values,
+                backgroundColor: ['#0d6efd', '#6610f2', '#6f42c1', '#d63384', '#fd7e14', '#ffc107', '#20c997', '#adb5bd']
             }]
         },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' }
-            }
-        }
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
     });
 }
 
-// 3. 차트 렌더링 (Performance & Strategy)
-function renderCharts(summary) {
-    // 최근 90일 데이터만 사용 (너무 많으면 느림)
-    const recentData = summary.slice(-90);
-    const labels = recentData.map(d => d.date.substring(5)); // MM-DD
-
-    // 3-1. 메인 차트: 자산 가치 vs SPY 주가 (Dual Axis)
-    const ctxMain = document.getElementById('performanceChart').getContext('2d');
-    new Chart(ctxMain, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'My Portfolio ($)',
-                    data: recentData.map(d => d.total_value),
-                    borderColor: '#0d6efd',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    yAxisID: 'y',
-                    fill: true,
-                    tension: 0.3
-                },
-                {
-                    label: 'SPY Price ($)',
-                    data: recentData.map(d => d.spy_price),
-                    borderColor: '#adb5bd',
-                    borderDash: [5, 5], // 점선
-                    yAxisID: 'y1',
-                    tension: 0.3,
-                    pointRadius: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: { mode: 'index', intersect: false },
-            scales: {
-                y: { type: 'linear', display: true, position: 'left' },
-                y1: { type: 'linear', display: true, position: 'right', grid: { drawOnChartArea: false } }
-            }
-        }
-    });
-
-    // 3-2. 전략 차트: SPY Price vs MA180 (마켓 타이밍 시각화)
-    const ctxStrat = document.getElementById('strategyChart').getContext('2d');
-    new Chart(ctxStrat, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'SPY Close',
-                    data: recentData.map(d => d.spy_price),
-                    borderColor: '#198754',
-                    borderWidth: 1.5,
-                    pointRadius: 0
-                },
-                {
-                    label: 'MA 180',
-                    data: recentData.map(d => d.spy_ma180),
-                    borderColor: '#dc3545',
-                    borderWidth: 1.5,
-                    pointRadius: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } }, // 공간 절약
-            scales: {
-                x: { display: false }, // X축 숨김
-                y: { display: false }  // Y축 숨김 (트렌드만 확인)
-            }
-        }
-    });
-}
-
-// 4. 매매 기록 (History Table)
-function renderHistory(history) {
-    // 최신순 정렬 후 10개만
-    const recent = history.slice().reverse().slice(0, 10);
+// 4. 매매 기록 테이블 업데이트
+function renderTradeHistory(historyData) {
     const tbody = document.getElementById('history-table-body');
-    
-    tbody.innerHTML = recent.map(row => {
-        // executions 필드가 있으면 그것을 쓰고, 없으면(구버전) orders를 씀
-        const actions = row.executions || row.orders || [];
+    tbody.innerHTML = '';
+
+    // 최근 10개만 표시
+    const recentTrades = historyData.slice().reverse().slice(0, 10);
+
+    recentTrades.forEach(tx => {
+        const row = document.createElement('tr');
         
-        let actionBadges = actions.map(a => {
-            const color = a.action === 'BUY' ? 'success' : 'danger';
-            return `<span class="badge bg-${color} order-badge">${a.action} ${a.ticker} (${a.quantity})</span>`;
-        }).join(" ");
+        let actionsHtml = tx.executions.map(ex => `
+            <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge">
+                ${ex.action} ${ex.ticker} (${ex.quantity})
+            </span>
+        `).join('');
 
-        if (actions.length === 0) actionBadges = '<span class="text-muted">-</span>';
-
-        return `
-            <tr>
-                <td>${row.date.substring(0, 10)}</td>
-                <td><small>${row.reason}</small></td>
-                <td><small>${row.total_trade_amount ? '$'+formatCurrency(row.total_trade_amount) : '-'}</small></td>
-                <td>${actionBadges}</td>
-            </tr>
+        row.innerHTML = `
+            <td class="small">${tx.date.split(' ')[0]}</td>
+            <td class="small">${tx.reason}</td>
+            <td class="fw-bold">$${tx.total_trade_amount.toLocaleString()}</td>
+            <td>${actionsHtml}</td>
         `;
-    }).join("");
+        tbody.appendChild(row);
+    });
 }
 
-// 유틸리티: 화폐 포맷
-function formatCurrency(value) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value).replace('$', '');
+// 헬퍼: 국면별 색상 클래스
+function getRegimeColorClass(regime) {
+    regime = regime.toLowerCase();
+    if (regime.includes('bull')) return 'text-success';
+    if (regime.includes('bear')) return 'text-danger';
+    if (regime.includes('sideways')) return 'text-warning';
+    if (regime.includes('crash')) return 'text-dark bg-warning p-1 rounded';
+    return 'text-muted';
 }
