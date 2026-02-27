@@ -2,7 +2,7 @@ name: Backup to Google Drive
 
 on:
   push:
-    branches: [ "main" ]  # main 브랜치에 코드가 푸시될 때마다 실행 (필요시 master 등으로 변경)
+    branches:[ "main" ]  # 필요시 master로 변경
 
 jobs:
   backup:
@@ -12,15 +12,14 @@ jobs:
       uses: actions/checkout@v4
 
     - name: 코드를 ZIP 파일로 압축하기
-      # .git 폴더를 제외한 모든 코드를 backup.zip으로 압축합니다.
       run: zip -r backup.zip . -x "*.git/*"
 
     - name: 구글 드라이브에 업로드하기
-      uses: mathisve/gdrive-upload-action@v2
+      uses: mathisve/gdrive-upload-action@main  # <-- 이 부분이 @v2에서 @main으로 수정되었습니다.
       with:
         filename: backup.zip
-        name: my-repo-latest-backup.zip  # 파일명을 하나로 고정
+        name: my-repo-latest-backup.zip  # 구글 드라이브에 저장될 파일명
         folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
         credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
-        encoded: false
-        overwrite: true  # 기존 파일을 덮어쓰기 (용량 절약)
+        encoded: false  # JSON을 그대로 복사해 넣었으므로 false
+        overwrite: true # 기존 파일 덮어쓰기 (용량 절약)
