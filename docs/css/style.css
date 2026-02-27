@@ -37,3 +37,22 @@ body {
     font-size: 0.85em;
     margin-right: 4px;
 }
+
+/* 내비게이션 활성화 버튼 스타일 */
+.btn-group .btn.active-live {
+    background-color: #198754 !important; /* 초록색 (Live) */
+    color: white !important;
+    border-color: #198754 !important;
+}
+
+.btn-group .btn.active-backtest {
+    background-color: #0dcaf0 !important; /* 하늘색 (Backtest) */
+    color: #000 !important;
+    border-color: #0dcaf0 !important;
+}
+
+/* 상단 모드 배지 스타일 */
+#mode-badge {
+    font-size: 0.9rem;
+    padding: 0.5em 0.8em;
+}
