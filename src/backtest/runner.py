@@ -102,7 +102,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0) 
             current_prices = close_prices.to_dict()
 
         except Exception as e:
-            # 데이터 누락 시 건너뜀
+            logger.warning(f"[{today.date()}] 종가 추출 실패, 건너뜀: {e}")
             continue
 
         broker.set_prices(current_prices)
