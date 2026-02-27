@@ -1,39 +1,62 @@
-document.addEventListener("DOMContentLoaded", function() {
-    initDashboard();
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. 모드 설정 확인
+    const urlParams = new URLSearchParams(window.location.search);
+    const isBacktest = urlParams.get('mode') === 'backtest';
+    
+    // 데이터 경로 결정
+    const dataPath = isBacktest ? 'data/backtest/' : 'data/';
+    
+    // UI 업데이트 (버튼 활성화 및 배지 변경)
+    updateModeUI(isBacktest);
+
+    // 2. 데이터 로드 시작
+    initDashboard(dataPath);
 });
+
+function updateModeUI(isBacktest) {
+    const liveBtn = document.getElementById('link-live');
+    const backtestBtn = document.getElementById('link-backtest');
+    const modeBadge = document.getElementById('mode-badge');
+
+    if (isBacktest) {
+        backtestBtn.classList.add('active-backtest');
+        modeBadge.classList.add('bg-info', 'text-dark');
+        modeBadge.innerHTML = '<i class="fas fa-history me-1"></i> BACKTEST MODE';
+    } else {
+        liveBtn.classList.add('active-live');
+        modeBadge.classList.add('bg-success');
+        modeBadge.innerHTML = '<i class="fas fa-broadcast-tower me-1"></i> LIVE MODE';
+    }
+}
+
+async function initDashboard(dataPath) {
+    try {
+        // status.json 로드
+        const statusResponse = await fetch(`${dataPath}status.json`);
+        const statusData = await statusResponse.json();
+        updateSummaryCards(statusData);
+
+        // summary.json 로드 (차트용)
+        const summaryResponse = await fetch(`${dataPath}summary.json`);
+        const summaryData = await summaryResponse.json();
+        renderCharts(summaryData);
+
+        // history.json 로드 (테이블용)
+        const historyResponse = await fetch(`${dataPath}history.json`);
+        const historyData = await historyResponse.json();
+        renderTradeHistory(historyData);
+
+        document.getElementById('last-updated').innerText = `Last Update: ${statusData.last_updated || 'Unknown'}`;
+
+    } catch (error) {
+        console.error("Data loading failed:", error);
+        alert("데이터를 불러오는 데 실패했습니다. 파일이 존재하는지 확인해주세요.");
+    }
+}
 
 // 캐시 방지용 타임스탬프
 const ts = new Date().getTime();
 
-async function initDashboard() {
-    try {
-        // 병렬로 데이터 로드 (속도 향상)
-        const [statusRes, summaryRes, historyRes] = await Promise.all([
-            fetch(`data/status.json?t=${ts}`),
-            fetch(`data/summary.json?t=${ts}`),
-            fetch(`data/history.json?t=${ts}`)
-        ]);
-
-        const statusData = await statusRes.json();
-        const summaryData = await summaryRes.json();
-        const historyData = await historyRes.json();
-
-        // UI 업데이트 실행
-        renderStatus(statusData, summaryData);
-        renderCharts(summaryData);
-        renderHoldings(statusData);
-        renderHistory(historyData);
-
-    } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-        document.querySelector('.container').innerHTML = `
-            <div class="alert alert-danger mt-5">
-                <h4>Error Loading Data</h4>
-                <p>데이터 파일을 불러오는 데 실패했습니다. 봇이 아직 실행되지 않았거나 경로가 잘못되었습니다.</p>
-                <small>${error}</small>
-            </div>`;
-    }
-}
 
 // 1. 상단 상태 카드 렌더링
 function renderStatus(status, summary) {
