@@ -16,7 +16,8 @@ on:
         required: false
         type: string
         default: '10000'
-
+permissions:
+  contents: write
 jobs:
   backtest:
     runs-on: ubuntu-latest
@@ -40,6 +41,12 @@ jobs:
         BACKTEST_END: ${{ inputs.end }}
         BACKTEST_CASH: ${{ inputs.initial_cash }}
       run: python scripts/run_backtest_ci.py
+
+    - name: Commit and Push Backtest Results
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "📊 백테스트 결과 업데이트 [skip ci]"
+        file_pattern: "docs/data/backtest/*"
 
     - name: Print backtest log
       if: always()
