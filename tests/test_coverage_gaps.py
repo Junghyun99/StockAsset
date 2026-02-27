@@ -140,7 +140,7 @@ class TestNotifierEdgeCases:
         from src.infra.notifier import TelegramNotifier
 
         with patch('src.infra.notifier.requests.post') as mock_post:
-            notifier = TelegramNotifier(token="123:ABC", chat_id="999")
+            notifier = TelegramNotifier(token="123:ABC", chat_id="999", logger=MagicMock())
             notifier.send_alert("Danger!")
 
             mock_post.assert_called_once()

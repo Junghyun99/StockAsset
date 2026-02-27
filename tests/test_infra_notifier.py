@@ -12,9 +12,9 @@ def mock_requests_post():
 def mock_logger():
     """가짜 로거 생성"""
     return MagicMock()
-def test_telegram_send_success(mock_requests_post):
+def test_telegram_send_success(mock_requests_post, mock_logger):
     # 1. 정상 전송 테스트
-    notifier = TelegramNotifier(token="1234:ABC", chat_id="999")
+    notifier = TelegramNotifier(token="1234:ABC", chat_id="999", logger=mock_logger)
     notifier.send_message("Hello Test")
     
     # requests.post가 호출되었는지 확인
@@ -26,26 +26,31 @@ def test_telegram_send_success(mock_requests_post):
     assert kwargs['json']['chat_id'] == "999"
     assert "Hello Test" in kwargs['json']['text']
 
-def test_telegram_send_without_token(mock_requests_post):
+def test_telegram_send_without_token(mock_requests_post, mock_logger):
     # 2. 토큰이 없는 경우 (설정 미비)
-    notifier = TelegramNotifier(token="", chat_id="")
+    notifier = TelegramNotifier(token="", chat_id="", logger=mock_logger)
     notifier.send_message("Should not send")
-    
+
     # 전송 시도조차 하지 않아야 함
     mock_requests_post.assert_not_called()
+    # logger.info로 mock 출력되었는지 확인
+    mock_logger.info.assert_called_once()
+    args, _ = mock_logger.info.call_args
+    assert "[Telegram Mock]" in args[0]
 
-def test_telegram_network_error(mock_requests_post, capsys):
+def test_telegram_network_error(mock_requests_post, mock_logger):
     # 3. 네트워크 에러 발생 시 프로그램이 죽지 않고 예외 처리하는지
     mock_requests_post.side_effect = Exception("Connection Refused")
-    
-    notifier = TelegramNotifier(token="123:ABC", chat_id="111")
-    
+
+    notifier = TelegramNotifier(token="123:ABC", chat_id="111", logger=mock_logger)
+
     # 에러가 발생하더라도 catch 되어야 함 (여기서 raise되면 테스트 실패)
     notifier.send_message("Error Test")
-    
-    # 콘솔에 에러 로그가 찍혔는지 확인
-    captured = capsys.readouterr()
-    assert "[Telegram Error]" in captured.out
+
+    # logger.error로 에러 로그가 기록되었는지 확인
+    mock_logger.error.assert_called_once()
+    args, _ = mock_logger.error.call_args
+    assert "[Telegram Error]" in args[0]
 
 
 def test_slack_send_success(mock_requests_post,mock_logger):
