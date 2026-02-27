@@ -499,7 +499,7 @@ class KisBrokerBase(IBrokerAdapter):
 class KisPaperBroker(KisBrokerBase):
     """한국투자증권 모의투자 브로커 (가상거래 서버)"""
     BASE_URL = "https://openapivts.koreainvestment.com:29443"
-    PRICE_TR_ID = "FHKST01010100"
+    PRICE_TR_ID = "HHDFS00000300"  # 해외주식 현재가 조회 (실전/모의 동일 TR_ID)
     PORTFOLIO_TR_ID = "VTTS3012R"
     BUY_TR_ID = "VTTT1002U"
     SELL_TR_ID = "VTTT1006U"

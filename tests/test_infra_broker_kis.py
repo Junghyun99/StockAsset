@@ -70,7 +70,7 @@ def test_kis_paper_broker_init(mock_requests, mock_logger):
     broker = KisPaperBroker('key', 'secret', '1234567890', mock_logger)
 
     assert broker.base_url == "https://openapivts.koreainvestment.com:29443"
-    assert broker.PRICE_TR_ID == "FHKST01010100"
+    assert broker.PRICE_TR_ID == "HHDFS00000300"
     assert broker.PORTFOLIO_TR_ID == "VTTS3012R"
     assert broker.cano == '12345678'
     assert broker.acnt_prdt_cd == '90'
@@ -115,10 +115,10 @@ def test_paper_broker_auth_network_error(mock_requests, mock_logger):
 
 def test_paper_broker_get_header_without_data(paper_broker, mock_requests):
     """데이터 없이 헤더 생성 (GET 요청용)"""
-    headers = paper_broker._get_header("FHKST01010100")
+    headers = paper_broker._get_header("HHDFS00000300")
 
     assert headers['authorization'] == 'Bearer test_token_123'
-    assert headers['tr_id'] == 'FHKST01010100'
+    assert headers['tr_id'] == 'HHDFS00000300'
     assert headers['appkey'] == 'test_key'
     assert 'hashkey' not in headers
 
@@ -205,6 +205,24 @@ def test_paper_broker_fetch_prices_real_mode(mock_sleep, live_broker, mock_reque
 
     args, kwargs = mock_requests.get.call_args
     # 실전 TR_ID: HHDFS00000300
+    assert kwargs['headers']['tr_id'] == 'HHDFS00000300'
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_fetch_prices_uses_overseas_tr_id(mock_sleep, paper_broker, mock_requests):
+    """모의투자 모드에서 해외주식 TR_ID(HHDFS00000300)를 사용하는지 확인.
+    FHKST01010100(국내주식)이 아닌 HHDFS00000300(해외주식)이어야 한다."""
+    price_response = MagicMock()
+    price_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {'last': '150.00'}
+    }
+    mock_requests.get.return_value = price_response
+
+    paper_broker.fetch_current_prices(['SPY'])
+
+    args, kwargs = mock_requests.get.call_args
+    # 모의투자도 해외주식 현재가 TR_ID는 실전과 동일: HHDFS00000300
     assert kwargs['headers']['tr_id'] == 'HHDFS00000300'
 
 
