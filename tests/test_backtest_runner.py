@@ -453,6 +453,63 @@ def test_nan_triggered_flag_false_for_real_crash(mock_savefig, mock_download, mo
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
+def test_exception_during_execution_records_error_in_history(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #91] 주문 실행 중 예외 발생 시에도 현재 포트폴리오 상태가 history에 기록되어야 한다.
+    예외 후 다음 거래일로 넘어가더라도 해당 날짜의 기록이 누락되지 않아야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    # 실제 Order 객체를 사용해야 logger.info f-string 포맷이 정상 동작
+    mock_signal_obj = MagicMock()
+    mock_signal_obj.has_orders = True
+    mock_signal_obj.orders = [Order(ticker="SSO", action=OrderAction.BUY, quantity=5, price=100.0)]
+    mock_signal_obj.reason = "test_signal"
+
+    with patch("src.backtest.components.BacktestBroker.execute_orders",
+               side_effect=RuntimeError("주문 실행 오류")), \
+         patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    # ERROR regime이 기록되어야 함
+    assert "ERROR" in result.history["regime"].values, "예외 발생 시 'ERROR' regime이 history에 기록되어야 함"
+    # ERROR 행의 signal_reason에 예외 타입이 포함되어야 함
+    error_rows = result.history[result.history["regime"] == "ERROR"]
+    assert (error_rows["signal_reason"].str.contains("RuntimeError")).any()
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_exception_during_execution_preserves_portfolio_value(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Issue #91] 주문 실행 중 예외 발생 시 ERROR 행의 total_value가 양수로 기록되어야 한다.
+    브로커 상태가 부분적으로 변경되었더라도 현재 상태를 그대로 기록해야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    # 실제 Order 객체를 사용해야 logger.info f-string 포맷이 정상 동작
+    mock_signal_obj = MagicMock()
+    mock_signal_obj.has_orders = True
+    mock_signal_obj.orders = [Order(ticker="SSO", action=OrderAction.BUY, quantity=5, price=100.0)]
+    mock_signal_obj.reason = "test_signal"
+
+    with patch("src.backtest.components.BacktestBroker.execute_orders",
+               side_effect=ValueError("가격 계산 오류")), \
+         patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert result is not None
+    error_rows = result.history[result.history["regime"] == "ERROR"]
+    assert len(error_rows) > 0, "ERROR regime 행이 존재해야 함"
+    # 포트폴리오 가치가 양수여야 함 (초기 자금 이상)
+    assert (error_rows["total_value"] > 0).all(), "ERROR 행의 total_value는 양수여야 함"
+    # ERROR 행의 trade_count는 0이어야 함
+    assert (error_rows["trade_count"] == 0).all(), "ERROR 행의 trade_count는 0이어야 함"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
 def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock_fetcher_return):
     """
     [Issue #45] execute_orders 반환값(TradeExecution 리스트)이 누락 없이 수집되어야 한다.
