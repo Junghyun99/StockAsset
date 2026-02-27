@@ -219,6 +219,31 @@ def test_empty_history_returns_none_when_all_prices_fail(mock_download, mock_fet
     assert result is None
 
 
+@patch("src.backtest.runner.download_historical_data")
+def test_price_extraction_failure_logs_warning(mock_download, mock_fetcher_return, caplog):
+    """
+    [Issue #90] 종가 추출 실패 시 로그 없이 건너뛰지 않고
+    logger.warning으로 실패한 날짜와 원인을 기록해야 한다.
+    """
+    import logging
+    mock_df, mock_vix = mock_fetcher_return
+
+    # _validate_tickers 통과를 위해 columns을 실제 MultiIndex로 설정
+    bad_df = MagicMock()
+    bad_df.index = mock_df.index
+    bad_df.columns = mock_df.columns  # 실제 MultiIndex → _validate_tickers 통과
+    # full_df['Close'] 접근 시 KeyError 발생 → 종가 추출 실패 경로 재현
+    bad_df.__getitem__ = MagicMock(side_effect=KeyError("Close"))
+    mock_download.return_value = (bad_df, mock_vix)
+
+    with caplog.at_level(logging.WARNING, logger="SolidQuant"):
+        run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    assert "종가 추출 실패" in caplog.text, (
+        f"종가 추출 실패 경고가 로그에 기록되어야 함. 실제 로그: {caplog.text}"
+    )
+
+
 def test_cagr_formula_actual_dates_vs_data_points():
     """
     [Bug #44] CAGR 공식이 데이터 포인트 수가 아닌 실제 날짜 기간을 사용하는지 검증한다.
