@@ -223,10 +223,11 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 "nan_triggered": False,  # 정상 처리 (NaN 없음)
                 "signal_reason": signal.reason,
             })
+            sim_date_str = today.strftime("%Y-%m-%d")
             backtest_repo.save_daily_summary(market_data, signal, final_pf)
             if day_executions:
-                backtest_repo.save_trade_history(day_executions, final_pf, signal.reason)
-            backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason)
+                backtest_repo.save_trade_history(day_executions, final_pf, signal.reason, sim_date=sim_date_str)
+            backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason, sim_date=sim_date_str)
 
         except Exception as e:
             logger.error(f"Error on {today.date()}: {e}")
