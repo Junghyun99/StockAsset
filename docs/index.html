@@ -13,14 +13,14 @@
 </head>
 <body class="bg-light">
 
-    <!-- Navbar -->    
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <div class="d-flex align-items-center">
                 <a class="navbar-brand" href="index.html">
                     <i class="fas fa-robot me-2"></i>SolidQuant Bot
                 </a>
-                <!-- 모드 전환 버튼 그룹 추가 -->
+                <!-- 모드 전환 버튼 그룹 -->
                 <div class="btn-group btn-group-sm ms-3" role="group" aria-label="Mode Switcher">
                     <a href="index.html" id="link-live" class="btn btn-outline-light">Live</a>
                     <a href="index.html?mode=backtest" id="link-backtest" class="btn btn-outline-light">Backtest</a>
@@ -34,136 +34,295 @@
         </div>
     </nav>
 
-    <div class="container">
-        <!-- 1. 핵심 지표 (Key Metrics) -->
-        <div class="row g-4 mb-4">
-            <!-- Total Value & Return -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Total Assets</h6>
-                        <h2 class="fw-bold mb-0" id="total-value">$-</h2>
-                        <div class="mt-2">
-                            <span id="daily-return" class="badge rounded-pill bg-secondary">0.00%</span>
-                            <span class="text-muted small ms-1">vs Yesterday</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Current Regime -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Market Regime</h6>
-                        <h3 class="fw-bold mb-0" id="regime-text">-</h3>
-                        <div class="mt-2 text-muted small">
-                            Momentum: <span id="momentum-score">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Target Exposure -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Target Exposure</h6>
-                        <h3 class="fw-bold mb-0" id="target-exposure">-</h3>
-                        <div class="progress mt-2" style="height: 6px;">
-                            <div id="exposure-bar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Risk Indicators -->
-            <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm">
-                    <div class="card-body">
-                        <h6 class="text-muted">Risk Indicators</h6>
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span>VIX</span>
-                            <span id="vix-value" class="fw-bold">-</span>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>SPY MDD</span>
-                            <span id="mdd-value" class="fw-bold text-danger">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Tab Navigation -->
+    <div class="bg-white border-bottom shadow-sm">
+        <div class="container">
+            <ul class="nav nav-tabs border-0" id="dashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
+                        <i class="fas fa-tachometer-alt me-1"></i>Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="false">
+                        <i class="fas fa-chart-line me-1"></i>Performance
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="trades-tab" data-bs-toggle="tab" data-bs-target="#trades" type="button" role="tab" aria-controls="trades" aria-selected="false">
+                        <i class="fas fa-exchange-alt me-1"></i>Trades
+                    </button>
+                </li>
+            </ul>
         </div>
+    </div>
 
-        <!-- 2. 차트 영역 (Charts) -->
-        <div class="row mb-4">
-            <!-- 메인 차트: 자산 추이 vs SPY -->
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Performance History</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="performanceChart" height="250"></canvas>
+    <div class="container mt-4">
+        <div class="tab-content" id="dashboardTabContent">
+
+            <!-- ==================== TAB 1: OVERVIEW ==================== -->
+            <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+
+                <!-- Status Banner -->
+                <div id="status-banner" class="status-banner mb-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-signal me-2"></i>
+                            <span id="banner-text">Loading...</span>
+                        </div>
+                        <span id="banner-updated" class="small opacity-75"></span>
                     </div>
                 </div>
-            </div>
-            <!-- 서브 차트: 자산 구성 (Pie) -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Current Holdings</h5>
-                    </div>
-                    <div class="card-body d-flex justify-content-center align-items-center">
-                        <div style="width: 250px; height: 250px;">
-                            <canvas id="allocationChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-white">
-                        <div class="d-flex justify-content-between">
-                            <span>Cash</span>
-                            <span id="cash-value" class="fw-bold">$-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 3. 전략 상세 차트 (Strategy Detail) -->
-        <!-- docs/index.html 내 Strategy Analysis 섹션 부분 수정 -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Strategy Analysis & Decision Logic</h5>
-                        <span class="text-muted small">마우스를 그래프에 올리면 상세 지표가 표시됩니다.</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                        <!-- 왼쪽: 업그레이드된 그래프 -->
-                            <div class="col-lg-9">
-                                <canvas id="strategyChart" height="150"></canvas>
+                <!-- Key Metrics (4 cards) -->
+                <div class="row g-3 mb-4">
+                    <!-- Total Value & Return -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted"><i class="fas fa-wallet me-1"></i>Total Assets</h6>
+                                <h2 class="fw-bold mb-0" id="total-value">$-</h2>
+                                <div class="mt-2">
+                                    <span id="daily-return" class="badge rounded-pill bg-secondary">0.00%</span>
+                                    <span class="text-muted small ms-1">vs Yesterday</span>
+                                </div>
                             </div>
-                            <!-- 오른쪽: 전략 인사이트 (판단 근거) -->
-                            <div class="col-lg-3 border-start">
-                                <h6 class="fw-bold mb-3"><i class="fas fa-search-dollar me-2"></i>Decision Factors</h6>
+                        </div>
+                    </div>
+
+                    <!-- Current Regime -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted"><i class="fas fa-flag me-1"></i>Market Regime</h6>
+                                <h3 class="fw-bold mb-0" id="regime-text">-</h3>
+                                <div class="mt-1 text-muted small">
+                                    Momentum: <span id="momentum-score">-</span>
+                                </div>
+                                <div id="trigger-reason" class="mt-1 small text-muted fst-italic"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target Exposure -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted"><i class="fas fa-balance-scale me-1"></i>Target Exposure</h6>
+                                <h3 class="fw-bold mb-0" id="target-exposure">-</h3>
+                                <div class="progress mt-2" style="height: 6px;">
+                                    <div id="exposure-bar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Risk Indicators -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>Risk Indicators</h6>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small">VIX</span>
+                                    <span id="vix-value" class="fw-bold">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small">SPY MDD</span>
+                                    <span id="mdd-value" class="fw-bold text-danger">-</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small">Volatility</span>
+                                    <span id="volatility-value" class="fw-bold">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Holdings + Today's Activity -->
+                <div class="row g-4 mb-4">
+                    <!-- Holdings (Group Bar + Table) -->
+                    <div class="col-lg-7">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Asset Allocation</h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 60px;">
+                                    <canvas id="groupBarChart"></canvas>
+                                </div>
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Group</th>
+                                                <th>Ticker</th>
+                                                <th class="text-end">Qty</th>
+                                                <th class="text-end">Price</th>
+                                                <th class="text-end">Value</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="holdings-table-body">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Today's Activity + Decision Factors -->
+                    <div class="col-lg-5">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Today's Activity</h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- 오늘 거래 or 리밸런싱 불필요 -->
+                                <div id="today-activity" class="mb-3">
+                                </div>
+                                <!-- Decision Factors 인라인 -->
+                                <h6 class="fw-bold mt-3 mb-2"><i class="fas fa-search-dollar me-1"></i>Decision Factors</h6>
                                 <ul class="list-group list-group-flush small" id="decision-logic-list">
-                            <!-- JS에서 실시간으로 채워짐 -->
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- 4. 매매 기록 (History Log) -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
+            <!-- ==================== TAB 2: PERFORMANCE ==================== -->
+            <div class="tab-pane fade" id="performance" role="tabpanel" aria-labelledby="performance-tab">
+
+                <!-- Performance Summary Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">Total Return</h6>
+                                <h3 class="fw-bold mb-0" id="perf-total-return">-</h3>
+                                <div class="small text-muted">Since inception</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">SPY Return</h6>
+                                <h3 class="fw-bold mb-0" id="perf-spy-return">-</h3>
+                                <div class="small" id="perf-alpha">Alpha: -</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">Max Drawdown</h6>
+                                <h3 class="fw-bold mb-0 text-danger" id="perf-max-mdd">-</h3>
+                                <div class="small text-muted" id="perf-max-mdd-date">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted">Current MDD</h6>
+                                <h3 class="fw-bold mb-0" id="perf-current-mdd">-</h3>
+                                <div class="small text-muted">From peak</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Performance Chart (Full Width) + Time Range Selector -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Performance History</h5>
+                        <div class="btn-group btn-group-sm" id="time-range-selector" role="group">
+                            <button type="button" class="btn btn-outline-secondary" data-range="1M">1M</button>
+                            <button type="button" class="btn btn-outline-secondary" data-range="3M">3M</button>
+                            <button type="button" class="btn btn-outline-secondary" data-range="6M">6M</button>
+                            <button type="button" class="btn btn-outline-secondary" data-range="1Y">1Y</button>
+                            <button type="button" class="btn btn-outline-secondary active" data-range="ALL">ALL</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 300px;">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two side-by-side charts -->
+                <div class="row g-4 mb-4">
+                    <!-- Asset Group Allocation Over Time -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Asset Group History</h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 250px;">
+                                    <canvas id="groupAllocationChart"></canvas>
+                                </div>
+                                <div id="group-allocation-placeholder" class="text-center text-muted py-4 d-none">
+                                    <i class="fas fa-info-circle me-1"></i>Group allocation data not available
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Chart -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Strategy Analysis</h5>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 250px;">
+                                    <canvas id="strategyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TAB 3: TRADES ==================== -->
+            <div class="tab-pane fade" id="trades" role="tabpanel" aria-labelledby="trades-tab">
+
+                <!-- Trade Summary Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Total Trades</h6>
+                                <h3 class="fw-bold mb-0" id="trade-count">-</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Total Volume</h6>
+                                <h3 class="fw-bold mb-0" id="trade-volume">-</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body text-center">
+                                <h6 class="text-muted">Total Fees</h6>
+                                <h3 class="fw-bold mb-0" id="trade-fees">-</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trade History Table with Pagination -->
+                <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Recent Trades</h5>
-                        <span class="badge bg-light text-dark border">Last 10 Actions</span>
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Trade History</h5>
+                        <span class="badge bg-light text-dark border" id="trade-page-info"></span>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -172,20 +331,29 @@
                                     <tr>
                                         <th>Date</th>
                                         <th>Reason</th>
-                                        <th>Scale</th>
+                                        <th class="text-end">Portfolio</th>
+                                        <th class="text-end">Amount</th>
+                                        <th class="text-end">Fees</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="history-table-body">
-                                    <!-- JS로 데이터 로드 -->
                                 </tbody>
                             </table>
                         </div>
                     </div>
+                    <!-- Pagination -->
+                    <div class="card-footer bg-white d-flex justify-content-center">
+                        <nav aria-label="Trade history pagination">
+                            <ul class="pagination pagination-sm mb-0" id="trade-pagination">
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
+
         </div>
-        
+
         <footer class="text-center text-muted pb-4">
             <small>Powered by SolidQuant & GitHub Actions</small>
         </footer>

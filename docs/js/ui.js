@@ -1,7 +1,16 @@
 // docs/js/ui.js
-// DOM 업데이트: 요약 카드, 결정 로직, 거래 내역
+// DOM 업데이트: 상태 배너, 요약 카드, 결정 로직, 거래 내역, 페이지네이션
 
-import { getRegimeColorClass } from './utils.js';
+import {
+    getRegimeColorClass,
+    getRegimeBannerClass,
+    getAssetGroup,
+    formatCurrency,
+    formatPercent,
+    computeReturns,
+    computeDrawdown,
+    computeTradeStats
+} from './utils.js';
 
 /**
  * 상단 내비게이션 바의 모드 버튼 및 상태 배지 업데이트
@@ -23,6 +32,25 @@ export function updateModeUI(isBacktest) {
 }
 
 /**
+ * 상태 배너 렌더링 (국면별 색상 + 주요 정보 한 줄)
+ */
+export function renderStatusBanner(statusData) {
+    const banner = document.getElementById('status-banner');
+    const bannerText = document.getElementById('banner-text');
+    const bannerUpdated = document.getElementById('banner-updated');
+
+    const strategy = statusData.strategy;
+    const regime = strategy.regime.replace('_', ' ');
+    const exposure = (strategy.target_exposure * 100).toFixed(0);
+    const reason = strategy.trigger_reason || '';
+
+    // 배너 색상 클래스 적용
+    banner.className = 'status-banner mb-4 ' + getRegimeBannerClass(strategy.regime);
+    bannerText.innerHTML = `<strong>${regime}</strong> &nbsp;|&nbsp; Exposure ${exposure}% &nbsp;|&nbsp; ${reason}`;
+    bannerUpdated.textContent = statusData.last_updated || '';
+}
+
+/**
  * 상단 4개 요약 카드 정보 업데이트
  */
 export function updateSummaryCards(statusData, summaryData) {
@@ -30,7 +58,7 @@ export function updateSummaryCards(statusData, summaryData) {
     const portfolio = statusData.portfolio;
 
     // [1] 총 자산 (Total Assets)
-    document.getElementById('total-value').innerText = `$${portfolio.total_value.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    document.getElementById('total-value').innerText = formatCurrency(portfolio.total_value);
 
     // [1-2] 일간 수익률 계산 및 배지 업데이트 (vs Yesterday)
     const dailyReturnEl = document.getElementById('daily-return');
@@ -39,9 +67,8 @@ export function updateSummaryCards(statusData, summaryData) {
         const yesterdayVal = summaryData[summaryData.length - 2].total_value;
         const returnPct = ((todayVal / yesterdayVal) - 1) * 100;
 
-        dailyReturnEl.innerText = (returnPct >= 0 ? '+' : '') + returnPct.toFixed(2) + '%';
+        dailyReturnEl.innerText = formatPercent(returnPct);
 
-        // 수익률 상태에 따른 색상 변경
         if (returnPct > 0) {
             dailyReturnEl.className = 'badge rounded-pill bg-success';
         } else if (returnPct < 0) {
@@ -59,6 +86,12 @@ export function updateSummaryCards(statusData, summaryData) {
     // [2-2] 모멘텀 점수
     document.getElementById('momentum-score').innerText = (strategy.market_score.spy_momentum * 100).toFixed(2) + '%';
 
+    // [2-3] 트리거 사유
+    const triggerEl = document.getElementById('trigger-reason');
+    if (strategy.trigger_reason) {
+        triggerEl.innerText = strategy.trigger_reason;
+    }
+
     // [3] 목표 비중 (Target Exposure)
     const exposure = (strategy.target_exposure * 100).toFixed(0);
     document.getElementById('target-exposure').innerText = exposure + '%';
@@ -71,8 +104,98 @@ export function updateSummaryCards(statusData, summaryData) {
     mddEl.innerText = mddVal + '%';
     mddEl.className = 'fw-bold ' + (mddVal <= -10 ? 'text-danger' : 'text-dark');
 
-    // 현금 잔고 (Holdings 카드 하단)
-    document.getElementById('cash-value').innerText = `$${portfolio.cash_balance.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    // [4-2] Volatility
+    const volEl = document.getElementById('volatility-value');
+    if (strategy.market_score.spy_volatility !== undefined) {
+        volEl.innerText = (strategy.market_score.spy_volatility * 100).toFixed(1) + '%';
+    }
+}
+
+/**
+ * 보유 자산 테이블 렌더링 (그룹별 분류)
+ */
+export function renderHoldingsTable(statusData) {
+    const tbody = document.getElementById('holdings-table-body');
+    const holdings = statusData.portfolio.holdings;
+    const cash = statusData.portfolio.cash_balance;
+
+    // 그룹별 정렬
+    const sorted = [...holdings].sort((a, b) => {
+        const ga = getAssetGroup(a.ticker);
+        const gb = getAssetGroup(b.ticker);
+        return ga.group.localeCompare(gb.group);
+    });
+
+    let rows = '';
+    sorted.forEach(h => {
+        if (h.value <= 0 && h.qty <= 0) return; // 보유량 0인 항목 제외
+        const g = getAssetGroup(h.ticker);
+        rows += `
+            <tr>
+                <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>
+                <td class="fw-bold">${h.ticker}</td>
+                <td class="text-end">${h.qty}</td>
+                <td class="text-end">${formatCurrency(h.price)}</td>
+                <td class="text-end">${formatCurrency(h.value)}</td>
+            </tr>
+        `;
+    });
+
+    // Cash 행 추가
+    if (cash > 0) {
+        rows += `
+            <tr class="table-light">
+                <td><span class="badge bg-secondary">Cash</span></td>
+                <td class="fw-bold">USD</td>
+                <td class="text-end">-</td>
+                <td class="text-end">-</td>
+                <td class="text-end">${formatCurrency(cash)}</td>
+            </tr>
+        `;
+    }
+
+    tbody.innerHTML = rows || '<tr><td colspan="5" class="text-center text-muted">No holdings</td></tr>';
+}
+
+/**
+ * 오늘의 활동 영역 렌더링
+ */
+export function renderTodayActivity(historyData, statusData) {
+    const container = document.getElementById('today-activity');
+    if (!historyData || historyData.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-light border mb-0">
+                <i class="fas fa-info-circle me-1 text-muted"></i>
+                <span class="small">No trade history available</span>
+            </div>
+        `;
+        return;
+    }
+
+    // 가장 최근 거래
+    const lastTrade = historyData[historyData.length - 1];
+    const tradeDate = lastTrade.date.split(' ')[0];
+
+    // 체결 종목 배지 생성
+    let actionsHtml = lastTrade.executions.map(ex => `
+        <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
+            ${ex.action} ${ex.ticker} (${ex.quantity})
+        </span>
+    `).join('');
+
+    container.innerHTML = `
+        <div class="border rounded p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge bg-primary">Latest Trade</span>
+                <span class="small text-muted">${tradeDate}</span>
+            </div>
+            <p class="small text-muted mb-2">${lastTrade.reason}</p>
+            <div>${actionsHtml}</div>
+            <div class="small text-muted mt-2">
+                Amount: ${formatCurrency(lastTrade.total_trade_amount)}
+            </div>
+        </div>
+    `;
 }
 
 /**
@@ -87,19 +210,19 @@ export function updateDecisionLogic(lastData) {
     const isVixSafe = lastData.vix < 30;
 
     list.innerHTML = `
-        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             Price > MA180
             <i class="fas ${isAboveMA ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'}"></i>
         </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             Momentum (+)
             <i class="fas ${isMomPositive ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'}"></i>
         </li>
-        <li class="list-group-item d-flex justify-content-between align-items-center">
+        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
             VIX Safe (<30)
             <i class="fas ${isVixSafe ? 'fa-check-circle text-success' : 'fa-times-circle text-danger'}"></i>
         </li>
-        <li class="list-group-item mt-2 bg-light p-2 rounded">
+        <li class="list-group-item mt-2 bg-light p-2 rounded px-0">
             <small class="text-muted d-block">Current Logic:</small>
             <strong class="small">${lastData.regime}</strong>
         </li>
@@ -107,36 +230,151 @@ export function updateDecisionLogic(lastData) {
 }
 
 /**
- * 매매 기록 테이블 렌더링
+ * Performance 탭 - 성과 요약 카드 렌더링
  */
-export function renderTradeHistory(historyData) {
+export function renderPerformanceSummaryCards(summaryData) {
+    const returns = computeReturns(summaryData);
+    const drawdown = computeDrawdown(summaryData);
+
+    // Total Return
+    const totalReturnEl = document.getElementById('perf-total-return');
+    totalReturnEl.innerText = formatPercent(returns.portfolioReturn);
+    totalReturnEl.className = 'fw-bold mb-0 ' + (returns.portfolioReturn >= 0 ? 'text-success' : 'text-danger');
+
+    // SPY Return
+    const spyReturnEl = document.getElementById('perf-spy-return');
+    spyReturnEl.innerText = formatPercent(returns.spyReturn);
+    spyReturnEl.className = 'fw-bold mb-0 ' + (returns.spyReturn >= 0 ? 'text-success' : 'text-danger');
+
+    // Alpha
+    const alphaEl = document.getElementById('perf-alpha');
+    alphaEl.innerText = `Alpha: ${formatPercent(returns.alpha)}`;
+    alphaEl.className = 'small ' + (returns.alpha >= 0 ? 'text-success' : 'text-danger');
+
+    // Max Drawdown
+    document.getElementById('perf-max-mdd').innerText = (drawdown.maxMDD * 100).toFixed(2) + '%';
+    document.getElementById('perf-max-mdd-date').innerText = drawdown.maxMDDDate;
+
+    // Current MDD
+    const currentMDDEl = document.getElementById('perf-current-mdd');
+    currentMDDEl.innerText = (drawdown.currentMDD * 100).toFixed(2) + '%';
+    currentMDDEl.className = 'fw-bold mb-0 ' + (drawdown.currentMDD < -0.05 ? 'text-danger' : 'text-warning');
+}
+
+/**
+ * Trades 탭 - 거래 통계 카드 렌더링
+ */
+export function renderTradeSummaryStats(historyData) {
+    const stats = computeTradeStats(historyData);
+
+    document.getElementById('trade-count').innerText = stats.count.toLocaleString();
+    document.getElementById('trade-volume').innerText = formatCurrency(stats.totalVolume);
+    document.getElementById('trade-fees').innerText = formatCurrency(stats.totalFees);
+}
+
+// 거래 내역 페이지네이션 상태
+let currentPage = 1;
+const TRADES_PER_PAGE = 10;
+let cachedHistoryData = [];
+
+/**
+ * 매매 기록 테이블 렌더링 (페이지네이션 지원)
+ */
+export function renderTradeHistory(historyData, page) {
+    cachedHistoryData = historyData;
+    if (page !== undefined) currentPage = page;
+
     const tbody = document.getElementById('history-table-body');
     tbody.innerHTML = '';
 
-    // 최신 순 정렬 후 상위 10개만 추출
-    const recentTrades = historyData.slice().reverse().slice(0, 10);
+    // 최신 순 정렬
+    const sorted = historyData.slice().reverse();
+    const totalPages = Math.max(1, Math.ceil(sorted.length / TRADES_PER_PAGE));
 
-    if (recentTrades.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No trade history found.</td></tr>';
+    // 현재 페이지 범위
+    if (currentPage > totalPages) currentPage = totalPages;
+    const start = (currentPage - 1) * TRADES_PER_PAGE;
+    const pageTrades = sorted.slice(start, start + TRADES_PER_PAGE);
+
+    if (pageTrades.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No trade history found.</td></tr>';
+        renderPagination(0);
         return;
     }
 
-    recentTrades.forEach(tx => {
+    pageTrades.forEach(tx => {
         const row = document.createElement('tr');
 
         // 체결 종목 배지 생성
         let actionsHtml = tx.executions.map(ex => `
-            <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge">
+            <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
                 ${ex.action} ${ex.ticker} (${ex.quantity})
             </span>
         `).join('');
 
+        // 수수료 계산
+        let fee = tx.total_fee;
+        if (fee === undefined && tx.executions) {
+            fee = tx.executions.reduce((sum, ex) => sum + (ex.fee || 0), 0);
+        }
+
         row.innerHTML = `
             <td class="small fw-bold text-muted">${tx.date.split(' ')[0]}</td>
             <td class="small">${tx.reason}</td>
-            <td class="fw-bold text-dark">$${tx.total_trade_amount.toLocaleString(undefined, {maximumFractionDigits: 0})}</td>
+            <td class="text-end small">${tx.portfolio_value ? formatCurrency(tx.portfolio_value) : '-'}</td>
+            <td class="text-end fw-bold text-dark">${formatCurrency(tx.total_trade_amount)}</td>
+            <td class="text-end small">${fee !== undefined ? formatCurrency(fee) : '-'}</td>
             <td>${actionsHtml}</td>
         `;
         tbody.appendChild(row);
+    });
+
+    // 페이지 정보 배지
+    const pageInfo = document.getElementById('trade-page-info');
+    pageInfo.textContent = `${sorted.length} trades total`;
+
+    renderPagination(totalPages);
+}
+
+/**
+ * 페이지네이션 컨트롤 렌더링
+ */
+function renderPagination(totalPages) {
+    const pagination = document.getElementById('trade-pagination');
+    if (totalPages <= 1) {
+        pagination.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    // Previous
+    html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+        <a class="page-link" href="#" data-page="${currentPage - 1}">&laquo;</a>
+    </li>`;
+
+    // Page numbers
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+        </li>`;
+    }
+
+    // Next
+    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+        <a class="page-link" href="#" data-page="${currentPage + 1}">&raquo;</a>
+    </li>`;
+
+    pagination.innerHTML = html;
+
+    // 페이지 클릭 이벤트
+    pagination.querySelectorAll('a[data-page]').forEach(a => {
+        a.addEventListener('click', (e) => {
+            e.preventDefault();
+            const page = parseInt(a.dataset.page);
+            if (page >= 1 && page <= totalPages) {
+                renderTradeHistory(cachedHistoryData, page);
+            }
+        });
     });
 }
