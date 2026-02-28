@@ -21,19 +21,7 @@ class JsonRepository:
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio):
         """일별 요약 저장 (Append 방식)"""
         conf = Config()
-        
-자산군 C에 현금(Cash)을 포함하여 **"방어자산 그룹"**으로 묶으면, 그래프가 훨씬 간결해지면서 봇의 자금 관리 능력을 더 명확하게 보여줄 수 있습니다.
-즉, Layer 1: 자산군 C(SHV + 현금), Layer 2: 자산군 B(안전), **Layer 3: 자산군 A(성장)**로 구성된 누적 영역 차트를 구성하겠습니다.
-1단계: 데이터 저장 로직 수정 (src/infra/repo.py)
-summary.json에 저장할 때 **자산군 C의 가치를 (SHV 평가액 + 예수금)**으로 합산하여 저장합니다.
-code
-Python
-# src/infra/repo.py
 
-    def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio):
-        from src.config import Config
-        conf = Config()
-        
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(conf.ASSET_GROUPS['A'])
         val_b = pf.get_group_value(conf.ASSET_GROUPS['B'])
