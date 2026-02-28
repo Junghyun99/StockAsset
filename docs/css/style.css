@@ -15,16 +15,16 @@ body {
 
 /* 국면별 뱃지/텍스트 색상 */
 .regime-bull {
-    color: #198754; /* Success Green */
+    color: #198754;
 }
 .regime-bear {
-    color: #dc3545; /* Danger Red */
+    color: #dc3545;
 }
 .regime-sideways {
-    color: #ffc107; /* Warning Yellow */
+    color: #ffc107;
 }
 .regime-crash {
-    color: #212529; /* Dark */
+    color: #212529;
     background-color: #ffcccc;
 }
 
@@ -35,18 +35,17 @@ body {
 }
 .order-badge {
     font-size: 0.85em;
-    margin-right: 4px;
 }
 
 /* 내비게이션 활성화 버튼 스타일 */
 .btn-group .btn.active-live {
-    background-color: #198754 !important; /* 초록색 (Live) */
+    background-color: #198754 !important;
     color: white !important;
     border-color: #198754 !important;
 }
 
 .btn-group .btn.active-backtest {
-    background-color: #0dcaf0 !important; /* 하늘색 (Backtest) */
+    background-color: #0dcaf0 !important;
     color: #000 !important;
     border-color: #0dcaf0 !important;
 }
@@ -55,4 +54,119 @@ body {
 #mode-badge {
     font-size: 0.9rem;
     padding: 0.5em 0.8em;
+}
+
+/* ====== Tab Navigation ====== */
+#dashboardTabs {
+    border-bottom: none;
+}
+
+#dashboardTabs .nav-link {
+    color: #6c757d;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 0.75rem 1.25rem;
+    font-weight: 500;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+#dashboardTabs .nav-link:hover {
+    color: #0d6efd;
+    border-bottom-color: #dee2e6;
+}
+
+#dashboardTabs .nav-link.active {
+    color: #0d6efd;
+    background-color: transparent;
+    border-bottom-color: #0d6efd;
+}
+
+/* ====== Status Banner ====== */
+.status-banner {
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.status-banner-bull {
+    background: linear-gradient(135deg, #d1e7dd, #badbcc);
+    color: #0f5132;
+}
+
+.status-banner-bear {
+    background: linear-gradient(135deg, #f8d7da, #f1aeb5);
+    color: #842029;
+}
+
+.status-banner-sideways {
+    background: linear-gradient(135deg, #fff3cd, #ffe69c);
+    color: #664d03;
+}
+
+.status-banner-crash {
+    background: linear-gradient(135deg, #dc3545, #b02a37);
+    color: #ffffff;
+}
+
+.status-banner-default {
+    background: linear-gradient(135deg, #e2e3e5, #d3d6d8);
+    color: #41464b;
+}
+
+/* ====== Time Range Selector ====== */
+#time-range-selector .btn.active {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 768px) {
+    /* 탭 수평 스크롤 */
+    #dashboardTabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #dashboardTabs .nav-link {
+        white-space: nowrap;
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+    }
+
+    /* 카드 높이 자동 조절 */
+    .card {
+        margin-bottom: 0.5rem;
+    }
+
+    /* 상태 배너 텍스트 축소 */
+    .status-banner {
+        font-size: 0.85rem;
+        padding: 0.6rem 1rem;
+    }
+
+    /* 차트 높이 축소 */
+    #performanceChart,
+    #strategyChart,
+    #groupAllocationChart {
+        max-height: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .navbar-brand {
+        font-size: 1rem;
+    }
+
+    #last-updated {
+        display: none;
+    }
+
+    /* 기간 선택 버튼 축소 */
+    #time-range-selector .btn {
+        padding: 0.2rem 0.5rem;
+        font-size: 0.75rem;
+    }
 }
