@@ -58,21 +58,25 @@ class JsonRepository:
             data = data[-self.max_summary_records:]
 
         self._save_json(self.summary_file, data)
-    def save_trade_history(self, executions: List[TradeExecution], pf: Portfolio, reason: str):
+    def save_trade_history(self, executions: List[TradeExecution], pf: Portfolio, reason: str, sim_date: str = None):
         """매매 내역 저장 - Append"""
         if not executions:
             return
 
         # 거래 규모 계산
         trade_amt = sum(e.price * e.quantity for e in executions)
-        
-        # ID 생성 (타임스탬프 기반)
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        tx_id = f"tx_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+
+        # ID/날짜 생성: 시뮬레이션 날짜가 주어지면 그것을, 아니면 현재 시각 사용
+        if sim_date:
+            date_str = sim_date
+            tx_id = f"tx_{sim_date.replace('-', '')}"
+        else:
+            date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            tx_id = f"tx_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         record = {
             "id": tx_id,                    # [추가]
-            "date": now_str,
+            "date": date_str,
             "portfolio_value": pf.total_value, # [추가]
             "total_trade_amount": trade_amt,   # [추가]
             "reason": reason,
@@ -88,15 +92,17 @@ class JsonRepository:
             data = data[-self.max_history_records:]
 
         self._save_json(self.history_file, data)
-    def update_status(self, 
-                      regime: MarketRegime, 
-                      exposure: float, 
-                      pf: Portfolio, 
+    def update_status(self,
+                      regime: MarketRegime,
+                      exposure: float,
+                      pf: Portfolio,
                       market_data: MarketData, # [필수] 데이터 매핑을 위해 필요
-                      reason: str):            # [필수] 사유 기록
-        
+                      reason: str,
+                      sim_date: str = None):   # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
+
+        last_updated = sim_date if sim_date else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         status = {
-            "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "last_updated": last_updated,
             
             "strategy": {
                 "regime": regime.value,
