@@ -137,11 +137,44 @@ def test_paper_broker_get_header_with_data(paper_broker, mock_requests):
 
 
 def test_paper_broker_get_hashkey_failure(paper_broker, mock_requests):
-    """HashKey 조회 실패 시 빈 문자열 반환"""
+    """HashKey 조회 실패 시 None 반환 및 에러 로깅"""
     mock_requests.post.side_effect = Exception("Hash Error")
 
     result = paper_broker._get_hashkey({"test": "data"})
-    assert result == ""
+    assert result is None
+    paper_broker.logger.error.assert_called_once()
+    call_args = paper_broker.logger.error.call_args[0][0]
+    assert "HashKey 생성 실패" in call_args
+
+
+def test_paper_broker_get_hashkey_failure_logs_error_message(paper_broker, mock_requests):
+    """HashKey 조회 실패 시 원인 예외 메시지가 로그에 포함됨"""
+    mock_requests.post.side_effect = Exception("Connection timeout")
+
+    paper_broker._get_hashkey({"test": "data"})
+
+    call_args = paper_broker.logger.error.call_args[0][0]
+    assert "Connection timeout" in call_args
+
+
+def test_paper_broker_get_header_raises_on_hashkey_failure(paper_broker, mock_requests):
+    """_get_header: hashkey 생성 실패 시 ValueError 발생"""
+    mock_requests.post.side_effect = Exception("Hash Error")
+
+    with pytest.raises(ValueError, match="HashKey 생성 실패"):
+        paper_broker._get_header("VTTT1002U", {"CANO": "12345678"})
+
+
+def test_paper_broker_send_order_fails_gracefully_on_hashkey_error(paper_broker, mock_requests):
+    """_send_order: hashkey 실패 시 None 반환 (예외 전파 없음)"""
+    # 첫 번째 post(hashkey 요청)에서 예외 발생
+    mock_requests.post.side_effect = Exception("Hash service down")
+
+    order = Order('SPY', OrderAction.BUY, 10, 150.0)
+    result = paper_broker._send_order(order)
+
+    assert result is None
+    paper_broker.logger.error.assert_called()
 
 
 # --- fetch_current_prices 테스트 ---
