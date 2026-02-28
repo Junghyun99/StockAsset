@@ -1,4 +1,6 @@
 import pytest
+import pandas as pd
+import numpy as np
 from unittest.mock import MagicMock, patch
 from src.main import TradingBot
 from src.core.models import MarketData, MarketRegime, TradeSignal, Order, Portfolio
@@ -33,7 +35,10 @@ def mock_dependencies():
             holdings={'SPY': 10},
             current_prices={'SPY': 100.0}
         )
-        
+
+        # backfill 기본값: 이전 기록 없음 → fill_missing_trading_days가 즉시 반환
+        repo.get_last_summary_date.return_value = None
+
         yield {
             'loader': loader,
             'repo': repo,
@@ -226,3 +231,110 @@ def test_bot_repo_save_permission_error(mock_dependencies):
         
     mock_dependencies['notifier'].send_message.assert_called()
     mock_dependencies['notifier'].send_alert.assert_called()
+
+
+# ==========================================
+# fill_missing_trading_days 테스트
+# ==========================================
+
+def _make_spy_df(n_days: int = 300, start: str = "2023-01-01") -> pd.DataFrame:
+    """테스트용 SPY OHLCV DataFrame (영업일 기준)"""
+    idx = pd.bdate_range(start=start, periods=n_days)
+    prices = 400 + np.arange(n_days, dtype=float)
+    return pd.DataFrame({
+        "Open": prices, "High": prices + 1, "Low": prices - 1,
+        "Close": prices, "Volume": 1_000_000,
+    }, index=idx)
+
+
+def test_fill_missing_no_previous_record(mock_dependencies):
+    """이전 기록 없으면 backfill 스킵"""
+    mock_dependencies['repo'].get_last_summary_date.return_value = None
+
+    bot = TradingBot()
+    spy_df = _make_spy_df()
+    pf = Portfolio(10000.0, {}, {})
+
+    bot.fill_missing_trading_days(spy_df, pf)
+
+    mock_dependencies['repo'].save_daily_summary.assert_not_called()
+
+
+def test_fill_missing_no_gap(mock_dependencies):
+    """마지막 기록이 오늘(spy_df 마지막 날)이면 backfill 스킵"""
+    spy_df = _make_spy_df()
+    last_date = spy_df.index[-1].strftime("%Y-%m-%d")
+    mock_dependencies['repo'].get_last_summary_date.return_value = last_date
+
+    bot = TradingBot()
+    pf = Portfolio(10000.0, {}, {})
+
+    bot.fill_missing_trading_days(spy_df, pf)
+
+    mock_dependencies['repo'].save_daily_summary.assert_not_called()
+
+
+def test_fill_missing_saves_gap_days(mock_dependencies):
+    """spy_df에 5일 갭이 있으면 4일치(오늘 제외)를 save_daily_summary로 저장"""
+    spy_df = _make_spy_df(n_days=300)
+    # missing_mask: > last_date AND < today(spy_df[-1])
+    # 4개 누락 = spy_df[-5]~spy_df[-2] → last_recorded = spy_df[-6]
+    gap_days = 4
+    last_recorded = spy_df.index[-(gap_days + 2)].strftime("%Y-%m-%d")
+    mock_dependencies['repo'].get_last_summary_date.return_value = last_recorded
+
+    # 지표 계산 mock
+    mock_dependencies['calc'].calculate.return_value = MarketData(
+        "2024-01-10", 410.0, 400.0, 0.12, 0.05, -0.02, 18.0
+    )
+    mock_dependencies['analyzer'].analyze.return_value = MarketRegime.BULL
+    mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
+
+    # VIX fetch (보유 종목 없으므로 1회만 호출됨)
+    mock_dependencies['loader'].fetch_ohlcv.return_value = spy_df
+
+    bot = TradingBot()
+    pf = Portfolio(10000.0, {}, {})  # 보유 종목 없음
+
+    bot.fill_missing_trading_days(spy_df, pf)
+
+    assert mock_dependencies['repo'].save_daily_summary.call_count == gap_days
+
+
+def test_fill_missing_invalid_last_date(mock_dependencies):
+    """마지막 날짜가 파싱 불가능하면 예외 없이 스킵"""
+    mock_dependencies['repo'].get_last_summary_date.return_value = "not-a-date"
+
+    bot = TradingBot()
+    spy_df = _make_spy_df()
+    pf = Portfolio(10000.0, {}, {})
+
+    # 예외 발생 없이 정상 종료
+    bot.fill_missing_trading_days(spy_df, pf)
+
+    mock_dependencies['repo'].save_daily_summary.assert_not_called()
+
+
+def test_fill_missing_uses_held_ticker_prices(mock_dependencies):
+    """보유 종목이 있으면 historical price fetch를 수행"""
+    spy_df = _make_spy_df(n_days=300)
+    gap_days = 2
+    last_recorded = spy_df.index[-(gap_days + 2)].strftime("%Y-%m-%d")
+    mock_dependencies['repo'].get_last_summary_date.return_value = last_recorded
+
+    mock_dependencies['calc'].calculate.return_value = MarketData(
+        "2024-01-10", 410.0, 400.0, 0.12, 0.05, -0.02, 18.0
+    )
+    mock_dependencies['analyzer'].analyze.return_value = MarketRegime.BULL
+    mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
+    mock_dependencies['loader'].fetch_ohlcv.return_value = spy_df
+
+    bot = TradingBot()
+    # SSO 1주 보유
+    pf = Portfolio(5000.0, {"SSO": 1}, {"SSO": 80.0})
+
+    bot.fill_missing_trading_days(spy_df, pf)
+
+    # VIX fetch + SSO fetch = 2회 fetch_ohlcv 호출
+    assert mock_dependencies['loader'].fetch_ohlcv.call_count == 2
+    assert mock_dependencies['repo'].save_daily_summary.call_count == gap_days

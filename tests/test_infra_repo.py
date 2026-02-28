@@ -355,6 +355,27 @@ def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
 
 # ... (기존 코드 생략) ...
 
+def test_get_last_summary_date_returns_none_when_empty(repo):
+    """기록 없을 때 None 반환"""
+    assert repo.get_last_summary_date() is None
+
+
+def test_get_last_summary_date_returns_last_date(repo, dummy_portfolio):
+    """가장 최근 레코드의 날짜를 반환"""
+    for date in ["2024-01-01", "2024-01-03", "2024-01-05"]:
+        market = MarketData(date, 100, 90, 0.1, 0.1, -0.05, 15)
+        repo.save_daily_summary(market, TradeSignal(1.0, [], "test"), dummy_portfolio)
+
+    assert repo.get_last_summary_date() == "2024-01-05"
+
+
+def test_get_last_summary_date_corrupted_file(repo):
+    """JSON 손상 시 None 반환 (예외 없이)"""
+    with open(repo.summary_file, 'w') as f:
+        f.write("{ broken json ...")
+    assert repo.get_last_summary_date() is None
+
+
 def test_repo_float_precision(repo, dummy_portfolio, dummy_market_data):
     """
     [데이터] 소수점 단위가 중요한 금융 데이터가 JSON 저장 후에도 정밀도를 유지하는지 확인

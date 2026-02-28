@@ -1,7 +1,7 @@
 # src/infra/repo.py
 import json
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 from dataclasses import asdict
 from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
@@ -137,6 +137,13 @@ class JsonRepository:
         }
         
         self._save_json(self.status_file, status)
+
+    def get_last_summary_date(self) -> Optional[str]:
+        """summary.json의 마지막 레코드 날짜 반환 (기록 없으면 None)"""
+        data = self._load_json(self.summary_file, default=[])
+        if not data:
+            return None
+        return data[-1].get("date")
 
     def _load_json(self, path: str, default=None):
         if not os.path.exists(path):
