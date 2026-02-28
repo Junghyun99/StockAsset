@@ -212,10 +212,13 @@ class KisBrokerBase(IBrokerAdapter):
         }
         # 주문 등 POST 요청 시 HashKey 필요
         if data:
-            headers["hashkey"] = self._get_hashkey(data)
+            hashkey = self._get_hashkey(data)
+            if hashkey is None:
+                raise ValueError("[KisBroker] HashKey 생성 실패로 주문 헤더를 생성할 수 없습니다.")
+            headers["hashkey"] = hashkey
         return headers
 
-    def _get_hashkey(self, data: dict) -> str:
+    def _get_hashkey(self, data: dict) -> Optional[str]:
         url = f"{self.base_url}/uapi/hashkey"
         try:
             res = requests.post(url, headers={
@@ -224,8 +227,9 @@ class KisBrokerBase(IBrokerAdapter):
                 "appsecret": self.app_secret
             }, json=data)
             return res.json()["HASH"]
-        except Exception:
-            return ""
+        except Exception as e:
+            self.logger.error(f"[KisBroker] HashKey 생성 실패: {e}")
+            return None
     
     def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]:
         """
@@ -405,9 +409,8 @@ class KisBrokerBase(IBrokerAdapter):
             "ORD_DVSN": "00" # 00: 지정가 (미국은 보통 지정가 사용)
         }
         
-        headers = self._get_header(tr_id, data)
-        
         try:
+            headers = self._get_header(tr_id, data)
             res = requests.post(url, headers=headers, json=data)
             resp_data = res.json()
             
