@@ -50,7 +50,8 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
 
 
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
-                  execution_interval: int = 1) -> Optional[BacktestResult]:
+                  execution_interval: int = 1,
+                  output_dir: str = "docs/data/backtest") -> Optional[BacktestResult]:
     # 0. 파라미터 검증
     if execution_interval < 1:
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
@@ -76,7 +77,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     # 3. 컴포넌트 조립
     loader = BacktestDataLoader(full_df, full_vix)
     broker = BacktestBroker(initial_cash, logger=logger)
-    backtest_data_path = "docs/data/backtest"
+    backtest_data_path = output_dir
     shutil.rmtree(backtest_data_path, ignore_errors=True)
     backtest_repo = JsonRepository(backtest_data_path)
 
@@ -315,7 +316,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
     # 차트 저장 (plt.show() 대신 파일로 저장)
     Path("docs").mkdir(parents=True, exist_ok=True)
-    chart_path = f"docs/data/backtest/backtest_{start_date}_{end_date}.png"
+    chart_path = f"{output_dir}/backtest_{start_date}_{end_date}.png"
     plt.figure(figsize=(12, 6))
     plt.plot(res_df['total_value'], label='Portfolio Value')
     if spy_cagr is not None:
