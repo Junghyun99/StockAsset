@@ -2,6 +2,7 @@
 import sys
 import types
 import pytest
+import os
 
 # yfinance가 설치되지 않은 환경을 위한 mock 모듈 등록
 try:
@@ -12,6 +13,34 @@ except ImportError:
     sys.modules['yfinance'] = yf_mock
 
 from src.core.models import MarketData, Portfolio
+
+
+@pytest.fixture(autouse=True)
+def isolate_backtest_filesystem(tmp_path, monkeypatch):
+    """테스트 시 backtest 파일 시스템 작업을 임시 경로로 자동 격리한다.
+
+    - shutil.rmtree: 실제 docs/data/backtest 삭제 방지
+    - JsonRepository: backtest 경로 요청 시 임시 경로(tmp_path)로 리다이렉트
+    """
+    try:
+        import src.backtest.runner as runner_mod
+        from src.infra.repo import JsonRepository
+    except ImportError:
+        return  # backtest 모듈이 없는 환경에서는 건너뜀
+
+    # 1. shutil.rmtree no-op → 실제 backtest 데이터 보호
+    monkeypatch.setattr(runner_mod.shutil, "rmtree", lambda *a, **kw: None)
+
+    # 2. JsonRepository가 backtest 경로 요청 시 임시 경로로 리다이렉트
+    backtest_tmp = str(tmp_path / "backtest")
+
+    class _TmpBacktestRepo(JsonRepository):
+        def __init__(self, root_path=None, **kwargs):
+            if root_path is None or root_path == "docs/data/backtest":
+                root_path = backtest_tmp
+            super().__init__(root_path, **kwargs)
+
+    monkeypatch.setattr(runner_mod, "JsonRepository", _TmpBacktestRepo)
 
 @pytest.fixture
 def mock_market_bear():
