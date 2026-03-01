@@ -229,26 +229,33 @@ def test_rebalancer_threshold_logic(create_portfolio):
     assert signal_bear.has_orders is False
     assert len(signal_bear.orders) == 0
 
-def test_rebalancer_crash_emergency_stop(create_portfolio):
+def test_rebalancer_crash_sells_all_risky_assets(create_portfolio):
     """
-    [CRASH 시나리오 수정]
-    폭락장(MDD/VIX 위험) 감지 시 -> '전량 매도'가 아니라 '매매 중단(Stop)'이어야 함.
-    사용자가 직접 개입하기 전까지 봇은 아무것도 하지 않는다.
+    [CRASH 시나리오]
+    폭락장(MDD/VIX 위험) 감지 시 exposure=0.0 → A/B 전량 매도, C(SHV) 매수.
+    Rebalancer는 CRASH도 일반 리밸런싱으로 처리한다.
     """
-    groups = {'A': ['SPY'], 'B': ['IEF']}
+    groups = {'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}
     rebalancer = Rebalancer(groups)
-    
+
     # 상황: 주식을 들고 있는 상태
-    pf = create_portfolio(holdings={'SPY': 10, 'IEF': 10}, prices={'SPY': 100, 'IEF': 100})
-    
-    # CRASH 발생 -> Target Exposure가 0.0으로 계산되어 넘어오더라도
-    # Rebalancer는 이를 무시하고 주문을 생성하지 않아야 한다.
+    pf = create_portfolio(
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100, 'IEF': 100, 'SHV': 100}
+    )
+
+    # CRASH 발생 → exposure=0.0 → A/B 전량 매도 주문 생성
     signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
-    
-    # 기대 결과: 리밸런싱 False, 주문 0건
-    assert signal.has_orders is False
-    assert len(signal.orders) == 0
-    assert "Emergency Stop" in signal.reason
+
+    # 기대 결과: A/B 매도 주문이 생성되어야 함
+    assert signal.has_orders is True
+    sell_orders = [o for o in signal.orders if o.action == OrderAction.SELL]
+    assert len(sell_orders) >= 2  # SPY, IEF 매도
+
+    spy_sell = next(o for o in sell_orders if o.ticker == 'SPY')
+    ief_sell = next(o for o in sell_orders if o.ticker == 'IEF')
+    assert spy_sell.quantity == 10  # 전량 매도
+    assert ief_sell.quantity == 10  # 전량 매도
 
 def test_rebalancer_exposure_reduction(create_portfolio):
     """투자비중을 1.0 -> 0.5로 줄일 때 현금 확보 확인"""
@@ -921,13 +928,16 @@ def test_generate_signal_no_log_without_logger(create_portfolio):
     assert isinstance(signal.reason, str)
 
 
-def test_generate_signal_logs_crash_early_return(create_portfolio):
-    """CRASH 시 조기 리턴되지만 구분선과 입력 정보는 로깅되어야 한다."""
+def test_generate_signal_logs_crash_rebalancing(create_portfolio):
+    """CRASH 시에도 구분선, 입력 정보, 주문 결과가 로깅되어야 한다."""
     mock_logger = MagicMock()
-    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
-    pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0})
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}, logger=mock_logger)
+    pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0, 'SHV': 100.0})
 
-    rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
+    signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
 
     info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
-    assert any('CRASH' in msg or 'Crash' in msg or 'Emergency' in msg for msg in info_calls)
+    # 구분선과 입력 정보가 로깅되어야 함
+    assert any('Rebalancer' in msg or '═' in msg for msg in info_calls)
+    # CRASH에서도 주문이 생성됨 (exposure=0 → 매도)
+    assert signal.has_orders is True

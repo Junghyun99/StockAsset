@@ -112,17 +112,6 @@ class Rebalancer:
                 f"| TotalValue=${portfolio.total_value:,.2f} | Cash=${portfolio.total_cash:,.2f}"
             )
 
-        # [핵심 수정] CRASH 발생 시 즉시 리턴 (가드 절)
-        if regime == MarketRegime.CRASH:
-            if self._logger:
-                self._logger.info("[CRASH] Emergency Stop. 주문 생성을 건너뜁니다.")
-                self._logger.info("═" * 48)
-            return TradeSignal(
-                target_exposure=target_exposure,
-                orders=[],
-                reason="CRASH Detected: Emergency Stop. No Action."
-            )
-
         # 1. 국면별 리밸런싱 임계치 설정
         threshold = self._threshold_map.get(regime, 0.10)
 
