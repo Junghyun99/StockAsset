@@ -115,15 +115,9 @@ class TradingBot:
                 self.logger.error(msg)
                 self.notifier.send_alert(msg)
 
-            elif regime == MarketRegime.CRASH:
-                # CRASH: 매매 중단, 포지션 정보 포함 알림
-                signal = TradeSignal(0.0, [], "CRASH 감지 - 매매 중단")
-                msg = self._build_crash_alert(market_data, pre_trade_pf)
-                self.logger.error(msg)
-                self.notifier.send_alert(msg)
-
-            elif not self._is_rebalancing_due():
+            elif not self._is_rebalancing_due() and regime != MarketRegime.CRASH:
                 # 모니터링 날: 리밸런싱 인터벌 미충족 → 포트폴리오 기록만
+                # (CRASH는 긴급 상황이므로 인터벌 무시하고 즉시 리밸런싱)
                 signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
                 self.logger.info(f">>> Step 5: Monitoring (리밸런싱 인터벌 미충족, {self.config.TRADING_INTERVAL_DAYS}일 기준)")
                 self.notifier.send_message(
@@ -131,10 +125,16 @@ class TradingBot:
                 )
 
             else:
-                # 리밸런싱 날: 전략 평가 + 필요 시 주문 실행
+                # 리밸런싱 실행 (CRASH 포함 — exposure=0으로 자연스럽게 현금화)
                 is_rebalancing_day = True
                 self.logger.info(f">>> Step 5: Rebalancing")
                 signal = self.rebalancer.generate_signal(pre_trade_pf, exposure, regime)
+
+                # CRASH 알림 발송
+                if regime == MarketRegime.CRASH:
+                    msg = self._build_crash_alert(market_data, pre_trade_pf)
+                    self.logger.error(msg)
+                    self.notifier.send_alert(msg)
 
                 if signal.has_orders:
                     self.logger.info(f"Signal Generated: {signal.reason}")
@@ -197,16 +197,14 @@ class TradingBot:
         holdings_info = "\n".join(holdings_lines)
 
         return (
-            f"🚨 CRASH Detected — 매매 중단\n"
+            f"🚨 CRASH Detected — 현금화 리밸런싱 실행\n"
             f"MDD: {market_data.spy_mdd:.1%} | VIX: {market_data.vix:.1f}\n"
             f"SPY: ${market_data.spy_price:.2f}\n"
             f"\n"
             f"📊 현재 포지션:\n"
             f"{holdings_info}\n"
             f"💰 현금: ${portfolio.total_cash:,.0f}\n"
-            f"📈 총 자산: ${portfolio.total_value:,.0f}\n"
-            f"\n"
-            f"⏸️ 사용자 액션 대기 중"
+            f"📈 총 자산: ${portfolio.total_value:,.0f}"
         )
 
 if __name__ == "__main__":

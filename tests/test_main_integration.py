@@ -74,13 +74,18 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
 
 def test_bot_run_risk_condition_stop(mock_dependencies):
     """[시나리오 2: CRASH 감지]
-    CRASH 시: 전략 분석은 수행 → 매매 평가 없이 중단 → 포지션 포함 알림 → 데이터 저장
+    CRASH 시: 전략 분석 수행 → exposure=0으로 리밸런싱 실행(현금화) → 알림 → 데이터 저장
     """
     mock_dependencies['calc'].calculate.return_value = MarketData(
         "2024-01-01", 100, 90, 0.1, 0.1, -0.30, 40.0
     )
     mock_dependencies['analyzer'].analyze.return_value = MarketRegime.CRASH
     mock_dependencies['targeter'].calculate_exposure.return_value = 0.0
+
+    mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
+        0.0, [MagicMock()], "CRASH 현금화"
+    )
+    mock_dependencies['broker'].execute_orders.return_value = [MagicMock()]
 
     bot = TradingBot()
     bot.run()
@@ -89,16 +94,16 @@ def test_bot_run_risk_condition_stop(mock_dependencies):
     mock_dependencies['analyzer'].analyze.assert_called_once()
     mock_dependencies['targeter'].calculate_exposure.assert_called_once()
 
-    # 2. CRASH → 리밸런싱 평가 없음
-    mock_dependencies['rebalancer'].generate_signal.assert_not_called()
-    mock_dependencies['broker'].execute_orders.assert_not_called()
+    # 2. CRASH → exposure=0으로 리밸런싱 실행 (runner.py와 동일)
+    mock_dependencies['rebalancer'].generate_signal.assert_called_once()
+    mock_dependencies['broker'].execute_orders.assert_called_once()
 
-    # 3. 포지션 정보 포함 알림 전송
+    # 3. CRASH 알림 전송
     mock_dependencies['notifier'].send_alert.assert_called_once()
     alert_msg = mock_dependencies['notifier'].send_alert.call_args[0][0]
     assert "CRASH Detected" in alert_msg
     assert "현재 포지션" in alert_msg
-    assert "사용자 액션 대기" in alert_msg
+    assert "현금화 리밸런싱" in alert_msg
 
     # 4. 데이터 저장 (CRASH 날도 기록)
     mock_dependencies['repo'].save_daily_summary.assert_called_once()
