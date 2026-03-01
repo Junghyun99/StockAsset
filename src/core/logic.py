@@ -7,24 +7,48 @@ class RegimeAnalyzer:
     # BULL/SIDEWAYS 판정 기본 모멘텀 임계치 (SPY 6개월 수익률 기준)
     DEFAULT_BULL_MOMENTUM_THRESHOLD = 0.05
 
-    def __init__(self, bull_momentum_threshold: float = 0.05):
+    # CRASH 탈출 히스테리시스 기본값 (진입보다 엄격하게 설정하여 휩쏘 방지)
+    # 진입: VIX ≥ 30 OR MDD ≤ -20%
+    # 탈출: VIX < 25 AND MDD > -15%
+    DEFAULT_CRASH_EXIT_VIX = 25.0
+    DEFAULT_CRASH_EXIT_MDD = -0.15
+
+    def __init__(self, bull_momentum_threshold: float = 0.05,
+                 crash_exit_vix: float = DEFAULT_CRASH_EXIT_VIX,
+                 crash_exit_mdd: float = DEFAULT_CRASH_EXIT_MDD):
         self.bull_momentum_threshold = bull_momentum_threshold
+        self.crash_exit_vix = crash_exit_vix
+        self.crash_exit_mdd = crash_exit_mdd
+        self._prev_regime: Optional[MarketRegime] = None
 
     def analyze(self, data: MarketData) -> MarketRegime:
-        # 1. Crash Check
+        # 1. CRASH 진입 조건 충족 → 무조건 CRASH
         if data.is_risk_condition():
-            return MarketRegime.CRASH
+            regime = MarketRegime.CRASH
+        # 2. 이전에 CRASH였으면 탈출 조건 확인 (히스테리시스)
+        elif self._prev_regime == MarketRegime.CRASH:
+            can_exit = data.vix < self.crash_exit_vix and data.spy_mdd > self.crash_exit_mdd
+            if can_exit:
+                regime = self._classify_non_crash(data)
+            else:
+                regime = MarketRegime.CRASH  # 탈출 조건 미충족 → CRASH 유지
+        # 3. 일반 국면 판정
+        else:
+            regime = self._classify_non_crash(data)
 
+        self._prev_regime = regime
+        return regime
+
+    def _classify_non_crash(self, data: MarketData) -> MarketRegime:
+        """CRASH가 아닌 국면을 판정한다."""
         is_bear_momentum = data.spy_momentum < 0
         is_below_ma = data.spy_price < data.spy_ma180
 
-        # 2. Bear Check
         if is_bear_momentum and is_below_ma:
             return MarketRegime.BEAR_STRONG
         elif is_bear_momentum or is_below_ma:
             return MarketRegime.BEAR_WEAK
 
-        # 3. Bull / Sideways Check
         # 이 시점: momentum >= 0 AND price >= MA
         if data.spy_momentum >= self.bull_momentum_threshold:
             return MarketRegime.BULL
