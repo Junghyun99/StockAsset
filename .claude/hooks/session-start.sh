@@ -6,7 +6,20 @@ if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
   exit 0
 fi
 
-echo "SessionStart: 의존성 설치 시작..." >&2
+# Resume 감지: transcript_path 파일에 내용이 있으면 이미 진행 중인 세션
+session_info=$(cat 2>/dev/null || true)
+transcript_path=""
+if [ -n "$session_info" ]; then
+  transcript_path=$(printf '%s' "$session_info" | python3 -c \
+    "import sys,json; d=json.load(sys.stdin); print(d.get('transcript_path',''))" \
+    2>/dev/null || true)
+fi
+if [ -n "$transcript_path" ] && [ -f "$transcript_path" ] && [ -s "$transcript_path" ]; then
+  echo "SessionStart: Resume 감지 - 초기화 건너뜀" >&2
+  exit 0
+fi
+
+echo "SessionStart: 초기 설치 시작..." >&2
 
 # gh CLI 설치 (없는 경우)
 if ! command -v gh &>/dev/null; then
@@ -35,4 +48,4 @@ if [ -f "${CLAUDE_PROJECT_DIR}/requirements.txt" ]; then
   echo "Python 패키지 설치 완료" >&2
 fi
 
-echo "SessionStart: 의존성 설치 완료" >&2
+echo "SessionStart: 초기 설치 완료" >&2
