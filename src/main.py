@@ -159,7 +159,7 @@ class TradingBot:
             # ── Step 6: 데이터 저장 (항상 실행) ───────────────────────────
             self.logger.info(">>> Step 6: Archiving Data")
             rebalancing_date = market_data.date if is_rebalancing_day else None
-            self.repo.save_daily_summary(market_data, signal, final_pf)
+            self.repo.save_daily_summary(market_data, signal, final_pf, regime)
             self.repo.save_trade_history(executions, final_pf, signal.reason)
             self.repo.update_status(regime, exposure, final_pf, market_data, signal.reason,
                                     rebalancing_date=rebalancing_date)

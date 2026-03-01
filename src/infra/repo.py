@@ -18,36 +18,37 @@ class JsonRepository:
         self.summary_file = os.path.join(self.root, "summary.json")
         self.history_file = os.path.join(self.root, "history.json")
 
-    def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio):
+    def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio, regime: MarketRegime):
         """일별 요약 저장 (Append 방식)"""
         conf = Config()
 
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(conf.ASSET_GROUPS['A'])
         val_b = pf.get_group_value(conf.ASSET_GROUPS['B'])
-        
+
         # [수정] 그룹 C = SHV 등 종목 평가액 + 현재 보유 현금(예수금)
         val_c_pure_stock = pf.get_group_value(conf.ASSET_GROUPS['C'])
         val_c_total = val_c_pure_stock + pf.total_cash
 
         record = {
             "date": market.date,
-            
+
             # [자산 정보]
             "total_value": pf.total_value,
-            "cash_balance": pf.total_cash,  # [추가]
+            "cash_balance": pf.total_cash,
             "group_a": val_a,
             "group_b": val_b,
             "group_c": val_c_total,
             # [시장 지표]
             "spy_price": market.spy_price,
-            "spy_ma180": market.spy_ma180,          # [추가]
-            "spy_volatility": market.spy_volatility, # [추가]
-            "spy_momentum": market.spy_momentum,     # [추가]
+            "spy_ma180": market.spy_ma180,
+            "spy_volatility": market.spy_volatility,
+            "spy_momentum": market.spy_momentum,
             "mdd": market.spy_mdd,
-            
+
             # [전략 상태]
-            "regime": signal.reason, # 혹은 mapped string (예: "Bear")
+            "regime": regime.value,          # MarketRegime enum 값 (예: "Bull", "Bear", "Crash")
+            "reason": signal.reason,         # 상세 사유 (예: "Bull (모니터링)", "데이터 이상 - NaN: ...")
             "target_exposure": signal.target_exposure
         }
         

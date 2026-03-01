@@ -80,8 +80,8 @@ def test_save_summary_append(repo):
     pf = Portfolio(1000, {}, {})
     
     # 두 번 저장
-    repo.save_daily_summary(market, signal, pf)
-    repo.save_daily_summary(market, signal, pf)
+    repo.save_daily_summary(market, signal, pf, MarketRegime.BULL)
+    repo.save_daily_summary(market, signal, pf, MarketRegime.BULL)
     
     # 파일 확인
     with open(repo.summary_file, 'r') as f:
@@ -201,7 +201,7 @@ def test_save_summary_large_file_performance(tmp_path, dummy_market_data, dummy_
     import time
     start = time.time()
 
-    large_repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+    large_repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
 
     end = time.time()
 
@@ -227,7 +227,7 @@ def test_summary_size_limit_applied(tmp_path, dummy_market_data, dummy_portfolio
     for i in range(limit + 2):
         market = MarketData(f"2024-01-{i+1:02d}", 100 + i, 90, 0.1, 0.1, -0.05, 15)
         signal = TradeSignal(0.8, [], f"Day {i+1}")
-        repo.save_daily_summary(market, signal, dummy_portfolio)
+        repo.save_daily_summary(market, signal, dummy_portfolio, MarketRegime.BULL)
 
     with open(repo.summary_file, 'r') as f:
         data = json.load(f)
@@ -268,8 +268,8 @@ def test_repo_encoding_support(repo, dummy_portfolio, dummy_market_data):
     signal = TradeSignal(0.5, [], reason_msg)
     
     # 2. 저장
-    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
-    
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BEAR_WEAK)
+
     # 3. 파일 읽기 (Raw Text 확인)
     with open(repo.summary_file, 'r', encoding='utf-8') as f:
         content = f.read()
@@ -292,8 +292,8 @@ def test_repo_schema_evolution(repo, dummy_market_data, dummy_portfolio):
     
     # 2. 신버전 데이터 저장 (필드가 많음: spy_price, mdd 등)
     signal = TradeSignal(0.8, [], "New Version")
-    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
-    
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
+
     # 3. 로드 및 검증
     with open(repo.summary_file, 'r') as f:
         data = json.load(f)
@@ -343,7 +343,7 @@ def test_repo_serialization_error(repo, dummy_portfolio, dummy_market_data):
     # 저장 시도 시 TypeError 발생해야 함 (만약 커스텀 인코더를 구현했다면 성공해야 함)
     # 현재 구현은 기본 json.dump를 쓰므로 에러가 나는 것이 정상 동작임 -> 이를 알고 있어야 함
     with pytest.raises(TypeError):
-        repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+        repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
 
 def test_repo_recover_from_corruption(repo, dummy_market_data, dummy_portfolio):
     """
@@ -378,7 +378,7 @@ def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
 
     # 1. 파일 생성
     signal = TradeSignal(0.8, [], "Test")
-    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
 
     # 2. 읽기 전용으로 권한 변경 (Write 권한 제거)
     os.chmod(repo.summary_file, stat.S_IREAD)
@@ -386,7 +386,7 @@ def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
     try:
         # 3. 쓰기 시도 -> PermissionError 발생해야 함
         with pytest.raises(PermissionError):
-            repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio)
+            repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
 
     finally:
         # 테스트 종료 후 권한 복구 (Cleanup) - 안 하면 임시 폴더 삭제 시 에러 날 수 있음
@@ -403,7 +403,7 @@ def test_get_last_summary_date_returns_last_date(repo, dummy_portfolio):
     """가장 최근 레코드의 날짜를 반환"""
     for date in ["2024-01-01", "2024-01-03", "2024-01-05"]:
         market = MarketData(date, 100, 90, 0.1, 0.1, -0.05, 15)
-        repo.save_daily_summary(market, TradeSignal(1.0, [], "test"), dummy_portfolio)
+        repo.save_daily_summary(market, TradeSignal(1.0, [], "test"), dummy_portfolio, MarketRegime.BULL)
 
     assert repo.get_last_summary_date() == "2024-01-05"
 
@@ -540,8 +540,8 @@ def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
         signal = TradeSignal(1.0, [], f"Day {i+1}")
         
         # 저장 (Append)
-        repo.save_daily_summary(market_data, signal, dummy_portfolio)
-    
+        repo.save_daily_summary(market_data, signal, dummy_portfolio, MarketRegime.BULL)
+
     # 2. 파일 검증
     with open(repo.summary_file, 'r') as f:
         data = json.load(f)
