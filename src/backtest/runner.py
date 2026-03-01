@@ -119,28 +119,15 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
         broker.set_prices(current_prices)
 
-        # 실행 간격 체크: 실행일이 아니면 포트폴리오 상태만 기록하고 넘어감
+        # 실행 간격 체크: is_execution_day 플래그로 분기 (지표 계산은 항상 실행)
         days_since_last_execution += 1
-        if days_since_last_execution < execution_interval:
-            final_pf = broker.get_portfolio()
-            history.append({
-                "date": today,
-                "total_value": final_pf.total_value,
-                "cash": final_pf.total_cash,
-                "exposure": history[-1]["exposure"] if history else 0.0,
-                "regime": history[-1]["regime"] if history else "N/A",
-                "trade_count": 0,
-                "nan_triggered": False,
-                "signal_reason": "비실행일 (간격 대기)",
-            })
-            continue
-
-        days_since_last_execution = 0  # 실행일: 카운터 리셋
+        is_execution_day = days_since_last_execution >= execution_interval
+        if is_execution_day:
+            days_since_last_execution = 0  # 실행일: 카운터 리셋
 
         # === 봇 로직 실행 (Main.py와 동일 흐름) ===
         try:
-            # 1. 지표 계산
-            # 과거 400일 데이터 Fetch (Loader가 잘라서 줌)
+            # 1. 지표 계산 (항상 실행)
             df_slice = loader.fetch_ohlcv(["SPY"], days=400)
             vix_val = loader.fetch_vix()
             market_data = calculator.calculate(df_slice, vix_val)
@@ -165,13 +152,16 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 )
             prev_regime = regime
 
-            # NaN: main.py 동기화 — signal 생성 후 저장까지 진행 (continue 없음)
+            # 3. 조건 분기 (main.py 동기화)
             day_executions: List[TradeExecution] = []
             if nan_triggered:
+                # NaN: signal 생성 후 저장까지 진행
                 signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
+            elif not is_execution_day and regime != MarketRegime.CRASH:
+                # 모니터링 날: 인터벌 미충족 & non-CRASH → 리밸런싱 없이 저장만
+                signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
             else:
-                # CRASH: exposure=0으로 리밸런싱 실행 (A/B 전량 매도, C 매수)
-                # 3. 리밸런싱
+                # 리밸런싱 실행 (CRASH는 인터벌 무시하고 즉시 실행)
                 current_pf = broker.get_portfolio()
                 current_pf.current_prices = current_prices # 가격 동기화
 

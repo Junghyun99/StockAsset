@@ -591,24 +591,24 @@ def test_execution_interval_invalid_raises_error():
 def test_execution_interval_default_executes_every_day(mock_savefig, mock_download, mock_fetcher_return):
     """
     [Interval] execution_interval 미지정(기본값 1)이면 매 거래일마다 실행해야 한다.
-    비실행일 signal_reason이 없어야 한다 (기존 동작 유지).
+    모니터링 날(리밸런싱 미실행)이 없어야 한다 (기존 동작 유지).
     """
     mock_download.return_value = mock_fetcher_return
 
     result = run_backtest(start_date="2023-01-02", end_date="2023-01-10", initial_cash=10000.0)
 
     assert result is not None
-    # 기본값(1)이면 비실행일이 없어야 함
-    skip_rows = result.history[result.history["signal_reason"] == "비실행일 (간격 대기)"]
-    assert len(skip_rows) == 0, "interval=1이면 비실행일이 없어야 함"
+    # 기본값(1)이면 모니터링 날이 없어야 함
+    skip_rows = result.history[result.history["signal_reason"].str.contains("모니터링")]
+    assert len(skip_rows) == 0, "interval=1이면 모니터링 날이 없어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
 def test_execution_interval_skips_non_execution_days(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Interval] execution_interval=3이면 3거래일에 1번만 봇 로직을 실행하고,
-    나머지 날은 포트폴리오 상태만 기록해야 한다.
+    [Interval] execution_interval=3이면 3거래일에 1번만 리밸런싱을 실행하고,
+    나머지 날은 지표 계산 후 모니터링(저장만)으로 처리해야 한다.
     """
     mock_download.return_value = mock_fetcher_return
 
@@ -618,14 +618,14 @@ def test_execution_interval_skips_non_execution_days(mock_savefig, mock_download
     )
 
     assert result is not None
-    skip_rows = result.history[result.history["signal_reason"] == "비실행일 (간격 대기)"]
-    exec_rows = result.history[result.history["signal_reason"] != "비실행일 (간격 대기)"]
-    # 비실행일이 존재해야 함
-    assert len(skip_rows) > 0, "interval=3이면 비실행일이 있어야 함"
+    skip_rows = result.history[result.history["signal_reason"].str.contains("모니터링")]
+    exec_rows = result.history[~result.history["signal_reason"].str.contains("모니터링")]
+    # 모니터링 날이 존재해야 함
+    assert len(skip_rows) > 0, "interval=3이면 모니터링 날이 있어야 함"
     # 실행일도 존재해야 함
     assert len(exec_rows) > 0, "interval=3이면 실행일도 있어야 함"
-    # 비실행일의 trade_count는 0이어야 함
-    assert (skip_rows["trade_count"] == 0).all(), "비실행일의 trade_count는 0이어야 함"
+    # 모니터링 날의 trade_count는 0이어야 함
+    assert (skip_rows["trade_count"] == 0).all(), "모니터링 날의 trade_count는 0이어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -642,16 +642,16 @@ def test_execution_interval_first_day_always_executes(mock_savefig, mock_downloa
     )
 
     assert result is not None
-    # 첫 번째 행은 비실행일이 아니어야 함
+    # 첫 번째 행은 모니터링 날이 아니어야 함
     first_reason = result.history.iloc[0]["signal_reason"]
-    assert first_reason != "비실행일 (간격 대기)", f"첫날은 반드시 실행일이어야 함: {first_reason}"
+    assert "모니터링" not in first_reason, f"첫날은 반드시 실행일이어야 함: {first_reason}"
 
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
 def test_execution_interval_portfolio_value_tracked_on_skip_days(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Interval] 비실행일에도 포트폴리오 가치(total_value)가 기록되어야 한다.
+    [Interval] 모니터링 날에도 포트폴리오 가치(total_value)가 기록되어야 한다.
     가격 변동이 반영된 가치가 매일 history에 남아야 한다.
     """
     mock_download.return_value = mock_fetcher_return
@@ -663,9 +663,8 @@ def test_execution_interval_portfolio_value_tracked_on_skip_days(mock_savefig, m
 
     assert result is not None
     # 모든 행에 total_value가 양수로 기록되어야 함
-    assert (result.history["total_value"] > 0).all(), "비실행일 포함 모든 날의 total_value가 양수여야 함"
-    # 비실행일의 exposure는 직전 실행일 값을 유지해야 함
-    skip_rows = result.history[result.history["signal_reason"] == "비실행일 (간격 대기)"]
+    assert (result.history["total_value"] > 0).all(), "모니터링 날 포함 모든 날의 total_value가 양수여야 함"
+    # 모니터링 날의 exposure가 NaN이 아닌 숫자여야 함
+    skip_rows = result.history[result.history["signal_reason"].str.contains("모니터링")]
     if len(skip_rows) > 0:
-        # exposure가 NaN이 아닌 숫자여야 함
-        assert skip_rows["exposure"].notna().all(), "비실행일의 exposure가 NaN이 아니어야 함"
+        assert skip_rows["exposure"].notna().all(), "모니터링 날의 exposure가 NaN이 아니어야 함"
