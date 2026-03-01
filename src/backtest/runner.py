@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 from src.config import Config
-from src.core.models import MarketRegime, TradeExecution
+from src.core.models import MarketRegime, TradeExecution, TradeSignal
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.infra.repo import JsonRepository
 from src.utils.calculator import IndicatorCalculator
@@ -165,50 +165,39 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 )
             prev_regime = regime
 
-            # NaN: 데이터 품질 이상 → 리밸런싱 없이 현재 상태 기록 후 스킵
-            if nan_triggered:
-                final_pf = broker.get_portfolio()
-                history.append({
-                    "date": today,
-                    "total_value": final_pf.total_value,
-                    "cash": final_pf.total_cash,
-                    "exposure": 0.0,
-                    "regime": regime.value,
-                    "trade_count": 0,
-                    "nan_triggered": True,
-                    "signal_reason": "NaN 데이터 → CRASH 처리",
-                })
-                continue
-
-            # CRASH: exposure=0으로 리밸런싱 실행 (A/B 전량 매도, C 매수)
-            # 3. 리밸런싱
-            current_pf = broker.get_portfolio()
-            current_pf.current_prices = current_prices # 가격 동기화
-
-            signal = rebalancer.generate_signal(current_pf, exposure, regime)
-
+            # NaN: main.py 동기화 — signal 생성 후 저장까지 진행 (continue 없음)
             day_executions: List[TradeExecution] = []
-            if signal.has_orders:
-                # 매매 사유 로그: 왜 매수/매도하는지 기록
-                logger.info(
-                    f"[{today.date()}] {regime.value} | Exposure={exposure:.2f} | "
-                    f"Reason: {signal.reason}"
-                )
-                logger.info(
-                    f"  Market: SPY={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
-                    f"Momentum={market_data.spy_momentum:.4f}, Vol={market_data.spy_volatility:.4f}, "
-                    f"VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%}"
-                )
-                for order in signal.orders:
-                    logger.info(
-                        f"  → {order.action} {order.ticker} x{order.quantity} @${order.price:.2f}"
-                    )
-                day_executions = broker.execute_orders(signal.orders)
-                all_executions.extend(day_executions)
-                # 매매 사유 카운터 집계
-                trade_reason_counter[signal.reason] = trade_reason_counter.get(signal.reason, 0) + 1
+            if nan_triggered:
+                signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
+            else:
+                # CRASH: exposure=0으로 리밸런싱 실행 (A/B 전량 매도, C 매수)
+                # 3. 리밸런싱
+                current_pf = broker.get_portfolio()
+                current_pf.current_prices = current_prices # 가격 동기화
 
-            # 4. 결과 기록
+                signal = rebalancer.generate_signal(current_pf, exposure, regime)
+
+                if signal.has_orders:
+                    # 매매 사유 로그: 왜 매수/매도하는지 기록
+                    logger.info(
+                        f"[{today.date()}] {regime.value} | Exposure={exposure:.2f} | "
+                        f"Reason: {signal.reason}"
+                    )
+                    logger.info(
+                        f"  Market: SPY={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
+                        f"Momentum={market_data.spy_momentum:.4f}, Vol={market_data.spy_volatility:.4f}, "
+                        f"VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%}"
+                    )
+                    for order in signal.orders:
+                        logger.info(
+                            f"  → {order.action} {order.ticker} x{order.quantity} @${order.price:.2f}"
+                        )
+                    day_executions = broker.execute_orders(signal.orders)
+                    all_executions.extend(day_executions)
+                    # 매매 사유 카운터 집계
+                    trade_reason_counter[signal.reason] = trade_reason_counter.get(signal.reason, 0) + 1
+
+            # 4. 결과 기록 (NaN 포함 항상 실행 — main.py 동기화)
             final_pf = broker.get_portfolio()
             history.append({
                 "date": today,
@@ -217,7 +206,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 "exposure": exposure,
                 "regime": regime.value,
                 "trade_count": len(day_executions),
-                "nan_triggered": False,  # 정상 처리 (NaN 없음)
+                "nan_triggered": nan_triggered,
                 "signal_reason": signal.reason,
             })
             sim_date_str = today.strftime("%Y-%m-%d")
