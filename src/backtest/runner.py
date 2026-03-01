@@ -145,11 +145,11 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             vix_val = loader.fetch_vix()
             market_data = calculator.calculate(df_slice, vix_val)
 
-            # 2. 전략 판단 (main.py와 동일한 NaN 체크 + CRASH 처리)
+            # 2. 전략 판단 (NaN 체크 + 국면/노출도 계산)
             nan_fields = market_data.nan_fields()
             nan_triggered = bool(nan_fields)  # NaN 여부를 별도로 추적
             if nan_triggered:
-                # main.py와 동일: NaN → 데이터 품질 이상으로 CRASH 처리
+                # NaN → 데이터 품질 이상으로 매매 중단 (신뢰할 수 없는 데이터로 거래 불가)
                 regime = MarketRegime.CRASH
                 exposure = 0.0
             else:
@@ -165,12 +165,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 )
             prev_regime = regime
 
-            # CRASH 또는 NaN: 리밸런싱 없이 현재 상태 기록 후 스킵
-            # main.py와 달리 알림/대기 대신 기록으로 대체하되, NaN과 CRASH를 구분하여 저장
-            if regime == MarketRegime.CRASH:
-                crash_reason = "NaN 데이터 → CRASH 처리" if nan_triggered else (
-                    f"CRASH: MDD={market_data.spy_mdd:.2%}, VIX={market_data.vix:.1f}"
-                )
+            # NaN: 데이터 품질 이상 → 리밸런싱 없이 현재 상태 기록 후 스킵
+            if nan_triggered:
                 final_pf = broker.get_portfolio()
                 history.append({
                     "date": today,
@@ -179,11 +175,12 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                     "exposure": 0.0,
                     "regime": regime.value,
                     "trade_count": 0,
-                    "nan_triggered": nan_triggered,  # NaN 원인 여부 구분
-                    "signal_reason": crash_reason,
+                    "nan_triggered": True,
+                    "signal_reason": "NaN 데이터 → CRASH 처리",
                 })
                 continue
 
+            # CRASH: exposure=0으로 리밸런싱 실행 (A/B 전량 매도, C 매수)
             # 3. 리밸런싱
             current_pf = broker.get_portfolio()
             current_pf.current_prices = current_prices # 가격 동기화

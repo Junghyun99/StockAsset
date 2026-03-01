@@ -91,17 +91,19 @@ def test_nan_data_skips_rebalancing(mock_savefig, mock_download, mock_fetcher_re
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
-def test_crash_regime_skips_rebalancing(mock_savefig, mock_download, mock_fetcher_return):
+def test_crash_regime_executes_rebalancing(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Runner] analyzer가 CRASH를 반환하면 리밸런싱을 실행하지 않고 history에 exposure=0으로 기록해야 한다.
+    [Runner] analyzer가 CRASH를 반환하면 exposure=0으로 리밸런싱을 실행하고
+    history에 exposure=0으로 기록해야 한다.
     """
     mock_download.return_value = mock_fetcher_return
 
-    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH), \
-         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
-        run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
-        # CRASH regime → generate_signal이 호출되지 않아야 함
-        mock_signal.assert_not_called()
+    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
+        result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
+        # CRASH regime → generate_signal이 호출되어야 함 (exposure=0으로 리밸런싱)
+        assert result is not None
+        assert (result.history["exposure"] == 0.0).all(), "CRASH 시 exposure=0으로 기록되어야 함"
+        assert (result.history["nan_triggered"] == False).all(), "NaN 없는 CRASH에서 nan_triggered=False이어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")

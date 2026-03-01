@@ -34,6 +34,45 @@ def test_save_and_load_status(repo, dummy_portfolio, dummy_market_data):
         assert data['strategy']['market_score']['vix'] == 15.0
         assert data['portfolio']['total_value'] == 2000.0
 
+def test_load_last_regime_returns_saved_regime(repo, dummy_portfolio, dummy_market_data):
+    """status.json에 저장된 regime을 올바르게 로드하는지 확인."""
+    repo.update_status(MarketRegime.CRASH, 0.0, dummy_portfolio, dummy_market_data, "Crash")
+    assert repo.load_last_regime() == MarketRegime.CRASH
+
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data, "Bull")
+    assert repo.load_last_regime() == MarketRegime.BULL
+
+
+def test_load_last_regime_returns_none_when_no_file(repo):
+    """status.json이 없으면 None을 반환해야 한다."""
+    assert repo.load_last_regime() is None
+
+
+def test_load_last_regime_returns_none_on_corrupted_file(repo):
+    """status.json이 깨져있으면 None을 반환해야 한다."""
+    with open(repo.status_file, 'w') as f:
+        f.write("{ broken json ...")
+    assert repo.load_last_regime() is None
+
+
+def test_load_last_regime_returns_none_on_invalid_regime(repo):
+    """status.json의 regime 값이 유효하지 않으면 None을 반환해야 한다."""
+    import json
+    invalid_status = {"strategy": {"regime": "InvalidRegime"}}
+    with open(repo.status_file, 'w') as f:
+        json.dump(invalid_status, f)
+    assert repo.load_last_regime() is None
+
+
+def test_load_last_regime_returns_none_on_missing_key(repo):
+    """status.json에 strategy.regime 키가 없으면 None을 반환해야 한다."""
+    import json
+    incomplete_status = {"last_updated": "2024-01-01"}
+    with open(repo.status_file, 'w') as f:
+        json.dump(incomplete_status, f)
+    assert repo.load_last_regime() is None
+
+
 def test_save_summary_append(repo):
     # 2. Summary 이어쓰기(Append) 테스트
     market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)

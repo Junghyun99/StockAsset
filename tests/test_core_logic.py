@@ -9,19 +9,130 @@ from src.core.models import MarketRegime, Order, OrderAction
 # ==========================================
 
 def test_regime_crash_conditions(create_market_data):
-    analyzer = RegimeAnalyzer()
-    
     # Case 1: VIX > 30 -> CRASH
+    analyzer1 = RegimeAnalyzer()
     data_vix = create_market_data(vix=30.1)
-    assert analyzer.analyze(data_vix) == MarketRegime.CRASH
-    
+    assert analyzer1.analyze(data_vix) == MarketRegime.CRASH
+
     # Case 2: MDD < -20% -> CRASH
+    analyzer2 = RegimeAnalyzer()
     data_mdd = create_market_data(mdd=-0.21)
-    assert analyzer.analyze(data_mdd) == MarketRegime.CRASH
-    
-    # Case 3: 둘 다 정상이면 CRASH 아님
+    assert analyzer2.analyze(data_mdd) == MarketRegime.CRASH
+
+    # Case 3: 둘 다 정상이면 CRASH 아님 (이전 상태가 CRASH가 아닌 경우)
+    analyzer3 = RegimeAnalyzer()
     data_normal = create_market_data(vix=29.9, mdd=-0.19)
-    assert analyzer.analyze(data_normal) != MarketRegime.CRASH
+    assert analyzer3.analyze(data_normal) != MarketRegime.CRASH
+
+def test_regime_crash_hysteresis_stays_in_crash(create_market_data):
+    """
+    [히스테리시스] CRASH 진입 후, 진입 조건은 해소되었지만 탈출 조건 미충족 시
+    CRASH를 유지해야 한다 (휩쏘 방지).
+    진입: VIX≥30 OR MDD≤-20%, 탈출: VIX<25 AND MDD>-15%
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: CRASH 진입 (VIX=35)
+    data_crash = create_market_data(vix=35, mdd=-0.10)
+    assert analyzer.analyze(data_crash) == MarketRegime.CRASH
+
+    # Step 2: VIX가 28로 하락 → 진입 조건 미충족이지만 탈출 조건도 미충족 (28 ≥ 25)
+    data_hysteresis = create_market_data(vix=28, mdd=-0.10)
+    assert analyzer.analyze(data_hysteresis) == MarketRegime.CRASH  # 히스테리시스로 CRASH 유지
+
+    # Step 3: VIX가 26으로 추가 하락 → 여전히 탈출 조건 미충족 (26 ≥ 25)
+    data_still_zone = create_market_data(vix=26, mdd=-0.10)
+    assert analyzer.analyze(data_still_zone) == MarketRegime.CRASH
+
+
+def test_regime_crash_hysteresis_exits_crash(create_market_data):
+    """
+    [히스테리시스] CRASH 진입 후, 탈출 조건 충족 시 (VIX<25 AND MDD>-15%)
+    정상 국면으로 복귀해야 한다.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: CRASH 진입
+    data_crash = create_market_data(vix=35, mdd=-0.25)
+    assert analyzer.analyze(data_crash) == MarketRegime.CRASH
+
+    # Step 2: 탈출 조건 충족 (VIX=20 < 25, MDD=-0.05 > -15%)
+    data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
+    result = analyzer.analyze(data_exit)
+    assert result != MarketRegime.CRASH
+    assert result == MarketRegime.BULL  # price>MA, momentum≥0.05
+
+
+def test_regime_crash_hysteresis_partial_exit_fails(create_market_data):
+    """
+    [히스테리시스] 탈출 조건 중 하나만 충족하면 CRASH에서 빠져나올 수 없다.
+    VIX<25이지만 MDD≤-15%, 또는 MDD>-15%이지만 VIX≥25.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # CRASH 진입
+    data_crash = create_market_data(vix=32, mdd=-0.22)
+    assert analyzer.analyze(data_crash) == MarketRegime.CRASH
+
+    # Case 1: VIX 충족, MDD 미충족 → CRASH 유지
+    data_vix_ok = create_market_data(vix=20, mdd=-0.16)
+    assert analyzer.analyze(data_vix_ok) == MarketRegime.CRASH
+
+    # Case 2: MDD 충족, VIX 미충족 → CRASH 유지
+    data_mdd_ok = create_market_data(vix=27, mdd=-0.05)
+    assert analyzer.analyze(data_mdd_ok) == MarketRegime.CRASH
+
+
+def test_regime_crash_hysteresis_reentry(create_market_data):
+    """
+    [히스테리시스] CRASH 탈출 후 다시 진입 조건 충족 시 재진입해야 한다.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # CRASH 진입
+    assert analyzer.analyze(create_market_data(vix=35)) == MarketRegime.CRASH
+
+    # CRASH 탈출 (VIX=20, MDD=-0.05)
+    data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_exit) != MarketRegime.CRASH
+
+    # 다시 CRASH 진입 (VIX=31)
+    assert analyzer.analyze(create_market_data(vix=31)) == MarketRegime.CRASH
+
+
+def test_regime_crash_hysteresis_custom_thresholds(create_market_data):
+    """
+    [히스테리시스] crash_exit_vix, crash_exit_mdd 커스텀 값이 적용되는지 확인.
+    """
+    # 탈출 조건을 더 느슨하게 설정: VIX<28, MDD>-18%
+    analyzer = RegimeAnalyzer(crash_exit_vix=28.0, crash_exit_mdd=-0.18)
+
+    # CRASH 진입
+    assert analyzer.analyze(create_market_data(vix=32)) == MarketRegime.CRASH
+
+    # VIX=27 < 28 AND MDD=-0.10 > -18% → 탈출 성공
+    data_exit = create_market_data(vix=27, mdd=-0.10, price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_exit) != MarketRegime.CRASH
+
+
+def test_regime_crash_no_hysteresis_without_prior_crash(create_market_data):
+    """
+    [히스테리시스] 이전 상태가 CRASH가 아니면 히스테리시스 구간에서도
+    정상 국면으로 판정해야 한다 (히스테리시스는 CRASH 탈출에만 적용).
+    """
+    analyzer = RegimeAnalyzer()
+
+    # 처음부터 히스테리시스 구간 데이터 (VIX=28, CRASH 진입 조건 미충족)
+    data = create_market_data(vix=28, mdd=-0.10, price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data) != MarketRegime.CRASH  # CRASH 이력 없으므로 정상 판정
+
+
+def test_regime_crash_default_hysteresis_thresholds():
+    """히스테리시스 기본값이 올바르게 설정되는지 확인."""
+    analyzer = RegimeAnalyzer()
+    assert analyzer.crash_exit_vix == 25.0
+    assert analyzer.crash_exit_mdd == -0.15
+
 
 def test_regime_bear_classifications(create_market_data):
     analyzer = RegimeAnalyzer()
@@ -229,26 +340,33 @@ def test_rebalancer_threshold_logic(create_portfolio):
     assert signal_bear.has_orders is False
     assert len(signal_bear.orders) == 0
 
-def test_rebalancer_crash_emergency_stop(create_portfolio):
+def test_rebalancer_crash_sells_all_risky_assets(create_portfolio):
     """
-    [CRASH 시나리오 수정]
-    폭락장(MDD/VIX 위험) 감지 시 -> '전량 매도'가 아니라 '매매 중단(Stop)'이어야 함.
-    사용자가 직접 개입하기 전까지 봇은 아무것도 하지 않는다.
+    [CRASH 시나리오]
+    폭락장(MDD/VIX 위험) 감지 시 exposure=0.0 → A/B 전량 매도, C(SHV) 매수.
+    Rebalancer는 CRASH도 일반 리밸런싱으로 처리한다.
     """
-    groups = {'A': ['SPY'], 'B': ['IEF']}
+    groups = {'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}
     rebalancer = Rebalancer(groups)
-    
+
     # 상황: 주식을 들고 있는 상태
-    pf = create_portfolio(holdings={'SPY': 10, 'IEF': 10}, prices={'SPY': 100, 'IEF': 100})
-    
-    # CRASH 발생 -> Target Exposure가 0.0으로 계산되어 넘어오더라도
-    # Rebalancer는 이를 무시하고 주문을 생성하지 않아야 한다.
+    pf = create_portfolio(
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100, 'IEF': 100, 'SHV': 100}
+    )
+
+    # CRASH 발생 → exposure=0.0 → A/B 전량 매도 주문 생성
     signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
-    
-    # 기대 결과: 리밸런싱 False, 주문 0건
-    assert signal.has_orders is False
-    assert len(signal.orders) == 0
-    assert "Emergency Stop" in signal.reason
+
+    # 기대 결과: A/B 매도 주문이 생성되어야 함
+    assert signal.has_orders is True
+    sell_orders = [o for o in signal.orders if o.action == OrderAction.SELL]
+    assert len(sell_orders) >= 2  # SPY, IEF 매도
+
+    spy_sell = next(o for o in sell_orders if o.ticker == 'SPY')
+    ief_sell = next(o for o in sell_orders if o.ticker == 'IEF')
+    assert spy_sell.quantity == 10  # 전량 매도
+    assert ief_sell.quantity == 10  # 전량 매도
 
 def test_rebalancer_exposure_reduction(create_portfolio):
     """투자비중을 1.0 -> 0.5로 줄일 때 현금 확보 확인"""
@@ -921,13 +1039,16 @@ def test_generate_signal_no_log_without_logger(create_portfolio):
     assert isinstance(signal.reason, str)
 
 
-def test_generate_signal_logs_crash_early_return(create_portfolio):
-    """CRASH 시 조기 리턴되지만 구분선과 입력 정보는 로깅되어야 한다."""
+def test_generate_signal_logs_crash_rebalancing(create_portfolio):
+    """CRASH 시에도 구분선, 입력 정보, 주문 결과가 로깅되어야 한다."""
     mock_logger = MagicMock()
-    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
-    pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0})
+    rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}, logger=mock_logger)
+    pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0, 'SHV': 100.0})
 
-    rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
+    signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
 
     info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
-    assert any('CRASH' in msg or 'Crash' in msg or 'Emergency' in msg for msg in info_calls)
+    # 구분선과 입력 정보가 로깅되어야 함
+    assert any('Rebalancer' in msg or '═' in msg for msg in info_calls)
+    # CRASH에서도 주문이 생성됨 (exposure=0 → 매도)
+    assert signal.has_orders is True

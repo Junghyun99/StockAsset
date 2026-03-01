@@ -56,6 +56,12 @@ class TradingBot:
         self.targeter = VolatilityTargeter(target_vol=0.15)
         self.rebalancer = Rebalancer(self.config.ASSET_GROUPS, logger=self.logger)
 
+        # 4. 히스테리시스 상태 복원 (프로세스 재시작 시 이전 국면 유지)
+        last_regime = self.repo.load_last_regime()
+        if last_regime is not None:
+            self.analyzer._prev_regime = last_regime
+            self.logger.info(f"Restored previous regime: {last_regime.value}")
+
     def run(self):
         try:
             # ── Step 1: 데이터 수집 (항상 실행) ──────────────────────────────
