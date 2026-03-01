@@ -138,6 +138,19 @@ class JsonRepository:
         
         self._save_json(self.status_file, status)
 
+    def load_last_regime(self):
+        """status.json에서 마지막 국면(regime)을 로드한다.
+        프로세스 재시작 시 RegimeAnalyzer 히스테리시스 상태 복원에 사용.
+        """
+        status = self._load_json(self.status_file)
+        if not status:
+            return None
+        try:
+            regime_str = status["strategy"]["regime"]
+            return MarketRegime(regime_str)
+        except (KeyError, ValueError):
+            return None
+
     def _load_json(self, path: str, default=None):
         if not os.path.exists(path):
             return default

@@ -206,6 +206,29 @@ def test_bot_nan_data_treated_as_crash(mock_dependencies):
     mock_dependencies['repo'].save_daily_summary.assert_called_once()
     mock_dependencies['repo'].update_status.assert_called_once()
 
+def test_bot_restores_prev_regime_from_repo(mock_dependencies):
+    """[히스테리시스 상태 복원] 프로세스 재시작 시 이전 국면을 status.json에서 복원한다.
+    CRASH로 저장되어 있었으면 analyzer._prev_regime이 CRASH로 설정되어야 한다.
+    """
+    mock_dependencies['repo'].load_last_regime.return_value = MarketRegime.CRASH
+
+    bot = TradingBot()
+
+    # analyzer._prev_regime이 CRASH로 복원되었는지 확인
+    assert bot.analyzer._prev_regime == MarketRegime.CRASH
+
+
+def test_bot_no_restore_when_no_saved_regime(mock_dependencies):
+    """[히스테리시스 상태 복원] status.json이 없거나 regime이 없으면 _prev_regime을 설정하지 않는다."""
+    mock_dependencies['repo'].load_last_regime.return_value = None
+
+    bot = TradingBot()
+
+    # load_last_regime이 None이면 _prev_regime 설정 안 함
+    # MagicMock에서는 _prev_regime이 설정되지 않은 상태가 됨
+    mock_dependencies['repo'].load_last_regime.assert_called_once()
+
+
 def test_bot_repo_save_permission_error(mock_dependencies):
     """[예외 시나리오: 저장 실패]"""
     # [수정] 필수 Mock 반환값 설정
