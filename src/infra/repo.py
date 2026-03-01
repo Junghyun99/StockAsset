@@ -98,12 +98,20 @@ class JsonRepository:
                       pf: Portfolio,
                       market_data: MarketData, # [필수] 데이터 매핑을 위해 필요
                       reason: str,
-                      sim_date: str = None):   # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
+                      sim_date: str = None,          # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
+                      rebalancing_date: str = None): # 리밸런싱 실행일 (None이면 기존 값 유지)
 
         last_updated = sim_date if sim_date else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # 리밸런싱 날짜: 전달된 값 우선, 없으면 기존 status에서 읽어 유지
+        existing = self._load_json(self.status_file, default={})
+        last_rebalancing = rebalancing_date if rebalancing_date is not None \
+            else existing.get("last_rebalancing_date")
+
         status = {
             "last_updated": last_updated,
-            
+            "last_rebalancing_date": last_rebalancing,
+
             "strategy": {
                 "regime": regime.value,
                 "target_exposure": exposure,
@@ -119,24 +127,29 @@ class JsonRepository:
                     "spy_volatility": market_data.spy_volatility
                 }
             },
-            
+
             "portfolio": {
                 "total_value": pf.total_value,
                 "cash_balance": pf.total_cash,
                 # [요청 2] 수익률, 수익금 필드 삭제 완료
                 "holdings": [
                     {
-                        "ticker": t, 
-                        "qty": q, 
+                        "ticker": t,
+                        "qty": q,
                         "price": pf.current_prices.get(t, 0),
                         "value": q * pf.current_prices.get(t, 0)
-                    } 
+                    }
                     for t, q in pf.holdings.items() if q > 0
                 ]
             }
         }
-        
+
         self._save_json(self.status_file, status)
+
+    def get_last_rebalancing_date(self) -> Optional[str]:
+        """마지막 리밸런싱 실행 날짜 반환 (status.json, 없으면 None)"""
+        data = self._load_json(self.status_file, default={})
+        return data.get("last_rebalancing_date")
 
     def get_last_summary_date(self) -> Optional[str]:
         """summary.json의 마지막 레코드 날짜 반환 (기록 없으면 None)"""

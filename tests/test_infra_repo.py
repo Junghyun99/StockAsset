@@ -376,6 +376,36 @@ def test_get_last_summary_date_corrupted_file(repo):
     assert repo.get_last_summary_date() is None
 
 
+def test_get_last_rebalancing_date_returns_none_when_no_status(repo):
+    """status.json 없으면 None 반환"""
+    assert repo.get_last_rebalancing_date() is None
+
+
+def test_get_last_rebalancing_date_after_update(repo, dummy_portfolio, dummy_market_data):
+    """리밸런싱 날짜 저장 후 반환 확인"""
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data,
+                       "Test", rebalancing_date="2024-03-01")
+    assert repo.get_last_rebalancing_date() == "2024-03-01"
+
+
+def test_update_status_preserves_rebalancing_date_when_none(repo, dummy_portfolio, dummy_market_data):
+    """rebalancing_date=None 전달 시 기존 날짜가 유지됨"""
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data,
+                       "Initial", rebalancing_date="2024-03-01")
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data,
+                       "Monitoring", rebalancing_date=None)
+    assert repo.get_last_rebalancing_date() == "2024-03-01"
+
+
+def test_update_status_overwrites_rebalancing_date(repo, dummy_portfolio, dummy_market_data):
+    """새 날짜 전달 시 기존 날짜가 덮어씌워짐"""
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data,
+                       "First", rebalancing_date="2024-02-01")
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data,
+                       "Second", rebalancing_date="2024-03-01")
+    assert repo.get_last_rebalancing_date() == "2024-03-01"
+
+
 def test_repo_float_precision(repo, dummy_portfolio, dummy_market_data):
     """
     [데이터] 소수점 단위가 중요한 금융 데이터가 JSON 저장 후에도 정밀도를 유지하는지 확인
