@@ -90,25 +90,21 @@ def test_save_summary_append(repo):
         assert len(data) == 2 # 데이터가 2건이어야 함
         assert data[0]['date'] == "2024-01-01"
 
-def test_save_history_only_when_orders_exist(repo, dummy_portfolio, dummy_market_data):
-    # Case A: 체결 내역 없음 → summary.json에 변화 없음
-    market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
-    signal = TradeSignal(0.8, [], "No Trade")
-    repo.save_daily_summary(market, signal, dummy_portfolio, MarketRegime.BULL)
+def test_save_history_only_when_orders_exist(repo, dummy_portfolio):
+    # Case A: 체결 내역 없음 (빈 리스트)
     repo.save_trade_history([], dummy_portfolio, "No Trade")
-    with open(repo.summary_file, 'r') as f:
-        data = json.load(f)
-    assert "executions" not in data[-1]
+    assert not os.path.exists(repo.history_file)
 
-    # Case B: 체결 내역 있음 → summary.json 마지막 레코드에 병합
+    # Case B: 체결 내역 있음
     executions = [
         TradeExecution("SPY", OrderAction.BUY, 1, 100.0, 0.1, "2024-01-01", ExecutionStatus.FILLED)
     ]
     repo.save_trade_history(executions, dummy_portfolio, "Trade Executed")
-    with open(repo.summary_file, 'r') as f:
+    assert os.path.exists(repo.history_file)
+    with open(repo.history_file, 'r') as f:
         data = json.load(f)
-    assert data[-1]['executions'][0]['ticker'] == "SPY"
-    assert data[-1]['total_trade_amount'] == pytest.approx(100.0)
+        assert len(data) == 1
+        assert data[0]['executions'][0]['ticker'] == "SPY"
     
     
 def test_load_corrupted_json_file(repo):
@@ -238,22 +234,23 @@ def test_summary_size_limit_applied(tmp_path, dummy_market_data, dummy_portfolio
     assert data[-1]['date'] == f"2024-01-{limit+2:02d}"
 
 
-def test_trade_executions_merged_into_summary(tmp_path, dummy_portfolio):
+def test_history_size_limit_applied(tmp_path, dummy_portfolio):
     """
-    [병합] save_trade_history 호출 시 summary.json 마지막 레코드에 체결 내역이 추가되는지 확인
+    [크기 제한] history.json이 max_history_records를 초과하면 오래된 레코드를 잘라내는지 확인
     """
-    repo = JsonRepository(root_path=str(tmp_path))
-    market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
-    repo.save_daily_summary(market, TradeSignal(1.0, [], "Bull"), dummy_portfolio, MarketRegime.BULL)
+    limit = 3
+    repo = JsonRepository(root_path=str(tmp_path), max_history_records=limit)
 
-    execution = TradeExecution("SPY", OrderAction.BUY, 2, 150.0, 0.3, "2024-01-01", ExecutionStatus.FILLED)
-    repo.save_trade_history([execution], dummy_portfolio, "Buy SPY")
+    execution = TradeExecution("SPY", OrderAction.BUY, 1, 100.0, 0.1, "2024-01-01", ExecutionStatus.FILLED)
 
-    with open(repo.summary_file, 'r') as f:
+    for i in range(limit + 1):
+        repo.save_trade_history([execution], dummy_portfolio, f"Trade {i+1}")
+
+    with open(repo.history_file, 'r') as f:
         data = json.load(f)
 
-    assert data[-1]['executions'][0]['ticker'] == "SPY"
-    assert data[-1]['total_trade_amount'] == pytest.approx(300.0)
+    assert len(data) == limit
+    assert data[-1]['reason'] == f"Trade {limit+1}"
 
 # ... (기존 임포트 및 Fixture 생략) ...
 

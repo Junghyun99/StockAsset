@@ -32,6 +32,7 @@ class TradingBot:
         self.repo = JsonRepository(
             self.config.DATA_PATH,
             max_summary_records=self.config.MAX_SUMMARY_RECORDS,
+            max_history_records=self.config.MAX_HISTORY_RECORDS,
         )
         #self.notifier = TelegramNotifier(self.config.TELEGRAM_TOKEN, self.config.TELEGRAM_CHAT_ID)
         self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL, self.logger)
