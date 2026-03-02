@@ -95,7 +95,6 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
     all_executions: List[TradeExecution] = []
     trade_reason_counter: Dict[str, int] = {}  # 매매 사유별 카운터
-    days_since_last_execution = execution_interval  # 첫날 즉시 실행되도록 초기화
 
     # 히스테리시스 상태 복원 (main.py 방식: repo에서 마지막 국면 로드)
     last_regime = backtest_repo.load_last_regime()
@@ -124,11 +123,15 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
         broker.set_prices(current_prices)
 
-        # 실행 간격 체크: is_execution_day 플래그로 분기 (지표 계산은 항상 실행)
-        days_since_last_execution += 1
-        is_execution_day = days_since_last_execution >= execution_interval
-        if is_execution_day:
-            days_since_last_execution = 0  # 실행일: 카운터 리셋
+        # 실행 간격 체크: 마지막 리밸런싱 날짜 기준 (main.py _is_rebalancing_due 방식)
+        _last_reb = backtest_repo.get_last_rebalancing_date()
+        if _last_reb is None:
+            is_execution_day = True
+        else:
+            try:
+                is_execution_day = (today - pd.Timestamp(_last_reb)).days >= execution_interval
+            except Exception:
+                is_execution_day = True
 
         # === 봇 로직 실행 (Main.py와 동일 흐름) ===
         try:
@@ -164,6 +167,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
             # 4. 조건 분기 (main.py 동기화)
             day_executions: List[TradeExecution] = []
+            is_rebalancing_day = False
             if nan_triggered:
                 # NaN: signal 생성 후 저장까지 진행
                 signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
@@ -172,6 +176,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
             else:
                 # 리밸런싱 실행 (CRASH는 인터벌 무시하고 즉시 실행)
+                is_rebalancing_day = True
                 signal = rebalancer.generate_signal(current_pf, exposure, regime)
 
                 if signal.has_orders:
@@ -197,9 +202,10 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             # 5. 결과 기록 (NaN 포함 항상 실행 — main.py 동기화)
             final_pf = broker.get_portfolio()
             sim_date_str = today.strftime("%Y-%m-%d")
+            rebalancing_date = sim_date_str if is_rebalancing_day else None
             backtest_repo.save_daily_summary(market_data, signal, final_pf, regime)
             backtest_repo.save_trade_history(day_executions, final_pf, signal.reason, sim_date=sim_date_str)
-            backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason, sim_date=sim_date_str)
+            backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason, sim_date=sim_date_str, rebalancing_date=rebalancing_date)
 
         except Exception as e:
             logger.error(f"Error on {today.date()}: {e}")
