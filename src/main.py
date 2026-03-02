@@ -77,6 +77,8 @@ class TradingBot:
             # ── Step 3: 전략 분석 (항상 실행) ──────────────────────────────
             self.logger.info(">>> Step 3: Strategy Analysis")
             nan_fields = market_data.nan_fields()
+            # 국면 변화 감지를 위해 analyze() 호출 전에 캡처
+            prev_regime_for_log = self.analyzer._prev_regime
             if nan_fields:
                 self.logger.error(f"NaN detected in: {', '.join(nan_fields)}. Treating as CRASH.")
                 regime = MarketRegime.CRASH
@@ -85,6 +87,14 @@ class TradingBot:
                 regime = self.analyzer.analyze(market_data)
                 exposure = self.targeter.calculate_exposure(regime, market_data.spy_volatility)
             self.logger.info(f"Regime: {regime.value} | Target Exposure: {exposure:.2f}")
+
+            # 국면 변화 로그
+            if prev_regime_for_log is not None and regime != prev_regime_for_log:
+                self.logger.info(
+                    f"Regime Change: {prev_regime_for_log.value} → {regime.value} "
+                    f"(Price={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
+                    f"Momentum={market_data.spy_momentum:.4f}, VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%})"
+                )
 
             # ── Step 4: 포트폴리오 현황 조회 (항상 실행) ──────────────────
             self.logger.info(">>> Step 4: Portfolio Status")
