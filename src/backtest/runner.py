@@ -95,8 +95,14 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
     all_executions: List[TradeExecution] = []
     trade_reason_counter: Dict[str, int] = {}  # 매매 사유별 카운터
-    prev_regime: Optional[MarketRegime] = None  # 국면 변화 추적
     days_since_last_execution = execution_interval  # 첫날 즉시 실행되도록 초기화
+
+    # 히스테리시스 상태 복원 (main.py 방식: repo에서 마지막 국면 로드)
+    last_regime = backtest_repo.load_last_regime()
+    if last_regime is not None:
+        analyzer._prev_regime = last_regime
+        logger.info(f"Restored previous regime: {last_regime.value}")
+
     logger.info(f"--- Starting Backtest ({len(sim_days)} trading days, interval={execution_interval}) ---")
 
     for today in sim_days:
@@ -134,6 +140,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             # 2. 전략 판단 (NaN 체크 + 국면/노출도 계산)
             nan_fields = market_data.nan_fields()
             nan_triggered = bool(nan_fields)  # NaN 여부를 별도로 추적
+            # 국면 변화 감지를 위해 analyze() 호출 전에 캡처 (main.py 방식과 동일)
+            prev_regime_for_log = analyzer._prev_regime
             if nan_triggered:
                 # NaN → 데이터 품질 이상으로 매매 중단 (신뢰할 수 없는 데이터로 거래 불가)
                 regime = MarketRegime.CRASH
@@ -142,16 +150,19 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 regime = analyzer.analyze(market_data)
                 exposure = targeter.calculate_exposure(regime, market_data.spy_volatility)
 
-            # 국면 변화 로그
-            if prev_regime is not None and regime != prev_regime:
+            # 국면 변화 로그 (analyzer._prev_regime은 analyze() 내부에서 자동 갱신됨)
+            if prev_regime_for_log is not None and regime != prev_regime_for_log:
                 logger.info(
-                    f"[{today.date()}] Regime Change: {prev_regime.value} → {regime.value} "
+                    f"[{today.date()}] Regime Change: {prev_regime_for_log.value} → {regime.value} "
                     f"(Price={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
                     f"Momentum={market_data.spy_momentum:.4f}, VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%})"
                 )
-            prev_regime = regime
 
-            # 3. 조건 분기 (main.py 동기화)
+            # 3. 포트폴리오 현황 조회 (main.py Step 4 방식 — 조건 분기 전 무조건 실행)
+            current_pf = broker.get_portfolio()
+            current_pf.current_prices = current_prices  # 가격 동기화
+
+            # 4. 조건 분기 (main.py 동기화)
             day_executions: List[TradeExecution] = []
             if nan_triggered:
                 # NaN: signal 생성 후 저장까지 진행
@@ -161,9 +172,6 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
             else:
                 # 리밸런싱 실행 (CRASH는 인터벌 무시하고 즉시 실행)
-                current_pf = broker.get_portfolio()
-                current_pf.current_prices = current_prices # 가격 동기화
-
                 signal = rebalancer.generate_signal(current_pf, exposure, regime)
 
                 if signal.has_orders:
@@ -186,12 +194,11 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                     # 매매 사유 카운터 집계
                     trade_reason_counter[signal.reason] = trade_reason_counter.get(signal.reason, 0) + 1
 
-            # 4. 결과 기록 (NaN 포함 항상 실행 — main.py 동기화)
+            # 5. 결과 기록 (NaN 포함 항상 실행 — main.py 동기화)
             final_pf = broker.get_portfolio()
             sim_date_str = today.strftime("%Y-%m-%d")
             backtest_repo.save_daily_summary(market_data, signal, final_pf, regime)
-            if day_executions:
-                backtest_repo.save_trade_history(day_executions, final_pf, signal.reason, sim_date=sim_date_str)
+            backtest_repo.save_trade_history(day_executions, final_pf, signal.reason, sim_date=sim_date_str)
             backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason, sim_date=sim_date_str)
 
         except Exception as e:
