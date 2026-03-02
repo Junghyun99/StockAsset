@@ -93,7 +93,6 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     # 사용자가 요청한 구간으로 필터링
     sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
 
-    history = []
     all_executions: List[TradeExecution] = []
     trade_reason_counter: Dict[str, int] = {}  # 매매 사유별 카운터
     prev_regime: Optional[MarketRegime] = None  # 국면 변화 추적
@@ -189,16 +188,6 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
             # 4. 결과 기록 (NaN 포함 항상 실행 — main.py 동기화)
             final_pf = broker.get_portfolio()
-            history.append({
-                "date": today,
-                "total_value": final_pf.total_value,
-                "cash": final_pf.total_cash,
-                "exposure": exposure,
-                "regime": regime.value,
-                "trade_count": len(day_executions),
-                "nan_triggered": nan_triggered,
-                "signal_reason": signal.reason,
-            })
             sim_date_str = today.strftime("%Y-%m-%d")
             backtest_repo.save_daily_summary(market_data, signal, final_pf, regime)
             if day_executions:
@@ -207,30 +196,25 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
         except Exception as e:
             logger.error(f"Error on {today.date()}: {e}")
-            # 예외 발생 시에도 현재 포트폴리오 상태를 history에 기록 (브로커 불일치 방지)
-            try:
-                error_pf = broker.get_portfolio()
-                history.append({
-                    "date": today,
-                    "total_value": error_pf.total_value,
-                    "cash": error_pf.total_cash,
-                    "exposure": 0.0,
-                    "regime": "ERROR",
-                    "trade_count": 0,
-                    "nan_triggered": False,
-                    "signal_reason": f"ERROR: {type(e).__name__}",
-                })
-            except Exception as inner_e:
-                logger.error(f"  Failed to record portfolio state after error: {inner_e}")
 
     # 5. 결과 분석 및 시각화
     logger.info("--- Backtest Finished ---")
 
-    if not history:
+    summary_data = backtest_repo._load_json(backtest_repo.summary_file, default=[])
+    if not summary_data:
         logger.warning("No trading data available for the given period.")
         return None
 
-    res_df = pd.DataFrame(history).set_index("date")
+    res_df = pd.DataFrame(summary_data)
+    res_df["date"] = pd.to_datetime(res_df["date"])
+    res_df = res_df.set_index("date")
+    # 파생 컬럼: 체결 수 (executions 없는 날은 0)
+    if "executions" in res_df.columns:
+        res_df["trade_count"] = res_df["executions"].apply(
+            lambda x: len(x) if isinstance(x, list) else 0
+        )
+    else:
+        res_df["trade_count"] = 0
 
     # CAGR (연환산 수익률)
     final_value = res_df.iloc[-1]['total_value']

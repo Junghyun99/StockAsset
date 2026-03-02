@@ -33,7 +33,6 @@ class Config:
 
         # 4. 저장소 크기 제한
         self.MAX_SUMMARY_RECORDS = 2000  # summary.json 최대 레코드 수
-        self.MAX_HISTORY_RECORDS = 100   # history.json 최대 레코드 수
 
         # 5. 리밸런싱 인터벌 (거래일 기준)
         self.TRADING_INTERVAL_DAYS = int(os.getenv("TRADING_INTERVAL_DAYS", "5"))
