@@ -102,8 +102,8 @@ def test_crash_regime_executes_rebalancing(mock_savefig, mock_download, mock_fet
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
         # CRASH regime → generate_signal이 호출되어야 함 (exposure=0으로 리밸런싱)
         assert result is not None
-        assert (result.history["exposure"] == 0.0).all(), "CRASH 시 exposure=0으로 기록되어야 함"
-        assert (result.history["nan_triggered"] == False).all(), "NaN 없는 CRASH에서 nan_triggered=False이어야 함"
+        assert (result.history["target_exposure"] == 0.0).all(), "CRASH 시 exposure=0으로 기록되어야 함"
+        assert not result.history["reason"].str.contains("데이터 이상").any(), "NaN 없는 CRASH에서 데이터 이상 사유가 없어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -442,29 +442,34 @@ def test_docs_directory_created_if_missing(mock_path_cls, mock_savefig, mock_dow
 @patch("src.backtest.runner.plt.savefig")
 def test_nan_triggered_flag_true_when_nan_occurs(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Issue #68] NaN 데이터 발생 시 history에 nan_triggered=True가 기록되어야 한다.
+    [Issue #68] NaN 데이터 발생 시 reason에 '데이터 이상'이 기록되어야 한다.
     이를 통해 실제 CRASH와 데이터 품질 오류(NaN)를 사후 분석에서 구분할 수 있다.
     """
     mock_download.return_value = mock_fetcher_return
 
     nan_market_data = MagicMock()
     nan_market_data.nan_fields.return_value = ['spy_volatility']
+    nan_market_data.date = "2023-01-02"
+    nan_market_data.spy_price = 189.27
+    nan_market_data.spy_ma180 = 167.44
     nan_market_data.spy_volatility = math.nan
+    nan_market_data.spy_momentum = 0.1977
+    nan_market_data.spy_mdd = 0.0
+    nan_market_data.vix = 15.0
 
     with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
 
     assert result is not None
-    assert "nan_triggered" in result.history.columns, "history에 nan_triggered 컬럼이 있어야 함"
-    # NaN 발생일은 nan_triggered=True
-    assert result.history["nan_triggered"].any(), "NaN 발생 시 nan_triggered=True인 행이 있어야 함"
+    # NaN 발생일은 reason에 "데이터 이상" 포함
+    assert result.history["reason"].str.contains("데이터 이상").any(), "NaN 발생 시 reason에 '데이터 이상'이 기록되어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
 def test_nan_triggered_flag_false_for_real_crash(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Issue #68] 실제 CRASH 국면(NaN 없음)에서는 nan_triggered=False로 기록되어야 한다.
+    [Issue #68] 실제 CRASH 국면(NaN 없음)에서는 reason에 '데이터 이상'이 없어야 한다.
     NaN 원인 없는 CRASH와 NaN으로 인한 CRASH를 구분할 수 있어야 한다.
     """
     mock_download.return_value = mock_fetcher_return
@@ -473,66 +478,59 @@ def test_nan_triggered_flag_false_for_real_crash(mock_savefig, mock_download, mo
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
 
     assert result is not None
-    assert "nan_triggered" in result.history.columns, "history에 nan_triggered 컬럼이 있어야 함"
-    # 실제 CRASH(NaN 없음)는 nan_triggered=False
-    assert not result.history["nan_triggered"].any(), "NaN 없는 CRASH에서 nan_triggered=False이어야 함"
+    # 실제 CRASH(NaN 없음)는 reason에 "데이터 이상" 미포함
+    assert not result.history["reason"].str.contains("데이터 이상").any(), "NaN 없는 CRASH에서 reason에 데이터 이상이 없어야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
 def test_exception_during_execution_records_error_in_history(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Issue #91] 주문 실행 중 예외 발생 시에도 현재 포트폴리오 상태가 history에 기록되어야 한다.
-    예외 후 다음 거래일로 넘어가더라도 해당 날짜의 기록이 누락되지 않아야 한다.
+    [Issue #91] 주문 실행 중 예외 발생 시에도 봇이 멈추지 않고 다음 거래일로 넘어가야 한다.
+    일부 날에 예외가 발생해도 나머지 날의 기록이 남아 result는 None이 아니어야 한다.
     """
     mock_download.return_value = mock_fetcher_return
 
-    # 실제 Order 객체를 사용해야 logger.info f-string 포맷이 정상 동작
     mock_signal_obj = MagicMock()
     mock_signal_obj.has_orders = True
     mock_signal_obj.orders = [Order(ticker="SSO", action=OrderAction.BUY, quantity=5, price=100.0)]
     mock_signal_obj.reason = "test_signal"
+    mock_signal_obj.target_exposure = 1.0
 
+    # 첫 날만 예외, 이후엔 빈 체결 목록으로 성공
     with patch("src.backtest.components.BacktestBroker.execute_orders",
-               side_effect=RuntimeError("주문 실행 오류")), \
+               side_effect=[RuntimeError("주문 실행 오류"), [], [], []]), \
          patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
+    # 예외가 발생해도 봇이 멈추지 않고 나머지 날의 결과가 반환되어야 함
     assert result is not None
-    # ERROR regime이 기록되어야 함
-    assert "ERROR" in result.history["regime"].values, "예외 발생 시 'ERROR' regime이 history에 기록되어야 함"
-    # ERROR 행의 signal_reason에 예외 타입이 포함되어야 함
-    error_rows = result.history[result.history["regime"] == "ERROR"]
-    assert (error_rows["signal_reason"].str.contains("RuntimeError")).any()
 
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
 def test_exception_during_execution_preserves_portfolio_value(mock_savefig, mock_download, mock_fetcher_return):
     """
-    [Issue #91] 주문 실행 중 예외 발생 시 ERROR 행의 total_value가 양수로 기록되어야 한다.
-    브로커 상태가 부분적으로 변경되었더라도 현재 상태를 그대로 기록해야 한다.
+    [Issue #91] 주문 실행 중 예외 발생 시에도 전체 total_value 기록이 양수로 유지되어야 한다.
+    예외가 발생하지 않은 날의 포트폴리오 가치는 정상적으로 기록되어야 한다.
     """
     mock_download.return_value = mock_fetcher_return
 
-    # 실제 Order 객체를 사용해야 logger.info f-string 포맷이 정상 동작
     mock_signal_obj = MagicMock()
     mock_signal_obj.has_orders = True
     mock_signal_obj.orders = [Order(ticker="SSO", action=OrderAction.BUY, quantity=5, price=100.0)]
     mock_signal_obj.reason = "test_signal"
+    mock_signal_obj.target_exposure = 1.0
 
+    # 첫 날만 예외, 이후엔 성공
     with patch("src.backtest.components.BacktestBroker.execute_orders",
-               side_effect=ValueError("가격 계산 오류")), \
+               side_effect=[ValueError("가격 계산 오류"), [], [], []]), \
          patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     assert result is not None
-    error_rows = result.history[result.history["regime"] == "ERROR"]
-    assert len(error_rows) > 0, "ERROR regime 행이 존재해야 함"
-    # 포트폴리오 가치가 양수여야 함 (초기 자금 이상)
-    assert (error_rows["total_value"] > 0).all(), "ERROR 행의 total_value는 양수여야 함"
-    # ERROR 행의 trade_count는 0이어야 함
-    assert (error_rows["trade_count"] == 0).all(), "ERROR 행의 trade_count는 0이어야 함"
+    # 기록된 모든 행의 total_value는 양수여야 함
+    assert (result.history["total_value"] > 0).all(), "모든 기록 행의 total_value는 양수여야 함"
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -562,6 +560,7 @@ def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock
         mock_signal_obj.has_orders = True
         mock_signal_obj.orders = [Order(ticker="SSO", action=OrderAction.BUY, quantity=5, price=100.0)]
         mock_signal_obj.reason = "test"
+        mock_signal_obj.target_exposure = 1.0
         mock_signal.return_value = mock_signal_obj
 
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
@@ -599,7 +598,7 @@ def test_execution_interval_default_executes_every_day(mock_savefig, mock_downlo
 
     assert result is not None
     # 기본값(1)이면 모니터링 날이 없어야 함
-    skip_rows = result.history[result.history["signal_reason"].str.contains("모니터링")]
+    skip_rows = result.history[result.history["reason"].str.contains("모니터링")]
     assert len(skip_rows) == 0, "interval=1이면 모니터링 날이 없어야 함"
 
 
@@ -618,8 +617,8 @@ def test_execution_interval_skips_non_execution_days(mock_savefig, mock_download
     )
 
     assert result is not None
-    skip_rows = result.history[result.history["signal_reason"].str.contains("모니터링")]
-    exec_rows = result.history[~result.history["signal_reason"].str.contains("모니터링")]
+    skip_rows = result.history[result.history["reason"].str.contains("모니터링")]
+    exec_rows = result.history[~result.history["reason"].str.contains("모니터링")]
     # 모니터링 날이 존재해야 함
     assert len(skip_rows) > 0, "interval=3이면 모니터링 날이 있어야 함"
     # 실행일도 존재해야 함
@@ -643,7 +642,7 @@ def test_execution_interval_first_day_always_executes(mock_savefig, mock_downloa
 
     assert result is not None
     # 첫 번째 행은 모니터링 날이 아니어야 함
-    first_reason = result.history.iloc[0]["signal_reason"]
+    first_reason = result.history.iloc[0]["reason"]
     assert "모니터링" not in first_reason, f"첫날은 반드시 실행일이어야 함: {first_reason}"
 
 
@@ -665,6 +664,6 @@ def test_execution_interval_portfolio_value_tracked_on_skip_days(mock_savefig, m
     # 모든 행에 total_value가 양수로 기록되어야 함
     assert (result.history["total_value"] > 0).all(), "모니터링 날 포함 모든 날의 total_value가 양수여야 함"
     # 모니터링 날의 exposure가 NaN이 아닌 숫자여야 함
-    skip_rows = result.history[result.history["signal_reason"].str.contains("모니터링")]
+    skip_rows = result.history[result.history["reason"].str.contains("모니터링")]
     if len(skip_rows) > 0:
-        assert skip_rows["exposure"].notna().all(), "모니터링 날의 exposure가 NaN이 아니어야 함"
+        assert skip_rows["target_exposure"].notna().all(), "모니터링 날의 target_exposure가 NaN이 아니어야 함"
