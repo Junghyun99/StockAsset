@@ -8,15 +8,13 @@ from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Tr
 from src.config import Config
 
 class JsonRepository:
-    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100):
+    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000):
         self.root = root_path
         self.max_summary_records = max_summary_records
-        self.max_history_records = max_history_records
         os.makedirs(self.root, exist_ok=True)
-        
+
         self.status_file = os.path.join(self.root, "status.json")
         self.summary_file = os.path.join(self.root, "summary.json")
-        self.history_file = os.path.join(self.root, "history.json")
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio, regime: MarketRegime):
         """일별 요약 저장 (Append 방식)"""
@@ -60,39 +58,19 @@ class JsonRepository:
 
         self._save_json(self.summary_file, data)
     def save_trade_history(self, executions: List[TradeExecution], pf: Portfolio, reason: str, sim_date: str = None):
-        """매매 내역 저장 - Append"""
+        """매매 내역을 summary.json 마지막 레코드에 병합 저장"""
         if not executions:
             return
 
-        # 거래 규모 계산
+        data = self._load_json(self.summary_file, default=[])
+        if not data:
+            return
+
         trade_amt = sum(e.price * e.quantity for e in executions)
+        data[-1]["total_trade_amount"] = trade_amt
+        data[-1]["executions"] = [asdict(e) for e in executions]
 
-        # ID/날짜 생성: 시뮬레이션 날짜가 주어지면 그것을, 아니면 현재 시각 사용
-        if sim_date:
-            date_str = sim_date
-            tx_id = f"tx_{sim_date.replace('-', '')}"
-        else:
-            date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            tx_id = f"tx_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
-        record = {
-            "id": tx_id,                    # [추가]
-            "date": date_str,
-            "portfolio_value": pf.total_value, # [추가]
-            "total_trade_amount": trade_amt,   # [추가]
-            "reason": reason,
-            "executions": [asdict(e) for e in executions]
-        }
-        
-        data = self._load_json(self.history_file, default=[])
-
-        # 최신 내역이 위로 오게 할지, 아래로 가게 할지 결정 (여기선 Append -> 아래)
-        data.append(record)
-
-        if self.max_history_records > 0:
-            data = data[-self.max_history_records:]
-
-        self._save_json(self.history_file, data)
+        self._save_json(self.summary_file, data)
     def update_status(self,
                       regime: MarketRegime,
                       exposure: float,
