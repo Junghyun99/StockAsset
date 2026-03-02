@@ -35,15 +35,15 @@ class JsonRepository:
 
             # [자산 정보]
             "total_value": pf.total_value,
-            "cash_balance": pf.total_cash,
+            "cash_balance": pf.total_cash,  # [추가]
             "group_a": val_a,
             "group_b": val_b,
             "group_c": val_c_total,
             # [시장 지표]
             "spy_price": market.spy_price,
-            "spy_ma180": market.spy_ma180,
-            "spy_volatility": market.spy_volatility,
-            "spy_momentum": market.spy_momentum,
+            "spy_ma180": market.spy_ma180,          # [추가]
+            "spy_volatility": market.spy_volatility, # [추가]
+            "spy_momentum": market.spy_momentum,     # [추가]
             "mdd": market.spy_mdd,
 
             # [전략 상태]
@@ -51,7 +51,7 @@ class JsonRepository:
             "reason": signal.reason,         # 상세 사유 (예: "Bull (모니터링)", "데이터 이상 - NaN: ...")
             "target_exposure": signal.target_exposure
         }
-        
+
         data = self._load_json(self.summary_file, default=[])
         data.append(record)
 
@@ -64,8 +64,10 @@ class JsonRepository:
         if not executions:
             return
 
+        # 거래 규모 계산
         trade_amt = sum(e.price * e.quantity for e in executions)
 
+        # ID/날짜 생성: 시뮬레이션 날짜가 주어지면 그것을, 아니면 현재 시각 사용
         if sim_date:
             date_str = sim_date
             tx_id = f"tx_{sim_date.replace('-', '')}"
@@ -74,15 +76,17 @@ class JsonRepository:
             tx_id = f"tx_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
         record = {
-            "id": tx_id,
+            "id": tx_id,                    # [추가]
             "date": date_str,
-            "portfolio_value": pf.total_value,
-            "total_trade_amount": trade_amt,
+            "portfolio_value": pf.total_value, # [추가]
+            "total_trade_amount": trade_amt,   # [추가]
             "reason": reason,
             "executions": [asdict(e) for e in executions]
         }
 
         data = self._load_json(self.history_file, default=[])
+
+        # 최신 내역이 위로 오게 할지, 아래로 가게 할지 결정 (여기선 Append -> 아래)
         data.append(record)
 
         if self.max_history_records > 0:
