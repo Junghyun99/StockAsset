@@ -421,7 +421,8 @@ export function renderUnifiedChart(summaryData) {
                     pointRadius: 0, 
                     fill: false,
                     tension: 0.1,
-                    order: 1 // 가장 위에 그림
+                    order: 1, // 가장 위에 그림
+                    stack: 'total'
                 },
                 {
                     label: 'SPY Benchmark ($)',
@@ -432,7 +433,8 @@ export function renderUnifiedChart(summaryData) {
                     pointRadius: 0,
                     fill: false,
                     tension: 0.1,
-                    order: 2
+                    order: 2,
+                    stack: 'spy'
                 },
                 {
                     label: 'Group C (Cash/SHV)',
@@ -476,7 +478,7 @@ export function renderUnifiedChart(summaryData) {
             scales: {
                 x: { grid: { display: false } },
                 y: {
-                    stacked: false, // 선 차트를 위해 Y축 전체는 false로 유지
+                    stacked: true,
                     title: { display: true, text: 'Asset Value ($)' },
                     ticks: {
                         callback: function(value) { return '$' + value.toLocaleString(); }
