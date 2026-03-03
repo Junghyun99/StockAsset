@@ -4,6 +4,7 @@
 import {
     renderPerformanceChart,
     renderStrategyChart,
+    renderUnifiedChart,
     renderGroupBarChart,
     renderGroupAllocationChart,
     updatePerformanceChartRange,
@@ -63,8 +64,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         function renderPerformanceTab() {
             if (perfRendered) return;
             renderPerformanceSummaryCards(summaryData);
-            renderPerformanceChart(summaryData);
-            renderGroupAllocationChart(summaryData);
+            //renderPerformanceChart(summaryData);
+            //renderGroupAllocationChart(summaryData);
+            renderUnifiedChart(summaryData);
             renderStrategyChart(summaryData);
             perfRendered = true;
         }
