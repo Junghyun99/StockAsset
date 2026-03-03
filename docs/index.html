@@ -235,9 +235,20 @@
 
                 <!-- Performance Chart (Full Width) + Time Range Selector -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
-                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Performance History</h5>
-                        <div class="btn-group btn-group-sm" id="time-range-selector" role="group">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-start flex-wrap">
+                        <div>
+                            <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>포트폴리오 총액 및 자산 배분 현황</h5>
+                            
+                            <div class="mt-2 small d-flex gap-2 flex-wrap">
+                                <span class="badge border text-dark" style="background-color: rgba(25, 135, 84, 0.15);">Bull (상승장)</span>
+                                <span class="badge border text-dark" style="background-color: rgba(255, 193, 7, 0.15);">Sideways (횡보장)</span>
+                                <span class="badge border text-dark" style="background-color: rgba(220, 53, 69, 0.1);">Bear Weak (약하락)</span>
+                                <span class="badge border text-dark" style="background-color: rgba(220, 53, 69, 0.2);">Bear Strong (강하락)</span>
+                                <span class="badge border text-white" style="background-color: rgba(33, 37, 41, 0.4);">Crash (폭락/현금화)</span>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group btn-group-sm mt-2 mt-md-0" id="time-range-selector" role="group">
                             <button type="button" class="btn btn-outline-secondary" data-range="1M">1M</button>
                             <button type="button" class="btn btn-outline-secondary" data-range="3M">3M</button>
                             <button type="button" class="btn btn-outline-secondary" data-range="6M">6M</button>
@@ -246,31 +257,14 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div style="height: 300px;">
-                            <canvas id="performanceChart"></canvas>
+                        <div style="height: 500px;">
+                            <canvas id="unifiedPerformanceChart"></canvas>
                         </div>
                     </div>
                 </div>
 
                 <!-- Two side-by-side charts -->
                 <div class="row g-4 mb-4">
-                    <!-- Asset Group Allocation Over Time -->
-                    <div class="col-lg-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-header bg-white py-3">
-                                <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Asset Group History</h5>
-                            </div>
-                            <div class="card-body">
-                                <div style="height: 250px;">
-                                    <canvas id="groupAllocationChart"></canvas>
-                                </div>
-                                <div id="group-allocation-placeholder" class="text-center text-muted py-4 d-none">
-                                    <i class="fas fa-info-circle me-1"></i>Group allocation data not available
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Strategy Chart -->
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm h-100">
@@ -361,6 +355,7 @@
 
     <!-- Chart.js & Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Dashboard Logic (ES Modules) -->
     <script type="module" src="js/main.js"></script>
