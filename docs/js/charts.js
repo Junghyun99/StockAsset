@@ -391,8 +391,8 @@ export function renderUnifiedChart(summaryData) {
                 type: 'box',
                 xMin: labels[startIdx],
                 xMax: labels[i],
-                yMin: 'min',
-                yMax: 'max',
+                // yMin: 'min',
+                // yMax: 'max',
                 backgroundColor: getRegimeColor(currentRegime),
                 borderWidth: 0,
                 drawTime: 'beforeDraw' // 데이터 선 뒤(배경)에 그리도록 설정
