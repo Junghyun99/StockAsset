@@ -8,6 +8,7 @@ let perfChart = null;
 let stratChart = null;
 let groupBarChartInstance = null;
 let groupAllocChart = null;
+let unifiedChart = null;
 
 // 원본 데이터 캐시 (기간 필터용)
 let cachedSummaryData = null;
@@ -341,5 +342,167 @@ export function renderGroupAllocationChart(summaryData) {
 export function resizeAllCharts() {
     [perfChart, stratChart, groupBarChartInstance, groupAllocChart].forEach(chart => {
         if (chart) chart.resize();
+    });
+}
+
+function getRegimeColor(regimeStr) {
+    if (!regimeStr) return 'transparent';
+    const str = regimeStr.toLowerCase();
+    
+    if (str.includes('bull')) return 'rgba(25, 135, 84, 0.15)';        // 초록 (상승)
+    if (str.includes('bear_strong')) return 'rgba(220, 53, 69, 0.2)'; // 짙은 빨강 (강하락)
+    if (str.includes('bear')) return 'rgba(220, 53, 69, 0.1)';        // 옅은 빨강 (약하락/기본하락)
+    if (str.includes('sideways')) return 'rgba(255, 193, 7, 0.15)';   // 노랑 (횡보)
+    if (str.includes('crash')) return 'rgba(33, 37, 41, 0.4)';        // 어두운 회색 (폭락)
+    
+    return 'transparent'; // 매칭 안되면 투명하게
+}
+
+export function renderUnifiedChart(summaryData) {
+    if (!summaryData || summaryData.length === 0) return;
+
+    const canvas = document.getElementById('unifiedPerformanceChart');
+    if (!canvas) return; // HTML에 캔버스가 없으면 에러 방지
+    const ctx = canvas.getContext('2d');
+
+    // 데이터 가공
+    const labels = summaryData.map(d => d.date);
+    const initialPortfolioValue = summaryData[0].total_value;
+    const initialSpyPrice = summaryData[0].spy_price;
+
+    // SPY 가격을 내 포트폴리오 초기 투자금 기준으로 환산 (스케일링)
+    const spyScaledData = summaryData.map(d => (d.spy_price / initialSpyPrice) * initialPortfolioValue);
+    
+    const portfolioData = summaryData.map(d => d.total_value);
+    const groupAData = summaryData.map(d => d.group_a || 0);
+    const groupBData = summaryData.map(d => d.group_b || 0);
+    const groupCData = summaryData.map(d => d.group_c || 0);
+
+    // 국면(Regime) 배경 박스 계산 (Annotation 플러그인용)
+    const annotations = {};
+    let currentRegime = summaryData[0].regime;
+    let startIdx = 0;
+    let boxIndex = 0;
+
+    for (let i = 0; i < summaryData.length; i++) {
+        // 국면이 바뀌거나 데이터의 끝에 도달했을 때 박스를 생성
+        if (summaryData[i].regime !== currentRegime || i === summaryData.length - 1) {
+            annotations[`regimeBox${boxIndex++}`] = {
+                type: 'box',
+                xMin: labels[startIdx],
+                xMax: labels[i],
+                yMin: 'min',
+                yMax: 'max',
+                backgroundColor: getRegimeColor(currentRegime),
+                borderWidth: 0,
+                drawTime: 'beforeDraw' // 데이터 선 뒤(배경)에 그리도록 설정
+            };
+            currentRegime = summaryData[i].regime;
+            startIdx = i;
+        }
+    }
+
+    // 기존 차트가 있으면 삭제 (날짜 변경, 데이터 리로드 시 중첩 방지)
+    if (unifiedChart) {
+        unifiedChart.destroy();
+    }
+
+    // 차트 생성
+    unifiedChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets:[
+                {
+                    label: 'Total Portfolio ($)',
+                    data: portfolioData,
+                    borderColor: '#0d6efd',
+                    borderWidth: 2,
+                    pointRadius: 0, 
+                    fill: false,
+                    tension: 0.1,
+                    order: 1 // 가장 위에 그림
+                },
+                {
+                    label: 'SPY Benchmark ($)',
+                    data: spyScaledData,
+                    borderColor: 'rgba(253, 126, 20, 0.8)',
+                    borderWidth: 2,
+                    borderDash:[5, 5], 
+                    pointRadius: 0,
+                    fill: false,
+                    tension: 0.1,
+                    order: 2
+                },
+                {
+                    label: 'Group C (Cash/SHV)',
+                    data: groupCData,
+                    backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                    borderColor: 'transparent',
+                    fill: true,
+                    pointRadius: 0,
+                    stack: 'AssetStack', // 이 이름이 같아야 영역이 쌓임
+                    order: 5
+                },
+                {
+                    label: 'Group B (Safety)',
+                    data: groupBData,
+                    backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                    borderColor: 'transparent',
+                    fill: true,
+                    pointRadius: 0,
+                    stack: 'AssetStack',
+                    order: 4
+                },
+                {
+                    label: 'Group A (Growth)',
+                    data: groupAData,
+                    backgroundColor: 'rgba(13, 110, 253, 0.3)',
+                    borderColor: 'transparent',
+                    fill: true,
+                    pointRadius: 0,
+                    stack: 'AssetStack',
+                    order: 3
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    stacked: false, // 선 차트를 위해 Y축 전체는 false로 유지
+                    title: { display: true, text: 'Asset Value ($)' },
+                    ticks: {
+                        callback: function(value) { return '$' + value.toLocaleString(); }
+                    }
+                }
+            },
+            plugins: {
+                annotation: { annotations: annotations }, // 여기서 배경색 칠해짐
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += '$' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                            }
+                            return label;
+                        }
+                    }
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 20 }
+                }
+            }
+        }
     });
 }
