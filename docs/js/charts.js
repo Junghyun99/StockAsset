@@ -490,13 +490,25 @@ export function renderUnifiedChart(summaryData) {
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) {
-                                label += '$' + context.parsed.y.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0});
+                            let datasetLabel = context.dataset.label || '';
+                            let value = context.parsed.y;
+                            
+                            if (value === null) return datasetLabel;
+
+                            // 1. 라벨 이름에 'Group'이 포함된 경우 (자산군 A, B, C) -> 비율(%)로 표시
+                            if (datasetLabel.includes('Group')) {
+                                // 현재 마우스가 위치한 데이터의 인덱스로 총 자산액을 가져옴
+                                const totalValue = summaryData[context.dataIndex].total_value;
+                                // 총액 대비 해당 자산군의 비율 계산 (총액이 0일 경우 방어코드 포함)
+                                const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
+                                
+                                return `${datasetLabel}: ${percentage.toFixed(1)}%`;
+                            } 
+                            // 2. 그 외의 경우 (Total Portfolio, SPY) -> 총액($)으로 표시
+                            else {
+                                return `${datasetLabel}: $${value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                             }
-                            return label;
-                        }
+                        }                        
                     }
                 },
                 legend: {
