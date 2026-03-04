@@ -91,3 +91,15 @@ class TradeExecution:
     date: str     # 체결 시간
     status: ExecutionStatus
     reason: str = "" # 거부 사유 등
+
+@dataclass
+class DayResult:
+    """하루치 트레이딩 사이클 실행 결과"""
+    market_data: MarketData
+    regime: MarketRegime
+    exposure: float
+    signal: TradeSignal
+    executions: List[TradeExecution]
+    final_pf: Portfolio
+    is_rebalancing: bool
+    nan_fields: List[str]

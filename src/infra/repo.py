@@ -5,9 +5,10 @@ from typing import List, Dict, Optional
 from dataclasses import asdict
 from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
+from src.core.interfaces import IRepository
 from src.config import Config
 
-class JsonRepository:
+class JsonRepository(IRepository):
     def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100):
         self.root = root_path
         self.max_summary_records = max_summary_records
