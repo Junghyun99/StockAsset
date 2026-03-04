@@ -8,8 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
 from src.config import Config
-from src.core.models import MarketRegime, TradeExecution, TradeSignal
+from src.core.models import TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
+from src.core.engine import TradingEngine
 from src.infra.repo import JsonRepository
 from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
@@ -62,7 +63,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     tickers = []
     for group in config.ASSET_GROUPS.values():
         tickers.extend(group)
-    tickers = list(set(tickers)) # 중복 제거
+    tickers = list(set(tickers))  # 중복 제거
     if "SPY" not in tickers:
         tickers.append("SPY")  # 벤치마크 계산에 필요
 
@@ -81,131 +82,87 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     shutil.rmtree(backtest_data_path, ignore_errors=True)
     backtest_repo = JsonRepository(backtest_data_path)
 
-    # Core Logic (그대로 재사용!)
+    # Core Logic (TradingEngine으로 조립)
     calculator = IndicatorCalculator()
     analyzer = RegimeAnalyzer()
     targeter = VolatilityTargeter(target_vol=0.15)
     rebalancer = Rebalancer(config.ASSET_GROUPS, logger=logger)
 
-    # 4. 루프 실행 (Time Travel)
-    # 실제 데이터가 있는 날짜(거래일)만 루프
-    trading_days = full_df.index
-    # 사용자가 요청한 구간으로 필터링
-    sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
-
-    all_executions: List[TradeExecution] = []
-    trade_reason_counter: Dict[str, int] = {}  # 매매 사유별 카운터
-
-    # 히스테리시스 상태 복원 (main.py 방식: repo에서 마지막 국면 로드)
+    # 히스테리시스 상태 복원 (main.py 방식과 동일)
     last_regime = backtest_repo.load_last_regime()
     if last_regime is not None:
         analyzer._prev_regime = last_regime
         logger.info(f"Restored previous regime: {last_regime.value}")
 
+    engine = TradingEngine(
+        calculator=calculator,
+        analyzer=analyzer,
+        targeter=targeter,
+        rebalancer=rebalancer,
+        broker=broker,
+        repo=backtest_repo,
+        logger=logger,
+        all_tickers=tickers,
+        trading_interval_days=execution_interval,
+        notifier=None,          # 백테스트는 알림 없음
+        is_live_trading=False,
+    )
+
+    # 4. 루프 실행 (Time Travel)
+    trading_days = full_df.index
+    sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
+
+    all_executions: List[TradeExecution] = []
+    trade_reason_counter: Dict[str, int] = {}
+
     logger.info(f"--- Starting Backtest ({len(sim_days)} trading days, interval={execution_interval}) ---")
 
     for today in sim_days:
         logger.info(f"[{today.date()}]시작")
+
         # [Time Setting] 오늘 날짜 설정
         loader.set_date(today)
         broker.set_date(today)
 
         # [Price Injection] 오늘 종가를 브로커에 주입 (종가 매매 가정)
-        current_prices = {}
         try:
-            # 가장 확실한 방법: full_df['Close']에서 추출
             close_prices = full_df['Close'].loc[today]
             current_prices = close_prices.to_dict()
-
         except Exception as e:
             logger.warning(f"[{today.date()}] 종가 추출 실패, 건너뜀: {e}")
             continue
 
         broker.set_prices(current_prices)
+        sim_date = today.strftime("%Y-%m-%d")
 
-        # 실행 간격 체크: 마지막 리밸런싱 날짜 기준 (main.py _is_rebalancing_due 방식)
-        _last_reb = backtest_repo.get_last_rebalancing_date()
-        if _last_reb is None:
-            is_execution_day = True
-        else:
-            try:
-                is_execution_day = (today - pd.Timestamp(_last_reb)).days >= execution_interval
-            except Exception:
-                is_execution_day = True
-
-        # === 봇 로직 실행 (Main.py와 동일 흐름) ===
         try:
-            # 1. 지표 계산 (항상 실행)
-            df_slice = loader.fetch_ohlcv(["SPY"], days=400)
-            vix_val = loader.fetch_vix()
-            market_data = calculator.calculate(df_slice, vix_val)
+            result = engine.run_one_cycle(loader, sim_date=sim_date)
 
-            # 2. 전략 판단 (NaN 체크 + 국면/노출도 계산)
-            nan_fields = market_data.nan_fields()
-            nan_triggered = bool(nan_fields)  # NaN 여부를 별도로 추적
-            # 국면 변화 감지를 위해 analyze() 호출 전에 캡처 (main.py 방식과 동일)
-            prev_regime_for_log = analyzer._prev_regime
-            if nan_triggered:
-                # NaN → 데이터 품질 이상으로 매매 중단 (신뢰할 수 없는 데이터로 거래 불가)
-                regime = MarketRegime.CRASH
-                exposure = 0.0
-            else:
-                regime = analyzer.analyze(market_data)
-                exposure = targeter.calculate_exposure(regime, market_data.spy_volatility)
+            all_executions.extend(result.executions)
 
-            # 국면 변화 로그 (analyzer._prev_regime은 analyze() 내부에서 자동 갱신됨)
-            if prev_regime_for_log is not None and regime != prev_regime_for_log:
-                logger.info(
-                    f"[{today.date()}] Regime Change: {prev_regime_for_log.value} → {regime.value} "
-                    f"(Price={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
-                    f"Momentum={market_data.spy_momentum:.4f}, VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%})"
+            # 매매 사유 카운터 집계
+            if result.signal.has_orders:
+                trade_reason_counter[result.signal.reason] = (
+                    trade_reason_counter.get(result.signal.reason, 0) + 1
                 )
 
-            # 3. 포트폴리오 현황 조회 (main.py Step 4 방식 — 조건 분기 전 무조건 실행)
-            current_pf = broker.get_portfolio()
-            current_pf.current_prices = current_prices  # 가격 동기화
-
-            # 4. 조건 분기 (main.py 동기화)
-            day_executions: List[TradeExecution] = []
-            is_rebalancing_day = False
-            if nan_triggered:
-                # NaN: signal 생성 후 저장까지 진행
-                signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
-            elif not is_execution_day and regime != MarketRegime.CRASH:
-                # 모니터링 날: 인터벌 미충족 & non-CRASH → 리밸런싱 없이 저장만
-                signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
-            else:
-                # 리밸런싱 실행 (CRASH는 인터벌 무시하고 즉시 실행)
-                is_rebalancing_day = True
-                signal = rebalancer.generate_signal(current_pf, exposure, regime)
-
-                if signal.has_orders:
-                    # 매매 사유 로그: 왜 매수/매도하는지 기록
+            # 백테스트 전용: 리밸런싱 상세 로그
+            if result.is_rebalancing and result.signal.has_orders:
+                logger.info(
+                    f"[{today.date()}] {result.regime.value} | Exposure={result.exposure:.2f} | "
+                    f"Reason: {result.signal.reason}"
+                )
+                logger.info(
+                    f"  Market: SPY={result.market_data.spy_price:.2f}, "
+                    f"MA180={result.market_data.spy_ma180:.2f}, "
+                    f"Momentum={result.market_data.spy_momentum:.4f}, "
+                    f"Vol={result.market_data.spy_volatility:.4f}, "
+                    f"VIX={result.market_data.vix:.1f}, MDD={result.market_data.spy_mdd:.2%}"
+                )
+                for order in result.signal.orders:
                     logger.info(
-                        f"[{today.date()}] {regime.value} | Exposure={exposure:.2f} | "
-                        f"Reason: {signal.reason}"
+                        f"  → {order.action} {order.ticker} x{order.quantity} @${order.price:.2f}"
                     )
-                    logger.info(
-                        f"  Market: SPY={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
-                        f"Momentum={market_data.spy_momentum:.4f}, Vol={market_data.spy_volatility:.4f}, "
-                        f"VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%}"
-                    )
-                    for order in signal.orders:
-                        logger.info(
-                            f"  → {order.action} {order.ticker} x{order.quantity} @${order.price:.2f}"
-                        )
-                    day_executions = broker.execute_orders(signal.orders)
-                    all_executions.extend(day_executions)
-                    # 매매 사유 카운터 집계
-                    trade_reason_counter[signal.reason] = trade_reason_counter.get(signal.reason, 0) + 1
-
-            # 5. 결과 기록 (NaN 포함 항상 실행 — main.py 동기화)
-            final_pf = broker.get_portfolio()
-            sim_date_str = today.strftime("%Y-%m-%d")
-            rebalancing_date = sim_date_str if is_rebalancing_day else None
-            backtest_repo.save_daily_summary(market_data, signal, final_pf, regime)
-            backtest_repo.save_trade_history(day_executions, final_pf, signal.reason, sim_date=sim_date_str)
-            backtest_repo.update_status(regime, exposure, final_pf, market_data, signal.reason, sim_date=sim_date_str, rebalancing_date=rebalancing_date)
 
         except Exception as e:
             logger.error(f"Error on {today.date()}: {e}")

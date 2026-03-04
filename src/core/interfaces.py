@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List, Dict
+from typing import List, Dict, Optional
 import pandas as pd
 from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution
 
@@ -51,3 +51,20 @@ class INotifier(ABC):
     def send_message(self, message: str) -> None: ...
     @abstractmethod
     def send_alert(self, message: str) -> None: ...
+
+class IRepository(ABC):
+    @abstractmethod
+    def get_last_rebalancing_date(self) -> Optional[str]: ...
+    @abstractmethod
+    def load_last_regime(self) -> Optional[MarketRegime]: ...
+    @abstractmethod
+    def save_daily_summary(self, market_data: MarketData, signal: TradeSignal,
+                           portfolio: Portfolio, regime: MarketRegime) -> None: ...
+    @abstractmethod
+    def save_trade_history(self, executions: List[TradeExecution], portfolio: Portfolio,
+                           reason: str, sim_date: Optional[str] = None) -> None: ...
+    @abstractmethod
+    def update_status(self, regime: MarketRegime, exposure: float, portfolio: Portfolio,
+                      market_data: MarketData, reason: str,
+                      sim_date: Optional[str] = None,
+                      rebalancing_date: Optional[str] = None) -> None: ...
