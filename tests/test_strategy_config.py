@@ -8,7 +8,7 @@ def test_default_values():
     """[기본] 환경변수 없을 때 하드코딩 기본값 사용."""
     with patch.dict(os.environ, {}, clear=True):
         cfg = StrategyConfig()
-    assert cfg.TRADING_INTERVAL_DAYS == 5
+    assert cfg.TRADING_INTERVAL_DAYS == 1
     assert cfg.REBALANCE_RATIO_A == 0.5
     assert cfg.ASSET_GROUPS == {
         'A': ['SSO', 'QLD'],
