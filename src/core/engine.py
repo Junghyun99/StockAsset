@@ -334,3 +334,96 @@ class FullExposureEngine(TradingEngine):
             )
 
         return regime, exposure, nan_fields
+
+
+class QldSHVEngine(FullExposureEngine):
+    """QLD(A그룹) + SHV(B그룹)만으로 구성된 Full Exposure 전략 엔진.
+
+    - 자산군 A: [QLD]  (레버리지 나스닥 ETF)
+    - 자산군 B: [SHV]  (초단기 국채 ETF — 현금 대용)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - A:B 비율은 Rebalancer 기본값(0.5:0.5) 적용
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['QLD'],
+        'B': ['SHV'],
+    }
+
+    def __init__(
+        self,
+        calculator: IndicatorCalculator,
+        analyzer: RegimeAnalyzer,
+        targeter: VolatilityTargeter,
+        broker: IBrokerAdapter,
+        repo: IRepository,
+        logger: ILogger,
+        trading_interval_days: int = 5,
+        notifier: Optional[INotifier] = None,
+        is_live_trading: bool = False,
+        rebalancer: Optional[Rebalancer] = None,
+    ):
+        if rebalancer is None:
+            rebalancer = Rebalancer(self.ASSET_GROUPS, logger=logger)
+        all_tickers = self.ASSET_GROUPS['A'] + self.ASSET_GROUPS['B']
+        super().__init__(
+            calculator=calculator,
+            analyzer=analyzer,
+            targeter=targeter,
+            rebalancer=rebalancer,
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            all_tickers=all_tickers,
+            trading_interval_days=trading_interval_days,
+            notifier=notifier,
+            is_live_trading=is_live_trading,
+        )
+
+
+class QldSchdEngine(FullExposureEngine):
+    """QLD(A그룹) + SCHD(B그룹)으로 구성된 Full Exposure 전략 엔진.
+
+    - 자산군 A: [QLD]  (레버리지 나스닥 ETF)
+    - 자산군 B: [SCHD] (배당 성장 ETF)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - A:B 비율 = 0.3:0.7 (성장보다 배당 비중 강조)
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['QLD'],
+        'B': ['SCHD'],
+    }
+    REBALANCE_RATIO_A: float = 0.3
+
+    def __init__(
+        self,
+        calculator: IndicatorCalculator,
+        analyzer: RegimeAnalyzer,
+        targeter: VolatilityTargeter,
+        broker: IBrokerAdapter,
+        repo: IRepository,
+        logger: ILogger,
+        trading_interval_days: int = 5,
+        notifier: Optional[INotifier] = None,
+        is_live_trading: bool = False,
+        rebalancer: Optional[Rebalancer] = None,
+    ):
+        if rebalancer is None:
+            rebalancer = Rebalancer(
+                self.ASSET_GROUPS, logger=logger, ratio_a=self.REBALANCE_RATIO_A
+            )
+        all_tickers = self.ASSET_GROUPS['A'] + self.ASSET_GROUPS['B']
+        super().__init__(
+            calculator=calculator,
+            analyzer=analyzer,
+            targeter=targeter,
+            rebalancer=rebalancer,
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            all_tickers=all_tickers,
+            trading_interval_days=trading_interval_days,
+            notifier=notifier,
+            is_live_trading=is_live_trading,
+        )
