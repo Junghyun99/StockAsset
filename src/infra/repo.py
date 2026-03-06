@@ -6,7 +6,7 @@ from dataclasses import asdict
 from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
 from src.core.interfaces import IRepository
-from src.config import Config
+from src.strategy_config import StrategyConfig
 
 class JsonRepository(IRepository):
     def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100):
@@ -21,14 +21,14 @@ class JsonRepository(IRepository):
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio, regime: MarketRegime):
         """일별 요약 저장 (Append 방식)"""
-        conf = Config()
+        strategy = StrategyConfig()
 
         # 각 그룹 순수 주식 평가액
-        val_a = pf.get_group_value(conf.ASSET_GROUPS['A'])
-        val_b = pf.get_group_value(conf.ASSET_GROUPS['B'])
+        val_a = pf.get_group_value(strategy.ASSET_GROUPS['A'])
+        val_b = pf.get_group_value(strategy.ASSET_GROUPS['B'])
 
         # [수정] 그룹 C = SHV 등 종목 평가액 + 현재 보유 현금(예수금)
-        val_c_pure_stock = pf.get_group_value(conf.ASSET_GROUPS['C'])
+        val_c_pure_stock = pf.get_group_value(strategy.ASSET_GROUPS['C'])
         val_c_total = val_c_pure_stock + pf.total_cash
 
         record = {

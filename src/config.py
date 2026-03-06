@@ -6,14 +6,7 @@ load_dotenv()
 
 class Config:
     def __init__(self):  # <--- [중요] 모든 설정 로직을 이 함수 안으로 넣어야 합니다.
-        # 1. 자산군 정의
-        self.ASSET_GROUPS = {
-            'A': ['SSO', 'QLD'],           # 성장성
-            'B': ['IEF', 'GLD', 'PDBC'],   # 안전성
-            'C': ['SHV']                   # 현금성
-        }
-
-        # 2. API 설정 (인스턴스 생성 시점에 환경변수 읽기)
+        # 1. API 설정 (인스턴스 생성 시점에 환경변수 읽기)
         # 문자열 "True"/"true"를 Python boolean True로 변환
         self.IS_LIVE_TRADING = os.getenv("IS_LIVE_TRADING", "False").lower() == "true"
         
@@ -34,9 +27,3 @@ class Config:
         # 4. 저장소 크기 제한
         self.MAX_SUMMARY_RECORDS = 2000  # summary.json 최대 레코드 수
         self.MAX_HISTORY_RECORDS = 100   # history.json 최대 레코드 수
-
-        # 5. 리밸런싱 인터벌 (거래일 기준)
-        self.TRADING_INTERVAL_DAYS = int(os.getenv("TRADING_INTERVAL_DAYS", "5"))
-
-        # 6. 리밸런싱 A:B 비율 (A그룹 비율, B = 1 - A)
-        self.REBALANCE_RATIO_A = float(os.getenv("REBALANCE_RATIO_A", "0.5"))
