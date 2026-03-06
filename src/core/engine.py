@@ -13,7 +13,10 @@ from src.utils.calculator import IndicatorCalculator
 
 
 class TradingEngine:
-    """핵심 트레이딩 사이클 엔진.
+    """핵심 트레이딩 사이클 엔진 (Template Method 패턴).
+
+    run_one_cycle()이 전체 사이클의 뼈대(template)를 정의하며,
+    각 단계(Step 1~6)는 개별 메서드로 분리되어 서브클래스에서 오버라이드 가능하다.
 
     main.py (실시간)와 runner.py (백테스트) 모두 이 엔진을 재사용한다.
     환경별 차이는 주입되는 구현체(broker, data_provider, notifier)가 담당하며,
@@ -51,7 +54,7 @@ class TradingEngine:
         data_provider: IDataProvider,
         sim_date: Optional[str] = None,
     ) -> DayResult:
-        """하루치 트레이딩 사이클 전체를 실행한다.
+        """하루치 트레이딩 사이클 전체를 실행한다 (Template Method).
 
         Args:
             data_provider: OHLCV / VIX 데이터 소스.
@@ -62,13 +65,13 @@ class TradingEngine:
         Returns:
             DayResult: 사이클 실행 결과 (regime, signal, executions, portfolio 등)
         """
-        # Step 1~2: 데이터 수집 & 지표 계산
+        # Step 1: 데이터 수집
         self.logger.info(">>> Step 1: Data Collection")
-        spy_df = data_provider.fetch_ohlcv(["SPY"], days=400)
-        vix = data_provider.fetch_vix()
+        spy_df, vix = self.collect_data(data_provider)
 
+        # Step 2: 지표 계산
         self.logger.info(">>> Step 2: Indicator Calculation")
-        market_data = self.calculator.calculate(spy_df, vix)
+        market_data = self.calculate_indicators(spy_df, vix)
         self.logger.info(
             f"Market Data: Price={market_data.spy_price}, "
             f"VIX={market_data.vix}, MDD={market_data.spy_mdd:.2%}"
@@ -76,25 +79,25 @@ class TradingEngine:
 
         # Step 3: 국면 분석
         self.logger.info(">>> Step 3: Strategy Analysis")
-        regime, exposure, nan_fields = self._analyze_regime(market_data)
+        regime, exposure, nan_fields = self.analyze_strategy(market_data)
         self.logger.info(f"Regime: {regime.value} | Target Exposure: {exposure:.2f}")
 
         # Step 4: 포트폴리오 조회 + 실시간 가격
         self.logger.info(">>> Step 4: Portfolio Status")
-        portfolio = self._get_portfolio()
+        portfolio = self.get_portfolio()
         self.logger.info(
             f"Current Portfolio: Cash=${portfolio.total_cash:,.0f}, "
             f"Value=${portfolio.total_value:,.0f}"
         )
 
         # Step 5: 조건 분기 & 실행
-        signal, executions, final_pf, is_rebalancing = self._execute_cycle(
+        signal, executions, final_pf, is_rebalancing = self.execute_cycle(
             market_data, portfolio, regime, exposure, nan_fields, sim_date
         )
 
         # Step 6: 저장
         self.logger.info(">>> Step 6: Archiving Data")
-        self._persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date)
+        self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date)
 
         return DayResult(
             market_data=market_data,
@@ -107,12 +110,26 @@ class TradingEngine:
             nan_fields=nan_fields,
         )
 
-    # ── Private helpers ───────────────────────────────────────────────────────
+    # ── Overridable step methods ─────────────────────────────────────────────
 
-    def _analyze_regime(
+    def collect_data(
+        self, data_provider: IDataProvider
+    ) -> Tuple[pd.DataFrame, float]:
+        """Step 1: OHLCV 및 VIX 데이터를 수집한다."""
+        spy_df = data_provider.fetch_ohlcv(["SPY"], days=400)
+        vix = data_provider.fetch_vix()
+        return spy_df, vix
+
+    def calculate_indicators(
+        self, spy_df: pd.DataFrame, vix: float
+    ) -> MarketData:
+        """Step 2: 시장 지표를 계산한다."""
+        return self.calculator.calculate(spy_df, vix)
+
+    def analyze_strategy(
         self, market_data: MarketData
     ) -> Tuple[MarketRegime, float, List[str]]:
-        """NaN 감지 + 국면/노출도 계산."""
+        """Step 3: NaN 감지 + 국면/노출도 계산."""
         nan_fields = market_data.nan_fields()
         prev_regime = self.analyzer._prev_regime
 
@@ -137,8 +154,8 @@ class TradingEngine:
 
         return regime, exposure, nan_fields
 
-    def _get_portfolio(self) -> Portfolio:
-        """포트폴리오 조회 후 실시간 가격 업데이트."""
+    def get_portfolio(self) -> Portfolio:
+        """Step 4: 포트폴리오 조회 후 실시간 가격 업데이트."""
         portfolio = self.broker.get_portfolio()
         self.logger.info("Fetching Real-time prices from Broker...")
         real_time_prices = self.broker.fetch_current_prices(self.all_tickers)
@@ -147,7 +164,7 @@ class TradingEngine:
                 portfolio.current_prices[ticker] = price
         return portfolio
 
-    def _execute_cycle(
+    def execute_cycle(
         self,
         market_data: MarketData,
         portfolio: Portfolio,
@@ -156,7 +173,7 @@ class TradingEngine:
         nan_fields: List[str],
         sim_date: Optional[str],
     ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
-        """3-way 조건 분기: NaN이상 / 모니터링 / 리밸런싱."""
+        """Step 5: 3-way 조건 분기: NaN이상 / 모니터링 / 리밸런싱."""
         executions: List[TradeExecution] = []
         final_pf = portfolio
         is_rebalancing = False
@@ -215,6 +232,29 @@ class TradingEngine:
 
         return signal, executions, final_pf, is_rebalancing
 
+    def persist(
+        self,
+        market_data: MarketData,
+        signal: TradeSignal,
+        executions: List[TradeExecution],
+        final_pf: Portfolio,
+        regime: MarketRegime,
+        exposure: float,
+        is_rebalancing: bool,
+        sim_date: Optional[str],
+    ) -> None:
+        """Step 6: 저장 3종 호출."""
+        rebalancing_date = (sim_date or market_data.date) if is_rebalancing else None
+        self.repo.save_daily_summary(market_data, signal, final_pf, regime)
+        self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
+        self.repo.update_status(
+            regime, exposure, final_pf, market_data, signal.reason,
+            sim_date=sim_date,
+            rebalancing_date=rebalancing_date,
+        )
+
+    # ── Private helpers (NOT part of template) ────────────────────────────────
+
     def _is_due(self, sim_date: Optional[str]) -> bool:
         """마지막 리밸런싱 이후 trading_interval_days 이상 경과했으면 True."""
         last_str = self.repo.get_last_rebalancing_date()
@@ -226,27 +266,6 @@ class TradingEngine:
             return (today - last).days >= self.trading_interval_days
         except Exception:
             return True  # 파싱 실패 시 안전하게 리밸런싱 실행
-
-    def _persist(
-        self,
-        market_data: MarketData,
-        signal: TradeSignal,
-        executions: List[TradeExecution],
-        final_pf: Portfolio,
-        regime: MarketRegime,
-        exposure: float,
-        is_rebalancing: bool,
-        sim_date: Optional[str],
-    ) -> None:
-        """저장 3종 호출."""
-        rebalancing_date = (sim_date or market_data.date) if is_rebalancing else None
-        self.repo.save_daily_summary(market_data, signal, final_pf, regime)
-        self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
-        self.repo.update_status(
-            regime, exposure, final_pf, market_data, signal.reason,
-            sim_date=sim_date,
-            rebalancing_date=rebalancing_date,
-        )
 
     def _build_crash_alert(self, market_data: MarketData, portfolio: Portfolio) -> str:
         """CRASH 알림 메시지 생성 (포지션 정보 포함)."""
@@ -277,3 +296,41 @@ class TradingEngine:
     def _notify_alert(self, msg: str) -> None:
         if self.notifier:
             self.notifier.send_alert(msg)
+
+
+class FullExposureEngine(TradingEngine):
+    """항상 exposure=1.0을 유지하는 전략 엔진.
+
+    - A/B 자산군에 항상 100% 투자 (C그룹 미배분)
+    - CRASH 국면에서도 exposure=1.0 유지
+    - NaN 데이터일 때만 안전장치로 exposure=0.0
+    - A/B 비율 차이가 임계치 초과 시 50:50 리밸런싱 (Rebalancer 기본 동작)
+    """
+
+    def analyze_strategy(
+        self, market_data: MarketData
+    ) -> Tuple[MarketRegime, float, List[str]]:
+        """Step 3 오버라이드: 국면 분석은 수행하되 exposure는 항상 1.0."""
+        nan_fields = market_data.nan_fields()
+        prev_regime = self.analyzer._prev_regime
+
+        if nan_fields:
+            self.logger.error(
+                f"NaN detected in: {', '.join(nan_fields)}. Treating as CRASH."
+            )
+            regime = MarketRegime.CRASH
+            exposure = 0.0
+        else:
+            regime = self.analyzer.analyze(market_data)
+            exposure = 1.0  # 핵심: CRASH 포함 항상 100% 투자
+
+        # 국면 변화 로그
+        if prev_regime is not None and regime != prev_regime:
+            self.logger.info(
+                f"Regime Change: {prev_regime.value} → {regime.value} "
+                f"(Price={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
+                f"Momentum={market_data.spy_momentum:.4f}, "
+                f"VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%})"
+            )
+
+        return regime, exposure, nan_fields

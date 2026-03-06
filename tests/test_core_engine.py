@@ -416,3 +416,43 @@ def test_rebalancing_date_uses_sim_date_when_provided():
 
     _, kwargs = mocks["repo"].update_status.call_args
     assert kwargs.get("rebalancing_date") == "2023-06-01"
+
+
+# ─────────────────────────────────────────────────────────────────
+# Template Method: step 메서드 호출 순서 검증
+# ─────────────────────────────────────────────────────────────────
+
+def test_step_methods_called_in_order():
+    """run_one_cycle()이 6개 step 메서드를 순서대로 호출하는지 검증."""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    call_order = []
+    original_methods = {
+        name: getattr(engine, name)
+        for name in [
+            "collect_data", "calculate_indicators", "analyze_strategy",
+            "get_portfolio", "execute_cycle", "persist",
+        ]
+    }
+
+    def make_tracker(name, fn):
+        def wrapper(*a, **kw):
+            call_order.append(name)
+            return fn(*a, **kw)
+        return wrapper
+
+    for name, fn in original_methods.items():
+        setattr(engine, name, make_tracker(name, fn))
+
+    engine.run_one_cycle(mocks["data_provider"])
+
+    assert call_order == [
+        "collect_data", "calculate_indicators", "analyze_strategy",
+        "get_portfolio", "execute_cycle", "persist",
+    ]
