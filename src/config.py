@@ -37,3 +37,6 @@ class Config:
 
         # 5. 리밸런싱 인터벌 (거래일 기준)
         self.TRADING_INTERVAL_DAYS = int(os.getenv("TRADING_INTERVAL_DAYS", "5"))
+
+        # 6. 리밸런싱 A:B 비율 (A그룹 비율, B = 1 - A)
+        self.REBALANCE_RATIO_A = float(os.getenv("REBALANCE_RATIO_A", "0.5"))

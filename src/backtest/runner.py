@@ -52,7 +52,8 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
 
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                   execution_interval: int = 1,
-                  output_dir: str = "docs/data/backtest") -> Optional[BacktestResult]:
+                  output_dir: str = "docs/data/backtest",
+                  ratio_a: float = 0.5) -> Optional[BacktestResult]:
     # 0. 파라미터 검증
     if execution_interval < 1:
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
@@ -86,7 +87,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     calculator = IndicatorCalculator()
     analyzer = RegimeAnalyzer()
     targeter = VolatilityTargeter(target_vol=0.15)
-    rebalancer = Rebalancer(config.ASSET_GROUPS, logger=logger)
+    rebalancer = Rebalancer(config.ASSET_GROUPS, logger=logger, ratio_a=ratio_a)
 
     # 히스테리시스 상태 복원 (main.py 방식과 동일)
     last_regime = backtest_repo.load_last_regime()

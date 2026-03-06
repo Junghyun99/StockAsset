@@ -304,7 +304,7 @@ class FullExposureEngine(TradingEngine):
     - A/B 자산군에 항상 100% 투자 (C그룹 미배분)
     - CRASH 국면에서도 exposure=1.0 유지
     - NaN 데이터일 때만 안전장치로 exposure=0.0
-    - A/B 비율 차이가 임계치 초과 시 50:50 리밸런싱 (Rebalancer 기본 동작)
+    - A/B 비율 차이가 임계치 초과 시 설정 비율로 리밸런싱 (Rebalancer 기본 동작)
     """
 
     def analyze_strategy(
