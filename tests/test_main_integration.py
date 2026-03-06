@@ -12,7 +12,7 @@ def mock_dependencies():
     with patch('src.main.YFinanceLoader') as MockLoader, \
          patch('src.main.JsonRepository') as MockRepo, \
          patch('src.main.SlackNotifier') as MockNotifier, \
-         patch('src.main.MockBroker') as MockBrokerCls, \
+         patch('src.main.KisPaperBroker') as MockBrokerCls, \
          patch('src.main.IndicatorCalculator') as MockCalc, \
          patch('src.main.RegimeAnalyzer') as MockAnalyzer, \
          patch('src.main.VolatilityTargeter') as MockTargeter, \
