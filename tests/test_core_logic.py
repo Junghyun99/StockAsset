@@ -327,15 +327,15 @@ def test_rebalancer_threshold_logic(create_portfolio):
         holdings={'SPY': 550, 'IEF': 450}, 
         prices={'SPY': 1000, 'IEF': 1000}
     )
-    # 총액 1,000,000. Ratio A=0.55, Ratio B=0.45. Diff = 0.10
-    
-    # Case 1: 횡보장 (Threshold 0.05) -> 10% 차이이므로 리밸런싱 해야 함
+    # 총액 1,000,000. Ratio A=0.55, Ratio B=0.45. 목표(0.5) 대비 이탈 = 0.05
+
+    # Case 1: 횡보장 (Threshold 0.025) -> 5% 이탈이므로 리밸런싱 해야 함
     signal_side = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     assert signal_side.has_orders is True
     assert "비율 재조정" in signal_side.reason and "초과" in signal_side.reason
     
-    # Case 2: 하락장 (Threshold 0.10) -> 10% 차이는 초과가 아님(GT). 유지.
-    # 로직: diff > threshold. 0.10 > 0.10 is False.
+    # Case 2: 하락장 (Threshold 0.05) -> 5% 이탈은 초과가 아님(GT). 유지.
+    # 로직: diff > threshold. 0.05 > 0.05 is False.
     signal_bear = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BEAR_WEAK)
     assert signal_bear.has_orders is False
     assert len(signal_bear.orders) == 0
@@ -644,7 +644,7 @@ def test_rebalancer_first_investment_reason(create_portfolio):
 
     assert signal.has_orders is True
     assert "첫 투자" in signal.reason
-    assert "50:50" in signal.reason
+    assert "50:50" in signal.reason  # 기본 ratio_a=0.5
 
 
 def test_rebalancer_c_group_target_not_negative(create_portfolio):
@@ -741,17 +741,17 @@ def test_rebalancer_custom_threshold_map(create_portfolio):
         prices={'SPY': 1000, 'IEF': 1000}
     )
 
-    # Case 1: 기본 임계치 (BULL=0.15) → 10% 차이이므로 리밸런싱 불필요
+    # Case 1: 기본 임계치 (BULL=0.075) → 5% 이탈이므로 리밸런싱 불필요
     rebalancer_default = Rebalancer(groups)
     signal_default = rebalancer_default.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
     assert signal_default.has_orders is False
 
-    # Case 2: 커스텀 임계치 (BULL=0.05) → 10% 차이이므로 리밸런싱 필요
+    # Case 2: 커스텀 임계치 (BULL=0.03) → 5% 이탈이므로 리밸런싱 필요
     custom_thresholds = {
-        MarketRegime.BULL: 0.05,
-        MarketRegime.SIDEWAYS: 0.05,
-        MarketRegime.BEAR_WEAK: 0.10,
-        MarketRegime.BEAR_STRONG: 0.10,
+        MarketRegime.BULL: 0.03,
+        MarketRegime.SIDEWAYS: 0.025,
+        MarketRegime.BEAR_WEAK: 0.05,
+        MarketRegime.BEAR_STRONG: 0.05,
     }
     rebalancer_custom = Rebalancer(groups, threshold_map=custom_thresholds)
     signal_custom = rebalancer_custom.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
@@ -772,7 +772,101 @@ def test_rebalancer_default_threshold_map_unchanged(create_portfolio):
 
     # 인스턴스의 threshold_map 수정이 클래스 상수에 영향을 주지 않는지 확인
     rebalancer._threshold_map[MarketRegime.BULL] = 0.99
-    assert Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.BULL] == 0.15
+    assert Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.BULL] == 0.075
+
+
+# ==========================================
+# 7-1. Rebalancer 커스텀 비율(ratio_a) 테스트
+# ==========================================
+
+def test_rebalancer_custom_ratio_70_30(create_portfolio):
+    """ratio_a=0.7로 첫 투자 시 A:B = 70:30 비율로 진입해야 한다."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.7)
+
+    pf = create_portfolio(
+        cash=1000000,
+        holdings={},
+        prices={'SPY': 100000, 'IEF': 100000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    assert signal.has_orders is True
+    assert "첫 투자" in signal.reason
+    assert "70:30" in signal.reason
+
+    # SPY 목표: 1,000,000 * 1.0 * 0.7 = 700,000 → 7주
+    # IEF 목표: 1,000,000 * 1.0 * 0.3 = 300,000 → 3주
+    spy_order = next(o for o in signal.orders if o.ticker == 'SPY')
+    ief_order = next(o for o in signal.orders if o.ticker == 'IEF')
+    assert spy_order.action == OrderAction.BUY
+    assert spy_order.quantity == 7
+    assert ief_order.action == OrderAction.BUY
+    assert ief_order.quantity == 3
+
+
+def test_rebalancer_custom_ratio_rebalance_trigger(create_portfolio):
+    """목표 비율(70:30)에서 크게 벗어나면 리밸런싱이 발생해야 한다."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.7)
+
+    # 현재: SPY 50%(500주), IEF 50%(500주) → ratio_a=0.5, 목표 0.7 대비 이탈 0.20
+    pf = create_portfolio(
+        holdings={'SPY': 500, 'IEF': 500},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    # BULL threshold=0.075 → 이탈 0.20 > 0.075 → 리밸런싱 발생
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal.has_orders is True
+    assert "비율 재조정" in signal.reason
+
+
+def test_rebalancer_custom_ratio_no_rebalance(create_portfolio):
+    """목표 비율(70:30) 근처이면 리밸런싱이 발생하지 않아야 한다."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.7)
+
+    # 현재: SPY 72%(720주), IEF 28%(280주) → ratio_a=0.72, 목표 0.7 대비 이탈 0.02
+    pf = create_portfolio(
+        holdings={'SPY': 720, 'IEF': 280},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    # BULL threshold=0.075 → 이탈 0.02 < 0.075 → 리밸런싱 불필요
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal.has_orders is False
+
+
+def test_rebalancer_invalid_ratio_raises():
+    """ratio_a가 0 이하 또는 1 이상이면 ValueError가 발생해야 한다."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+
+    import pytest
+    with pytest.raises(ValueError):
+        Rebalancer(groups, ratio_a=0.0)
+    with pytest.raises(ValueError):
+        Rebalancer(groups, ratio_a=1.0)
+    with pytest.raises(ValueError):
+        Rebalancer(groups, ratio_a=-0.1)
+    with pytest.raises(ValueError):
+        Rebalancer(groups, ratio_a=1.5)
+
+
+def test_rebalancer_custom_ratio_reason_string(create_portfolio):
+    """reason 메시지에 올바른 비율이 표시되어야 한다."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.6)
+
+    pf = create_portfolio(
+        cash=1000000,
+        holdings={},
+        prices={'SPY': 100000, 'IEF': 100000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert "60:40" in signal.reason
 
 
 # ==========================================

@@ -49,7 +49,8 @@ class TradingBot:
         calculator = IndicatorCalculator()
         self.analyzer = RegimeAnalyzer()
         targeter = VolatilityTargeter(target_vol=0.15)
-        rebalancer = Rebalancer(self.config.ASSET_GROUPS, logger=self.logger)
+        rebalancer = Rebalancer(self.config.ASSET_GROUPS, logger=self.logger,
+                                ratio_a=self.config.REBALANCE_RATIO_A)
 
         # 4. 히스테리시스 상태 복원 (프로세스 재시작 시 이전 국면 유지)
         last_regime = self.repo.load_last_regime()

@@ -101,25 +101,33 @@ class VolatilityTargeter:
 class Rebalancer:
     """리밸런싱 및 주문 생성기"""
 
-    # 국면별 리밸런싱 임계치 기본값
+    # 국면별 리밸런싱 임계치 기본값 (목표 비율 대비 이탈도 기준)
     DEFAULT_THRESHOLD_MAP: Dict[MarketRegime, float] = {
-        MarketRegime.BULL: 0.15,
-        MarketRegime.SIDEWAYS: 0.05,
-        MarketRegime.BEAR_WEAK: 0.10,
-        MarketRegime.BEAR_STRONG: 0.10,
+        MarketRegime.BULL: 0.075,
+        MarketRegime.SIDEWAYS: 0.025,
+        MarketRegime.BEAR_WEAK: 0.05,
+        MarketRegime.BEAR_STRONG: 0.05,
     }
 
     # 비율 유지 시 미세 주문 필터링 임계치 (총 주문 금액 / 총 자산 비율)
     DEFAULT_MIN_ORDER_PCT = 0.05
 
+    # A:B 기본 비율 (A그룹 비율, B = 1 - A)
+    DEFAULT_RATIO_A = 0.5
+
     def __init__(self, asset_groups: Dict[str, List[str]],
                  logger: Optional[ILogger] = None,
                  threshold_map: Optional[Dict[MarketRegime, float]] = None,
-                 min_order_pct: float = DEFAULT_MIN_ORDER_PCT):
+                 min_order_pct: float = DEFAULT_MIN_ORDER_PCT,
+                 ratio_a: float = DEFAULT_RATIO_A):
+        if not (0.0 < ratio_a < 1.0):
+            raise ValueError(f"ratio_a must be between 0 and 1 exclusive, got {ratio_a}")
         self.groups = asset_groups
         self._logger = logger
         self._threshold_map = threshold_map if threshold_map is not None else dict(self.DEFAULT_THRESHOLD_MAP)
         self.min_order_pct = min_order_pct
+        self.ratio_a = ratio_a
+        self.ratio_b = round(1.0 - ratio_a, 10)
 
     def generate_signal(self,
                         portfolio: Portfolio,
@@ -164,27 +172,30 @@ class Rebalancer:
         # 첫 투자 여부 판별 (위험자산 보유액이 0이면 첫 투자)
         is_first_investment = (val_risky == 0)
 
+        # 비율 문자열 (로그/reason용)
+        ratio_str = f"{self.ratio_a*100:.0f}:{self.ratio_b*100:.0f}"
+
         # A, B 상대 비중
         if is_first_investment:
-            ratio_a = 0.5
-            ratio_b = 0.5
+            ratio_a = self.ratio_a
+            ratio_b = self.ratio_b
             needs_rebalance = True
             current_diff = 0.0
         else:
             ratio_a = val_a / val_risky
             ratio_b = val_b / val_risky
 
-            # 부동소수점 오차 해결
-            current_diff = round(abs(ratio_a - ratio_b), 6)
+            # 목표 비율 대비 이탈도 측정
+            current_diff = round(abs(ratio_a - self.ratio_a), 6)
 
             needs_rebalance = current_diff > threshold
 
         # ── 섹션 3: 비중 판정 ────────────────────────────────────────────────
         if self._logger:
             if is_first_investment:
-                self._logger.info("[비중 판정] 첫 투자 → 50:50 초기 비율 적용")
+                self._logger.info(f"[비중 판정] 첫 투자 → {ratio_str} 초기 비율 적용")
             else:
-                verdict = "임계치 초과 → 50:50 재조정" if needs_rebalance else "비율 유지 (리밸런싱 불필요)"
+                verdict = f"임계치 초과 → {ratio_str} 재조정" if needs_rebalance else "비율 유지 (리밸런싱 불필요)"
                 self._logger.info(
                     f"[비중 판정] ratio_A={ratio_a:.3f}  ratio_B={ratio_b:.3f}"
                 )
@@ -194,8 +205,8 @@ class Rebalancer:
 
         # 3. 목표 금액 계산
         if needs_rebalance:
-            target_ratio_a = 0.5
-            target_ratio_b = 0.5
+            target_ratio_a = self.ratio_a
+            target_ratio_b = self.ratio_b
         else:
             target_ratio_a = ratio_a
             target_ratio_b = ratio_b
@@ -247,7 +258,7 @@ class Rebalancer:
 
         # 5. reason 결정 (주문 생성 결과를 반영)
         if is_first_investment and sorted_orders:
-            reason = "첫 투자: 50:50 비율로 진입"
+            reason = f"첫 투자: {ratio_str} 비율로 진입"
         elif is_first_investment and not sorted_orders:
             reason = "첫 투자: 주문 단위 미달로 진입 불가"
         elif needs_rebalance and sorted_orders:
