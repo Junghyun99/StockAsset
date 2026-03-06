@@ -28,8 +28,8 @@ def isolate_backtest_filesystem(tmp_path, monkeypatch):
     except ImportError:
         return  # backtest 모듈이 없는 환경에서는 건너뜀
 
-    # 1. shutil.rmtree no-op → 실제 backtest 데이터 보호
-    monkeypatch.setattr(runner_mod.shutil, "rmtree", lambda *a, **kw: None)
+    # 1. Path.iterdir no-op → 실제 backtest JSON 삭제 방지
+    monkeypatch.setattr("pathlib.Path.iterdir", lambda self: iter([]))
 
     # 2. JsonRepository가 backtest 경로 요청 시 임시 경로로 리다이렉트
     backtest_tmp = str(tmp_path / "backtest")
