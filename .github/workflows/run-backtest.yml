@@ -82,5 +82,5 @@ jobs:
         name: backtest-results-${{ inputs.start }}-${{ inputs.end }}
         path: |
           logs/backtest/
-          docs/backtest_*.png
+          docs/data/backtest/backtest_*.png
         retention-days: 30
