@@ -62,8 +62,14 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     # 1. 설정 로드
     strategy = StrategyConfig(trading_interval_days=execution_interval)
     logger = TradeLogger(log_dir="logs/backtest")
+
+    # 엔진 클래스가 ASSET_GROUPS/REBALANCE_RATIO_A를 정의한 경우 해당 값을 우선 사용
+    # (QldSchdEngine, QldSHVEngine 등 특수 엔진은 자체 자산군이 단일 진실 원천)
+    effective_asset_groups = getattr(engine_class, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
+    effective_ratio_a = getattr(engine_class, 'REBALANCE_RATIO_A', ratio_a)
+
     tickers = []
-    for group in strategy.ASSET_GROUPS.values():
+    for group in effective_asset_groups.values():
         tickers.extend(group)
     tickers = list(set(tickers))  # 중복 제거
     if "SPY" not in tickers:
@@ -93,7 +99,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     calculator = IndicatorCalculator()
     analyzer = RegimeAnalyzer()
     targeter = VolatilityTargeter(target_vol=0.15)
-    rebalancer = Rebalancer(strategy.ASSET_GROUPS, logger=logger, ratio_a=ratio_a)
+    rebalancer = Rebalancer(effective_asset_groups, logger=logger, ratio_a=effective_ratio_a)
 
     # 히스테리시스 상태 복원 (main.py 방식과 동일)
     last_regime = backtest_repo.load_last_regime()
