@@ -362,6 +362,7 @@ class QldSHVEngine(FullExposureEngine):
         notifier: Optional[INotifier] = None,
         is_live_trading: bool = False,
         rebalancer: Optional[Rebalancer] = None,
+        all_tickers=None,  # 무시됨: ASSET_GROUPS에서 자동 계산
     ):
         if rebalancer is None:
             rebalancer = Rebalancer(self.ASSET_GROUPS, logger=logger)
@@ -408,6 +409,7 @@ class QldSchdEngine(FullExposureEngine):
         notifier: Optional[INotifier] = None,
         is_live_trading: bool = False,
         rebalancer: Optional[Rebalancer] = None,
+        all_tickers=None,  # 무시됨: ASSET_GROUPS에서 자동 계산
     ):
         if rebalancer is None:
             rebalancer = Rebalancer(
