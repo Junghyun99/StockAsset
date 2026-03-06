@@ -10,7 +10,7 @@ from typing import Dict, List, Optional
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
-from src.core.engine import TradingEngine
+from src.core.engine import TradingEngine, FullExposureEngine
 from src.infra.repo import JsonRepository
 from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
@@ -53,7 +53,8 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                   execution_interval: int = 1,
                   output_dir: str = "docs/data/backtest",
-                  ratio_a: float = 0.5) -> Optional[BacktestResult]:
+                  ratio_a: float = 0.5,
+                  engine_class: type = TradingEngine) -> Optional[BacktestResult]:
     # 0. 파라미터 검증
     if execution_interval < 1:
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
@@ -95,7 +96,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         analyzer._prev_regime = last_regime
         logger.info(f"Restored previous regime: {last_regime.value}")
 
-    engine = TradingEngine(
+    engine = engine_class(
         calculator=calculator,
         analyzer=analyzer,
         targeter=targeter,
