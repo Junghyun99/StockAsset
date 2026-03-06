@@ -1,5 +1,4 @@
 # src/backtest/runner.py
-import shutil
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -81,7 +80,12 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     loader = BacktestDataLoader(full_df, full_vix)
     broker = BacktestBroker(initial_cash, logger=logger)
     backtest_data_path = output_dir
-    shutil.rmtree(backtest_data_path, ignore_errors=True)
+    # PNG는 누적 기록 보존, JSON만 삭제
+    existing_dir = Path(backtest_data_path)
+    if existing_dir.exists():
+        for f in existing_dir.iterdir():
+            if f.suffix == ".json":
+                f.unlink()
     backtest_repo = JsonRepository(backtest_data_path)
 
     # Core Logic (TradingEngine으로 조립)
