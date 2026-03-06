@@ -10,7 +10,7 @@ from src.core.engine import TradingEngine
 from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
-from src.infra.broker import MockBroker, KisPaperBroker, KisLiveBroker
+from src.infra.broker import KisPaperBroker, KisLiveBroker
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
 
@@ -42,8 +42,13 @@ class TradingBot:
                 self.logger,
             )
         else:
-            self.logger.info("Mode: PAPER TRADING (MockBroker)")
-            self.broker = MockBroker(initial_cash=10000.0, logger=self.logger)
+            self.logger.info("Mode: PAPER TRADING (KisPaperBroker)")
+            self.broker = KisPaperBroker(
+                self.config.KIS_APP_KEY,
+                self.config.KIS_APP_SECRET,
+                self.config.KIS_ACC_NO,
+                self.logger,
+            )
 
         # 3. 도메인 서비스 생성
         calculator = IndicatorCalculator()
