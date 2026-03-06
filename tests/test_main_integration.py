@@ -259,7 +259,7 @@ def test_bot_repo_save_permission_error(mock_dependencies):
 
 def test_bot_run_monitoring_day_skips_orders(mock_dependencies):
     """[모니터링 날] _is_rebalancing_due()=False → 주문 없이 기록만"""
-    # 오늘 기준 0일 전(오늘) 리밸런싱 → TRADING_INTERVAL_DAYS(1)일 미충족 → 모니터링 모드
+    # 오늘 리밸런싱 → TRADING_INTERVAL_DAYS(1)일 미충족 → 모니터링 모드
     recent_date = date.today().strftime("%Y-%m-%d")
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = recent_date
 
@@ -338,7 +338,7 @@ def test_is_rebalancing_due_recent(mock_dependencies):
 
 
 def test_is_rebalancing_due_old(mock_dependencies):
-    """인터벌(5일) 이상 경과 → True"""
+    """인터벌(1일) 이상 경과 → True"""
     old = (date.today() - timedelta(days=10)).strftime("%Y-%m-%d")
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = old
     bot = TradingBot()
