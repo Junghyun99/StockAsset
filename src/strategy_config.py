@@ -40,7 +40,7 @@ class StrategyConfig:
         self.TRADING_INTERVAL_DAYS: int = (
             trading_interval_days
             if trading_interval_days is not None
-            else int(os.getenv("TRADING_INTERVAL_DAYS", "1"))
+            else int(os.getenv("TRADING_INTERVAL_DAYS", "5"))
         )
 
         # 3. 리밸런싱 A:B 비율 (A그룹 비율, B = 1 - A)
