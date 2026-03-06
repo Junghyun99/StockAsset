@@ -22,12 +22,14 @@ on:
         type: string
         default: '1'
       engine:
-        description: '백테스트 엔진 선택 (TradingEngine: 변동성 기반 노출도 조절 / FullExposureEngine: 항상 100% 노출)'
+        description: '백테스트 엔진 선택 (TradingEngine: 변동성 기반 노출도 조절 / FullExposureEngine: 항상 100% 노출 / QldSHVEngine: QLD+SHV 전략 / QldSchdEngine: QLD+SCHD 전략)'
         required: false
         type: choice
         options:
           - TradingEngine
           - FullExposureEngine
+          - QldSHVEngine
+          - QldSchdEngine
         default: 'TradingEngine'
 
 permissions:

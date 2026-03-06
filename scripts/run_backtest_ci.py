@@ -13,14 +13,14 @@ def main() -> None:
 
     # backtest runner import는 src 경로 설정 후
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+    import importlib  # noqa: PLC0415
     from src.backtest.runner import run_backtest  # noqa: PLC0415
-    from src.core.engine import TradingEngine, FullExposureEngine  # noqa: PLC0415
 
-    engine_map = {
-        "TradingEngine": TradingEngine,
-        "FullExposureEngine": FullExposureEngine,
-    }
-    engine_class = engine_map.get(engine_name, TradingEngine)
+    engine_module = importlib.import_module("src.core.engine")
+    engine_class = getattr(engine_module, engine_name, None)
+    if engine_class is None:
+        print(f"WARNING: 알 수 없는 엔진 '{engine_name}', TradingEngine으로 대체합니다.")
+        engine_class = engine_module.TradingEngine
     run_number = os.environ.get("GITHUB_RUN_NUMBER")
 
     print(f"=== 백테스트 시작: {start} ~ {end}, 초기자본: {cash:,.0f}, 실행간격: {interval}거래일, 엔진: {engine_name} ===")

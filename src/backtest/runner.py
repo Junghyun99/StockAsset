@@ -9,7 +9,7 @@ from typing import Dict, List, Optional
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
-from src.core.engine import TradingEngine, FullExposureEngine
+from src.core.engine import TradingEngine
 from src.infra.repo import JsonRepository
 from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
