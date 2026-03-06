@@ -59,7 +59,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
 
     # 1. 설정 로드
-    strategy = StrategyConfig()
+    strategy = StrategyConfig(trading_interval_days=execution_interval)
     logger = TradeLogger(log_dir="logs/backtest")
     tickers = []
     for group in strategy.ASSET_GROUPS.values():
@@ -104,7 +104,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         repo=backtest_repo,
         logger=logger,
         all_tickers=tickers,
-        trading_interval_days=execution_interval,
+        trading_interval_days=strategy.TRADING_INTERVAL_DAYS,
         notifier=None,          # 백테스트는 알림 없음
         is_live_trading=False,
     )
@@ -116,7 +116,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     all_executions: List[TradeExecution] = []
     trade_reason_counter: Dict[str, int] = {}
 
-    logger.info(f"--- Starting Backtest ({len(sim_days)} trading days, interval={execution_interval}) ---")
+    logger.info(f"--- Starting Backtest ({len(sim_days)} trading days, interval={strategy.TRADING_INTERVAL_DAYS}) ---")
 
     for today in sim_days:
         logger.info(f"[{today.date()}]시작")
