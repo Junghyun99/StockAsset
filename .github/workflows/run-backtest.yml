@@ -21,6 +21,14 @@ on:
         required: false
         type: string
         default: '1'
+      engine:
+        description: '백테스트 엔진 선택 (TradingEngine: 변동성 기반 노출도 조절 / FullExposureEngine: 항상 100% 노출)'
+        required: false
+        type: choice
+        options:
+          - TradingEngine
+          - FullExposureEngine
+        default: 'TradingEngine'
 
 permissions:
   contents: write
@@ -47,6 +55,7 @@ jobs:
         BACKTEST_END: ${{ inputs.end }}
         BACKTEST_CASH: ${{ inputs.initial_cash }}
         BACKTEST_INTERVAL: ${{ inputs.interval }}
+        BACKTEST_ENGINE: ${{ inputs.engine }}
       run: python scripts/run_backtest_ci.py
 
     - name: Commit and Push Backtest Results
