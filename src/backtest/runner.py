@@ -7,7 +7,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
-from src.config import Config
+from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.core.engine import TradingEngine
@@ -59,10 +59,10 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
 
     # 1. 설정 로드
-    config = Config()
+    strategy = StrategyConfig()
     logger = TradeLogger(log_dir="logs/backtest")
     tickers = []
-    for group in config.ASSET_GROUPS.values():
+    for group in strategy.ASSET_GROUPS.values():
         tickers.extend(group)
     tickers = list(set(tickers))  # 중복 제거
     if "SPY" not in tickers:
@@ -87,7 +87,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     calculator = IndicatorCalculator()
     analyzer = RegimeAnalyzer()
     targeter = VolatilityTargeter(target_vol=0.15)
-    rebalancer = Rebalancer(config.ASSET_GROUPS, logger=logger, ratio_a=ratio_a)
+    rebalancer = Rebalancer(strategy.ASSET_GROUPS, logger=logger, ratio_a=ratio_a)
 
     # 히스테리시스 상태 복원 (main.py 방식과 동일)
     last_regime = backtest_repo.load_last_regime()
