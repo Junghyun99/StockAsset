@@ -53,7 +53,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                   execution_interval: int = 1,
                   output_dir: str = "docs/data/backtest",
                   ratio_a: float = 0.5,
-                  engine_class: type = TradingEngine) -> Optional[BacktestResult]:
+                  engine_class: type = TradingEngine,
+                  run_number: Optional[str] = None) -> Optional[BacktestResult]:
     # 0. 파라미터 검증
     if execution_interval < 1:
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
@@ -253,7 +254,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
     # 차트 저장 (plt.show() 대신 파일로 저장)
     Path("docs").mkdir(parents=True, exist_ok=True)
-    chart_path = f"{output_dir}/backtest_{start_date}_{end_date}.png"
+    run_suffix = f"_{run_number}" if run_number else ""
+    chart_path = f"{output_dir}/backtest_{start_date}_{end_date}{run_suffix}.png"
     plt.figure(figsize=(12, 6))
     plt.plot(res_df['total_value'], label='Portfolio Value')
     if spy_cagr is not None:

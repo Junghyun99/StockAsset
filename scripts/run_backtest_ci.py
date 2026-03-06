@@ -21,9 +21,10 @@ def main() -> None:
         "FullExposureEngine": FullExposureEngine,
     }
     engine_class = engine_map.get(engine_name, TradingEngine)
+    run_number = os.environ.get("GITHUB_RUN_NUMBER")
 
     print(f"=== 백테스트 시작: {start} ~ {end}, 초기자본: {cash:,.0f}, 실행간격: {interval}거래일, 엔진: {engine_name} ===")
-    result = run_backtest(start, end, cash, execution_interval=interval, engine_class=engine_class)
+    result = run_backtest(start, end, cash, execution_interval=interval, engine_class=engine_class, run_number=run_number)
 
     if result is None:
         print("ERROR: 백테스트 결과 없음 (데이터 부족 또는 거래일 없음)")
