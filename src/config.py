@@ -25,5 +25,5 @@ class Config:
         self.LOG_PATH = "logs"
 
         # 4. 저장소 크기 제한
-        self.MAX_SUMMARY_RECORDS = 2000  # summary.json 최대 레코드 수
-        self.MAX_HISTORY_RECORDS = 100   # history.json 최대 레코드 수
+        self.MAX_SUMMARY_RECORDS = 200000  # summary.json 최대 레코드 수
+        self.MAX_HISTORY_RECORDS = 100000   # history.json 최대 레코드 수
