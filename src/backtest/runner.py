@@ -8,10 +8,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
-from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.core.engine import TradingEngine
 from src.infra.repo import JsonRepository
-from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
 from src.backtest.components import BacktestDataLoader, BacktestBroker
@@ -95,27 +93,13 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 f.unlink()
     backtest_repo = JsonRepository(backtest_data_path)
 
-    # Core Logic (TradingEngine으로 조립)
-    calculator = IndicatorCalculator()
-    analyzer = RegimeAnalyzer()
-    targeter = VolatilityTargeter(target_vol=0.15)
-    rebalancer = Rebalancer(effective_asset_groups, logger=logger, ratio_a=effective_ratio_a)
-
-    # 히스테리시스 상태 복원 (main.py 방식과 동일)
-    last_regime = backtest_repo.load_last_regime()
-    if last_regime is not None:
-        analyzer._prev_regime = last_regime
-        logger.info(f"Restored previous regime: {last_regime.value}")
-
+    # 3-1. TradingEngine 조립 (core 로직은 엔진 내부에서 생성)
     engine = engine_class(
-        calculator=calculator,
-        analyzer=analyzer,
-        targeter=targeter,
-        rebalancer=rebalancer,
+        asset_groups=effective_asset_groups,
+        ratio_a=effective_ratio_a,
         broker=broker,
         repo=backtest_repo,
         logger=logger,
-        all_tickers=tickers,
         trading_interval_days=strategy.TRADING_INTERVAL_DAYS,
         notifier=None,          # 백테스트는 알림 없음
         is_live_trading=False,

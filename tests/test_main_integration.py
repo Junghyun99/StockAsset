@@ -13,10 +13,10 @@ def mock_dependencies():
          patch('src.main.JsonRepository') as MockRepo, \
          patch('src.main.SlackNotifier') as MockNotifier, \
          patch('src.main.KisPaperBroker') as MockBrokerCls, \
-         patch('src.main.IndicatorCalculator') as MockCalc, \
-         patch('src.main.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.main.VolatilityTargeter') as MockTargeter, \
-         patch('src.main.Rebalancer') as MockRebalancer:
+         patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.Rebalancer') as MockRebalancer:
 
         # 인스턴스 Mock 생성
         loader = MockLoader.return_value
@@ -37,6 +37,7 @@ def mock_dependencies():
 
         # 기본값: 이전 리밸런싱 기록 없음 → _is_rebalancing_due() = True
         repo.get_last_rebalancing_date.return_value = None
+        repo.load_last_regime.return_value = None  # 상태 복원 없음 (기본값)
 
         yield {
             'loader': loader,
@@ -218,7 +219,7 @@ def test_bot_restores_prev_regime_from_repo(mock_dependencies):
     bot = TradingBot()
 
     # analyzer._prev_regime이 CRASH로 복원되었는지 확인
-    assert bot.analyzer._prev_regime == MarketRegime.CRASH
+    assert bot.engine.analyzer._prev_regime == MarketRegime.CRASH
 
 
 def test_bot_no_restore_when_no_saved_regime(mock_dependencies):

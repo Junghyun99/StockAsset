@@ -6,7 +6,7 @@ TradingEngine의 서브클래스로, analyze_strategy()만 오버라이드하여
 """
 import math
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from src.core.engine import FullExposureEngine
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution,
@@ -40,32 +40,35 @@ def _make_portfolio(cash=10000.0) -> Portfolio:
 
 def _make_engine(repo_last_reb=None, notifier=None):
     """FullExposureEngine Mock 조립."""
-    calculator = MagicMock()
-    analyzer = MagicMock()
-    analyzer._prev_regime = None
-    targeter = MagicMock()
-    rebalancer = MagicMock()
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
     data_provider = MagicMock()
 
     repo.get_last_rebalancing_date.return_value = repo_last_reb
+    repo.load_last_regime.return_value = None
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    engine = FullExposureEngine(
-        calculator=calculator,
-        analyzer=analyzer,
-        targeter=targeter,
-        rebalancer=rebalancer,
-        broker=broker,
-        repo=repo,
-        logger=logger,
-        all_tickers=["SSO", "IEF", "SHV"],
-        trading_interval_days=5,
-        notifier=notifier,
-    )
+    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.Rebalancer') as MockRebalancer:
+
+        calculator = MockCalc.return_value
+        analyzer = MockAnalyzer.return_value
+        analyzer._prev_regime = None
+        targeter = MockTargeter.return_value
+        rebalancer = MockRebalancer.return_value
+
+        engine = FullExposureEngine(
+            asset_groups={'A': ['SSO', 'QLD'], 'B': ['IEF', 'GLD'], 'C': ['SHV']},
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            trading_interval_days=5,
+            notifier=notifier,
+        )
 
     return engine, {
         "calculator": calculator,

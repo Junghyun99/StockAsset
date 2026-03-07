@@ -85,8 +85,8 @@ def test_nan_data_skips_rebalancing(mock_savefig, mock_download, mock_fetcher_re
     nan_market_data.nan_fields.return_value = ['spy_volatility']
     nan_market_data.spy_volatility = math.nan
 
-    with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data), \
-         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+    with patch("src.core.engine.IndicatorCalculator.calculate", return_value=nan_market_data), \
+         patch("src.core.engine.Rebalancer.generate_signal") as mock_signal:
         run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
         # NaN으로 인해 CRASH 처리 → generate_signal이 호출되지 않아야 함
         mock_signal.assert_not_called()
@@ -101,7 +101,7 @@ def test_crash_regime_executes_rebalancing(mock_savefig, mock_download, mock_fet
     """
     mock_download.return_value = mock_fetcher_return
 
-    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
+    with patch("src.core.engine.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
         # CRASH regime → generate_signal이 호출되어야 함 (exposure=0으로 리밸런싱)
         assert result is not None
@@ -460,7 +460,7 @@ def test_nan_triggered_flag_true_when_nan_occurs(mock_savefig, mock_download, mo
     nan_market_data.spy_mdd = 0.0
     nan_market_data.vix = 15.0
 
-    with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data):
+    with patch("src.core.engine.IndicatorCalculator.calculate", return_value=nan_market_data):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
 
     assert result is not None
@@ -477,7 +477,7 @@ def test_nan_triggered_flag_false_for_real_crash(mock_savefig, mock_download, mo
     """
     mock_download.return_value = mock_fetcher_return
 
-    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
+    with patch("src.core.engine.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
 
     assert result is not None
@@ -503,7 +503,7 @@ def test_exception_during_execution_records_error_in_history(mock_savefig, mock_
     # 첫 날만 예외, 이후엔 빈 체결 목록으로 성공
     with patch("src.backtest.components.BacktestBroker.execute_orders",
                side_effect=[RuntimeError("주문 실행 오류"), [], [], []]), \
-         patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
+         patch("src.core.engine.Rebalancer.generate_signal", return_value=mock_signal_obj):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     # 예외가 발생해도 봇이 멈추지 않고 나머지 날의 결과가 반환되어야 함
@@ -528,7 +528,7 @@ def test_exception_during_execution_preserves_portfolio_value(mock_savefig, mock
     # 첫 날만 예외, 이후엔 성공
     with patch("src.backtest.components.BacktestBroker.execute_orders",
                side_effect=[ValueError("가격 계산 오류"), [], [], []]), \
-         patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
+         patch("src.core.engine.Rebalancer.generate_signal", return_value=mock_signal_obj):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     assert result is not None
@@ -557,7 +557,7 @@ def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock
 
     with patch("src.backtest.components.BacktestBroker.execute_orders",
                return_value=[fake_execution]) as mock_exec, \
-         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+         patch("src.core.engine.Rebalancer.generate_signal") as mock_signal:
 
         mock_signal_obj = MagicMock()
         mock_signal_obj.has_orders = True
@@ -707,7 +707,7 @@ def test_engine_asset_groups_used_for_rebalancer(mock_savefig, mock_download):
         captured_groups['groups'] = asset_groups
         original_init(self, asset_groups, *args, **kwargs)
 
-    with patch("src.backtest.runner.Rebalancer.__init__", capture_init):
+    with patch("src.core.engine.Rebalancer.__init__", capture_init):
         run_backtest(
             start_date="2023-01-02", end_date="2023-01-05",
             initial_cash=10000.0,
@@ -760,7 +760,7 @@ def test_qld_schd_engine_ratio_a_used(mock_savefig, mock_download):
         captured_ratio['ratio_a'] = ratio_a
         original_init(self, asset_groups, logger=logger, ratio_a=ratio_a)
 
-    with patch("src.backtest.runner.Rebalancer.__init__", capture_init):
+    with patch("src.core.engine.Rebalancer.__init__", capture_init):
         run_backtest(
             start_date="2023-01-02", end_date="2023-01-05",
             initial_cash=10000.0,

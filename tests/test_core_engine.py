@@ -45,34 +45,36 @@ def _make_engine(
     is_live_trading=False,
 ):
     """공통 TradingEngine Mock 조립."""
-    calculator = MagicMock()
-    analyzer = MagicMock()
-    analyzer._prev_regime = None
-    targeter = MagicMock()
-    rebalancer = MagicMock()
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
     data_provider = MagicMock()
 
-    # 기본값 세팅
     repo.get_last_rebalancing_date.return_value = repo_last_reb
+    repo.load_last_regime.return_value = None  # 상태 복원 없음 (기본값)
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    engine = TradingEngine(
-        calculator=calculator,
-        analyzer=analyzer,
-        targeter=targeter,
-        rebalancer=rebalancer,
-        broker=broker,
-        repo=repo,
-        logger=logger,
-        all_tickers=["SSO", "IEF", "SHV"],
-        trading_interval_days=trading_interval_days,
-        notifier=notifier,
-        is_live_trading=is_live_trading,
-    )
+    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.Rebalancer') as MockRebalancer:
+
+        calculator = MockCalc.return_value
+        analyzer = MockAnalyzer.return_value
+        analyzer._prev_regime = None
+        targeter = MockTargeter.return_value
+        rebalancer = MockRebalancer.return_value
+
+        engine = TradingEngine(
+            asset_groups={'A': ['SSO', 'QLD'], 'B': ['IEF', 'GLD'], 'C': ['SHV']},
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            trading_interval_days=trading_interval_days,
+            notifier=notifier,
+            is_live_trading=is_live_trading,
+        )
 
     return engine, {
         "calculator": calculator,

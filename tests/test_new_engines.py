@@ -42,37 +42,42 @@ def _make_portfolio(cash: float = 50000.0) -> Portfolio:
     )
 
 
-def _build_qld_shv_engine(repo_last_reb=None, notifier=None, rebalancer=None):
+def _build_qld_shv_engine(repo_last_reb=None, notifier=None):
     """QldSHVEngine을 Mock 의존성으로 조립."""
-    calculator = MagicMock()
-    analyzer = MagicMock()
-    analyzer._prev_regime = None
-    targeter = MagicMock()
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
     data_provider = MagicMock()
 
     repo.get_last_rebalancing_date.return_value = repo_last_reb
+    repo.load_last_regime.return_value = None
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    engine = QldSHVEngine(
-        calculator=calculator,
-        analyzer=analyzer,
-        targeter=targeter,
-        broker=broker,
-        repo=repo,
-        logger=logger,
-        trading_interval_days=5,
-        notifier=notifier,
-        rebalancer=rebalancer,
-    )
+    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.Rebalancer') as MockRebalancer:
+
+        calculator = MockCalc.return_value
+        analyzer = MockAnalyzer.return_value
+        analyzer._prev_regime = None
+        targeter = MockTargeter.return_value
+        rebalancer = MockRebalancer.return_value
+
+        engine = QldSHVEngine(
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            trading_interval_days=5,
+            notifier=notifier,
+        )
 
     return engine, {
         "calculator": calculator,
         "analyzer": analyzer,
         "targeter": targeter,
+        "rebalancer": rebalancer,
         "broker": broker,
         "repo": repo,
         "logger": logger,
@@ -80,42 +85,57 @@ def _build_qld_shv_engine(repo_last_reb=None, notifier=None, rebalancer=None):
     }
 
 
-def _build_qld_schd_engine(repo_last_reb=None, notifier=None, rebalancer=None):
+def _build_qld_schd_engine(repo_last_reb=None, notifier=None):
     """QldSchdEngine을 Mock 의존성으로 조립."""
-    calculator = MagicMock()
-    analyzer = MagicMock()
-    analyzer._prev_regime = None
-    targeter = MagicMock()
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
     data_provider = MagicMock()
 
     repo.get_last_rebalancing_date.return_value = repo_last_reb
+    repo.load_last_regime.return_value = None
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    engine = QldSchdEngine(
-        calculator=calculator,
-        analyzer=analyzer,
-        targeter=targeter,
-        broker=broker,
-        repo=repo,
-        logger=logger,
-        trading_interval_days=5,
-        notifier=notifier,
-        rebalancer=rebalancer,
-    )
+    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.Rebalancer') as MockRebalancer:
+
+        calculator = MockCalc.return_value
+        analyzer = MockAnalyzer.return_value
+        analyzer._prev_regime = None
+        targeter = MockTargeter.return_value
+        rebalancer = MockRebalancer.return_value
+
+        engine = QldSchdEngine(
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            trading_interval_days=5,
+            notifier=notifier,
+        )
 
     return engine, {
         "calculator": calculator,
         "analyzer": analyzer,
         "targeter": targeter,
+        "rebalancer": rebalancer,
         "broker": broker,
         "repo": repo,
         "logger": logger,
         "data_provider": data_provider,
     }
+
+
+def _make_base_deps():
+    """Rebalancer를 실제로 생성하는 테스트용 의존성."""
+    broker = MagicMock()
+    repo = MagicMock()
+    logger = MagicMock()
+    repo.load_last_regime.return_value = None
+    repo.get_last_rebalancing_date.return_value = None
+    return broker, repo, logger
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -142,22 +162,23 @@ def test_qld_shv_no_C_group():
 # ─────────────────────────────────────────────────────────────────
 
 def test_qld_shv_default_rebalancer_groups():
-    """rebalancer 미주입 시 클래스 ASSET_GROUPS로 자동 생성된다."""
-    engine, _ = _build_qld_shv_engine()
+    """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == QldSHVEngine.ASSET_GROUPS
 
 
 def test_qld_shv_default_rebalancer_ratio_a():
-    """rebalancer 미주입 시 ratio_a는 Rebalancer 기본값(0.5)."""
-    engine, _ = _build_qld_shv_engine()
+    """rebalancer ratio_a는 Rebalancer 기본값(0.5)."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == Rebalancer.DEFAULT_RATIO_A
-
-
-def test_qld_shv_custom_rebalancer_injected():
-    """명시적으로 주입한 rebalancer를 그대로 사용한다."""
-    custom_rb = MagicMock(spec=Rebalancer)
-    engine, _ = _build_qld_shv_engine(rebalancer=custom_rb)
-    assert engine.rebalancer is custom_rb
 
 
 def test_qld_shv_all_tickers():
@@ -267,28 +288,33 @@ def test_qld_schd_rebalance_ratio_a_class_constant():
 # ─────────────────────────────────────────────────────────────────
 
 def test_qld_schd_default_rebalancer_groups():
-    """rebalancer 미주입 시 클래스 ASSET_GROUPS로 자동 생성된다."""
-    engine, _ = _build_qld_schd_engine()
+    """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == QldSchdEngine.ASSET_GROUPS
 
 
 def test_qld_schd_default_rebalancer_ratio_a():
-    """rebalancer 미주입 시 ratio_a=0.3으로 생성된다."""
-    engine, _ = _build_qld_schd_engine()
+    """rebalancer ratio_a=0.3으로 생성된다."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.3
 
 
 def test_qld_schd_default_rebalancer_ratio_b():
     """ratio_b = 1 - ratio_a = 0.7."""
-    engine, _ = _build_qld_schd_engine()
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.7) < 1e-9
-
-
-def test_qld_schd_custom_rebalancer_injected():
-    """명시적으로 주입한 rebalancer를 그대로 사용한다."""
-    custom_rb = MagicMock(spec=Rebalancer)
-    engine, _ = _build_qld_schd_engine(rebalancer=custom_rb)
-    assert engine.rebalancer is custom_rb
 
 
 def test_qld_schd_all_tickers():
@@ -401,8 +427,12 @@ def test_qld_schd_end_to_end_nan_no_trade():
 
 def test_engines_ratio_a_differs():
     """QldSHVEngine(0.5) vs QldSchdEngine(0.3) ratio_a 차이."""
-    shv_engine, _ = _build_qld_shv_engine()
-    schd_engine, _ = _build_qld_schd_engine()
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        shv_engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
+        schd_engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
     assert shv_engine.rebalancer.ratio_a == 0.5
     assert schd_engine.rebalancer.ratio_a == 0.3
     assert shv_engine.rebalancer.ratio_a != schd_engine.rebalancer.ratio_a

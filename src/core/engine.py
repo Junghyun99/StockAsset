@@ -21,33 +21,47 @@ class TradingEngine:
     main.py (실시간)와 runner.py (백테스트) 모두 이 엔진을 재사용한다.
     환경별 차이는 주입되는 구현체(broker, data_provider, notifier)가 담당하며,
     비즈니스 로직 자체는 단일 위치(이 클래스)에서만 관리된다.
+
+    서브클래스에 ASSET_GROUPS / REBALANCE_RATIO_A 클래스 속성이 있으면
+    파라미터보다 우선 적용된다 (QldSchdEngine, QldSHVEngine 등).
     """
 
     def __init__(
         self,
-        calculator: IndicatorCalculator,
-        analyzer: RegimeAnalyzer,
-        targeter: VolatilityTargeter,
-        rebalancer: Rebalancer,
         broker: IBrokerAdapter,
         repo: IRepository,
         logger: ILogger,
-        all_tickers: List[str],
+        asset_groups: Optional[dict] = None,
+        ratio_a: float = 0.5,
+        target_vol: float = 0.15,
         trading_interval_days: int = 5,
         notifier: Optional[INotifier] = None,  # 백테스트는 None
         is_live_trading: bool = False,
     ):
-        self.calculator = calculator
-        self.analyzer = analyzer
-        self.targeter = targeter
-        self.rebalancer = rebalancer
+        # 클래스 속성 우선, 없으면 파라미터 사용
+        groups = getattr(type(self), 'ASSET_GROUPS', asset_groups)
+        effective_ratio_a = getattr(type(self), 'REBALANCE_RATIO_A', ratio_a)
+
+        if groups is None:
+            raise ValueError("asset_groups must be provided when ASSET_GROUPS class attribute is not set")
+
+        self.calculator = IndicatorCalculator()
+        self.analyzer = RegimeAnalyzer()
+        self.targeter = VolatilityTargeter(target_vol=target_vol)
+        self.rebalancer = Rebalancer(groups, logger=logger, ratio_a=effective_ratio_a)
         self.broker = broker
         self.repo = repo
         self.logger = logger
-        self.all_tickers = all_tickers
+        self.all_tickers = [t for g in groups.values() for t in g]
         self.trading_interval_days = trading_interval_days
         self.notifier = notifier
         self.is_live_trading = is_live_trading
+
+        # 히스테리시스 상태 복원 (프로세스 재시작 시 이전 국면 유지)
+        last_regime = self.repo.load_last_regime()
+        if last_regime is not None:
+            self.analyzer._prev_regime = last_regime
+            self.logger.info(f"Restored previous regime: {last_regime.value}")
 
     def run_one_cycle(
         self,
@@ -350,36 +364,6 @@ class QldSHVEngine(FullExposureEngine):
         'B': ['SHV'],
     }
 
-    def __init__(
-        self,
-        calculator: IndicatorCalculator,
-        analyzer: RegimeAnalyzer,
-        targeter: VolatilityTargeter,
-        broker: IBrokerAdapter,
-        repo: IRepository,
-        logger: ILogger,
-        trading_interval_days: int = 5,
-        notifier: Optional[INotifier] = None,
-        is_live_trading: bool = False,
-        rebalancer: Optional[Rebalancer] = None,
-        all_tickers=None,  # 무시됨: ASSET_GROUPS에서 자동 계산
-    ):
-        if rebalancer is None:
-            rebalancer = Rebalancer(self.ASSET_GROUPS, logger=logger)
-        all_tickers = self.ASSET_GROUPS['A'] + self.ASSET_GROUPS['B']
-        super().__init__(
-            calculator=calculator,
-            analyzer=analyzer,
-            targeter=targeter,
-            rebalancer=rebalancer,
-            broker=broker,
-            repo=repo,
-            logger=logger,
-            all_tickers=all_tickers,
-            trading_interval_days=trading_interval_days,
-            notifier=notifier,
-            is_live_trading=is_live_trading,
-        )
 
 
 class QldSchdEngine(FullExposureEngine):
@@ -396,36 +380,3 @@ class QldSchdEngine(FullExposureEngine):
         'B': ['SCHD'],
     }
     REBALANCE_RATIO_A: float = 0.3
-
-    def __init__(
-        self,
-        calculator: IndicatorCalculator,
-        analyzer: RegimeAnalyzer,
-        targeter: VolatilityTargeter,
-        broker: IBrokerAdapter,
-        repo: IRepository,
-        logger: ILogger,
-        trading_interval_days: int = 5,
-        notifier: Optional[INotifier] = None,
-        is_live_trading: bool = False,
-        rebalancer: Optional[Rebalancer] = None,
-        all_tickers=None,  # 무시됨: ASSET_GROUPS에서 자동 계산
-    ):
-        if rebalancer is None:
-            rebalancer = Rebalancer(
-                self.ASSET_GROUPS, logger=logger, ratio_a=self.REBALANCE_RATIO_A
-            )
-        all_tickers = self.ASSET_GROUPS['A'] + self.ASSET_GROUPS['B']
-        super().__init__(
-            calculator=calculator,
-            analyzer=analyzer,
-            targeter=targeter,
-            rebalancer=rebalancer,
-            broker=broker,
-            repo=repo,
-            logger=logger,
-            all_tickers=all_tickers,
-            trading_interval_days=trading_interval_days,
-            notifier=notifier,
-            is_live_trading=is_live_trading,
-        )
