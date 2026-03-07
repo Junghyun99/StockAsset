@@ -2,26 +2,26 @@
     {
         "id": "tx_20240102",
         "date": "2024-01-02",
-        "portfolio_value": 9892.58450420744,
-        "total_trade_amount": 9852.369999999999,
-        "reason": "첫 투자: 30:70 비율로 진입",
+        "portfolio_value": 9892.308012461854,
+        "total_trade_amount": 9878.8,
+        "reason": "첫 투자: 50:50 비율로 진입",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 82,
+                "quantity": 136,
                 "price": 36.91,
-                "fee": 3.03,
+                "fee": 5.02,
                 "date": "2024-01-02",
                 "status": "FILLED",
                 "reason": ""
             },
             {
-                "ticker": "SCHD",
+                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 285,
-                "price": 23.95,
-                "fee": 6.83,
+                "quantity": 48,
+                "price": 101.23,
+                "fee": 4.86,
                 "date": "2024-01-02",
                 "status": "FILLED",
                 "reason": ""
@@ -31,26 +31,26 @@
     {
         "id": "tx_20240617",
         "date": "2024-06-17",
-        "portfolio_value": 11163.965910574589,
-        "total_trade_amount": 1807.0299999999997,
-        "reason": "비율 재조정: Threshold 8% 초과 (Diff: 7.8%)",
+        "portfolio_value": 11945.499579451713,
+        "total_trade_amount": 1994.7199999999998,
+        "reason": "비율 재조정: Threshold 8% 초과 (Diff: 8.5%)",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 17,
+                "quantity": 19,
                 "price": 50.48,
-                "fee": 0.86,
+                "fee": 0.96,
                 "date": "2024-06-17",
                 "status": "FILLED",
                 "reason": ""
             },
             {
-                "ticker": "SCHD",
+                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 39,
-                "price": 24.33,
-                "fee": 0.95,
+                "quantity": 10,
+                "price": 103.56,
+                "fee": 1.04,
                 "date": "2024-06-17",
                 "status": "FILLED",
                 "reason": ""
@@ -58,58 +58,87 @@
         ]
     },
     {
-        "id": "tx_20250227",
-        "date": "2025-02-27",
-        "portfolio_value": 12132.804249856319,
-        "total_trade_amount": 604.12,
-        "reason": "비율 재조정: Threshold 2% 초과 (Diff: 2.6%)",
+        "id": "tx_20250408",
+        "date": "2025-04-08",
+        "portfolio_value": 10239.401368630943,
+        "total_trade_amount": 2103.8,
+        "reason": "비율 재조정: Threshold 10% 초과 (Diff: 10.4%)",
         "executions": [
             {
-                "ticker": "SCHD",
+                "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 11,
-                "price": 26.84,
-                "fee": 0.3,
-                "date": "2025-02-27",
+                "quantity": 10,
+                "price": 105.5,
+                "fee": 1.05,
+                "date": "2025-04-08",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 30,
+                "price": 34.96,
+                "fee": 1.05,
+                "date": "2025-04-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250429",
+        "date": "2025-04-29",
+        "portfolio_value": 11648.427971413079,
+        "total_trade_amount": 1347.58,
+        "reason": "비율 재조정: Threshold 5% 초과 (Diff: 5.9%)",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 16,
+                "price": 43.78,
+                "fee": 0.7,
+                "date": "2025-04-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
                 "action": "BUY",
                 "quantity": 6,
-                "price": 51.48,
-                "fee": 0.31,
-                "date": "2025-02-27",
+                "price": 107.85,
+                "fee": 0.65,
+                "date": "2025-04-29",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20251009",
-        "date": "2025-10-09",
-        "portfolio_value": 13402.619433571987,
-        "total_trade_amount": 2077.72,
-        "reason": "비율 재조정: Threshold 8% 초과 (Diff: 7.6%)",
+        "id": "tx_20250721",
+        "date": "2025-07-21",
+        "portfolio_value": 13911.344492585335,
+        "total_trade_amount": 2180.38,
+        "reason": "비율 재조정: Threshold 8% 초과 (Diff: 8.0%)",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 15,
-                "price": 70.14,
-                "fee": 1.05,
-                "date": "2025-10-09",
+                "quantity": 18,
+                "price": 60.66,
+                "fee": 1.09,
+                "date": "2025-07-21",
                 "status": "FILLED",
                 "reason": ""
             },
             {
-                "ticker": "SCHD",
+                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 38,
-                "price": 26.99,
-                "fee": 1.03,
-                "date": "2025-10-09",
+                "quantity": 10,
+                "price": 108.85,
+                "fee": 1.09,
+                "date": "2025-07-21",
                 "status": "FILLED",
                 "reason": ""
             }
