@@ -243,10 +243,10 @@ class TestTradingBotEdgeCases:
              patch('src.main.JsonRepository') as MockRepo, \
              patch('src.main.SlackNotifier') as MockNotifier, \
              patch('src.main.KisLiveBroker') as MockKisBroker, \
-             patch('src.main.IndicatorCalculator') as MockCalc, \
-             patch('src.main.RegimeAnalyzer') as MockAnalyzer, \
-             patch('src.main.VolatilityTargeter') as MockTargeter, \
-             patch('src.main.Rebalancer') as MockRebalancer, \
+             patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+             patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+             patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+             patch('src.core.engine.Rebalancer') as MockRebalancer, \
              patch.dict('os.environ', {'IS_LIVE_TRADING': 'true'}):
 
             loader = MockLoader.return_value
@@ -263,6 +263,7 @@ class TestTradingBotEdgeCases:
                 holdings={'SPY': 10},
                 current_prices={'SPY': 100.0}
             )
+            repo.load_last_regime.return_value = None
 
             yield {
                 'loader': loader,

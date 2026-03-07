@@ -8,10 +8,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
-from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.core.engine import TradingEngine
 from src.infra.repo import JsonRepository
-from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
 from src.backtest.components import BacktestDataLoader, BacktestBroker
@@ -62,8 +60,14 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     # 1. 설정 로드
     strategy = StrategyConfig(trading_interval_days=execution_interval)
     logger = TradeLogger(log_dir="logs/backtest")
+
+    # 엔진 클래스가 ASSET_GROUPS/REBALANCE_RATIO_A를 정의한 경우 해당 값을 우선 사용
+    # (QldSchdEngine, QldSHVEngine 등 특수 엔진은 자체 자산군이 단일 진실 원천)
+    effective_asset_groups = getattr(engine_class, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
+    effective_ratio_a = getattr(engine_class, 'REBALANCE_RATIO_A', ratio_a)
+
     tickers = []
-    for group in strategy.ASSET_GROUPS.values():
+    for group in effective_asset_groups.values():
         tickers.extend(group)
     tickers = list(set(tickers))  # 중복 제거
     if "SPY" not in tickers:
@@ -89,27 +93,13 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                 f.unlink()
     backtest_repo = JsonRepository(backtest_data_path)
 
-    # Core Logic (TradingEngine으로 조립)
-    calculator = IndicatorCalculator()
-    analyzer = RegimeAnalyzer()
-    targeter = VolatilityTargeter(target_vol=0.15)
-    rebalancer = Rebalancer(strategy.ASSET_GROUPS, logger=logger, ratio_a=ratio_a)
-
-    # 히스테리시스 상태 복원 (main.py 방식과 동일)
-    last_regime = backtest_repo.load_last_regime()
-    if last_regime is not None:
-        analyzer._prev_regime = last_regime
-        logger.info(f"Restored previous regime: {last_regime.value}")
-
+    # 3-1. TradingEngine 조립 (core 로직은 엔진 내부에서 생성)
     engine = engine_class(
-        calculator=calculator,
-        analyzer=analyzer,
-        targeter=targeter,
-        rebalancer=rebalancer,
+        asset_groups=effective_asset_groups,
+        ratio_a=effective_ratio_a,
         broker=broker,
         repo=backtest_repo,
         logger=logger,
-        all_tickers=tickers,
         trading_interval_days=strategy.TRADING_INTERVAL_DAYS,
         notifier=None,          # 백테스트는 알림 없음
         is_live_trading=False,

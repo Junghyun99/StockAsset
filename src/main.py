@@ -6,9 +6,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from src.config import Config
 from src.strategy_config import StrategyConfig
-from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.core.engine import TradingEngine
-from src.utils.calculator import IndicatorCalculator
 from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
 from src.infra.broker import KisPaperBroker, KisLiveBroker
@@ -52,30 +50,13 @@ class TradingBot:
                 self.logger,
             )
 
-        # 3. 도메인 서비스 생성
-        calculator = IndicatorCalculator()
-        self.analyzer = RegimeAnalyzer()
-        targeter = VolatilityTargeter(target_vol=0.15)
-        rebalancer = Rebalancer(self.strategy.ASSET_GROUPS, logger=self.logger,
-                                ratio_a=self.strategy.REBALANCE_RATIO_A)
-
-        # 4. 히스테리시스 상태 복원 (프로세스 재시작 시 이전 국면 유지)
-        last_regime = self.repo.load_last_regime()
-        if last_regime is not None:
-            self.analyzer._prev_regime = last_regime
-            self.logger.info(f"Restored previous regime: {last_regime.value}")
-
-        # 5. TradingEngine 조립
-        all_tickers = sum(self.strategy.ASSET_GROUPS.values(), [])
+        # 3. TradingEngine 조립 (core 로직은 엔진 내부에서 생성)
         self.engine = TradingEngine(
-            calculator=calculator,
-            analyzer=self.analyzer,
-            targeter=targeter,
-            rebalancer=rebalancer,
+            asset_groups=self.strategy.ASSET_GROUPS,
+            ratio_a=self.strategy.REBALANCE_RATIO_A,
             broker=self.broker,
             repo=self.repo,
             logger=self.logger,
-            all_tickers=all_tickers,
             trading_interval_days=self.strategy.TRADING_INTERVAL_DAYS,
             notifier=self.notifier,
             is_live_trading=self.config.IS_LIVE_TRADING,

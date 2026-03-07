@@ -5,10 +5,13 @@ import numpy as np
 import math
 from unittest.mock import patch, MagicMock
 from src.backtest.runner import run_backtest, BacktestResult, _validate_tickers
+from src.core.engine import QldSchdEngine, QldSHVEngine
 from src.core.models import MarketRegime, TradeExecution, OrderAction, ExecutionStatus, Order
 
 
 ALL_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "PDBC", "SHV"]
+ENGINE_TICKERS_SCHD = ["SPY", "QLD", "SCHD"]
+ENGINE_TICKERS_SHV = ["SPY", "QLD", "SHV"]
 
 
 @pytest.fixture
@@ -82,8 +85,8 @@ def test_nan_data_skips_rebalancing(mock_savefig, mock_download, mock_fetcher_re
     nan_market_data.nan_fields.return_value = ['spy_volatility']
     nan_market_data.spy_volatility = math.nan
 
-    with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data), \
-         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+    with patch("src.core.engine.IndicatorCalculator.calculate", return_value=nan_market_data), \
+         patch("src.core.engine.Rebalancer.generate_signal") as mock_signal:
         run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
         # NaN으로 인해 CRASH 처리 → generate_signal이 호출되지 않아야 함
         mock_signal.assert_not_called()
@@ -98,7 +101,7 @@ def test_crash_regime_executes_rebalancing(mock_savefig, mock_download, mock_fet
     """
     mock_download.return_value = mock_fetcher_return
 
-    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
+    with patch("src.core.engine.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
         # CRASH regime → generate_signal이 호출되어야 함 (exposure=0으로 리밸런싱)
         assert result is not None
@@ -457,7 +460,7 @@ def test_nan_triggered_flag_true_when_nan_occurs(mock_savefig, mock_download, mo
     nan_market_data.spy_mdd = 0.0
     nan_market_data.vix = 15.0
 
-    with patch("src.backtest.runner.IndicatorCalculator.calculate", return_value=nan_market_data):
+    with patch("src.core.engine.IndicatorCalculator.calculate", return_value=nan_market_data):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
 
     assert result is not None
@@ -474,7 +477,7 @@ def test_nan_triggered_flag_false_for_real_crash(mock_savefig, mock_download, mo
     """
     mock_download.return_value = mock_fetcher_return
 
-    with patch("src.backtest.runner.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
+    with patch("src.core.engine.RegimeAnalyzer.analyze", return_value=MarketRegime.CRASH):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-03", initial_cash=10000.0)
 
     assert result is not None
@@ -500,7 +503,7 @@ def test_exception_during_execution_records_error_in_history(mock_savefig, mock_
     # 첫 날만 예외, 이후엔 빈 체결 목록으로 성공
     with patch("src.backtest.components.BacktestBroker.execute_orders",
                side_effect=[RuntimeError("주문 실행 오류"), [], [], []]), \
-         patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
+         patch("src.core.engine.Rebalancer.generate_signal", return_value=mock_signal_obj):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     # 예외가 발생해도 봇이 멈추지 않고 나머지 날의 결과가 반환되어야 함
@@ -525,7 +528,7 @@ def test_exception_during_execution_preserves_portfolio_value(mock_savefig, mock
     # 첫 날만 예외, 이후엔 성공
     with patch("src.backtest.components.BacktestBroker.execute_orders",
                side_effect=[ValueError("가격 계산 오류"), [], [], []]), \
-         patch("src.backtest.runner.Rebalancer.generate_signal", return_value=mock_signal_obj):
+         patch("src.core.engine.Rebalancer.generate_signal", return_value=mock_signal_obj):
         result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
     assert result is not None
@@ -554,7 +557,7 @@ def test_execute_orders_return_value_collected(mock_savefig, mock_download, mock
 
     with patch("src.backtest.components.BacktestBroker.execute_orders",
                return_value=[fake_execution]) as mock_exec, \
-         patch("src.backtest.runner.Rebalancer.generate_signal") as mock_signal:
+         patch("src.core.engine.Rebalancer.generate_signal") as mock_signal:
 
         mock_signal_obj = MagicMock()
         mock_signal_obj.has_orders = True
@@ -667,3 +670,121 @@ def test_execution_interval_portfolio_value_tracked_on_skip_days(mock_savefig, m
     skip_rows = result.history[result.history["reason"].str.contains("모니터링")]
     if len(skip_rows) > 0:
         assert skip_rows["target_exposure"].notna().all(), "모니터링 날의 target_exposure가 NaN이 아니어야 함"
+
+
+# === 엔진 고유 자산군 일관성 테스트 ===
+
+def _make_engine_price_df(tickers, n=400):
+    """지정된 티커 목록으로 가짜 가격 DataFrame 생성."""
+    dates = pd.date_range(start="2022-01-01", periods=n)
+    price_data = {t: np.linspace(100, 200, n) for t in tickers}
+    columns = pd.MultiIndex.from_product([["Close"], tickers])
+    df = pd.DataFrame(
+        np.column_stack(list(price_data.values())),
+        index=dates,
+        columns=columns,
+    )
+    vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
+    return df, vix
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_engine_asset_groups_used_for_rebalancer(mock_savefig, mock_download):
+    """
+    [Asset Consistency] QldSchdEngine을 engine_class로 사용하면
+    runner가 생성하는 rebalancer의 groups가 QldSchdEngine.ASSET_GROUPS여야 한다.
+    strategy_config.py의 기본 자산군(SSO/IEF 등)이 아닌 엔진 자산군(QLD/SCHD)이
+    rebalancer에 주입되어야 한다.
+    """
+    mock_download.return_value = _make_engine_price_df(ENGINE_TICKERS_SCHD)
+
+    captured_groups = {}
+
+    original_init = __import__('src.core.logic', fromlist=['Rebalancer']).Rebalancer.__init__
+
+    def capture_init(self, asset_groups, *args, **kwargs):
+        captured_groups['groups'] = asset_groups
+        original_init(self, asset_groups, *args, **kwargs)
+
+    with patch("src.core.engine.Rebalancer.__init__", capture_init):
+        run_backtest(
+            start_date="2023-01-02", end_date="2023-01-05",
+            initial_cash=10000.0,
+            engine_class=QldSchdEngine,
+        )
+
+    assert captured_groups.get('groups') == QldSchdEngine.ASSET_GROUPS, (
+        f"rebalancer가 QldSchdEngine.ASSET_GROUPS를 사용해야 함. "
+        f"실제: {captured_groups.get('groups')}"
+    )
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_engine_asset_groups_used_for_tickers(mock_savefig, mock_download):
+    """
+    [Asset Consistency] QldSchdEngine 사용 시 download_historical_data에
+    엔진 자산군(QLD, SCHD) 티커가 전달되어야 한다.
+    기본 전략 자산군(SSO, IEF 등)이 포함되어서는 안 된다.
+    """
+    mock_download.return_value = _make_engine_price_df(ENGINE_TICKERS_SCHD)
+
+    run_backtest(
+        start_date="2023-01-02", end_date="2023-01-05",
+        initial_cash=10000.0,
+        engine_class=QldSchdEngine,
+    )
+
+    tickers_called = set(mock_download.call_args[0][0])
+    assert "QLD" in tickers_called, "QLD가 다운로드 티커에 포함되어야 함"
+    assert "SCHD" in tickers_called, "SCHD가 다운로드 티커에 포함되어야 함"
+    assert "SSO" not in tickers_called, "SSO는 QldSchdEngine 자산군이 아님"
+    assert "IEF" not in tickers_called, "IEF는 QldSchdEngine 자산군이 아님"
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_qld_schd_engine_ratio_a_used(mock_savefig, mock_download):
+    """
+    [Asset Consistency] QldSchdEngine의 REBALANCE_RATIO_A(0.3)가
+    runner의 기본 ratio_a(0.5) 대신 rebalancer에 적용되어야 한다.
+    """
+    mock_download.return_value = _make_engine_price_df(ENGINE_TICKERS_SCHD)
+
+    captured_ratio = {}
+
+    original_init = __import__('src.core.logic', fromlist=['Rebalancer']).Rebalancer.__init__
+
+    def capture_init(self, asset_groups, logger=None, ratio_a=0.5):
+        captured_ratio['ratio_a'] = ratio_a
+        original_init(self, asset_groups, logger=logger, ratio_a=ratio_a)
+
+    with patch("src.core.engine.Rebalancer.__init__", capture_init):
+        run_backtest(
+            start_date="2023-01-02", end_date="2023-01-05",
+            initial_cash=10000.0,
+            engine_class=QldSchdEngine,
+        )
+
+    assert captured_ratio.get('ratio_a') == QldSchdEngine.REBALANCE_RATIO_A, (
+        f"QldSchdEngine의 REBALANCE_RATIO_A({QldSchdEngine.REBALANCE_RATIO_A})가 "
+        f"rebalancer에 적용되어야 함. 실제: {captured_ratio.get('ratio_a')}"
+    )
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_default_engine_uses_strategy_asset_groups(mock_savefig, mock_download, mock_fetcher_return):
+    """
+    [Asset Consistency] engine_class 미지정(기본 TradingEngine) 시
+    strategy_config.py의 기본 자산군이 그대로 사용되어야 한다.
+    """
+    mock_download.return_value = mock_fetcher_return
+
+    run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
+
+    tickers_called = set(mock_download.call_args[0][0])
+    # 기본 자산군 티커가 모두 포함되어야 함
+    for ticker in ["SSO", "QLD", "IEF", "GLD", "PDBC", "SHV"]:
+        assert ticker in tickers_called, f"{ticker}가 기본 엔진 다운로드 티커에 포함되어야 함"
