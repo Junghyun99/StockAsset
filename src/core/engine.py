@@ -53,6 +53,10 @@ class TradingEngine:
         self.repo = repo
         self.logger = logger
         self.all_tickers = [t for g in groups.values() for t in g]
+
+        # 엔진이 최종 확정한 asset_groups를 repo에 주입 (클래스 속성 오버라이드 반영)
+        if hasattr(self.repo, 'asset_groups'):
+            self.repo.asset_groups = groups
         self.trading_interval_days = trading_interval_days
         self.notifier = notifier
         self.is_live_trading = is_live_trading

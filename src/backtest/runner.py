@@ -91,7 +91,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         for f in existing_dir.iterdir():
             if f.suffix == ".json":
                 f.unlink()
-    backtest_repo = JsonRepository(backtest_data_path, asset_groups=effective_asset_groups)
+    backtest_repo = JsonRepository(backtest_data_path)
 
     # 3-1. TradingEngine 조립 (core 로직은 엔진 내부에서 생성)
     engine = engine_class(
