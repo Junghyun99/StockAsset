@@ -52,18 +52,8 @@ def main() -> None:
     if result.chart_path:
         lines.append(f"\n차트 저장 경로: `{result.chart_path}`")
 
-    # Step Summary에 로그 파일 내용 추가
-    log_dir = "logs/backtest"
-    if os.path.isdir(log_dir):
-        log_files = sorted(
-            [os.path.join(log_dir, f) for f in os.listdir(log_dir) if f.endswith(".log")]
-        )
-        if log_files:
-            log_path = log_files[-1]  # 가장 최신 로그 파일
-            lines += ["", "### 실행 로그", f"<details><summary>{os.path.basename(log_path)}</summary>", "", "```"]
-            with open(log_path, encoding="utf-8") as lf:
-                lines.append(lf.read().rstrip())
-            lines += ["```", "", "</details>"]
+    # Step Summary에 추가
+    
 
     summary = "\n".join(lines) + "\n"
 
