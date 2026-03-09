@@ -94,7 +94,7 @@ class TestBacktestRunnerEdgeCases:
         df = pd.DataFrame(data, index=dates)
         df.columns = pd.MultiIndex.from_tuples(df.columns)
         vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
-        return df, vix
+        return df, vix, pd.DataFrame()
 
     @patch("src.backtest.runner.download_historical_data")
     @patch("src.backtest.runner.plt.savefig")
@@ -125,7 +125,7 @@ class TestBacktestRunnerEdgeCases:
         df = pd.DataFrame(data, index=dates)
         df.columns = pd.MultiIndex.from_tuples(df.columns)
         vix = pd.DataFrame({'Close': [25.0] * len(dates)}, index=dates)
-        mock_download.return_value = (df, vix)
+        mock_download.return_value = (df, vix, pd.DataFrame())
 
         run_backtest(start_date="2023-01-02", end_date="2023-06-01", initial_cash=10000.0)
         mock_savefig.assert_called_once()

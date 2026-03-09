@@ -97,6 +97,13 @@ class BacktestBroker(MockBroker):
             return replace(result, date=sim_date)
         return result
 
+    def receive_dividends(self, amount: float) -> None:
+        """배당금을 현금으로 수령한다. amount > 0인 경우만 처리."""
+        if amount > 0:
+            self.cash += amount
+            if self.logger:
+                self.logger.info(f"[Dividend] +${amount:.2f} 배당금 수령")
+
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         # 백테스트에서는 모든 주문이 즉시 체결됨 (폴링 불필요)
         return True

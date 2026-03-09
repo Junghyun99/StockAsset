@@ -29,6 +29,29 @@ class BacktestResult:
     chart_path: Optional[str]          # 저장된 차트 파일 경로
     trade_executions: Optional[List[TradeExecution]] = None  # 전체 매매 체결 기록
     trade_reason_summary: Optional[Dict[str, int]] = None  # 매매 사유별 발생 횟수
+    total_dividend_income: float = 0.0  # 시뮬레이션 기간 중 수령한 총 배당금
+
+
+def _calculate_dividend_income(
+    today: pd.Timestamp,
+    dividends_df: pd.DataFrame,
+    broker: "BacktestBroker",
+) -> float:
+    """오늘 날짜의 배당금 × 보유 주수를 합산해 반환. 오류 시 0.0."""
+    try:
+        if dividends_df is None or dividends_df.empty:
+            return 0.0
+        if today not in dividends_df.index:
+            return 0.0
+        row = dividends_df.loc[today]
+        total = 0.0
+        for ticker, div_per_share in row.items():
+            if div_per_share > 0:
+                shares = broker.holdings.get(ticker, 0)
+                total += shares * float(div_per_share)
+        return total
+    except Exception:
+        return 0.0
 
 
 def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeLogger) -> List[str]:
@@ -52,7 +75,8 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
                   output_dir: str = "docs/data/backtest",
                   ratio_a: float = 0.5,
                   engine_class: type = TradingEngine,
-                  run_number: Optional[str] = None) -> Optional[BacktestResult]:
+                  run_number: Optional[str] = None,
+                  reinvest_dividends: bool = True) -> Optional[BacktestResult]:
     # 0. 파라미터 검증
     if execution_interval < 1:
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
@@ -75,7 +99,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
     # 2. 데이터 준비 (10년치 한방에 로딩)
     logger.info("--- Preparing Data ---")
-    full_df, full_vix = download_historical_data(tickers, start_date, end_date)
+    full_df, full_vix, full_dividends = download_historical_data(tickers, start_date, end_date)
 
     # 2-1. 수신 티커 검증: 누락 티커가 하나라도 있으면 즉시 종료
     if _validate_tickers(full_df, tickers, logger):
@@ -111,6 +135,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
     all_executions: List[TradeExecution] = []
     trade_reason_counter: Dict[str, int] = {}
+    total_dividend_income: float = 0.0
 
     logger.info(f"--- Starting Backtest ({len(sim_days)} trading days, interval={strategy.TRADING_INTERVAL_DAYS}) ---")
 
@@ -130,6 +155,14 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             continue
 
         broker.set_prices(current_prices)
+
+        # [Dividend] 배당금 처리 (매일, 종가 주입 직후)
+        if reinvest_dividends:
+            div_income = _calculate_dividend_income(today, full_dividends, broker)
+            if div_income > 0:
+                broker.receive_dividends(div_income)
+                total_dividend_income += div_income
+
         sim_date = today.strftime("%Y-%m-%d")
 
         try:
@@ -229,6 +262,9 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             logger.info(f"  {regime_name}: {regime_ret:.2%}")
 
     # 거래 통계 출력
+    if reinvest_dividends and total_dividend_income > 0:
+        logger.info(f"Total Dividend Income Reinvested: ${total_dividend_income:,.2f}")
+
     logger.info(f"Total Executions: {len(all_executions)}")
     if all_executions:
         ticker_counts = Counter(e.ticker for e in all_executions)
@@ -274,6 +310,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         chart_path=chart_path,
         trade_executions=all_executions,
         trade_reason_summary=trade_reason_counter if trade_reason_counter else None,
+        total_dividend_income=total_dividend_income,
     )
 
 

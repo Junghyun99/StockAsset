@@ -34,7 +34,8 @@ def mock_fetcher_return():
     )
 
     vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
-    return df, vix
+    dividends = pd.DataFrame()  # 배당 없음 (테스트용 빈 DataFrame)
+    return df, vix, dividends
 
 
 @pytest.fixture
@@ -48,7 +49,8 @@ def mock_fetcher_spy_only():
         columns=columns,
     )
     vix = pd.DataFrame({"Close": [15.0] * len(dates)}, index=dates)
-    return df, vix
+    dividends = pd.DataFrame()
+    return df, vix, dividends
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -198,7 +200,7 @@ def test_empty_history_returns_none_when_no_trading_days(mock_download):
     columns = pd.MultiIndex.from_product([['Close'], ['SPY']])
     df = pd.DataFrame([[100.0]] * len(dates), index=dates, columns=columns)
     vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
-    mock_download.return_value = (df, vix)
+    mock_download.return_value = (df, vix, pd.DataFrame())
 
     result = run_backtest(start_date="2099-01-01", end_date="2099-01-05", initial_cash=10000.0)
 
@@ -211,13 +213,13 @@ def test_empty_history_returns_none_when_all_prices_fail(mock_download, mock_fet
     [Runner] 모든 날 가격 데이터 추출이 실패하면 history가 비어 None을 반환해야 한다 (#43).
     full_df['Close'] 접근 시 항상 KeyError를 발생시켜 continue 분기를 재현한다.
     """
-    mock_df, mock_vix = mock_fetcher_return
+    mock_df, mock_vix, _ = mock_fetcher_return
 
     # full_df['Close'] 접근 시 항상 KeyError 발생 → 매일 except → continue
     bad_df = MagicMock()
     bad_df.index = mock_df.index
     bad_df.__getitem__ = MagicMock(side_effect=KeyError("Close"))
-    mock_download.return_value = (bad_df, mock_vix)
+    mock_download.return_value = (bad_df, mock_vix, pd.DataFrame())
 
     result = run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
 
@@ -231,7 +233,7 @@ def test_price_extraction_failure_logs_warning(mock_download, mock_fetcher_retur
     logger.warning으로 실패한 날짜와 원인을 기록해야 한다.
     """
     import logging
-    mock_df, mock_vix = mock_fetcher_return
+    mock_df, mock_vix, _ = mock_fetcher_return
 
     # _validate_tickers 통과를 위해 columns을 실제 MultiIndex로 설정
     bad_df = MagicMock()
@@ -239,7 +241,7 @@ def test_price_extraction_failure_logs_warning(mock_download, mock_fetcher_retur
     bad_df.columns = mock_df.columns  # 실제 MultiIndex → _validate_tickers 통과
     # full_df['Close'] 접근 시 KeyError 발생 → 종가 추출 실패 경로 재현
     bad_df.__getitem__ = MagicMock(side_effect=KeyError("Close"))
-    mock_download.return_value = (bad_df, mock_vix)
+    mock_download.return_value = (bad_df, mock_vix, pd.DataFrame())
 
     with caplog.at_level(logging.WARNING, logger="SolidQuant"):
         run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
@@ -298,7 +300,7 @@ def test_cagr_single_day_does_not_raise(mock_savefig, mock_download):
         columns=columns,
     )
     vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
-    mock_download.return_value = (df, vix)
+    mock_download.return_value = (df, vix, pd.DataFrame())
 
     # 단 하루만 실행
     result = run_backtest(start_date="2023-01-03", end_date="2023-01-03", initial_cash=10000.0)
@@ -685,7 +687,8 @@ def _make_engine_price_df(tickers, n=400):
         columns=columns,
     )
     vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
-    return df, vix
+    dividends = pd.DataFrame()
+    return df, vix, dividends
 
 
 @patch("src.backtest.runner.download_historical_data")
