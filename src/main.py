@@ -29,6 +29,7 @@ class TradingBot:
             self.config.DATA_PATH,
             max_summary_records=self.config.MAX_SUMMARY_RECORDS,
             max_history_records=self.config.MAX_HISTORY_RECORDS,
+            asset_groups=self.strategy.ASSET_GROUPS,
         )
         self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL, self.logger)
 
