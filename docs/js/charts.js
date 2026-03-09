@@ -170,20 +170,25 @@ export function renderStrategyChart(summaryData) {
 /**
  * Overview 탭 - 자산 그룹별 수평 Stacked Bar 차트
  */
-export function renderGroupBarChart(statusData) {
+export function renderGroupBarChart(statusData, groupConfig) {
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
     const totalValue = statusData.portfolio.total_value;
 
-    // 그룹별 합산
-    let groupA = 0, groupB = 0, groupC = 0;
+    // 그룹별 합산 (groupConfig 기반으로 동적 집계)
+    const groupValues = {};
     holdings.forEach(h => {
-        const g = getAssetGroup(h.ticker);
-        if (g.group === 'A') groupA += h.value;
-        else if (g.group === 'B') groupB += h.value;
-        else if (g.group === 'C') groupC += h.value;
+        const g = getAssetGroup(h.ticker, groupConfig);
+        groupValues[g.group] = (groupValues[g.group] || 0) + h.value;
     });
-    groupC += cash; // Cash를 C 그룹에 포함
+
+    // C 그룹(또는 마지막 그룹)에 현금 포함
+    const cashGroup = groupConfig ? Object.keys(groupConfig).slice(-1)[0] : 'C';
+    groupValues[cashGroup] = (groupValues[cashGroup] || 0) + cash;
+
+    const groupA = groupValues['A'] || 0;
+    const groupB = groupValues['B'] || 0;
+    const groupC = groupValues['C'] || 0;
 
     if (groupBarChartInstance) groupBarChartInstance.destroy();
 

@@ -114,22 +114,22 @@ export function updateSummaryCards(statusData, summaryData) {
 /**
  * 보유 자산 테이블 렌더링 (그룹별 분류)
  */
-export function renderHoldingsTable(statusData) {
+export function renderHoldingsTable(statusData, groupConfig) {
     const tbody = document.getElementById('holdings-table-body');
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
 
     // 그룹별 정렬
     const sorted = [...holdings].sort((a, b) => {
-        const ga = getAssetGroup(a.ticker);
-        const gb = getAssetGroup(b.ticker);
+        const ga = getAssetGroup(a.ticker, groupConfig);
+        const gb = getAssetGroup(b.ticker, groupConfig);
         return ga.group.localeCompare(gb.group);
     });
 
     let rows = '';
     sorted.forEach(h => {
         if (h.value <= 0 && h.qty <= 0) return; // 보유량 0인 항목 제외
-        const g = getAssetGroup(h.ticker);
+        const g = getAssetGroup(h.ticker, groupConfig);
         rows += `
             <tr>
                 <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>

@@ -121,20 +121,20 @@ export function computeTradeStats(historyData) {
 }
 
 /**
- * 자산 그룹 분류
+ * 자산 그룹 분류 (asset_groups.json에서 로드한 설정 기반)
  * @param {string} ticker
+ * @param {Object} groupConfig - asset_groups.json 내용 (group -> {tickers, label, color})
  * @returns {{group: string, label: string, color: string}}
  */
-export function getAssetGroup(ticker) {
-    const groups = {
-        'SSO': { group: 'A', label: 'Growth', color: '#0d6efd' },
-        'QLD': { group: 'A', label: 'Growth', color: '#0d6efd' },
-        'IEF': { group: 'B', label: 'Safety', color: '#198754' },
-        'GLD': { group: 'B', label: 'Safety', color: '#198754' },
-        'PDBC': { group: 'B', label: 'Safety', color: '#198754' },
-        'SHV': { group: 'C', label: 'Cash', color: '#ffc107' },
-    };
-    return groups[ticker] || { group: '?', label: 'Other', color: '#adb5bd' };
+export function getAssetGroup(ticker, groupConfig) {
+    if (groupConfig) {
+        for (const [group, info] of Object.entries(groupConfig)) {
+            if (info.tickers.includes(ticker)) {
+                return { group, label: info.label, color: info.color };
+            }
+        }
+    }
+    return { group: '?', label: 'Other', color: '#adb5bd' };
 }
 
 /**

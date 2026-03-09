@@ -8,6 +8,12 @@ from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Tr
 from src.core.interfaces import IRepository
 
 class JsonRepository(IRepository):
+    _GROUP_META = {
+        'A': {'label': 'Growth', 'color': '#0d6efd'},
+        'B': {'label': 'Safety', 'color': '#198754'},
+        'C': {'label': 'Cash',   'color': '#ffc107'},
+    }
+
     def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100, asset_groups: dict = None):
         self.root = root_path
         self.max_summary_records = max_summary_records
@@ -18,6 +24,20 @@ class JsonRepository(IRepository):
         self.status_file = os.path.join(self.root, "status.json")
         self.summary_file = os.path.join(self.root, "summary.json")
         self.history_file = os.path.join(self.root, "history.json")
+
+        self.save_asset_groups_config()
+
+    def save_asset_groups_config(self):
+        """asset_groups 설정을 JSON으로 저장하여 프론트엔드에서 동적으로 매핑할 수 있도록 함"""
+        config = {}
+        for group, tickers in self.asset_groups.items():
+            meta = self._GROUP_META.get(group, {'label': group, 'color': '#adb5bd'})
+            config[group] = {
+                'tickers': tickers,
+                'label': meta['label'],
+                'color': meta['color'],
+            }
+        self._save_json(os.path.join(self.root, "asset_groups.json"), config)
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio, regime: MarketRegime):
         """일별 요약 저장 (Append 방식)"""
