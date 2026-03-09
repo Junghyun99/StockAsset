@@ -38,22 +38,24 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupTabRouting();
 
     try {
-        // 3개 JSON 파일 병렬 로드
-        const [summaryRes, statusRes, historyRes] = await Promise.all([
+        // 4개 JSON 파일 병렬 로드 (asset_groups.json은 항상 live 데이터 기준)
+        const [summaryRes, statusRes, historyRes, groupConfigRes] = await Promise.all([
             fetch(`${dataPath}summary.json`),
             fetch(`${dataPath}status.json`),
-            fetch(`${dataPath}history.json`)
+            fetch(`${dataPath}history.json`),
+            fetch('data/asset_groups.json')
         ]);
 
         const summaryData = await summaryRes.json();
         const statusData = await statusRes.json();
         const historyData = await historyRes.json();
+        const groupConfig = groupConfigRes.ok ? await groupConfigRes.json() : null;
 
         // === Overview 탭 렌더링 ===
         renderStatusBanner(statusData);
         updateSummaryCards(statusData, summaryData);
-        renderGroupBarChart(statusData);
-        renderHoldingsTable(statusData);
+        renderGroupBarChart(statusData, groupConfig);
+        renderHoldingsTable(statusData, groupConfig);
         renderTodayActivity(historyData, statusData);
         updateDecisionLogic(summaryData[summaryData.length - 1]);
 
