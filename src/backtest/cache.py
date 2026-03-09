@@ -27,19 +27,21 @@ class BacktestDataCache:
     저장 위치: src/backtest/cache/
       - ohlcv.parquet: 전체 티커 OHLCV 데이터
       - vix.parquet: VIX 데이터
+      - dividends.parquet: 배당 데이터 (ticker별 배당금/주)
     """
 
     def __init__(self, cache_dir: Path = CACHE_DIR, logger: Optional[ILogger] = None):
         self.cache_dir = Path(cache_dir)
         self.ohlcv_path = self.cache_dir / "ohlcv.parquet"
         self.vix_path = self.cache_dir / "vix.parquet"
+        self.dividends_path = self.cache_dir / "dividends.parquet"
         self._logger: ILogger = logger if logger is not None else _NullLogger()
 
     def get_data(
         self, tickers: List[str], start_date: str, end_date: str
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
-        캐시를 활용하여 OHLCV + VIX 데이터 반환.
+        캐시를 활용하여 OHLCV + VIX + 배당 데이터 반환.
         부족분만 다운로드하고 캐시를 업데이트한다.
         """
         self.cache_dir.mkdir(parents=True, exist_ok=True)
@@ -49,8 +51,9 @@ class BacktestDataCache:
 
         ohlcv = self._process_ohlcv(tickers, need_start, need_end)
         vix = self._process_vix(need_start, need_end)
+        dividends = self._process_dividends(tickers, need_start, need_end)
 
-        return ohlcv, vix
+        return ohlcv, vix, dividends
 
     # ── OHLCV ──────────────────────────────────────────────
 
@@ -186,6 +189,74 @@ class BacktestDataCache:
             self._logger.warning(f"VIX 다운로드 실패: {e}")
             return None
 
+    # ── 배당 ───────────────────────────────────────────────
+
+    def _process_dividends(
+        self, tickers: List[str], need_start: pd.Timestamp, need_end: pd.Timestamp
+    ) -> pd.DataFrame:
+        cached = self._load_parquet(self.dividends_path)
+
+        if cached is None or cached.empty:
+            self._logger.info(f"배당 캐시 없음. 전체 다운로드: {tickers}")
+            divs = self._download_dividends(tickers, need_start, need_end)
+            self._save_parquet(divs, self.dividends_path)
+            return divs if divs is not None else pd.DataFrame()
+
+        cache_start = cached.index.min()
+        cache_end = cached.index.max()
+
+        downloads = []
+        if need_start < cache_start - _DATE_TOLERANCE:
+            downloads.append((need_start, cache_start - timedelta(days=1)))
+        if need_end > cache_end + _DATE_TOLERANCE:
+            downloads.append((cache_end + timedelta(days=1), need_end))
+
+        if not downloads:
+            self._logger.info("배당 캐시 히트 (다운로드 불필요)")
+            return cached
+
+        result = cached
+        for dl_start, dl_end in downloads:
+            self._logger.info(f"배당 보충: {dl_start.date()} ~ {dl_end.date()}")
+            new_data = self._download_dividends(tickers, dl_start, dl_end)
+            if new_data is not None and not new_data.empty:
+                result = self._merge_dataframes(result, new_data)
+
+        self._save_parquet(result, self.dividends_path)
+        return result
+
+    def _download_dividends(
+        self, tickers: List[str], start: pd.Timestamp, end: pd.Timestamp
+    ) -> pd.DataFrame:
+        """
+        yf.download(auto_adjust=False, actions=True)로 배당 데이터를 가져온다.
+        반환 형식: DatetimeIndex x tickers DataFrame (배당 없는 날은 0.0)
+        """
+        try:
+            df = yf.download(
+                tickers, start=start, end=end,
+                auto_adjust=False, actions=True, progress=False
+            )
+            if df is None or df.empty:
+                return pd.DataFrame()
+
+            if isinstance(df.columns, pd.MultiIndex):
+                if 'Dividends' not in df.columns.get_level_values(0):
+                    return pd.DataFrame()
+                divs = df['Dividends']
+                if isinstance(divs, pd.Series):
+                    divs = divs.to_frame(name=tickers[0])
+            else:
+                # 단일 티커 → SingleIndex
+                if 'Dividends' not in df.columns:
+                    return pd.DataFrame()
+                divs = df[['Dividends']].rename(columns={'Dividends': tickers[0]})
+
+            return divs
+        except Exception as e:
+            self._logger.warning(f"배당 데이터 다운로드 실패: {e}")
+            return pd.DataFrame()
+
     # ── 유틸리티 ───────────────────────────────────────────
 
     def _merge_dataframes(
@@ -225,7 +296,7 @@ class BacktestDataCache:
 
     def clear(self):
         """캐시 파일 삭제"""
-        for p in [self.ohlcv_path, self.vix_path]:
+        for p in [self.ohlcv_path, self.vix_path, self.dividends_path]:
             if p.exists():
                 p.unlink()
         self._logger.info("캐시 삭제 완료")
