@@ -52,17 +52,16 @@ class TestCacheMiss:
 
     @patch("src.backtest.cache.yf.download")
     def test_no_cache_downloads_all(self, mock_download, cache):
-        ohlcv = _make_ohlcv(["SPY", "IEF"], "2023-01-01", "2023-12-31")
+        combined = _make_ohlcv_with_dividends(["SPY", "IEF"], "2023-01-01", "2023-12-31")
         vix = _make_vix("2023-01-01", "2023-12-31")
-        divs = _make_dividends_raw(["SPY", "IEF"], "2023-01-01", "2023-12-31")
-        mock_download.side_effect = [ohlcv, vix, divs]
+        mock_download.side_effect = [combined, vix]
 
         df, vix_df, div_df = cache.get_data(["SPY", "IEF"], "2023-01-01", "2023-12-31")
 
         assert not df.empty
         assert not vix_df.empty
-        # OHLCV + VIX + 배당 = 3번 호출
-        assert mock_download.call_count == 3
+        # OHLCV+배당 통합(1번) + VIX(1번) = 2번 호출
+        assert mock_download.call_count == 2
         # parquet 파일 생성 확인
         assert cache.ohlcv_path.exists()
         assert cache.vix_path.exists()
@@ -137,45 +136,41 @@ class TestDateExtension:
     @patch("src.backtest.cache.yf.download")
     def test_extend_earlier_dates(self, mock_download, cache):
         # 1차: 2023년 데이터 캐시
-        ohlcv_2023 = _make_ohlcv(["SPY"], "2023-01-01", "2023-12-31")
+        combined_2023 = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-12-31")
         vix_2023 = _make_vix("2023-01-01", "2023-12-31")
-        divs_2023 = _make_dividends_raw(["SPY"], "2023-01-01", "2023-12-31")
-        mock_download.side_effect = [ohlcv_2023, vix_2023, divs_2023]
+        mock_download.side_effect = [combined_2023, vix_2023]
         cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
 
         # 2차: 2022년부터 요청 → 앞쪽 부족분만 다운로드
         mock_download.reset_mock()
-        ohlcv_gap = _make_ohlcv(["SPY"], "2022-01-01", "2022-12-31")
+        combined_gap = _make_ohlcv_with_dividends(["SPY"], "2022-01-01", "2022-12-31")
         vix_gap = _make_vix("2022-01-01", "2022-12-31")
-        divs_gap = _make_dividends_raw(["SPY"], "2022-01-01", "2022-12-31")
-        mock_download.side_effect = [ohlcv_gap, vix_gap, divs_gap]
+        mock_download.side_effect = [combined_gap, vix_gap]
 
         df, vix_df, _ = cache.get_data(["SPY"], "2022-01-01", "2023-12-31")
 
-        # OHLCV 1번 + VIX 1번 + 배당 1번 = 3번 (앞쪽 부족분만)
-        assert mock_download.call_count == 3
+        # OHLCV+배당 통합(1번) + VIX(1번) = 2번 (앞쪽 부족분만)
+        assert mock_download.call_count == 2
         assert not df.empty
 
     @patch("src.backtest.cache.yf.download")
     def test_extend_later_dates(self, mock_download, cache):
         # 1차: 2023년 전반기 캐시
-        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-06-30")
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-06-30")
         vix = _make_vix("2023-01-01", "2023-06-30")
-        divs = _make_dividends_raw(["SPY"], "2023-01-01", "2023-06-30")
-        mock_download.side_effect = [ohlcv, vix, divs]
+        mock_download.side_effect = [combined, vix]
         cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
 
         # 2차: 2023년 전체 요청 → 뒤쪽 부족분만 다운로드
         mock_download.reset_mock()
-        ohlcv_gap = _make_ohlcv(["SPY"], "2023-07-01", "2023-12-31")
+        combined_gap = _make_ohlcv_with_dividends(["SPY"], "2023-07-01", "2023-12-31")
         vix_gap = _make_vix("2023-07-01", "2023-12-31")
-        divs_gap = _make_dividends_raw(["SPY"], "2023-07-01", "2023-12-31")
-        mock_download.side_effect = [ohlcv_gap, vix_gap, divs_gap]
+        mock_download.side_effect = [combined_gap, vix_gap]
 
         df, vix_df, _ = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
 
-        # OHLCV 1번 + VIX 1번 + 배당 1번 = 3번 (뒤쪽 부족분만)
-        assert mock_download.call_count == 3
+        # OHLCV+배당 통합(1번) + VIX(1번) = 2번 (뒤쪽 부족분만)
+        assert mock_download.call_count == 2
         assert not df.empty
 
 
@@ -234,10 +229,9 @@ class TestClear:
 
     @patch("src.backtest.cache.yf.download")
     def test_clear_removes_files(self, mock_download, cache):
-        ohlcv = _make_ohlcv(["SPY"], "2023-01-01", "2023-03-31")
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-03-31")
         vix = _make_vix("2023-01-01", "2023-03-31")
-        divs = _make_dividends_raw(["SPY"], "2023-01-01", "2023-03-31")
-        mock_download.side_effect = [ohlcv, vix, divs]
+        mock_download.side_effect = [combined, vix]
         cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
 
         assert cache.ohlcv_path.exists()
@@ -407,3 +401,77 @@ class TestLogger:
 
         assert not df.empty
         assert not vix_df.empty
+
+
+def _make_ohlcv_with_dividends(tickers, start, end):
+    """yf.download(auto_adjust=True, actions=True) 형식의 mock 데이터.
+    MultiIndex columns: [Close, Dividends, High, Low, Open, Volume] x tickers
+    6번째 영업일에 첫 번째 티커의 배당금 0.5 포함.
+    """
+    dates = pd.bdate_range(start, end)
+    price_types = ["Close", "Dividends", "High", "Low", "Open", "Volume"]
+    columns = pd.MultiIndex.from_product([price_types, tickers])
+    data = np.zeros((len(dates), len(columns)))
+    df = pd.DataFrame(data, index=dates, columns=columns)
+    for pt in ["Close", "Open", "High", "Low"]:
+        for t in tickers:
+            df[(pt, t)] = np.random.rand(len(dates)) * 100 + 50
+    if len(dates) > 5:
+        df.loc[dates[5], ("Dividends", tickers[0])] = 0.5
+    return df
+
+
+class TestUnifiedDownload:
+    """OHLCV와 배당을 단일 yf.download 호출로 처리 (auto_adjust=True, actions=True)"""
+
+    @patch("src.backtest.cache.yf.download")
+    def test_cache_miss_calls_download_twice_not_thrice(self, mock_download, cache):
+        """캐시 없을 때 yf.download를 2번(OHLCV+배당 통합, VIX)만 호출해야 한다"""
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-12-31")
+        vix = _make_vix("2023-01-01", "2023-12-31")
+        mock_download.side_effect = [combined, vix]
+
+        df, vix_df, div_df = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        assert mock_download.call_count == 2
+        assert not df.empty
+        assert not div_df.empty
+
+    @patch("src.backtest.cache.yf.download")
+    def test_ohlcv_download_uses_auto_adjust_true_with_actions(self, mock_download, cache):
+        """OHLCV 다운로드 시 auto_adjust=True, actions=True를 사용해야 한다"""
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-12-31")
+        vix = _make_vix("2023-01-01", "2023-12-31")
+        mock_download.side_effect = [combined, vix]
+
+        cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+
+        # 첫 번째 호출(OHLCV)에 auto_adjust=True, actions=True 확인
+        first_call = mock_download.call_args_list[0]
+        kwargs = first_call.kwargs if first_call.kwargs else {}
+        assert kwargs.get("auto_adjust") is True
+        assert kwargs.get("actions") is True
+
+    @patch("src.backtest.cache.yf.download")
+    def test_dividends_extracted_from_combined_download(self, mock_download, cache):
+        """배당 데이터가 통합 다운로드에서 올바르게 추출되어야 한다"""
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-06-30")
+        vix = _make_vix("2023-01-01", "2023-06-30")
+        mock_download.side_effect = [combined, vix]
+
+        _, _, div_df = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
+
+        assert "SPY" in div_df.columns
+        assert (div_df["SPY"] > 0).any(), "배당금 0.5인 날이 존재해야 한다"
+
+    @patch("src.backtest.cache.yf.download")
+    def test_ohlcv_does_not_contain_dividends_column(self, mock_download, cache):
+        """OHLCV DataFrame에 Dividends 컬럼이 포함되지 않아야 한다"""
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-06-30")
+        vix = _make_vix("2023-01-01", "2023-06-30")
+        mock_download.side_effect = [combined, vix]
+
+        df, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
+
+        ohlcv_fields = df.columns.get_level_values(0).unique().tolist()
+        assert "Dividends" not in ohlcv_fields
