@@ -11,6 +11,9 @@ CACHE_DIR = Path(__file__).parent / "cache"
 # 주말/공휴일로 인한 날짜 차이 허용 범위 (캘린더 일수)
 _DATE_TOLERANCE = timedelta(days=7)
 
+# OHLCV에 포함할 필드 (Dividends, Stock Splits 제외)
+_OHLCV_FIELDS = ["Close", "Open", "High", "Low", "Volume"]
+
 
 class _NullLogger:
     """로거가 없을 때 사용하는 아무것도 하지 않는 로거"""
@@ -49,32 +52,33 @@ class BacktestDataCache:
         need_start = pd.Timestamp(start_date)
         need_end = pd.Timestamp(end_date)
 
-        ohlcv = self._process_ohlcv(tickers, need_start, need_end)
+        ohlcv, dividends = self._process_ohlcv_and_dividends(tickers, need_start, need_end)
         vix = self._process_vix(need_start, need_end)
-        dividends = self._process_dividends(tickers, need_start, need_end)
 
         return ohlcv, vix, dividends
 
-    # ── OHLCV ──────────────────────────────────────────────
+    # ── OHLCV + 배당 (통합) ────────────────────────────────
 
-    def _process_ohlcv(
+    def _process_ohlcv_and_dividends(
         self, tickers: List[str], need_start: pd.Timestamp, need_end: pd.Timestamp
-    ) -> pd.DataFrame:
-        cached = self._load_parquet(self.ohlcv_path)
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
+        cached_ohlcv = self._load_parquet(self.ohlcv_path)
+        cached_divs = self._load_parquet(self.dividends_path)
 
-        if cached is None or cached.empty:
+        if cached_ohlcv is None or cached_ohlcv.empty:
             self._logger.info(f"캐시 없음. 전체 다운로드: {tickers}")
-            ohlcv = self._download_ohlcv(tickers, need_start, need_end)
+            ohlcv, divs = self._download_ohlcv_and_dividends(tickers, need_start, need_end)
             self._save_parquet(ohlcv, self.ohlcv_path)
-            return ohlcv
+            self._save_parquet(divs, self.dividends_path)
+            return ohlcv, divs if divs is not None else pd.DataFrame()
 
         # 캐시된 정보 파악
-        cached_tickers = set(self._get_tickers_from_df(cached))
+        cached_tickers = set(self._get_tickers_from_df(cached_ohlcv))
         requested_tickers = set(tickers)
         missing_tickers = requested_tickers - cached_tickers
 
-        cache_start = cached.index.min()
-        cache_end = cached.index.max()
+        cache_start = cached_ohlcv.index.min()
+        cache_end = cached_ohlcv.index.max()
 
         downloads = []  # (tickers, start, end, reason)
 
@@ -111,18 +115,23 @@ class BacktestDataCache:
 
         if not downloads:
             self._logger.info("OHLCV 캐시 히트 (다운로드 불필요)")
-            return cached
+            return cached_ohlcv, cached_divs if cached_divs is not None else pd.DataFrame()
 
         # 다운로드 및 병합
-        result = cached
+        result_ohlcv = cached_ohlcv
+        result_divs = cached_divs if cached_divs is not None else pd.DataFrame()
+
         for dl_tickers, dl_start, dl_end, reason in downloads:
             self._logger.info(f"{reason}: {dl_tickers} ({dl_start.date()} ~ {dl_end.date()})")
-            new_data = self._download_ohlcv(dl_tickers, dl_start, dl_end)
-            if new_data is not None and not new_data.empty:
-                result = self._merge_dataframes(result, new_data)
+            new_ohlcv, new_divs = self._download_ohlcv_and_dividends(dl_tickers, dl_start, dl_end)
+            if new_ohlcv is not None and not new_ohlcv.empty:
+                result_ohlcv = self._merge_dataframes(result_ohlcv, new_ohlcv)
+            if new_divs is not None and not new_divs.empty:
+                result_divs = self._merge_dataframes(result_divs, new_divs)
 
-        self._save_parquet(result, self.ohlcv_path)
-        return result
+        self._save_parquet(result_ohlcv, self.ohlcv_path)
+        self._save_parquet(result_divs, self.dividends_path)
+        return result_ohlcv, result_divs
 
     # ── VIX ────────────────────────────────────────────────
 
@@ -162,22 +171,43 @@ class BacktestDataCache:
 
     # ── 다운로드 ───────────────────────────────────────────
 
-    def _download_ohlcv(
+    def _download_ohlcv_and_dividends(
         self, tickers: List[str], start: pd.Timestamp, end: pd.Timestamp
-    ) -> Optional[pd.DataFrame]:
+    ) -> Tuple[Optional[pd.DataFrame], pd.DataFrame]:
+        """
+        단일 yf.download(auto_adjust=True, actions=True) 호출로
+        조정가 OHLCV와 실제 배당금액을 함께 다운로드한다.
+        """
         try:
             df = yf.download(
-                tickers, start=start, end=end, auto_adjust=True, progress=True
+                tickers, start=start, end=end,
+                auto_adjust=True, actions=True, progress=True
             )
-            if df is not None and not df.empty:
-                # 단일 티커 + SingleIndex → MultiIndex로 정규화
-                if not isinstance(df.columns, pd.MultiIndex) and len(tickers) == 1:
-                    df.columns = pd.MultiIndex.from_product([df.columns, tickers])
-                return df
-            return None
+            if df is None or df.empty:
+                return None, pd.DataFrame()
+
+            # 단일 티커 + SingleIndex → MultiIndex로 정규화
+            if not isinstance(df.columns, pd.MultiIndex) and len(tickers) == 1:
+                df.columns = pd.MultiIndex.from_product([df.columns, tickers])
+
+            level0 = df.columns.get_level_values(0)
+
+            # OHLCV 추출 (Dividends, Stock Splits 제외)
+            available_fields = [f for f in _OHLCV_FIELDS if f in level0]
+            ohlcv = df[available_fields]
+
+            # 배당 추출
+            if "Dividends" in level0:
+                divs = df["Dividends"]
+                if isinstance(divs, pd.Series):
+                    divs = divs.to_frame(name=tickers[0])
+            else:
+                divs = pd.DataFrame()
+
+            return ohlcv, divs
         except Exception as e:
             self._logger.warning(f"OHLCV 다운로드 실패: {e}")
-            return None
+            return None, pd.DataFrame()
 
     def _download_vix(
         self, start: pd.Timestamp, end: pd.Timestamp
@@ -188,74 +218,6 @@ class BacktestDataCache:
         except Exception as e:
             self._logger.warning(f"VIX 다운로드 실패: {e}")
             return None
-
-    # ── 배당 ───────────────────────────────────────────────
-
-    def _process_dividends(
-        self, tickers: List[str], need_start: pd.Timestamp, need_end: pd.Timestamp
-    ) -> pd.DataFrame:
-        cached = self._load_parquet(self.dividends_path)
-
-        if cached is None or cached.empty:
-            self._logger.info(f"배당 캐시 없음. 전체 다운로드: {tickers}")
-            divs = self._download_dividends(tickers, need_start, need_end)
-            self._save_parquet(divs, self.dividends_path)
-            return divs if divs is not None else pd.DataFrame()
-
-        cache_start = cached.index.min()
-        cache_end = cached.index.max()
-
-        downloads = []
-        if need_start < cache_start - _DATE_TOLERANCE:
-            downloads.append((need_start, cache_start - timedelta(days=1)))
-        if need_end > cache_end + _DATE_TOLERANCE:
-            downloads.append((cache_end + timedelta(days=1), need_end))
-
-        if not downloads:
-            self._logger.info("배당 캐시 히트 (다운로드 불필요)")
-            return cached
-
-        result = cached
-        for dl_start, dl_end in downloads:
-            self._logger.info(f"배당 보충: {dl_start.date()} ~ {dl_end.date()}")
-            new_data = self._download_dividends(tickers, dl_start, dl_end)
-            if new_data is not None and not new_data.empty:
-                result = self._merge_dataframes(result, new_data)
-
-        self._save_parquet(result, self.dividends_path)
-        return result
-
-    def _download_dividends(
-        self, tickers: List[str], start: pd.Timestamp, end: pd.Timestamp
-    ) -> pd.DataFrame:
-        """
-        yf.download(auto_adjust=False, actions=True)로 배당 데이터를 가져온다.
-        반환 형식: DatetimeIndex x tickers DataFrame (배당 없는 날은 0.0)
-        """
-        try:
-            df = yf.download(
-                tickers, start=start, end=end,
-                auto_adjust=False, actions=True, progress=False
-            )
-            if df is None or df.empty:
-                return pd.DataFrame()
-
-            if isinstance(df.columns, pd.MultiIndex):
-                if 'Dividends' not in df.columns.get_level_values(0):
-                    return pd.DataFrame()
-                divs = df['Dividends']
-                if isinstance(divs, pd.Series):
-                    divs = divs.to_frame(name=tickers[0])
-            else:
-                # 단일 티커 → SingleIndex
-                if 'Dividends' not in df.columns:
-                    return pd.DataFrame()
-                divs = df[['Dividends']].rename(columns={'Dividends': tickers[0]})
-
-            return divs
-        except Exception as e:
-            self._logger.warning(f"배당 데이터 다운로드 실패: {e}")
-            return pd.DataFrame()
 
     # ── 유틸리티 ───────────────────────────────────────────
 
