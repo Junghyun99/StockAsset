@@ -1,10 +1,10 @@
 {
     "last_updated": "2025-12-30",
-    "last_rebalancing_date": "2025-12-22",
+    "last_rebalancing_date": "2025-12-30",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "Bull (모니터링)",
+        "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
             "vix": 14.329999923706055,
             "spy_mdd": -0.004881362573296912,
@@ -15,20 +15,20 @@
         }
     },
     "portfolio": {
-        "total_value": 14313.072851849538,
-        "cash_balance": 97.50429411027926,
+        "total_value": 12145.738008000984,
+        "cash_balance": 126.09442279590633,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 105,
+                "qty": 82,
                 "price": 71.61000061035156,
-                "value": 7519.050064086914
+                "value": 5872.020050048828
             },
             {
                 "ticker": "SHV",
-                "qty": 61,
+                "qty": 56,
                 "price": 109.77899169921875,
-                "value": 6696.518493652344
+                "value": 6147.62353515625
             }
         ]
     }
