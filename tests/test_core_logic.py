@@ -1146,3 +1146,88 @@ def test_generate_signal_logs_crash_rebalancing(create_portfolio):
     assert any('Rebalancer' in msg or '═' in msg for msg in info_calls)
     # CRASH에서도 주문이 생성됨 (exposure=0 → 매도)
     assert signal.has_orders is True
+
+
+# ==========================================
+# 비율 보정 임계치(ratio-aware threshold) 테스트
+# ==========================================
+
+def test_rebalancer_ratio_aware_threshold_asymmetric(create_portfolio):
+    """
+    [비대칭 비율 임계치 보정 테스트]
+    ratio_a=0.7일 때, 소수 측(B=0.3) 기준으로 임계치가 비례 축소되어
+    기존(보정 없음)에는 리밸런싱이 안 되던 이탈도에서도 리밸런싱이 발동되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.7)
+
+    # 현재: ratio_a=0.76, 목표 0.7 → diff=0.06
+    # 기존(보정 없음): 0.06 < BULL threshold 0.075 → 리밸런싱 안 함
+    # 보정 후: scaled_threshold = 0.075 * min(0.7,0.3)*2 = 0.075*0.6 = 0.045
+    #          0.06 > 0.045 → 리밸런싱 발생
+    pf = create_portfolio(
+        holdings={'SPY': 760, 'IEF': 240},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal.has_orders is True
+    assert "비율 재조정" in signal.reason
+
+
+def test_rebalancer_ratio_aware_threshold_symmetric_unchanged(create_portfolio):
+    """
+    [대칭 비율(50:50) 호환성 테스트]
+    ratio_a=0.5에서는 기존 동작과 완전히 동일해야 한다.
+    diff=0.05 < BULL threshold 0.075 → 리밸런싱 불필요.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.5)
+
+    pf = create_portfolio(
+        holdings={'SPY': 550, 'IEF': 450},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal.has_orders is False
+
+
+def test_rebalancer_ratio_scale_factor():
+    """ratio_scale 계산이 올바른지 확인."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+
+    r50 = Rebalancer(groups, ratio_a=0.5)
+    assert min(r50.ratio_a, r50.ratio_b) * 2 == 1.0
+
+    r70 = Rebalancer(groups, ratio_a=0.7)
+    assert abs(min(r70.ratio_a, r70.ratio_b) * 2 - 0.6) < 1e-9
+
+    r30 = Rebalancer(groups, ratio_a=0.3)
+    assert abs(min(r30.ratio_a, r30.ratio_b) * 2 - 0.6) < 1e-9
+
+
+def test_rebalancer_crash_in_default_threshold_map():
+    """CRASH가 DEFAULT_THRESHOLD_MAP에 명시적으로 포함되어야 한다."""
+    assert MarketRegime.CRASH in Rebalancer.DEFAULT_THRESHOLD_MAP
+    assert Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.CRASH] == 0.05
+
+
+def test_rebalancer_crash_threshold_triggers_rebalance(create_portfolio):
+    """
+    [CRASH 임계치 테스트 - FullExposureEngine 시나리오]
+    CRASH 국면에서 exposure=1.0일 때,
+    CRASH threshold(0.05)를 초과하면 리밸런싱이 발생해야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # diff = 0.06 > CRASH threshold 0.05 → 리밸런싱 발생
+    pf = create_portfolio(
+        holdings={'SPY': 560, 'IEF': 440},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.CRASH)
+    assert signal.has_orders is True
+    assert "비율 재조정" in signal.reason
