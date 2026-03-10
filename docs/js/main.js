@@ -38,12 +38,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     setupTabRouting();
 
     try {
-        // 4개 JSON 파일 병렬 로드 (asset_groups.json은 항상 live 데이터 기준)
+        // 4개 JSON 파일 병렬 로드 (asset_groups.json은 현재 모드 데이터 경로 기준)
         const [summaryRes, statusRes, historyRes, groupConfigRes] = await Promise.all([
             fetch(`${dataPath}summary.json`),
             fetch(`${dataPath}status.json`),
             fetch(`${dataPath}history.json`),
-            fetch('data/asset_groups.json')
+            fetch(`${dataPath}asset_groups.json`)
         ]);
 
         const summaryData = await summaryRes.json();

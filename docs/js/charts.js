@@ -182,43 +182,54 @@ export function renderGroupBarChart(statusData, groupConfig) {
         groupValues[g.group] = (groupValues[g.group] || 0) + h.value;
     });
 
-    // C 그룹(또는 마지막 그룹)에 현금 포함
+    // 마지막 그룹에 현금 포함
     const cashGroup = groupConfig ? Object.keys(groupConfig).slice(-1)[0] : 'C';
     groupValues[cashGroup] = (groupValues[cashGroup] || 0) + cash;
-
-    const groupA = groupValues['A'] || 0;
-    const groupB = groupValues['B'] || 0;
-    const groupC = groupValues['C'] || 0;
 
     if (groupBarChartInstance) groupBarChartInstance.destroy();
 
     const canvas = document.getElementById('groupBarChart');
     if (!canvas) return;
 
+    // groupConfig 기반으로 동적 datasets 생성
+    let datasets;
+    if (groupConfig && Object.keys(groupConfig).length > 0) {
+        datasets = Object.entries(groupConfig).map(([group, info]) => {
+            const value = groupValues[group] || 0;
+            return {
+                label: `${group}: ${info.label} (${formatCurrency(value)})`,
+                data: [totalValue > 0 ? (value / totalValue * 100) : 0],
+                backgroundColor: info.color,
+                barPercentage: 0.8
+            };
+        });
+        // 매칭 안 된 티커('?')가 있으면 마지막에 추가
+        if (groupValues['?']) {
+            const otherValue = groupValues['?'];
+            datasets.push({
+                label: `Other (${formatCurrency(otherValue)})`,
+                data: [totalValue > 0 ? (otherValue / totalValue * 100) : 0],
+                backgroundColor: '#adb5bd',
+                barPercentage: 0.8
+            });
+        }
+    } else {
+        // groupConfig 없을 때 폴백 (A/B/C 고정)
+        const groupA = groupValues['A'] || 0;
+        const groupB = groupValues['B'] || 0;
+        const groupC = groupValues['C'] || 0;
+        datasets = [
+            { label: `A: Growth (${formatCurrency(groupA)})`, data: [totalValue > 0 ? (groupA / totalValue * 100) : 0], backgroundColor: '#0d6efd', barPercentage: 0.8 },
+            { label: `B: Safety (${formatCurrency(groupB)})`, data: [totalValue > 0 ? (groupB / totalValue * 100) : 0], backgroundColor: '#198754', barPercentage: 0.8 },
+            { label: `C: Cash (${formatCurrency(groupC)})`, data: [totalValue > 0 ? (groupC / totalValue * 100) : 0], backgroundColor: '#ffc107', barPercentage: 0.8 }
+        ];
+    }
+
     groupBarChartInstance = new Chart(canvas, {
         type: 'bar',
         data: {
             labels: [''],
-            datasets: [
-                {
-                    label: `A: Growth (${formatCurrency(groupA)})`,
-                    data: [totalValue > 0 ? (groupA / totalValue * 100) : 0],
-                    backgroundColor: '#0d6efd',
-                    barPercentage: 0.8
-                },
-                {
-                    label: `B: Safety (${formatCurrency(groupB)})`,
-                    data: [totalValue > 0 ? (groupB / totalValue * 100) : 0],
-                    backgroundColor: '#198754',
-                    barPercentage: 0.8
-                },
-                {
-                    label: `C: Cash (${formatCurrency(groupC)})`,
-                    data: [totalValue > 0 ? (groupC / totalValue * 100) : 0],
-                    backgroundColor: '#ffc107',
-                    barPercentage: 0.8
-                }
-            ]
+            datasets: datasets
         },
         options: {
             indexAxis: 'y',
