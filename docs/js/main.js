@@ -9,7 +9,7 @@ import {
     renderGroupAllocationChart,
     updatePerformanceChartRange,
     resizeAllCharts
-} from './charts.js';
+} from './charts.js?v=2';
 
 import {
     updateModeUI,
@@ -21,7 +21,7 @@ import {
     renderPerformanceSummaryCards,
     renderTradeSummaryStats,
     renderTradeHistory
-} from './ui.js';
+} from './ui.js?v=2';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 1. URL 파라미터에서 모드 확인 (?mode=backtest)
@@ -39,11 +39,13 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     try {
         // 4개 JSON 파일 병렬 로드 (asset_groups.json은 현재 모드 데이터 경로 기준)
+        // cache-bust: 브라우저 캐시로 인한 구 버전 데이터 방지
+        const cacheBust = `v=${Date.now()}`;
         const [summaryRes, statusRes, historyRes, groupConfigRes] = await Promise.all([
-            fetch(`${dataPath}summary.json`),
-            fetch(`${dataPath}status.json`),
-            fetch(`${dataPath}history.json`),
-            fetch(`${dataPath}asset_groups.json`)
+            fetch(`${dataPath}summary.json?${cacheBust}`),
+            fetch(`${dataPath}status.json?${cacheBust}`),
+            fetch(`${dataPath}history.json?${cacheBust}`),
+            fetch(`${dataPath}asset_groups.json?${cacheBust}`)
         ]);
 
         const summaryData = await summaryRes.json();

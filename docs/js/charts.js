@@ -1,7 +1,7 @@
 // docs/js/charts.js
 // Chart.js 차트 생성 및 관리
 
-import { filterByDateRange, getAssetGroup, formatCurrency } from './utils.js';
+import { filterByDateRange, getAssetGroup, formatCurrency } from './utils.js?v=2';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
 let perfChart = null;
