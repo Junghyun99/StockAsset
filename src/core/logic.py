@@ -101,7 +101,7 @@ class VolatilityTargeter:
 class Rebalancer:
     """리밸런싱 및 주문 생성기"""
 
-    # 국면별 리밸런싱 임계치 기본값 (목표 비율 대비 이탈도 기준)
+    # 국면별 리밸런싱 임계치 기본값 (각 그룹의 상대이탈 기준)
     DEFAULT_THRESHOLD_MAP: Dict[MarketRegime, float] = {
         MarketRegime.BULL: 0.075,
         MarketRegime.SIDEWAYS: 0.025,
@@ -181,20 +181,17 @@ class Rebalancer:
             ratio_a = self.ratio_a
             ratio_b = self.ratio_b
             needs_rebalance = True
-            current_diff = 0.0
+            rel_dev_a = 0.0
+            rel_dev_b = 0.0
         else:
             ratio_a = val_a / val_risky
             ratio_b = val_b / val_risky
 
-            # 목표 비율 대비 이탈도 측정
-            current_diff = round(abs(ratio_a - self.ratio_a), 6)
+            # 개별 상대이탈: 각 그룹이 목표 대비 몇 % 벗어났는지 계산
+            rel_dev_a = round(abs(ratio_a - self.ratio_a) / self.ratio_a, 6)
+            rel_dev_b = round(abs(ratio_b - self.ratio_b) / self.ratio_b, 6)
 
-            # 비대칭 비율 보정: 소수 측 비율이 작을수록 임계치를 비례적으로 줄임
-            # ratio_a=0.5이면 scale=1.0 (기존 동작과 동일)
-            ratio_scale = min(self.ratio_a, self.ratio_b) * 2
-            scaled_threshold = round(threshold * ratio_scale, 6)
-
-            needs_rebalance = current_diff > scaled_threshold
+            needs_rebalance = (rel_dev_a > threshold) or (rel_dev_b > threshold)
 
         # ── 섹션 3: 비중 판정 ────────────────────────────────────────────────
         if self._logger:
@@ -206,8 +203,8 @@ class Rebalancer:
                     f"[비중 판정] ratio_A={ratio_a:.3f}  ratio_B={ratio_b:.3f}"
                 )
                 self._logger.info(
-                    f"  현재 차이: {current_diff:.1%} | 임계치: {scaled_threshold:.1%}"
-                    f" (원본 {threshold:.1%} × 비율보정 {ratio_scale:.2f}) → {verdict}"
+                    f"  A 상대이탈: {rel_dev_a:.1%} | B 상대이탈: {rel_dev_b:.1%}"
+                    f" | 임계치: {threshold:.1%} → {verdict}"
                 )
 
         # 3. 목표 금액 계산
@@ -269,9 +266,11 @@ class Rebalancer:
         elif is_first_investment and not sorted_orders:
             reason = "첫 투자: 주문 단위 미달로 진입 불가"
         elif needs_rebalance and sorted_orders:
-            reason = f"비율 재조정: Threshold {scaled_threshold:.1%} 초과 (Diff: {current_diff:.1%})"
+            max_dev = max(rel_dev_a, rel_dev_b)
+            reason = f"비율 재조정: 상대이탈 {max_dev:.1%} > 임계치 {threshold:.1%}"
         elif needs_rebalance and not sorted_orders:
-            reason = f"비율 재조정 필요하나 주문 단위 미달 (Diff: {current_diff:.1%})"
+            max_dev = max(rel_dev_a, rel_dev_b)
+            reason = f"비율 재조정 필요하나 주문 단위 미달 (상대이탈: {max_dev:.1%})"
         elif not needs_rebalance and sorted_orders:
             reason = "비율 유지, exposure 조정으로 주문 발생"
         else:

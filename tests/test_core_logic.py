@@ -327,18 +327,17 @@ def test_rebalancer_threshold_logic(create_portfolio):
         holdings={'SPY': 550, 'IEF': 450}, 
         prices={'SPY': 1000, 'IEF': 1000}
     )
-    # 총액 1,000,000. Ratio A=0.55, Ratio B=0.45. 목표(0.5) 대비 이탈 = 0.05
+    # 총액 1,000,000. Ratio A=0.55, Ratio B=0.45. 상대이탈 = 0.05/0.5 = 10%
 
-    # Case 1: 횡보장 (Threshold 0.025) -> 5% 이탈이므로 리밸런싱 해야 함
+    # Case 1: 횡보장 (Threshold 0.025) -> 상대이탈 10%이므로 리밸런싱 해야 함
     signal_side = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
     assert signal_side.has_orders is True
-    assert "비율 재조정" in signal_side.reason and "초과" in signal_side.reason
-    
-    # Case 2: 하락장 (Threshold 0.05) -> 5% 이탈은 초과가 아님(GT). 유지.
-    # 로직: diff > threshold. 0.05 > 0.05 is False.
+    assert "비율 재조정" in signal_side.reason
+
+    # Case 2: 하락장 (Threshold 0.05) -> 상대이탈 10% > 5% → 리밸런싱 발생
     signal_bear = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BEAR_WEAK)
-    assert signal_bear.has_orders is False
-    assert len(signal_bear.orders) == 0
+    assert signal_bear.has_orders is True
+    assert "비율 재조정" in signal_bear.reason
 
 def test_rebalancer_crash_sells_all_risky_assets(create_portfolio):
     """
@@ -730,23 +729,22 @@ def test_rebalancer_custom_threshold_map(create_portfolio):
     """
     [커스텀 임계치 테스트]
     threshold_map을 외부에서 주입하면 해당 임계치가 적용되어야 한다.
-    기본 BULL 임계치 0.15에서는 리밸런싱이 발생하지 않는 10% 차이가,
-    커스텀 임계치 0.05로 변경하면 리밸런싱이 발생해야 한다.
+    상대이탈 기준으로 판정한다.
     """
     groups = {'A': ['SPY'], 'B': ['IEF']}
 
-    # 차이 10%인 포트폴리오
-    pf = create_portfolio(
-        holdings={'SPY': 550, 'IEF': 450},
+    # A=518, B=482 → ratio_a=0.518, rel_dev=0.018/0.5=3.6%
+    pf_small = create_portfolio(
+        holdings={'SPY': 518, 'IEF': 482},
         prices={'SPY': 1000, 'IEF': 1000}
     )
 
-    # Case 1: 기본 임계치 (BULL=0.075) → 5% 이탈이므로 리밸런싱 불필요
+    # Case 1: 기본 임계치 (BULL=0.075) → 상대이탈 3.6% < 7.5% → 리밸런싱 불필요
     rebalancer_default = Rebalancer(groups)
-    signal_default = rebalancer_default.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    signal_default = rebalancer_default.generate_signal(pf_small, target_exposure=1.0, regime=MarketRegime.BULL)
     assert signal_default.has_orders is False
 
-    # Case 2: 커스텀 임계치 (BULL=0.03) → 5% 이탈이므로 리밸런싱 필요
+    # Case 2: 커스텀 임계치 (BULL=0.03) → 상대이탈 3.6% > 3.0% → 리밸런싱 필요
     custom_thresholds = {
         MarketRegime.BULL: 0.03,
         MarketRegime.SIDEWAYS: 0.025,
@@ -754,7 +752,7 @@ def test_rebalancer_custom_threshold_map(create_portfolio):
         MarketRegime.BEAR_STRONG: 0.05,
     }
     rebalancer_custom = Rebalancer(groups, threshold_map=custom_thresholds)
-    signal_custom = rebalancer_custom.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    signal_custom = rebalancer_custom.generate_signal(pf_small, target_exposure=1.0, regime=MarketRegime.BULL)
     assert signal_custom.has_orders is True
     assert "비율 재조정" in signal_custom.reason
 
@@ -929,7 +927,7 @@ def test_rebalancer_no_filter_when_rebalance_needed(create_portfolio):
     groups = {'A': ['SPY'], 'B': ['IEF']}
     rebalancer = Rebalancer(groups)
 
-    # SPY 55만(55%), IEF 45만(45%) → diff=10% > SIDEWAYS threshold 5%
+    # SPY 55만(55%), IEF 45만(45%) → rel_dev=0.05/0.5=10% > SIDEWAYS threshold 2.5%
     pf = create_portfolio(
         holdings={'SPY': 550, 'IEF': 450},
         prices={'SPY': 1000, 'IEF': 1000}
@@ -1149,22 +1147,19 @@ def test_generate_signal_logs_crash_rebalancing(create_portfolio):
 
 
 # ==========================================
-# 비율 보정 임계치(ratio-aware threshold) 테스트
+# 개별 상대이탈(relative deviation) 임계치 테스트
 # ==========================================
 
-def test_rebalancer_ratio_aware_threshold_asymmetric(create_portfolio):
+def test_rebalancer_relative_deviation_asymmetric(create_portfolio):
     """
-    [비대칭 비율 임계치 보정 테스트]
-    ratio_a=0.7일 때, 소수 측(B=0.3) 기준으로 임계치가 비례 축소되어
-    기존(보정 없음)에는 리밸런싱이 안 되던 이탈도에서도 리밸런싱이 발동되어야 한다.
+    [비대칭 비율 상대이탈 테스트]
+    ratio_a=0.7일 때, A=76% B=24%이면
+    rel_dev_a = |0.76-0.7|/0.7 = 8.6%, rel_dev_b = |0.24-0.3|/0.3 = 20%
+    BULL threshold=7.5% → B가 초과하므로 리밸런싱 발동.
     """
     groups = {'A': ['SPY'], 'B': ['IEF']}
     rebalancer = Rebalancer(groups, ratio_a=0.7)
 
-    # 현재: ratio_a=0.76, 목표 0.7 → diff=0.06
-    # 기존(보정 없음): 0.06 < BULL threshold 0.075 → 리밸런싱 안 함
-    # 보정 후: scaled_threshold = 0.075 * min(0.7,0.3)*2 = 0.075*0.6 = 0.045
-    #          0.06 > 0.045 → 리밸런싱 발생
     pf = create_portfolio(
         holdings={'SPY': 760, 'IEF': 240},
         prices={'SPY': 1000, 'IEF': 1000}
@@ -1175,11 +1170,12 @@ def test_rebalancer_ratio_aware_threshold_asymmetric(create_portfolio):
     assert "비율 재조정" in signal.reason
 
 
-def test_rebalancer_ratio_aware_threshold_symmetric_unchanged(create_portfolio):
+def test_rebalancer_relative_deviation_symmetric_unchanged(create_portfolio):
     """
-    [대칭 비율(50:50) 호환성 테스트]
-    ratio_a=0.5에서는 기존 동작과 완전히 동일해야 한다.
-    diff=0.05 < BULL threshold 0.075 → 리밸런싱 불필요.
+    [대칭 비율(50:50) 상대이탈 테스트]
+    ratio_a=0.5, A=55% B=45%이면
+    rel_dev_a = |0.55-0.5|/0.5 = 10%, rel_dev_b = 10%
+    BULL threshold=7.5% → 둘 다 초과하므로 리밸런싱 발동.
     """
     groups = {'A': ['SPY'], 'B': ['IEF']}
     rebalancer = Rebalancer(groups, ratio_a=0.5)
@@ -1190,21 +1186,26 @@ def test_rebalancer_ratio_aware_threshold_symmetric_unchanged(create_portfolio):
     )
 
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
-    assert signal.has_orders is False
+    assert signal.has_orders is True
 
 
-def test_rebalancer_ratio_scale_factor():
-    """ratio_scale 계산이 올바른지 확인."""
+def test_rebalancer_relative_deviation_below_threshold(create_portfolio):
+    """
+    [상대이탈 임계치 미만 테스트]
+    ratio_a=0.5, A=53% B=47%이면
+    rel_dev_a = |0.53-0.5|/0.5 = 6%, rel_dev_b = 6%
+    BULL threshold=7.5% → 둘 다 미만이므로 리밸런싱 불필요.
+    """
     groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.5)
 
-    r50 = Rebalancer(groups, ratio_a=0.5)
-    assert min(r50.ratio_a, r50.ratio_b) * 2 == 1.0
+    pf = create_portfolio(
+        holdings={'SPY': 530, 'IEF': 470},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
 
-    r70 = Rebalancer(groups, ratio_a=0.7)
-    assert abs(min(r70.ratio_a, r70.ratio_b) * 2 - 0.6) < 1e-9
-
-    r30 = Rebalancer(groups, ratio_a=0.3)
-    assert abs(min(r30.ratio_a, r30.ratio_b) * 2 - 0.6) < 1e-9
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal.has_orders is False
 
 
 def test_rebalancer_crash_in_default_threshold_map():
@@ -1222,7 +1223,7 @@ def test_rebalancer_crash_threshold_triggers_rebalance(create_portfolio):
     groups = {'A': ['SPY'], 'B': ['IEF']}
     rebalancer = Rebalancer(groups)
 
-    # diff = 0.06 > CRASH threshold 0.05 → 리밸런싱 발생
+    # rel_dev = 0.06/0.5 = 12% > CRASH threshold 5% → 리밸런싱 발생
     pf = create_portfolio(
         holdings={'SPY': 560, 'IEF': 440},
         prices={'SPY': 1000, 'IEF': 1000}
