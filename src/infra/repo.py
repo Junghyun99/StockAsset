@@ -18,13 +18,22 @@ class JsonRepository(IRepository):
         self.root = root_path
         self.max_summary_records = max_summary_records
         self.max_history_records = max_history_records
-        self.asset_groups = asset_groups or {}
+        self._asset_groups = asset_groups or {}
         os.makedirs(self.root, exist_ok=True)
 
         self.status_file = os.path.join(self.root, "status.json")
         self.summary_file = os.path.join(self.root, "summary.json")
         self.history_file = os.path.join(self.root, "history.json")
 
+        self.save_asset_groups_config()
+
+    @property
+    def asset_groups(self) -> dict:
+        return self._asset_groups
+
+    @asset_groups.setter
+    def asset_groups(self, value: dict):
+        self._asset_groups = value or {}
         self.save_asset_groups_config()
 
     def save_asset_groups_config(self):
