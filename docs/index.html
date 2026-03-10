@@ -193,42 +193,25 @@
             <!-- ==================== TAB 2: PERFORMANCE ==================== -->
             <div class="tab-pane fade" id="performance" role="tabpanel" aria-labelledby="performance-tab">
 
-                <!-- Performance Summary Cards -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">Total Return</h6>
-                                <h3 class="fw-bold mb-0" id="perf-total-return">-</h3>
-                                <div class="small text-muted">Since inception</div>
-                            </div>
-                        </div>
+                <!-- Performance Comparison Table -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Portfolio vs SPY Benchmark</h5>
                     </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">SPY Return</h6>
-                                <h3 class="fw-bold mb-0" id="perf-spy-return">-</h3>
-                                <div class="small" id="perf-alpha">Alpha: -</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">Max Drawdown</h6>
-                                <h3 class="fw-bold mb-0 text-danger" id="perf-max-mdd">-</h3>
-                                <div class="small text-muted" id="perf-max-mdd-date">-</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card h-100 border-0 shadow-sm">
-                            <div class="card-body">
-                                <h6 class="text-muted">Current MDD</h6>
-                                <h3 class="fw-bold mb-0" id="perf-current-mdd">-</h3>
-                                <div class="small text-muted">From peak</div>
-                            </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 align-middle" id="metrics-comparison-table">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">Metric</th>
+                                        <th class="text-end">Portfolio</th>
+                                        <th class="text-end pe-3">SPY (Benchmark)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="ps-3 text-muted" colspan="3">Loading...</td></tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
