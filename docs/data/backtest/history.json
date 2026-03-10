@@ -27,5 +27,34 @@
                 "reason": ""
             }
         ]
+    },
+    {
+        "id": "tx_20251028",
+        "date": "2025-10-28",
+        "portfolio_value": 11409.915854518184,
+        "total_trade_amount": 1801.7099999999998,
+        "reason": "비율 재조정: Threshold 8% 초과 (Diff: 7.5%)",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 10,
+                "price": 74.91,
+                "fee": 0.75,
+                "date": "2025-10-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 39,
+                "price": 26.99,
+                "fee": 1.05,
+                "date": "2025-10-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
     }
 ]
