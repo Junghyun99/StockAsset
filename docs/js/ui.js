@@ -9,7 +9,8 @@ import {
     formatPercent,
     computeReturns,
     computeDrawdown,
-    computeTradeStats
+    computeTradeStats,
+    computeAdvancedMetrics
 } from './utils.js?v=2';
 
 /**
@@ -230,35 +231,72 @@ export function updateDecisionLogic(lastData) {
 }
 
 /**
- * Performance 탭 - 성과 요약 카드 렌더링
+ * Performance 탭 - 포트폴리오 vs SPY 비교 테이블 렌더링
  */
 export function renderPerformanceSummaryCards(summaryData) {
-    const returns = computeReturns(summaryData);
-    const drawdown = computeDrawdown(summaryData);
+    const metrics = computeAdvancedMetrics(summaryData);
+    const p = metrics.portfolio;
+    const s = metrics.spy;
 
-    // Total Return
-    const totalReturnEl = document.getElementById('perf-total-return');
-    totalReturnEl.innerText = formatPercent(returns.portfolioReturn);
-    totalReturnEl.className = 'fw-bold mb-0 ' + (returns.portfolioReturn >= 0 ? 'text-success' : 'text-danger');
+    // 지표 정의: [label, portValue, spyValue, format, higherIsBetter]
+    const rows = [
+        ['Total Return', p.totalReturn, s.totalReturn, 'percent', true],
+        ['CAGR', p.cagr, s.cagr, 'percent', true],
+        ['Max Drawdown', p.mdd, s.mdd, 'percent', false],
+        ['Volatility', p.volatility, s.volatility, 'percent_abs', false],
+        ['Sharpe Ratio', p.sharpe, s.sharpe, 'ratio', true],
+        ['Sortino Ratio', p.sortino, s.sortino, 'ratio', true],
+        ['Calmar Ratio', p.calmar, s.calmar, 'ratio', true],
+        ['Beta', p.beta, s.beta, 'ratio', null],
+    ];
 
-    // SPY Return
-    const spyReturnEl = document.getElementById('perf-spy-return');
-    spyReturnEl.innerText = formatPercent(returns.spyReturn);
-    spyReturnEl.className = 'fw-bold mb-0 ' + (returns.spyReturn >= 0 ? 'text-success' : 'text-danger');
+    function fmt(value, format) {
+        if (format === 'percent') {
+            const sign = value >= 0 ? '+' : '';
+            return sign + value.toFixed(2) + '%';
+        }
+        if (format === 'percent_abs') {
+            return value.toFixed(2) + '%';
+        }
+        return value.toFixed(2);
+    }
 
-    // Alpha
-    const alphaEl = document.getElementById('perf-alpha');
-    alphaEl.innerText = `Alpha: ${formatPercent(returns.alpha)}`;
-    alphaEl.className = 'small ' + (returns.alpha >= 0 ? 'text-success' : 'text-danger');
+    // 우열 판단: 포트폴리오가 우수하면 text-success, 열위하면 text-danger
+    function compareClass(portVal, spyVal, higherIsBetter) {
+        if (higherIsBetter === null) return ''; // Beta는 비교 안 함
+        if (Math.abs(portVal - spyVal) < 0.005) return ''; // 거의 동일
+        if (higherIsBetter) {
+            return portVal > spyVal ? 'text-success fw-bold' : 'text-danger';
+        } else {
+            // MDD, Volatility: 낮을수록 좋음 (MDD는 음수이므로 더 큰 값이 좋음)
+            return portVal > spyVal ? 'text-success fw-bold' : 'text-danger';
+        }
+    }
 
-    // Max Drawdown
-    document.getElementById('perf-max-mdd').innerText = (drawdown.maxMDD * 100).toFixed(2) + '%';
-    document.getElementById('perf-max-mdd-date').innerText = drawdown.maxMDDDate;
+    const tbody = document.querySelector('#metrics-comparison-table tbody');
+    let html = '';
+    rows.forEach(([label, portVal, spyVal, format, higherIsBetter]) => {
+        const portClass = compareClass(portVal, spyVal, higherIsBetter);
+        html += `
+            <tr>
+                <td class="ps-3">${label}</td>
+                <td class="text-end ${portClass}">${fmt(portVal, format)}</td>
+                <td class="text-end pe-3">${fmt(spyVal, format)}</td>
+            </tr>
+        `;
+    });
 
-    // Current MDD
-    const currentMDDEl = document.getElementById('perf-current-mdd');
-    currentMDDEl.innerText = (drawdown.currentMDD * 100).toFixed(2) + '%';
-    currentMDDEl.className = 'fw-bold mb-0 ' + (drawdown.currentMDD < -0.05 ? 'text-danger' : 'text-warning');
+    // Alpha 행 (포트폴리오 전용)
+    const alpha = p.totalReturn - s.totalReturn;
+    const alphaClass = alpha >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+    html += `
+        <tr class="table-light">
+            <td class="ps-3 fw-bold">Alpha</td>
+            <td class="text-end ${alphaClass}" colspan="2">${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%</td>
+        </tr>
+    `;
+
+    tbody.innerHTML = html;
 }
 
 /**
