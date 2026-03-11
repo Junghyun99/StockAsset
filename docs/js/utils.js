@@ -228,6 +228,7 @@ export function computeAdvancedMetrics(summaryData) {
  * 금액 포맷팅
  */
 export function formatCurrency(value) {
+    if (value == null) return '-';
     return '$' + value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
@@ -235,6 +236,7 @@ export function formatCurrency(value) {
  * 퍼센트 포맷팅 (부호 포함)
  */
 export function formatPercent(value) {
+    if (value == null) return '-';
     const sign = value >= 0 ? '+' : '';
     return sign + value.toFixed(2) + '%';
 }
