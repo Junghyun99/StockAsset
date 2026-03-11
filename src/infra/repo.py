@@ -1,5 +1,6 @@
 # src/infra/repo.py
 import json
+import math
 import os
 from typing import List, Dict, Optional
 from dataclasses import asdict
@@ -208,6 +209,18 @@ class JsonRepository(IRepository):
         except (json.JSONDecodeError, IOError, OSError):
             return default
 
+    @staticmethod
+    def _sanitize_for_json(obj):
+        """NaN/Infinity 값을 None으로 변환하여 유효한 JSON을 보장한다."""
+        if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+            return None
+        if isinstance(obj, dict):
+            return {k: JsonRepository._sanitize_for_json(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [JsonRepository._sanitize_for_json(v) for v in obj]
+        return obj
+
     def _save_json(self, path: str, data):
+        sanitized = self._sanitize_for_json(data)
         with open(path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
+            json.dump(sanitized, f, indent=4, ensure_ascii=False)
