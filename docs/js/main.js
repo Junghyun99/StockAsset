@@ -5,7 +5,8 @@ import {
     renderStrategyChart,
     renderUnifiedChart,
     renderGroupBarChart,
-    resizeAllCharts
+    resizeAllCharts,
+    updatePerformanceChartRange
 } from './charts.js?v=2';
 
 import {
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderPerformanceSummaryCards(summaryData);
             renderUnifiedChart(summaryData);
             renderStrategyChart(summaryData);
+            setupTimeRangeSelector(summaryData);
             perfRendered = true;
         }
 
@@ -144,5 +146,25 @@ function activateTab(tabId) {
         const tab = new bootstrap.Tab(tabEl);
         tab.show();
     }
+}
+
+/**
+ * 기간 선택 버튼(1M/3M/6M/1Y/ALL) 클릭 이벤트 설정
+ * @param {Array} summaryData - 전체 summary 배열
+ */
+function setupTimeRangeSelector(summaryData) {
+    const selector = document.getElementById('time-range-selector');
+    if (!selector) return;
+
+    selector.querySelectorAll('button[data-range]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            // active 상태 갱신
+            selector.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            const range = btn.getAttribute('data-range');
+            updatePerformanceChartRange(summaryData, range);
+        });
+    });
 }
 

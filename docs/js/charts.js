@@ -255,7 +255,7 @@ export function renderUnifiedChart(summaryData) {
         type: 'line',
         data: {
             labels: labels,
-            datasets:[
+            datasets: [
                 {
                     label: 'Total Portfolio ($)',
                     data: portfolioData,
@@ -362,4 +362,14 @@ export function renderUnifiedChart(summaryData) {
             }
         }
     });
+}
+
+/**
+ * 기간 선택 버튼(1M/3M/6M/1Y/ALL)에 따라 통합 차트를 재렌더링
+ * @param {Array} summaryData - 전체 summary 배열
+ * @param {string} range - '1M' | '3M' | '6M' | '1Y' | 'ALL'
+ */
+export function updatePerformanceChartRange(summaryData, range) {
+    const filtered = filterByDateRange(summaryData, range);
+    renderUnifiedChart(filtered);
 }
