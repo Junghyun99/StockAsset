@@ -5,7 +5,6 @@ import {
     renderStrategyChart,
     renderUnifiedChart,
     renderGroupBarChart,
-    updatePerformanceChartRange,
     resizeAllCharts
 } from './charts.js?v=2';
 
@@ -107,9 +106,6 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderTradesTab();
         }
 
-        // 기간 선택 버튼 이벤트 연결
-        setupTimeRangeSelector();
-
         // 마지막 업데이트 시간 표시
         document.getElementById('last-updated').innerText = `Last Update: ${statusData.last_updated || 'Unknown'}`;
 
@@ -150,22 +146,3 @@ function activateTab(tabId) {
     }
 }
 
-/**
- * Performance 탭 - 기간 선택 버튼 이벤트 설정
- */
-function setupTimeRangeSelector() {
-    const selector = document.getElementById('time-range-selector');
-    if (!selector) return;
-
-    selector.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => {
-            // 활성 버튼 토글
-            selector.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // 차트 업데이트
-            const range = btn.dataset.range;
-            updatePerformanceChartRange(range);
-        });
-    });
-}
