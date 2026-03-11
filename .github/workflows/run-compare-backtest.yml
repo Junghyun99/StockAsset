@@ -1,0 +1,78 @@
+name: Compare All Engines Backtest
+
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: '시작 날짜 (예: 2015-01-01)'
+        required: true
+        type: string
+      end:
+        description: '종료 날짜 (예: 2023-12-31)'
+        required: true
+        type: string
+      initial_cash:
+        description: '초기 자본 (기본값: 10000)'
+        required: false
+        type: string
+        default: '10000'
+      interval:
+        description: '실행 간격 - 거래일 기준 (기본값: 1)'
+        required: false
+        type: string
+        default: '1'
+
+permissions:
+  contents: write
+
+jobs:
+  compare-backtest:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run compare backtest
+      env:
+        BACKTEST_START: ${{ inputs.start }}
+        BACKTEST_END: ${{ inputs.end }}
+        BACKTEST_CASH: ${{ inputs.initial_cash }}
+        BACKTEST_INTERVAL: ${{ inputs.interval }}
+      run: python scripts/run_compare_ci.py
+
+    - name: Commit and Push Results
+      uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: "📊 엔진 비교 백테스트 결과 업데이트 [skip ci]"
+        file_pattern: "docs/data/backtest/compare/* logs/backtest/*"
+
+    - name: Print backtest log
+      if: always()
+      run: |
+        LOG_FILE=$(ls logs/backtest/*.log 2>/dev/null | head -1)
+        if [ -n "$LOG_FILE" ]; then
+          echo "=== 백테스트 로그: $LOG_FILE ==="
+          cat "$LOG_FILE"
+        else
+          echo "로그 파일이 생성되지 않았습니다."
+        fi
+
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: compare-backtest-${{ inputs.start }}-${{ inputs.end }}
+        path: |
+          logs/backtest/
+          docs/data/backtest/compare/*.png
+        retention-days: 30

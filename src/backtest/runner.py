@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
-from src.core.engine import TradingEngine
+from src.core.engine import (
+    TradingEngine, FullExposureEngine, QldSHVEngine, QldSchdEngine,
+)
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
@@ -30,6 +32,14 @@ class BacktestResult:
     trade_executions: Optional[List[TradeExecution]] = None  # 전체 매매 체결 기록
     trade_reason_summary: Optional[Dict[str, int]] = None  # 매매 사유별 발생 횟수
     total_dividend_income: float = 0.0  # 시뮬레이션 기간 중 수령한 총 배당금
+
+
+@dataclass
+class CompareBacktestResult:
+    """엔진 비교 백테스트 결과 구조체"""
+    engine_results: Dict[str, BacktestResult]  # {엔진명: BacktestResult}
+    spy_cagr: Optional[float]
+    chart_path: Optional[str]
 
 
 def _calculate_dividend_income(
@@ -68,6 +78,69 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
     if missing:
         logger.warning(f"⚠️ 데이터 미수신 티커 {missing} — 백테스트를 중단합니다.")
     return missing
+
+
+def _calculate_metrics(
+    summary_data: list,
+    initial_cash: float,
+    full_df: pd.DataFrame,
+    sim_days: list,
+) -> Optional[Tuple[pd.DataFrame, float, float, float, float, Optional[float], Dict[str, float]]]:
+    """백테스트 결과 메트릭을 계산한다.
+
+    Returns:
+        (res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns)
+        또는 데이터가 없으면 None
+    """
+    if not summary_data:
+        return None
+
+    res_df = pd.DataFrame(summary_data)
+    res_df["date"] = pd.to_datetime(res_df["date"])
+    res_df = res_df.set_index("date")
+    if "executions" in res_df.columns:
+        res_df["trade_count"] = res_df["executions"].apply(
+            lambda x: len(x) if isinstance(x, list) else 0
+        )
+    else:
+        res_df["trade_count"] = 0
+
+    # CAGR
+    final_value = res_df.iloc[-1]['total_value']
+    years = (res_df.index[-1] - res_df.index[0]).days / 365.25
+    cagr = (final_value / initial_cash) ** (1 / years) - 1 if years > 0 else 0.0
+
+    # MDD
+    peak = res_df['total_value'].cummax()
+    drawdown = (res_df['total_value'] - peak) / peak
+    mdd = float(drawdown.min())
+
+    # Sharpe Ratio
+    daily_returns = res_df['total_value'].pct_change().dropna()
+    if len(daily_returns) > 1 and daily_returns.std() > 0:
+        sharpe_ratio = float(daily_returns.mean() / daily_returns.std() * np.sqrt(252))
+    else:
+        sharpe_ratio = 0.0
+
+    # SPY 벤치마크
+    spy_cagr = None
+    try:
+        spy_prices = full_df['Close']['SPY'].loc[sim_days].dropna()
+        if len(spy_prices) >= 2:
+            spy_return = spy_prices.iloc[-1] / spy_prices.iloc[0] - 1
+            spy_cagr = float((1 + spy_return) ** (1 / years) - 1) if years > 0 else 0.0
+    except Exception:
+        spy_cagr = None
+
+    # 국면별 수익률
+    res_df['daily_return'] = res_df['total_value'].pct_change()
+    regime_returns: Dict[str, float] = {}
+    for regime_val, group in res_df.groupby('regime'):
+        regime_daily = group['daily_return'].dropna()
+        if len(regime_daily) > 0:
+            regime_returns[str(regime_val)] = float(regime_daily.mean() * 252)
+
+    return res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns
 
 
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
@@ -208,55 +281,12 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     logger.info("--- Backtest Finished ---")
 
     summary_data = backtest_repo._load_json(backtest_repo.summary_file, default=[])
-    if not summary_data:
+    metrics = _calculate_metrics(summary_data, initial_cash, full_df, sim_days)
+    if metrics is None:
         logger.warning("No trading data available for the given period.")
         return None
 
-    res_df = pd.DataFrame(summary_data)
-    res_df["date"] = pd.to_datetime(res_df["date"])
-    res_df = res_df.set_index("date")
-    # 파생 컬럼: 체결 수 (executions 없는 날은 0)
-    if "executions" in res_df.columns:
-        res_df["trade_count"] = res_df["executions"].apply(
-            lambda x: len(x) if isinstance(x, list) else 0
-        )
-    else:
-        res_df["trade_count"] = 0
-
-    # CAGR (연환산 수익률)
-    final_value = res_df.iloc[-1]['total_value']
-    years = (res_df.index[-1] - res_df.index[0]).days / 365.25
-    cagr = (final_value / initial_cash) ** (1 / years) - 1 if years > 0 else 0.0
-
-    # MDD (최대 낙폭)
-    peak = res_df['total_value'].cummax()
-    drawdown = (res_df['total_value'] - peak) / peak
-    mdd = float(drawdown.min())
-
-    # Sharpe Ratio (연환산, 무위험수익률 0% 가정)
-    daily_returns = res_df['total_value'].pct_change().dropna()
-    if len(daily_returns) > 1 and daily_returns.std() > 0:
-        sharpe_ratio = float(daily_returns.mean() / daily_returns.std() * np.sqrt(252))
-    else:
-        sharpe_ratio = 0.0
-
-    # SPY 벤치마크 (Buy & Hold)
-    spy_cagr = None
-    try:
-        spy_prices = full_df['Close']['SPY'].loc[sim_days].dropna()
-        if len(spy_prices) >= 2:
-            spy_return = spy_prices.iloc[-1] / spy_prices.iloc[0] - 1
-            spy_cagr = float((1 + spy_return) ** (1 / years) - 1) if years > 0 else 0.0
-    except Exception:
-        spy_cagr = None
-
-    # 국면별 연환산 평균 수익률
-    res_df['daily_return'] = res_df['total_value'].pct_change()
-    regime_returns: Dict[str, float] = {}
-    for regime_val, group in res_df.groupby('regime'):
-        regime_daily = group['daily_return'].dropna()
-        if len(regime_daily) > 0:
-            regime_returns[str(regime_val)] = float(regime_daily.mean() * 252)
+    res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns = metrics
 
     # 결과 출력
     logger.info(f"Initial: ${initial_cash:,.0f} -> Final: ${final_value:,.0f}")
@@ -318,6 +348,209 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         trade_executions=all_executions,
         trade_reason_summary=trade_reason_counter if trade_reason_counter else None,
         total_dividend_income=total_dividend_income,
+    )
+
+
+# --- 엔진 비교 백테스트 ---
+
+ENGINE_REGISTRY: List[Tuple[str, type]] = [
+    ("TradingEngine", TradingEngine),
+    ("FullExposureEngine", FullExposureEngine),
+    ("QldSHVEngine", QldSHVEngine),
+    ("QldSchdEngine", QldSchdEngine),
+]
+
+_ENGINE_COLORS: Dict[str, str] = {
+    "TradingEngine": "#1f77b4",
+    "FullExposureEngine": "#2ca02c",
+    "QldSHVEngine": "#ff7f0e",
+    "QldSchdEngine": "#d62728",
+}
+
+
+def run_compare_backtest(
+    start_date: str,
+    end_date: str,
+    initial_cash: float = 10000.0,
+    execution_interval: int = 1,
+    output_dir: str = "docs/data/backtest/compare",
+    run_number: Optional[str] = None,
+    reinvest_dividends: bool = True,
+) -> Optional[CompareBacktestResult]:
+    """모든 엔진을 동시에 실행하고 결과를 비교한다."""
+    if execution_interval < 1:
+        raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
+
+    strategy = StrategyConfig(trading_interval_days=execution_interval)
+    logger = TradeLogger(log_dir="logs/backtest")
+
+    # 1. 전체 엔진의 티커 합집합 수집
+    all_tickers: set = set()
+    for _, eng_cls in ENGINE_REGISTRY:
+        groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
+        for group_tickers in groups.values():
+            all_tickers.update(group_tickers)
+    all_tickers.add("SPY")
+    tickers = list(all_tickers)
+
+    # 2. 데이터 1회 다운로드
+    logger.info("--- Preparing Data (Compare Mode) ---")
+    full_df, full_vix, full_dividends = download_historical_data(tickers, start_date, end_date)
+
+    if _validate_tickers(full_df, tickers, logger):
+        return None
+
+    # 3. 거래일 산출
+    trading_days = full_df.index
+    sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
+
+    # 4. 엔진별 독립 컴포넌트 생성
+    engines: Dict[str, dict] = {}
+    for name, eng_cls in ENGINE_REGISTRY:
+        eff_groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
+        eff_ratio = getattr(eng_cls, 'REBALANCE_RATIO_A', 0.5)
+
+        eng_output = f"{output_dir}/{name}"
+        existing = Path(eng_output)
+        if existing.exists():
+            for f in existing.iterdir():
+                if f.suffix == ".json":
+                    f.unlink()
+
+        loader = BacktestDataLoader(full_df, full_vix)
+        broker = BacktestBroker(initial_cash, logger=logger)
+        repo = JsonRepository(eng_output, asset_groups=eff_groups)
+        engine = eng_cls(
+            asset_groups=eff_groups,
+            ratio_a=eff_ratio,
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            trading_interval_days=strategy.TRADING_INTERVAL_DAYS,
+            notifier=None,
+            is_live_trading=False,
+        )
+        engines[name] = {
+            "engine": engine,
+            "loader": loader,
+            "broker": broker,
+            "repo": repo,
+            "executions": [],
+            "reason_counter": {},
+            "dividend_income": 0.0,
+        }
+
+    # 5. 시뮬레이션 루프
+    logger.info(f"--- Starting Compare Backtest ({len(sim_days)} trading days) ---")
+
+    for today in sim_days:
+        # 종가 추출 (1회, 공유)
+        try:
+            close_prices = full_df['Close'].loc[today]
+            current_prices = close_prices.to_dict()
+            current_prices = {
+                t: (p if not (isinstance(p, float) and np.isnan(p)) else 0.0)
+                for t, p in current_prices.items()
+            }
+        except Exception as e:
+            logger.warning(f"[{today.date()}] 종가 추출 실패, 건너뜀: {e}")
+            continue
+
+        sim_date = today.strftime("%Y-%m-%d")
+
+        for name, ctx in engines.items():
+            ctx["loader"].set_date(today)
+            ctx["broker"].set_date(today)
+            ctx["broker"].set_prices(current_prices)
+
+            if reinvest_dividends:
+                div_income = _calculate_dividend_income(today, full_dividends, ctx["broker"])
+                if div_income > 0:
+                    ctx["broker"].receive_dividends(div_income)
+                    ctx["dividend_income"] += div_income
+
+            try:
+                result = ctx["engine"].run_one_cycle(ctx["loader"], sim_date=sim_date)
+                ctx["executions"].extend(result.executions)
+                if result.signal.has_orders:
+                    ctx["reason_counter"][result.signal.reason] = (
+                        ctx["reason_counter"].get(result.signal.reason, 0) + 1
+                    )
+            except Exception as e:
+                logger.error(f"[{name}] Error on {today.date()}: {e}")
+
+    # 6. 엔진별 메트릭 계산
+    logger.info("--- Compare Backtest Finished ---")
+
+    engine_results: Dict[str, BacktestResult] = {}
+    compare_spy_cagr: Optional[float] = None
+
+    for name, ctx in engines.items():
+        summary_data = ctx["repo"]._load_json(ctx["repo"].summary_file, default=[])
+        metrics = _calculate_metrics(summary_data, initial_cash, full_df, sim_days)
+        if metrics is None:
+            logger.warning(f"[{name}] No trading data available.")
+            continue
+
+        res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns = metrics
+
+        if compare_spy_cagr is None and spy_cagr is not None:
+            compare_spy_cagr = spy_cagr
+
+        logger.info(f"[{name}] Final: ${final_value:,.0f} | CAGR: {cagr:.2%} | MDD: {mdd:.2%} | Sharpe: {sharpe_ratio:.2f}")
+
+        engine_results[name] = BacktestResult(
+            history=res_df,
+            initial_cash=initial_cash,
+            final_value=final_value,
+            cagr=cagr,
+            mdd=mdd,
+            sharpe_ratio=sharpe_ratio,
+            spy_cagr=spy_cagr,
+            regime_returns=regime_returns,
+            chart_path=None,
+            trade_executions=ctx["executions"],
+            trade_reason_summary=ctx["reason_counter"] if ctx["reason_counter"] else None,
+            total_dividend_income=ctx["dividend_income"],
+        )
+
+    if not engine_results:
+        logger.warning("No engine produced results.")
+        return None
+
+    # 7. 비교 차트 생성
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    run_suffix = f"_{run_number}" if run_number else ""
+    chart_path = f"{output_dir}/compare_{start_date}_{end_date}{run_suffix}.png"
+
+    plt.figure(figsize=(14, 7))
+    for name, br in engine_results.items():
+        color = _ENGINE_COLORS.get(name, None)
+        plt.plot(br.history['total_value'],
+                 label=f'{name} (CAGR: {br.cagr:.2%})', color=color)
+
+    # SPY 벤치마크
+    if compare_spy_cagr is not None:
+        try:
+            spy_benchmark = full_df['Close']['SPY'].loc[sim_days].dropna()
+            spy_scaled = spy_benchmark / spy_benchmark.iloc[0] * initial_cash
+            plt.plot(spy_scaled, label=f'SPY Buy&Hold (CAGR: {compare_spy_cagr:.2%})',
+                     linestyle='--', color='gray', alpha=0.7)
+        except Exception:
+            pass
+
+    plt.title(f"Engine Comparison ({start_date} ~ {end_date})")
+    plt.ylabel("Portfolio Value ($)")
+    plt.legend(loc='upper left')
+    plt.grid(True, alpha=0.3)
+    plt.savefig(chart_path)
+    plt.close()
+    logger.info(f"Compare chart saved: {chart_path}")
+
+    return CompareBacktestResult(
+        engine_results=engine_results,
+        spy_cagr=compare_spy_cagr,
+        chart_path=chart_path,
     )
 
 
