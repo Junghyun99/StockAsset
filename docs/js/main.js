@@ -2,11 +2,9 @@
 // 대시보드 진입점: 모드 감지, 데이터 로딩, 탭 라우팅, 렌더링 오케스트레이션
 
 import {
-    renderPerformanceChart,
     renderStrategyChart,
     renderUnifiedChart,
     renderGroupBarChart,
-    renderGroupAllocationChart,
     updatePerformanceChartRange,
     resizeAllCharts
 } from './charts.js?v=2';
@@ -68,8 +66,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         function renderPerformanceTab() {
             if (perfRendered) return;
             renderPerformanceSummaryCards(summaryData);
-            //renderPerformanceChart(summaryData);
-            //renderGroupAllocationChart(summaryData);
             renderUnifiedChart(summaryData);
             renderStrategyChart(summaryData);
             perfRendered = true;
