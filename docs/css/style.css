@@ -148,9 +148,8 @@ body {
     }
 
     /* 차트 높이 축소 */
-    #performanceChart,
-    #strategyChart,
-    #groupAllocationChart {
+    #unifiedPerformanceChart,
+    #strategyChart {
         max-height: 200px;
     }
 }
