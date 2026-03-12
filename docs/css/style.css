@@ -121,6 +121,12 @@ body {
     color: white;
 }
 
+/* ====== Compare Mode ====== */
+.card[style*="border-top"] {
+    border-top-width: 3px !important;
+    border-top-style: solid !important;
+}
+
 /* ====== Responsive ====== */
 @media (max-width: 768px) {
     /* 탭 수평 스크롤 */

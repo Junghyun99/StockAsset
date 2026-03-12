@@ -225,6 +225,18 @@ export function computeAdvancedMetrics(summaryData) {
 }
 
 /**
+ * 엔진별 고유 색상 팔레트
+ */
+export const ENGINE_COLORS = {
+    TradingEngine: '#0d6efd',
+    FullExposureEngine: '#dc3545',
+    QldSHVEngine: '#198754',
+    QldSchdEngine: '#6f42c1',
+};
+
+export const SPY_COLOR = '#fd7e14';
+
+/**
  * 금액 포맷팅
  */
 export function formatCurrency(value) {
