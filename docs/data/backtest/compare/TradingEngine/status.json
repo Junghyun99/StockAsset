@@ -1,0 +1,53 @@
+{
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-30",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 1.0,
+        "trigger_reason": "비율 유지, 추가 주문 없음",
+        "market_score": {
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.0792850839061815,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 631.5758422851562,
+            "spy_volatility": 0.08459772510334472
+        }
+    },
+    "portfolio": {
+        "total_value": 12956.259891368594,
+        "cash_balance": 462.45244202777343,
+        "holdings": [
+            {
+                "ticker": "SSO",
+                "qty": 54,
+                "price": 58.79999923706055,
+                "value": 3175.1999588012695
+            },
+            {
+                "ticker": "QLD",
+                "qty": 42,
+                "price": 71.61000061035156,
+                "value": 3007.6200256347656
+            },
+            {
+                "ticker": "IEF",
+                "qty": 22,
+                "price": 96.16624450683594,
+                "value": 2115.6573791503906
+            },
+            {
+                "ticker": "GLD",
+                "qty": 5,
+                "price": 398.8900146484375,
+                "value": 1994.4500732421875
+            },
+            {
+                "ticker": "PDBC",
+                "qty": 164,
+                "price": 13.420000076293945,
+                "value": 2200.880012512207
+            }
+        ]
+    }
+}
