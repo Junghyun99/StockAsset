@@ -1,35 +1,22 @@
 {
-    "last_updated": "2025-12-30",
+    "last_updated": "2023-01-05",
     "last_rebalancing_date": "2025-12-30",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "비율 유지, 추가 주문 없음",
+        "trigger_reason": "Bull (모니터링)",
         "market_score": {
-            "vix": 14.329999923706055,
-            "spy_mdd": -0.004881362573296912,
-            "spy_momentum": 0.0792850839061815,
-            "spy_price": 687.010009765625,
-            "spy_ma180": 631.5758422851562,
-            "spy_volatility": 0.08459772510334472
+            "vix": 15.0,
+            "spy_mdd": 0.0,
+            "spy_momentum": 0.19670681750293384,
+            "spy_price": 190.0,
+            "spy_ma180": 168.1707317073171,
+            "spy_volatility": 0.00016701957528333187
         }
     },
     "portfolio": {
-        "total_value": 56082.29063598237,
-        "cash_balance": 438.86167708954673,
-        "holdings": [
-            {
-                "ticker": "QLD",
-                "qty": 233,
-                "price": 71.61000061035156,
-                "value": 16685.130142211914
-            },
-            {
-                "ticker": "SCHD",
-                "qty": 1410,
-                "price": 27.6299991607666,
-                "value": 38958.29881668091
-            }
-        ]
+        "total_value": 10000.0,
+        "cash_balance": 10000.0,
+        "holdings": []
     }
 }
