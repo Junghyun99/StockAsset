@@ -54,7 +54,7 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "📊 엔진 비교 백테스트 결과 업데이트 [skip ci]"
-        file_pattern: "docs/data/backtest/compare/* logs/backtest/*"
+        file_pattern: "docs/data/backtest/compare/** logs/backtest/*"
 
     - name: Print backtest log
       if: always()

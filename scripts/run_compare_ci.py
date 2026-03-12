@@ -1,4 +1,5 @@
 """GitHub Actions CI용 엔진 비교 백테스트 실행 스크립트."""
+import json
 import os
 import sys
 
@@ -10,9 +11,16 @@ def main() -> None:
     interval = int(os.environ.get("BACKTEST_INTERVAL", "1"))
 
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-    from src.backtest.runner import run_compare_backtest  # noqa: PLC0415
+    from src.backtest.runner import run_compare_backtest, ENGINE_REGISTRY  # noqa: PLC0415
 
     run_number = os.environ.get("GITHUB_RUN_NUMBER")
+
+    # 엔진 매니페스트 생성 (GitHub Pages에서 동적 디렉토리 리스팅 불가)
+    output_dir = "docs/data/backtest/compare"
+    os.makedirs(output_dir, exist_ok=True)
+    engine_names = [name for name, _ in ENGINE_REGISTRY]
+    with open(os.path.join(output_dir, "engines.json"), "w") as f:
+        json.dump(engine_names, f)
 
     print(f"=== 엔진 비교 백테스트 시작: {start} ~ {end}, 초기자본: {cash:,.0f}, 실행간격: {interval}거래일 ===")
     result = run_compare_backtest(
