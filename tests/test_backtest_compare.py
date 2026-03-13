@@ -142,3 +142,40 @@ def test_compare_execution_interval_invalid_raises_error():
     """[Compare] execution_interval이 1 미만이면 ValueError를 발생시켜야 한다."""
     with pytest.raises(ValueError, match="execution_interval은 1 이상"):
         run_compare_backtest("2023-01-02", "2023-01-05", execution_interval=0)
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_stale_status_json_does_not_block_rebalancing(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
+    """[Compare] 이전 실행의 stale status.json이 남아있어도 리밸런싱이 정상 실행되어야 한다."""
+    import json, os
+    mock_download.return_value = mock_compare_fetcher
+
+    output_dir = str(tmp_path / "compare")
+
+    # 엔진별 디렉토리에 stale status.json 미리 생성
+    for name, _ in ENGINE_REGISTRY:
+        eng_dir = os.path.join(output_dir, name)
+        os.makedirs(eng_dir, exist_ok=True)
+        stale_status = {
+            "last_rebalancing_date": "2025-12-30",
+            "last_updated": "2025-12-30",
+            "strategy": {"regime": "Bull"},
+            "portfolio": {"total_value": 10000.0},
+        }
+        with open(os.path.join(eng_dir, "status.json"), "w") as f:
+            json.dump(stale_status, f)
+
+    result = run_compare_backtest(
+        start_date="2023-01-02",
+        end_date="2023-01-05",
+        initial_cash=10000.0,
+        output_dir=output_dir,
+    )
+
+    assert result is not None
+    for name, br in result.engine_results.items():
+        # 가격이 선형 증가(100->200)하므로 total_value는 10000과 달라야 함
+        assert br.final_value != br.initial_cash, (
+            f"{name}: final_value가 initial_cash와 같음 — 리밸런싱이 실행되지 않았음"
+        )
