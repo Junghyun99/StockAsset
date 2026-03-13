@@ -367,6 +367,13 @@ def test_is_due_invalid_date_returns_true():
     assert engine._is_due(None) is True
 
 
+def test_is_due_stale_future_date_returns_true():
+    """이전 실행의 last_rebalancing_date가 sim_date보다 미래 → stale 데이터이므로 True."""
+    engine, mocks = _make_engine(repo_last_reb="2025-12-30", trading_interval_days=5)
+    # sim_date가 last_rebalancing_date보다 ~1094일 이전
+    assert engine._is_due("2023-01-02") is True
+
+
 # ─────────────────────────────────────────────────────────────────
 # rebalancing_date 전달 검증
 # ─────────────────────────────────────────────────────────────────

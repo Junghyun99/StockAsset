@@ -281,7 +281,11 @@ class TradingEngine:
         try:
             last = pd.Timestamp(last_str)
             today = pd.Timestamp(sim_date) if sim_date else pd.Timestamp.today().normalize()
-            return (today - last).days >= self.trading_interval_days
+            diff_days = (today - last).days
+            # sim_date가 last_rebalancing_date보다 과거이면 stale 데이터 → 리밸런싱 실행
+            if diff_days < 0:
+                return True
+            return diff_days >= self.trading_interval_days
         except Exception:
             return True  # 파싱 실패 시 안전하게 리밸런싱 실행
 

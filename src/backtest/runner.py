@@ -1,4 +1,5 @@
 # src/backtest/runner.py
+import shutil
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -411,11 +412,9 @@ def run_compare_backtest(
         eff_ratio = getattr(eng_cls, 'REBALANCE_RATIO_A', 0.5)
 
         eng_output = f"{output_dir}/{name}"
-        existing = Path(eng_output)
-        if existing.exists():
-            for f in existing.iterdir():
-                if f.suffix == ".json":
-                    f.unlink()
+        eng_path = Path(eng_output)
+        if eng_path.exists():
+            shutil.rmtree(eng_path)
 
         loader = BacktestDataLoader(full_df, full_vix)
         broker = BacktestBroker(initial_cash, logger=logger)
