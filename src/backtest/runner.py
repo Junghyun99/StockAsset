@@ -229,9 +229,9 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
             # NaN 가격 제거: yfinance에서 특정 날짜에 데이터가 없을 수 있음
             # NaN이 있으면 직전 설정 가격(broker.simulation_prices)을 유지
             current_prices = {
-                t: (p if not (isinstance(p, float) and np.isnan(p))
-                    else broker.simulation_prices.get(t, 0.0))
+                t: (p if not pd.isna(p) else broker.simulation_prices.get(t))
                 for t, p in current_prices.items()
+                if not pd.isna(p) or broker.simulation_prices.get(t) is not None
             }
         except Exception as e:
             logger.warning(f"[{today.date()}] 종가 추출 실패, 건너뜀: {e}")
@@ -441,8 +441,9 @@ def run_compare_backtest(
             # NaN 가격 제거: yfinance에서 특정 날짜에 데이터가 없을 수 있음
             # NaN이 있으면 직전 설정 가격(prev_prices)으로 대체 (forward-fill)
             current_prices = {
-                t: (p if not (isinstance(p, float) and np.isnan(p)) else prev_prices.get(t, 0.0))
+                t: (p if not pd.isna(p) else prev_prices.get(t))
                 for t, p in current_prices.items()
+                if not pd.isna(p) or prev_prices.get(t) is not None
             }
             prev_prices = current_prices
         except Exception as e:

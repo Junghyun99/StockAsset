@@ -15,6 +15,21 @@ _DATE_TOLERANCE = timedelta(days=7)
 _OHLCV_FIELDS = ["Close", "Open", "High", "Low", "Volume"]
 
 
+def _ffill_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    ticker별로 첫 유효 데이터 이후의 NaN을 forward-fill한다.
+    상장 이전(첫 유효 데이터 이전) NaN은 그대로 유지된다.
+
+    yfinance에서 여러 티커를 동시에 받으면 거래일 정렬 차이로
+    중간에 NaN이 발생할 수 있다. ffill로 직전 값을 채운다.
+    """
+    if df is None or df.empty:
+        return df
+    # MultiIndex(field, ticker) 구조에서 컬럼별 ffill
+    # → 각 (field, ticker) 컬럼의 첫 유효값 이전은 NaN 유지
+    return df.ffill()
+
+
 class _NullLogger:
     """로거가 없을 때 사용하는 아무것도 하지 않는 로거"""
     def info(self, msg: str) -> None: pass
@@ -129,6 +144,7 @@ class BacktestDataCache:
             if new_divs is not None and not new_divs.empty:
                 result_divs = self._merge_dataframes(result_divs, new_divs)
 
+        result_ohlcv = _ffill_ohlcv(result_ohlcv)
         self._save_parquet(result_ohlcv, self.ohlcv_path)
         self._save_parquet(result_divs, self.dividends_path)
         return result_ohlcv, result_divs
