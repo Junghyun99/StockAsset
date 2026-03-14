@@ -7,6 +7,7 @@ from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from src.config import Config
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.engine import (
@@ -191,7 +192,13 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
         for f in existing_dir.iterdir():
             if f.suffix == ".json":
                 f.unlink()
-    backtest_repo = JsonRepository(backtest_data_path, asset_groups=effective_asset_groups)
+    _cfg = Config()
+    backtest_repo = JsonRepository(
+        backtest_data_path,
+        asset_groups=effective_asset_groups,
+        max_summary_records=_cfg.MAX_SUMMARY_RECORDS,
+        max_history_records=_cfg.MAX_HISTORY_RECORDS,
+    )
 
     # 3-1. TradingEngine 조립 (core 로직은 엔진 내부에서 생성)
     engine = engine_class(
@@ -407,7 +414,13 @@ def run_compare_backtest(
 
         loader = BacktestDataLoader(full_df, full_vix)
         broker = BacktestBroker(initial_cash, logger=logger)
-        repo = JsonRepository(eng_output, asset_groups=eff_groups)
+        _cfg = Config()
+        repo = JsonRepository(
+            eng_output,
+            asset_groups=eff_groups,
+            max_summary_records=_cfg.MAX_SUMMARY_RECORDS,
+            max_history_records=_cfg.MAX_HISTORY_RECORDS,
+        )
         engine = eng_cls(
             asset_groups=eff_groups,
             ratio_a=eff_ratio,
