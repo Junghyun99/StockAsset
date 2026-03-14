@@ -35,6 +35,7 @@ jobs:
       run: |
         python -c "
         from src.backtest.cache import BacktestDataCache
+        from src.utils.logger import TradeLogger
         from datetime import datetime, timedelta
 
         start_date = '${{ inputs.start_date }}'
@@ -46,7 +47,7 @@ jobs:
 
         tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'PDBC', 'SHV', 'SCHD', 'SPY', 'VOO', 'IEMG', 'EMB']
 
-        cache = BacktestDataCache()
+        cache = BacktestDataCache(logger=TradeLogger())
         ohlcv, vix, dividends = cache.get_data(tickers, real_start_str, end_date)
 
         print(f'OHLCV shape: {ohlcv.shape}')
