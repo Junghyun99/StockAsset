@@ -65,6 +65,20 @@ jobs:
             print(dividends[dividends.any(axis=1)].head(10))
         else:
             print('Dividends: empty')
+
+        print('')
+        print('=== NaN 진단 (Close 기준) ===')
+        total_rows = len(ohlcv)
+        for ticker in tickers:
+            try:
+                col = ohlcv['Close'][ticker]
+                nan_count = int(col.isna().sum())
+                first_valid = col.first_valid_index()
+                pct = nan_count / total_rows * 100 if total_rows > 0 else 0
+                status = '⚠️ ' if nan_count > 0 else '✅'
+                print(f'{status} {ticker}: NaN={nan_count}/{total_rows} ({pct:.1f}%), 첫 유효일={first_valid}')
+            except Exception as e:
+                print(f'❌ {ticker}: 조회 오류 - {e}')
         "
 
     - name: Commit and push data

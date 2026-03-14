@@ -1,15 +1,11 @@
 # src/backtest/cache.py
 import pandas as pd
 import yfinance as yf
-from datetime import timedelta
 from pathlib import Path
 from typing import List, Tuple, Optional
 from src.core.interfaces import ILogger
 
 CACHE_DIR = Path(__file__).parent / "cache"
-
-# 주말/공휴일로 인한 날짜 차이 허용 범위 (캘린더 일수)
-_DATE_TOLERANCE = timedelta(days=7)
 
 # OHLCV에 포함할 필드 (Dividends, Stock Splits 제외)
 _OHLCV_FIELDS = ["Close", "Open", "High", "Low", "Volume"]
@@ -24,13 +20,13 @@ class _NullLogger:
 
 class BacktestDataCache:
     """
-    티커 기준 누적 캐시.
-    한번 받은 데이터는 다시 받지 않고, 부족분만 추가 다운로드한다.
+    요청할 때마다 기존 캐시를 삭제하고 전체 재다운로드한다.
+    증분 merge 없이 항상 깨끗한 데이터를 보장한다.
 
     저장 위치: src/backtest/cache/
-      - ohlcv.parquet: 전체 티커 OHLCV 데이터
-      - vix.parquet: VIX 데이터
-      - dividends.parquet: 배당 데이터 (ticker별 배당금/주)
+      - ohlcv.parquet
+      - vix.parquet
+      - dividends.parquet
     """
 
     def __init__(self, cache_dir: Path = CACHE_DIR, logger: Optional[ILogger] = None):
@@ -44,130 +40,84 @@ class BacktestDataCache:
         self, tickers: List[str], start_date: str, end_date: str
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
-        캐시를 활용하여 OHLCV + VIX + 배당 데이터 반환.
-        부족분만 다운로드하고 캐시를 업데이트한다.
+        기존 캐시를 삭제하고 전체 티커를 새로 다운로드한다.
+
+        1. 기존 캐시 삭제
+        2. 전 티커 일괄 다운로드
+        3. 가장 늦은 상장 티커 기준으로 시작일 조정 (로그 출력)
+        4. 남은 NaN을 이전 값으로 채움 (ffill)
+        5. 저장 후 반환
         """
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
         need_start = pd.Timestamp(start_date)
         need_end = pd.Timestamp(end_date)
 
-        ohlcv, dividends = self._process_ohlcv_and_dividends(tickers, need_start, need_end)
-        vix = self._process_vix(need_start, need_end)
+        # 1. 기존 캐시 삭제
+        self.clear()
 
-        return ohlcv, vix, dividends
+        # 2. 전체 다운로드
+        self._logger.info(f"전체 다운로드 시작: {tickers} ({start_date} ~ {end_date})")
+        ohlcv, divs = self._download_ohlcv_and_dividends(tickers, need_start, need_end)
+        vix = self._download_vix(need_start, need_end)
 
-    # ── OHLCV + 배당 (통합) ────────────────────────────────
+        if ohlcv is None or ohlcv.empty:
+            raise ValueError(f"OHLCV 다운로드 실패: {tickers} ({start_date} ~ {end_date})")
 
-    def _process_ohlcv_and_dividends(
-        self, tickers: List[str], need_start: pd.Timestamp, need_end: pd.Timestamp
-    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        cached_ohlcv = self._load_parquet(self.ohlcv_path)
-        cached_divs = self._load_parquet(self.dividends_path)
+        # 3. 상장일 기준 시작일 조정
+        ohlcv = self._trim_to_latest_ipo(ohlcv, tickers)
 
-        if cached_ohlcv is None or cached_ohlcv.empty:
-            self._logger.info(f"캐시 없음. 전체 다운로드: {tickers}")
-            ohlcv, divs = self._download_ohlcv_and_dividends(tickers, need_start, need_end)
-            self._save_parquet(ohlcv, self.ohlcv_path)
-            self._save_parquet(divs, self.dividends_path)
-            return ohlcv, divs if divs is not None else pd.DataFrame()
+        # 4. 남은 NaN → 이전 값으로 채움
+        nan_before = int(ohlcv.isna().sum().sum())
+        if nan_before > 0:
+            ohlcv = ohlcv.ffill()
+            nan_after = int(ohlcv.isna().sum().sum())
+            filled = nan_before - nan_after
+            self._logger.info(f"NaN ffill 처리: {filled}개 채움, 잔여 {nan_after}개")
 
-        # 캐시된 정보 파악
-        cached_tickers = set(self._get_tickers_from_df(cached_ohlcv))
-        requested_tickers = set(tickers)
-        missing_tickers = requested_tickers - cached_tickers
-
-        cache_start = cached_ohlcv.index.min()
-        cache_end = cached_ohlcv.index.max()
-
-        downloads = []  # (tickers, start, end, reason)
-
-        # 1. 앞쪽 날짜 부족 (허용 범위 이내 차이는 무시)
-        if need_start < cache_start - _DATE_TOLERANCE:
-            all_tickers = list(requested_tickers | cached_tickers)
-            downloads.append((
-                all_tickers,
-                need_start,
-                cache_start - timedelta(days=1),
-                "앞쪽 날짜 보충",
-            ))
-
-        # 2. 뒤쪽 날짜 부족 (허용 범위 이내 차이는 무시)
-        if need_end > cache_end + _DATE_TOLERANCE:
-            all_tickers = list(requested_tickers | cached_tickers)
-            downloads.append((
-                all_tickers,
-                cache_end + timedelta(days=1),
-                need_end,
-                "뒤쪽 날짜 보충",
-            ))
-
-        # 3. 새 티커 추가
-        if missing_tickers:
-            effective_start = min(need_start, cache_start)
-            effective_end = max(need_end, cache_end)
-            downloads.append((
-                list(missing_tickers),
-                effective_start,
-                effective_end,
-                "새 티커 추가",
-            ))
-
-        if not downloads:
-            self._logger.info("OHLCV 캐시 히트 (다운로드 불필요)")
-            return cached_ohlcv, cached_divs if cached_divs is not None else pd.DataFrame()
-
-        # 다운로드 및 병합
-        result_ohlcv = cached_ohlcv
-        result_divs = cached_divs if cached_divs is not None else pd.DataFrame()
-
-        for dl_tickers, dl_start, dl_end, reason in downloads:
-            self._logger.info(f"{reason}: {dl_tickers} ({dl_start.date()} ~ {dl_end.date()})")
-            new_ohlcv, new_divs = self._download_ohlcv_and_dividends(dl_tickers, dl_start, dl_end)
-            if new_ohlcv is not None and not new_ohlcv.empty:
-                result_ohlcv = self._merge_dataframes(result_ohlcv, new_ohlcv)
-            if new_divs is not None and not new_divs.empty:
-                result_divs = self._merge_dataframes(result_divs, new_divs)
-
-        self._save_parquet(result_ohlcv, self.ohlcv_path)
-        self._save_parquet(result_divs, self.dividends_path)
-        return result_ohlcv, result_divs
-
-    # ── VIX ────────────────────────────────────────────────
-
-    def _process_vix(
-        self, need_start: pd.Timestamp, need_end: pd.Timestamp
-    ) -> pd.DataFrame:
-        cached = self._load_parquet(self.vix_path)
-
-        if cached is None or cached.empty:
-            self._logger.info("VIX 캐시 없음. 전체 다운로드")
-            vix = self._download_vix(need_start, need_end)
+        # 5. 저장
+        self._save_parquet(ohlcv, self.ohlcv_path)
+        self._save_parquet(divs if divs is not None else pd.DataFrame(), self.dividends_path)
+        if vix is not None and not vix.empty:
             self._save_parquet(vix, self.vix_path)
-            return vix
 
-        cache_start = cached.index.min()
-        cache_end = cached.index.max()
+        return ohlcv, vix if vix is not None else pd.DataFrame(), divs if divs is not None else pd.DataFrame()
 
-        downloads = []
-        if need_start < cache_start - _DATE_TOLERANCE:
-            downloads.append((need_start, cache_start - timedelta(days=1)))
-        if need_end > cache_end + _DATE_TOLERANCE:
-            downloads.append((cache_end + timedelta(days=1), need_end))
+    # ── 상장일 조정 ────────────────────────────────────────
 
-        if not downloads:
-            self._logger.info("VIX 캐시 히트 (다운로드 불필요)")
-            return cached
+    def _trim_to_latest_ipo(self, ohlcv: pd.DataFrame, tickers: List[str]) -> pd.DataFrame:
+        """
+        가장 늦은 상장 티커의 첫 유효일을 기준으로 DataFrame 시작일을 조정한다.
+        조정이 발생하면 원래 요청 시작일과 조정된 시작일을 로그에 출력한다.
+        """
+        if not isinstance(ohlcv.columns, pd.MultiIndex):
+            return ohlcv
 
-        result = cached
-        for dl_start, dl_end in downloads:
-            self._logger.info(f"VIX 보충: {dl_start.date()} ~ {dl_end.date()}")
-            new_data = self._download_vix(dl_start, dl_end)
-            if new_data is not None and not new_data.empty:
-                result = self._merge_dataframes(result, new_data)
+        latest_ipo: Optional[pd.Timestamp] = None
+        latest_ticker: Optional[str] = None
 
-        self._save_parquet(result, self.vix_path)
-        return result
+        for ticker in tickers:
+            if ("Close", ticker) not in ohlcv.columns:
+                continue
+            first_valid = ohlcv["Close"][ticker].first_valid_index()
+            if first_valid is not None and (latest_ipo is None or first_valid > latest_ipo):
+                latest_ipo = first_valid
+                latest_ticker = ticker
+
+        if latest_ipo is None:
+            return ohlcv
+
+        original_start = ohlcv.index.min()
+        if latest_ipo > original_start:
+            self._logger.warning(
+                f"⚠️ 상장일 조정: {latest_ticker} 첫 거래일 {latest_ipo.date()} "
+                f"(요청 시작일 {original_start.date()} → 조정 후 시작일 {latest_ipo.date()})"
+            )
+            ohlcv = ohlcv.loc[latest_ipo:]
+        else:
+            self._logger.info(f"모든 티커 데이터 정상 (시작일: {original_start.date()})")
+
+        return ohlcv
 
     # ── 다운로드 ───────────────────────────────────────────
 
@@ -192,7 +142,7 @@ class BacktestDataCache:
 
             level0 = df.columns.get_level_values(0)
 
-            # OHLCV 추출 (Dividends, Stock Splits 제외)
+            # OHLCV 추출 (Adj Close, Dividends, Stock Splits 제외)
             available_fields = [f for f in _OHLCV_FIELDS if f in level0]
             ohlcv = df[available_fields]
 
@@ -221,25 +171,6 @@ class BacktestDataCache:
 
     # ── 유틸리티 ───────────────────────────────────────────
 
-    def _merge_dataframes(
-        self, cached: pd.DataFrame, new_data: pd.DataFrame
-    ) -> pd.DataFrame:
-        """두 DataFrame 병합. 겹치는 구간은 new_data 우선."""
-        if cached is None or cached.empty:
-            return new_data
-        if new_data is None or new_data.empty:
-            return cached
-
-        combined = new_data.combine_first(cached)
-        combined = combined.sort_index()
-        return combined
-
-    def _get_tickers_from_df(self, df: pd.DataFrame) -> List[str]:
-        """MultiIndex DataFrame에서 티커 목록 추출"""
-        if isinstance(df.columns, pd.MultiIndex):
-            return list(df.columns.get_level_values(1).unique())
-        return []
-
     def _load_parquet(self, path: Path) -> Optional[pd.DataFrame]:
         if path.exists():
             try:
@@ -261,4 +192,4 @@ class BacktestDataCache:
         for p in [self.ohlcv_path, self.vix_path, self.dividends_path]:
             if p.exists():
                 p.unlink()
-        self._logger.info("캐시 삭제 완료")
+        self._logger.info("기존 캐시 삭제 완료")
