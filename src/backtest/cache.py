@@ -15,19 +15,74 @@ _DATE_TOLERANCE = timedelta(days=7)
 _OHLCV_FIELDS = ["Close", "Open", "High", "Low", "Volume"]
 
 
+# 중간 hole로 간주하는 최소 연속 NaN 거래일 수
+_HOLE_MIN_DAYS = 10
+
+
+def _strip_extra_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    OHLCV 필드 외 컬럼(Adj Close 등)을 제거한다.
+    yfinance 버전에 따라 auto_adjust=True 여도 Adj Close가 포함될 수 있다.
+    """
+    if df is None or df.empty or not isinstance(df.columns, pd.MultiIndex):
+        return df
+    valid = set(_OHLCV_FIELDS)
+    keep = [c for c in df.columns if c[0] in valid]
+    return df[keep] if keep else df
+
+
+def _find_data_holes(
+    df: pd.DataFrame, tickers: List[str]
+) -> List[Tuple]:
+    """
+    캐시된 DataFrame에서 각 ticker의 첫 유효일 이후 연속 NaN 구간(hole)을 찾는다.
+    _HOLE_MIN_DAYS 이상 연속된 경우만 재다운로드 대상으로 반환한다.
+
+    Returns:
+        list of (tickers, start, end, reason) — _process_ohlcv_and_dividends의 downloads 포맷
+    """
+    if df is None or df.empty or not isinstance(df.columns, pd.MultiIndex):
+        return []
+
+    holes = []
+    for ticker in tickers:
+        if ("Close", ticker) not in df.columns:
+            continue
+        close = df["Close"][ticker]
+        first_valid = close.first_valid_index()
+        if first_valid is None:
+            continue
+
+        # 첫 유효일 이후 NaN만 검사
+        post = close.loc[first_valid:]
+        nan_idx = post[post.isna()].index
+        if nan_idx.empty:
+            continue
+
+        # 연속 구간 묶기
+        gap_start = nan_idx[0]
+        gap_prev = nan_idx[0]
+        for d in nan_idx[1:]:
+            if (d - gap_prev).days > 5:  # 5일 이상 끊기면 새 구간
+                if len(post.loc[gap_start:gap_prev][post.loc[gap_start:gap_prev].isna()]) >= _HOLE_MIN_DAYS:
+                    holes.append(([ticker], gap_start, gap_prev, f"중간 데이터 공백 복구: {ticker}"))
+                gap_start = d
+            gap_prev = d
+        # 마지막 구간
+        if len(post.loc[gap_start:gap_prev][post.loc[gap_start:gap_prev].isna()]) >= _HOLE_MIN_DAYS:
+            holes.append(([ticker], gap_start, gap_prev, f"중간 데이터 공백 복구: {ticker}"))
+
+    return holes
+
+
 def _ffill_ohlcv(df: pd.DataFrame) -> pd.DataFrame:
     """
-    ticker별로 첫 유효 데이터 이후의 NaN을 forward-fill한다.
-    상장 이전(첫 유효 데이터 이전) NaN은 그대로 유지된다.
-
-    yfinance에서 여러 티커를 동시에 받으면 거래일 정렬 차이로
-    중간에 NaN이 발생할 수 있다. ffill로 직전 값을 채운다.
+    다운로드된 데이터에서 공휴일·거래정지 등 소규모 NaN(≤5 거래일)을 채운다.
+    대규모 hole은 채우지 않는다(_find_data_holes 로 별도 처리).
     """
     if df is None or df.empty:
         return df
-    # MultiIndex(field, ticker) 구조에서 컬럼별 ffill
-    # → 각 (field, ticker) 컬럼의 첫 유효값 이전은 NaN 유지
-    return df.ffill()
+    return df.ffill(limit=5)
 
 
 class _NullLogger:
@@ -87,6 +142,9 @@ class BacktestDataCache:
             self._save_parquet(divs, self.dividends_path)
             return ohlcv, divs if divs is not None else pd.DataFrame()
 
+        # 비OHLCV 컬럼(Adj Close 등) 제거
+        cached_ohlcv = _strip_extra_columns(cached_ohlcv)
+
         # 캐시된 정보 파악
         cached_tickers = set(self._get_tickers_from_df(cached_ohlcv))
         requested_tickers = set(tickers)
@@ -127,6 +185,15 @@ class BacktestDataCache:
                 effective_end,
                 "새 티커 추가",
             ))
+
+        # 4. 중간 데이터 공백(hole) 감지 — 기존 캐시에서 누락된 구간 재다운로드
+        hole_downloads = _find_data_holes(cached_ohlcv, list(requested_tickers))
+        if hole_downloads:
+            for h in hole_downloads:
+                self._logger.warning(
+                    f"⚠️ 캐시 hole 감지: {h[0]} {h[1].date()} ~ {h[2].date()} → 재다운로드"
+                )
+            downloads.extend(hole_downloads)
 
         if not downloads:
             self._logger.info("OHLCV 캐시 히트 (다운로드 불필요)")
