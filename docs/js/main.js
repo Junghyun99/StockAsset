@@ -21,6 +21,8 @@ import {
     renderTradeHistory
 } from './ui.js?v=2';
 
+import { loadEngineMeta } from './utils.js?v=2';
+
 import {
     renderCompareOverview,
     renderCompareTradesTab,
@@ -118,6 +120,9 @@ async function loadLiveMode() {
 async function loadCompareMode() {
     const basePath = 'data/backtest/compare/';
     const cacheBust = `v=${Date.now()}`;
+
+    // 0. 엔진 색상 메타 로드 (ENGINE_COLORS 런타임 주입)
+    await loadEngineMeta(basePath);
 
     // 1. 엔진 목록 로드
     const enginesRes = await fetch(`${basePath}engines.json?${cacheBust}`);
