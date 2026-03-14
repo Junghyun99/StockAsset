@@ -233,6 +233,7 @@ export const ENGINE_COLORS = {
     FullExposureEngine: '#dc3545',
     QldSHVEngine: '#198754',
     QldSchdEngine: '#6f42c1',
+    '자산5분법': '#9467bd'
 };
 
 export const SPY_COLOR = '#fd7e14';
