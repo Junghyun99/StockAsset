@@ -11,7 +11,7 @@ import math
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.core.engine import QldSHVEngine, QldSchdEngine
+from src.core.engine import QldSHVEngine, QldSchdEngine, Asset5Engine
 from src.core.logic import Rebalancer
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal,
@@ -442,3 +442,204 @@ def test_engines_asset_groups_differ():
     """두 엔진의 B그룹 자산이 다르다 (SHV vs SCHD)."""
     assert QldSHVEngine.ASSET_GROUPS['B'] != QldSchdEngine.ASSET_GROUPS['B']
     assert QldSHVEngine.ASSET_GROUPS['A'] == QldSchdEngine.ASSET_GROUPS['A']
+
+
+# ─────────────────────────────────────────────────────────────────
+# Asset5Engine (자산5분법) — 클래스 상수 검증
+# ─────────────────────────────────────────────────────────────────
+
+def test_asset5_asset_groups_A():
+    """Asset5Engine의 A그룹은 [VOO, IEMG]."""
+    assert Asset5Engine.ASSET_GROUPS['A'] == ['VOO', 'IEMG']
+
+
+def test_asset5_asset_groups_B():
+    """Asset5Engine의 B그룹은 [TLT, EMB, GLD]."""
+    assert Asset5Engine.ASSET_GROUPS['B'] == ['TLT', 'EMB', 'GLD']
+
+
+def test_asset5_no_C_group():
+    """Asset5Engine에는 C그룹(현금)이 없다."""
+    assert 'C' not in Asset5Engine.ASSET_GROUPS
+
+
+def test_asset5_rebalance_ratio_a_class_constant():
+    """REBALANCE_RATIO_A 클래스 상수가 0.4이다."""
+    assert Asset5Engine.REBALANCE_RATIO_A == 0.4
+
+
+# ─────────────────────────────────────────────────────────────────
+# Asset5Engine — 기본 Rebalancer 자동 생성
+# ─────────────────────────────────────────────────────────────────
+
+def test_asset5_default_rebalancer_groups():
+    """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
+    assert engine.rebalancer.groups == Asset5Engine.ASSET_GROUPS
+
+
+def test_asset5_default_rebalancer_ratio_a():
+    """rebalancer ratio_a=0.4으로 생성된다."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
+    assert engine.rebalancer.ratio_a == 0.4
+
+
+def test_asset5_default_rebalancer_ratio_b():
+    """ratio_b = 1 - ratio_a = 0.6."""
+    broker, repo, logger = _make_base_deps()
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer'), \
+         patch('src.core.engine.VolatilityTargeter'):
+        engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
+    assert abs(engine.rebalancer.ratio_b - 0.6) < 1e-9
+
+
+def test_asset5_all_tickers():
+    """all_tickers는 A그룹 + B그룹 전체 5개 티커다."""
+    broker = MagicMock()
+    repo = MagicMock()
+    logger = MagicMock()
+    repo.load_last_regime.return_value = None
+    repo.get_last_rebalancing_date.return_value = None
+    broker.get_portfolio.return_value = Portfolio(
+        total_cash=50000.0,
+        holdings={},
+        current_prices={},
+    )
+    broker.fetch_current_prices.return_value = {}
+
+    with patch('src.core.engine.IndicatorCalculator'), \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter'), \
+         patch('src.core.engine.Rebalancer'):
+        MockAnalyzer.return_value._prev_regime = None
+        engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
+
+    assert set(engine.all_tickers) == {'VOO', 'IEMG', 'TLT', 'EMB', 'GLD'}
+
+
+# ─────────────────────────────────────────────────────────────────
+# Asset5Engine — analyze_strategy (FullExposureEngine 상속)
+# ─────────────────────────────────────────────────────────────────
+
+def _build_asset5_engine(repo_last_reb=None, notifier=None):
+    """Asset5Engine을 Mock 의존성으로 조립."""
+    broker = MagicMock()
+    repo = MagicMock()
+    logger = MagicMock()
+    data_provider = MagicMock()
+
+    repo.get_last_rebalancing_date.return_value = repo_last_reb
+    repo.load_last_regime.return_value = None
+    broker.get_portfolio.return_value = Portfolio(
+        total_cash=50000.0,
+        holdings={'VOO': 50},
+        current_prices={'VOO': 400.0, 'IEMG': 50.0, 'TLT': 95.0, 'EMB': 90.0, 'GLD': 180.0},
+    )
+    broker.fetch_current_prices.return_value = {}
+
+    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.Rebalancer') as MockRebalancer:
+
+        calculator = MockCalc.return_value
+        analyzer = MockAnalyzer.return_value
+        analyzer._prev_regime = None
+        targeter = MockTargeter.return_value
+        rebalancer = MockRebalancer.return_value
+
+        engine = Asset5Engine(
+            broker=broker,
+            repo=repo,
+            logger=logger,
+            trading_interval_days=5,
+            notifier=notifier,
+        )
+
+    return engine, {
+        "calculator": calculator,
+        "analyzer": analyzer,
+        "targeter": targeter,
+        "rebalancer": rebalancer,
+        "broker": broker,
+        "repo": repo,
+        "logger": logger,
+        "data_provider": data_provider,
+    }
+
+
+def test_asset5_bull_exposure_1():
+    """BULL 국면에서 exposure=1.0."""
+    engine, mocks = _build_asset5_engine()
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    _, exposure, nan_fields = engine.analyze_strategy(_make_market_data())
+    assert exposure == 1.0
+    assert nan_fields == []
+
+
+def test_asset5_crash_exposure_1():
+    """CRASH 국면에서도 exposure=1.0 (NaN 아닐 때)."""
+    engine, mocks = _build_asset5_engine()
+    mocks["analyzer"].analyze.return_value = MarketRegime.CRASH
+    _, exposure, _ = engine.analyze_strategy(_make_market_data(vix=40.0, mdd=-0.30))
+    assert exposure == 1.0
+
+
+def test_asset5_nan_exposure_zero():
+    """NaN 데이터 시 exposure=0.0 (안전장치)."""
+    engine, mocks = _build_asset5_engine()
+    _, exposure, nan_fields = engine.analyze_strategy(_make_market_data(nan_vol=True))
+    assert exposure == 0.0
+    assert "spy_volatility" in nan_fields
+    mocks["analyzer"].analyze.assert_not_called()
+
+
+def test_asset5_does_not_call_targeter():
+    """FullExposureEngine처럼 targeter를 호출하지 않는다."""
+    engine, mocks = _build_asset5_engine()
+    mocks["analyzer"].analyze.return_value = MarketRegime.BEAR_STRONG
+    engine.analyze_strategy(_make_market_data())
+    mocks["targeter"].calculate_exposure.assert_not_called()
+
+
+# ─────────────────────────────────────────────────────────────────
+# Asset5Engine — end-to-end 사이클
+# ─────────────────────────────────────────────────────────────────
+
+def test_asset5_end_to_end_rebalancing():
+    """전체 사이클: exposure=1.0이 rebalancer에 전달된다."""
+    engine, mocks = _build_asset5_engine(repo_last_reb=None)
+    md = _make_market_data()
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["rebalancer"] = MagicMock()
+    engine.rebalancer = mocks["rebalancer"]
+    engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    assert result.exposure == 1.0
+    call_args = engine.rebalancer.generate_signal.call_args
+    assert call_args[0][1] == 1.0
+
+
+def test_asset5_end_to_end_nan_no_trade():
+    """NaN 시 전체 사이클: 매매 없이 종료."""
+    engine, mocks = _build_asset5_engine(repo_last_reb=None)
+    md = _make_market_data(nan_vol=True)
+    mocks["calculator"].calculate.return_value = md
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    assert result.exposure == 0.0
+    assert result.is_rebalancing is False
+    assert result.executions == []

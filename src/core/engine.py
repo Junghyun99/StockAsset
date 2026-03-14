@@ -388,3 +388,19 @@ class QldSchdEngine(FullExposureEngine):
         'B': ['SCHD'],
     }
     REBALANCE_RATIO_A: float = 0.3
+
+
+class Asset5Engine(FullExposureEngine):
+    """자산5분법 — VOO/IEMG(A그룹) + TLT/EMB/GLD(B그룹) Full Exposure 전략 엔진.
+
+    - 자산군 A: [VOO, IEMG]  (미국/신흥국 주식 ETF)
+    - 자산군 B: [TLT, EMB, GLD] (장기국채, 신흥국채권, 금 ETF)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - A:B 비율 = 0.4:0.6 (안전자산 비중 강조)
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['VOO', 'IEMG'],
+        'B': ['TLT', 'EMB', 'GLD'],
+    }
+    REBALANCE_RATIO_A: float = 0.4
