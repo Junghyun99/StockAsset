@@ -16,6 +16,12 @@ gh auth status          # 인증 상태 확인
 gh repo view            # 현재 리포지토리 확인
 ```
 
+> **이 환경 주의사항:** git remote가 로컬 프록시(`127.0.0.1`)를 통해 GitHub에 연결되므로,
+> `gh` 명령 실행 시 아래 환경변수와 `--repo` 플래그가 필요합니다:
+> ```bash
+> GH_HOST=github.com gh <command> --repo Junghyun99/StockAsset
+> ```
+
 ---
 
 ## 이슈(Issue)
