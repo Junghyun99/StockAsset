@@ -11,6 +11,8 @@ from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.engine import (
     TradingEngine, FullExposureEngine, QldSHVEngine, QldSchdEngine, Asset5Engine,
+    _ENGINE_REGISTRY as ENGINE_REGISTRY,
+    _ENGINE_COLORS,
 )
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
@@ -353,22 +355,7 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
 
 
 # --- 엔진 비교 백테스트 ---
-
-ENGINE_REGISTRY: List[Tuple[str, type]] = [
-    ("TradingEngine", TradingEngine),
-    ("FullExposureEngine", FullExposureEngine),
-    ("QldSHVEngine", QldSHVEngine),
-    ("QldSchdEngine", QldSchdEngine),
-    ("자산5분법", Asset5Engine),
-]
-
-_ENGINE_COLORS: Dict[str, str] = {
-    "TradingEngine": "#1f77b4",
-    "FullExposureEngine": "#2ca02c",
-    "QldSHVEngine": "#ff7f0e",
-    "QldSchdEngine": "#d62728",
-    "자산5분법": "#9467bd",
-}
+# ENGINE_REGISTRY, _ENGINE_COLORS는 src.core.engine에서 import (자동 등록)
 
 
 def run_compare_backtest(

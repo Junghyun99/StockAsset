@@ -1,6 +1,6 @@
 # src/core/engine.py
 import time
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -11,7 +11,27 @@ from src.core.models import (
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
 
+# 엔진 자동 등록 레지스트리
+_ENGINE_REGISTRY: List[Tuple[str, type]] = []
+_ENGINE_COLORS: Dict[str, str] = {}
 
+
+def register_engine(name: str = None, color: str = "#6c757d"):
+    """엔진 클래스를 레지스트리에 자동 등록하는 데코레이터.
+
+    Args:
+        name: 레지스트리에 등록할 이름. 기본값은 클래스명(__name__).
+        color: 대시보드 차트 색상 (hex). 기본값은 회색(#6c757d).
+    """
+    def decorator(cls):
+        key = name or cls.__name__
+        _ENGINE_REGISTRY.append((key, cls))
+        _ENGINE_COLORS[key] = color
+        return cls
+    return decorator
+
+
+@register_engine(color="#1f77b4")
 class TradingEngine:
     """핵심 트레이딩 사이클 엔진 (Template Method 패턴).
 
@@ -320,6 +340,7 @@ class TradingEngine:
             self.notifier.send_alert(msg)
 
 
+@register_engine(color="#2ca02c")
 class FullExposureEngine(TradingEngine):
     """항상 exposure=1.0을 유지하는 전략 엔진.
 
@@ -358,6 +379,7 @@ class FullExposureEngine(TradingEngine):
         return regime, exposure, nan_fields
 
 
+@register_engine(color="#ff7f0e")
 class QldSHVEngine(FullExposureEngine):
     """QLD(A그룹) + SHV(B그룹)만으로 구성된 Full Exposure 전략 엔진.
 
@@ -374,6 +396,7 @@ class QldSHVEngine(FullExposureEngine):
 
 
 
+@register_engine(color="#d62728")
 class QldSchdEngine(FullExposureEngine):
     """QLD(A그룹) + SCHD(B그룹)으로 구성된 Full Exposure 전략 엔진.
 
@@ -390,6 +413,7 @@ class QldSchdEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.3
 
 
+@register_engine(color="#9467bd")
 class Asset5Engine(FullExposureEngine):
     """자산5분법 — VOO/IEMG(A그룹) + TLT/EMB/GLD(B그룹) Full Exposure 전략 엔진.
 

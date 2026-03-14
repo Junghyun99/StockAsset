@@ -226,15 +226,27 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
 }
 
 /**
- * 엔진별 고유 색상 팔레트
+ * 엔진별 고유 색상 팔레트 (런타임에 loadEngineMeta()로 채워짐)
  */
-export const ENGINE_COLORS = {
-    TradingEngine: '#0d6efd',
-    FullExposureEngine: '#dc3545',
-    QldSHVEngine: '#198754',
-    QldSchdEngine: '#6f42c1',
-    '자산5분법': '#9467bd'
-};
+export const ENGINE_COLORS = {};
+
+/**
+ * engines_meta.json을 fetch하여 ENGINE_COLORS를 채운다.
+ * loadCompareMode() 시작 시 반드시 먼저 호출해야 한다.
+ * @param {string} basePath - engines_meta.json이 있는 경로 (예: 'data/backtest/compare/')
+ */
+export async function loadEngineMeta(basePath) {
+    try {
+        const res = await fetch(`${basePath}engines_meta.json?v=${Date.now()}`);
+        if (!res.ok) return;
+        const meta = await res.json();
+        for (const [name, info] of Object.entries(meta)) {
+            ENGINE_COLORS[name] = info.color;
+        }
+    } catch (e) {
+        console.warn('engines_meta.json 로드 실패 — 폴백 색상(#6c757d) 사용');
+    }
+}
 
 export const SPY_COLOR = '#fd7e14';
 
