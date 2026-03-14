@@ -498,6 +498,13 @@ def run_compare_backtest(
 
         logger.info(f"[{name}] Final: ${final_value:,.0f} | CAGR: {cagr:.2%} | MDD: {mdd:.2%} | Sharpe: {sharpe_ratio:.2f}")
 
+        # status.json에 initial_cash와 backtest_start_date 저장 (JS 정확한 totalReturn 계산용)
+        status_path = ctx["repo"].status_file
+        status_data = ctx["repo"]._load_json(status_path, default={})
+        status_data["initial_cash"] = initial_cash
+        status_data["backtest_start_date"] = start_date
+        ctx["repo"]._save_json(status_path, status_data)
+
         engine_results[name] = BacktestResult(
             history=res_df,
             initial_cash=initial_cash,
