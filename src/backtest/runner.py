@@ -10,7 +10,7 @@ from typing import Dict, List, Optional, Tuple
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.engine import (
-    TradingEngine, FullExposureEngine, QldSHVEngine, QldSchdEngine,
+    TradingEngine, FullExposureEngine, QldSHVEngine, QldSchdEngine, Asset5Engine,
 )
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
@@ -359,6 +359,7 @@ ENGINE_REGISTRY: List[Tuple[str, type]] = [
     ("FullExposureEngine", FullExposureEngine),
     ("QldSHVEngine", QldSHVEngine),
     ("QldSchdEngine", QldSchdEngine),
+    ("자산5분법", Asset5Engine),
 ]
 
 _ENGINE_COLORS: Dict[str, str] = {
@@ -366,6 +367,7 @@ _ENGINE_COLORS: Dict[str, str] = {
     "FullExposureEngine": "#2ca02c",
     "QldSHVEngine": "#ff7f0e",
     "QldSchdEngine": "#d62728",
+    "자산5분법": "#9467bd",
 }
 
 

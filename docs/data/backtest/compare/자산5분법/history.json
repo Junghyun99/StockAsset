@@ -4,34 +4,44 @@
         "date": "2023-01-02",
         "portfolio_value": 9895.807804878048,
         "total_trade_amount": 9558.0,
-        "reason": "첫 투자: 50:50 비율로 진입",
+        "reason": "첫 투자: 40:60 비율로 진입",
         "executions": [
             {
-                "ticker": "SSO",
+                "ticker": "VOO",
                 "action": "BUY",
-                "quantity": 13,
+                "quantity": 10,
                 "price": 191.16,
-                "fee": 2.49,
+                "fee": 1.91,
                 "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
             },
             {
-                "ticker": "QLD",
+                "ticker": "IEMG",
                 "action": "BUY",
-                "quantity": 13,
+                "quantity": 10,
                 "price": 191.16,
-                "fee": 2.49,
+                "fee": 1.91,
                 "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
             },
             {
-                "ticker": "IEF",
+                "ticker": "TLT",
                 "action": "BUY",
-                "quantity": 8,
+                "quantity": 10,
                 "price": 191.16,
-                "fee": 1.53,
+                "fee": 1.91,
+                "date": "2023-01-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 191.16,
+                "fee": 1.91,
                 "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
@@ -39,19 +49,9 @@
             {
                 "ticker": "GLD",
                 "action": "BUY",
-                "quantity": 8,
+                "quantity": 10,
                 "price": 191.16,
-                "fee": 1.53,
-                "date": "2023-01-02",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "PDBC",
-                "action": "BUY",
-                "quantity": 8,
-                "price": 191.16,
-                "fee": 1.53,
+                "fee": 1.91,
                 "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
