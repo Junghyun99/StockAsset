@@ -431,15 +431,20 @@ def run_compare_backtest(
     # 5. 시뮬레이션 루프
     logger.info(f"--- Starting Compare Backtest ({len(sim_days)} trading days) ---")
 
+    prev_prices: Dict[str, float] = {}  # NaN 대체용 전날 가격 (forward-fill)
+
     for today in sim_days:
         # 종가 추출 (1회, 공유)
         try:
             close_prices = full_df['Close'].loc[today]
             current_prices = close_prices.to_dict()
+            # NaN 가격 제거: yfinance에서 특정 날짜에 데이터가 없을 수 있음
+            # NaN이 있으면 직전 설정 가격(prev_prices)으로 대체 (forward-fill)
             current_prices = {
-                t: (p if not (isinstance(p, float) and np.isnan(p)) else 0.0)
+                t: (p if not (isinstance(p, float) and np.isnan(p)) else prev_prices.get(t, 0.0))
                 for t, p in current_prices.items()
             }
+            prev_prices = current_prices
         except Exception as e:
             logger.warning(f"[{today.date()}] 종가 추출 실패, 건너뜀: {e}")
             continue
