@@ -140,9 +140,10 @@ export function getAssetGroup(ticker, groupConfig) {
 /**
  * 포트폴리오 & SPY 벤치마크 고급 지표 계산
  * @param {Array} summaryData - summary 배열 (total_value, spy_price 포함)
+ * @param {number|null} initialCash - 실제 초기 자본 (status.json의 initial_cash). 없으면 summary 첫 값 사용.
  * @returns {{portfolio: Object, spy: Object}} 양쪽 지표 객체
  */
-export function computeAdvancedMetrics(summaryData) {
+export function computeAdvancedMetrics(summaryData, initialCash = null) {
     const empty = { totalReturn: 0, cagr: 0, mdd: 0, volatility: 0, sharpe: 0, sortino: 0, calmar: 0, beta: 1.0 };
     if (!summaryData || summaryData.length < 2) {
         return { portfolio: { ...empty }, spy: { ...empty, beta: 1.0 } };
@@ -164,8 +165,8 @@ export function computeAdvancedMetrics(summaryData) {
         spyReturns.push(summaryData[i].spy_price / summaryData[i - 1].spy_price - 1);
     }
 
-    function calcMetrics(values, dailyReturns) {
-        const firstVal = values[0];
+    function calcMetrics(values, dailyReturns, baseValue = null) {
+        const firstVal = baseValue !== null ? baseValue : values[0];
         const lastVal = values[values.length - 1];
         const totalReturn = (lastVal / firstVal - 1) * 100;
         const cagr = (Math.pow(lastVal / firstVal, 1 / years) - 1) * 100;
@@ -205,7 +206,7 @@ export function computeAdvancedMetrics(summaryData) {
     const portValues = summaryData.map(d => d.total_value);
     const spyValues = summaryData.map(d => d.spy_price);
 
-    const portMetrics = calcMetrics(portValues, portReturns);
+    const portMetrics = calcMetrics(portValues, portReturns, initialCash);
     const spyMetrics = calcMetrics(spyValues, spyReturns);
 
     // Beta = Cov(port, spy) / Var(spy)

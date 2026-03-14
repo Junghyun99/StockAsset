@@ -17,10 +17,11 @@ export function renderCompareOverview(enginesData) {
     const container = document.getElementById('overview');
     if (!container) return;
 
-    // 각 엔진 metrics 계산
+    // 각 엔진 metrics 계산 (status.json의 initial_cash로 정확한 totalReturn 계산)
     const engineMetrics = {};
     for (const [name, data] of enginesData) {
-        engineMetrics[name] = computeAdvancedMetrics(data.summary);
+        const initialCash = data.status?.initial_cash ?? null;
+        engineMetrics[name] = computeAdvancedMetrics(data.summary, initialCash);
     }
 
     const engineNames = [...enginesData.keys()];
