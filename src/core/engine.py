@@ -413,6 +413,23 @@ class QldSchdEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.3
 
 
+@register_engine(color="#1f77b4")
+class QqqSchdEngine(FullExposureEngine):
+    """QQQ(A그룹) + SCHD(B그룹)으로 구성된 Full Exposure 전략 엔진.
+
+    - 자산군 A: [QQQ]  (나스닥 100 ETF)
+    - 자산군 B: [SCHD] (배당 성장 ETF)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - A:B 비율 = 0.3:0.7 (성장보다 배당 비중 강조)
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['QQQ'],
+        'B': ['SCHD'],
+    }
+    REBALANCE_RATIO_A: float = 0.3
+
+
 @register_engine(color="#fd7e14")
 class SpyEngine(FullExposureEngine):
     """SPY Buy&Hold 벤치마크 시뮬레이션 엔진.
