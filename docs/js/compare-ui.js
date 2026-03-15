@@ -89,12 +89,9 @@ export function renderCompareOverview(enginesData) {
     }
 
     // 테이블 헤더
-    let headerCols = engineNames.map(name =>
+    const headerCols = engineNames.map(name =>
         `<th class="text-end pe-3">${colorDot(name)}${name}</th>`
     ).join('');
-
-    // SPY 열 추가
-    headerCols += `<th class="text-end pe-3"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#fd7e14;margin-right:6px;"></span>SPY</th>`;
 
     // 테이블 바디
     let rows = '';
@@ -114,34 +111,23 @@ export function renderCompareOverview(enginesData) {
             cells += `<td class="text-end pe-3 ${cls}">${fmt(value, format)}</td>`;
         });
 
-        // SPY 값
-        let spyValue;
-        if (key === 'finalValue') {
-            // SPY scaled final value
-            const s = firstEngine.summary;
-            const spyInitial = s[0]?.spy_price || 1;
-            const spyFinal = s[s.length - 1]?.spy_price || 1;
-            spyValue = (spyFinal / spyInitial) * (s[0]?.total_value || 10000);
-            cells += `<td class="text-end pe-3 text-muted">${fmt(spyValue, format)}</td>`;
-        } else if (key === 'beta') {
-            cells += `<td class="text-end pe-3 text-muted">1.00</td>`;
-        } else {
-            const spyMetric = engineMetrics[engineNames[0]].spy[key];
-            cells += `<td class="text-end pe-3 text-muted">${fmt(spyMetric, format)}</td>`;
-        }
-
         rows += `<tr><td class="ps-3">${label}</td>${cells}</tr>`;
     }
 
-    // Alpha 행
-    let alphaCells = '';
-    engineNames.forEach(name => {
-        const alpha = engineMetrics[name].portfolio.totalReturn - engineMetrics[name].spy.totalReturn;
-        const cls = alpha >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
-        alphaCells += `<td class="text-end pe-3 ${cls}">${formatPercent(alpha)}</td>`;
-    });
-    alphaCells += `<td class="text-end pe-3 text-muted">-</td>`;
-    rows += `<tr class="table-light"><td class="ps-3 fw-bold">Alpha</td>${alphaCells}</tr>`;
+    // Alpha 행 (SpyEngine 기준)
+    const spyEngineName = engineNames.find(n => n === 'SpyEngine');
+    if (spyEngineName) {
+        const spyTotalReturn = engineMetrics[spyEngineName].portfolio.totalReturn;
+        let alphaCells = '';
+        engineNames.forEach(name => {
+            const alpha = engineMetrics[name].portfolio.totalReturn - spyTotalReturn;
+            const cls = name === spyEngineName ? 'text-muted' :
+                        alpha >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+            const label = name === spyEngineName ? '-' : formatPercent(alpha);
+            alphaCells += `<td class="text-end pe-3 ${cls}">${label}</td>`;
+        });
+        rows += `<tr class="table-light"><td class="ps-3 fw-bold">Alpha (vs SPY)</td>${alphaCells}</tr>`;
+    }
 
     container.innerHTML = `
         <!-- 백테스트 기간 배너 -->

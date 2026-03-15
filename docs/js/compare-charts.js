@@ -1,7 +1,7 @@
 // docs/js/compare-charts.js
 // 멀티 엔진 비교 전용 차트
 
-import { filterByDateRange, ENGINE_COLORS, SPY_COLOR } from './utils.js?v=2';
+import { filterByDateRange, ENGINE_COLORS } from './utils.js?v=2';
 
 let comparePerformanceChart = null;
 let compareStrategyChart = null;
@@ -61,20 +61,6 @@ export function renderComparePerformanceChart(enginesData, filteredSummaries) {
             tension: 0.1,
         });
     }
-
-    // SPY 벤치마크
-    const spyInitial = firstSummary[0].spy_price;
-    const spyData = firstSummary.map(d => (d.spy_price / spyInitial) * 100);
-    datasets.push({
-        label: 'SPY Benchmark',
-        data: spyData,
-        borderColor: SPY_COLOR,
-        borderWidth: 2,
-        borderDash: [5, 5],
-        pointRadius: 0,
-        fill: false,
-        tension: 0.1,
-    });
 
     // Regime 배경 박스
     const annotations = {};
