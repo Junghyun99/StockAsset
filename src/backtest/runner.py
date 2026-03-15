@@ -11,7 +11,7 @@ from src.config import Config
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.engine import (
-    TradingEngine, FullExposureEngine, QldSHVEngine, QldSchdEngine, Asset5Engine,
+    TradingEngine, FullExposureEngine, QldSHVEngine, QldSchdEngine, Asset5Engine, SpyEngine,
     _ENGINE_REGISTRY as ENGINE_REGISTRY,
     _ENGINE_COLORS,
 )
