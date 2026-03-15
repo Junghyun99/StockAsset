@@ -29,7 +29,8 @@ def mock_compare_fetcher():
     )
     vix = pd.DataFrame({"Close": [15.0] * n}, index=dates)
     dividends = pd.DataFrame()
-    return df, vix, dividends
+    splits = pd.DataFrame()
+    return df, vix, dividends, splits
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -115,7 +116,7 @@ def test_run_compare_returns_none_on_missing_tickers(mock_download):
         columns=columns,
     )
     vix = pd.DataFrame({"Close": [15.0] * len(dates)}, index=dates)
-    mock_download.return_value = (df, vix, pd.DataFrame())
+    mock_download.return_value = (df, vix, pd.DataFrame(), pd.DataFrame())
 
     result = run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
