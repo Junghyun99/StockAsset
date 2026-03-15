@@ -66,7 +66,7 @@ class TestAlwaysRedownloads:
         vix = _make_vix("2023-01-01", "2023-12-31")
         mock_download.side_effect = [combined, vix]
 
-        df, vix_df, div_df, _ = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+        df, vix_df, div_df = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
 
         assert not df.empty
         assert not vix_df.empty
@@ -136,7 +136,7 @@ class TestIpoTrim:
         vix = _make_vix("2022-01-01", "2023-12-31")
         mock_download.side_effect = [ohlcv, vix]
 
-        df, _, _, _ = cache.get_data(["SPY", "NEW"], "2022-01-01", "2023-12-31")
+        df, _, _ = cache.get_data(["SPY", "NEW"], "2022-01-01", "2023-12-31")
 
         # 결과 시작일은 NEW 첫 유효일 이상이어야 함
         assert df.index.min() >= ipo_date
@@ -148,7 +148,7 @@ class TestIpoTrim:
         vix = _make_vix("2023-01-01", "2023-12-31")
         mock_download.side_effect = [combined, vix]
 
-        df, _, _, _ = cache.get_data(["SPY", "IEF"], "2023-01-01", "2023-12-31")
+        df, _, _ = cache.get_data(["SPY", "IEF"], "2023-01-01", "2023-12-31")
 
         expected_start = pd.bdate_range("2023-01-01", "2023-01-10")[0]
         assert df.index.min() <= expected_start
@@ -199,7 +199,7 @@ class TestFfill:
         vix = _make_vix("2023-01-01", "2023-12-31")
         mock_download.side_effect = [ohlcv, vix]
 
-        df, _, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+        df, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
 
         # ffill 후 NaN 없어야 함
         assert not df["Close"]["SPY"].isna().any()
@@ -217,7 +217,7 @@ class TestOhlcvFields:
         vix = _make_vix("2023-01-01", "2023-06-30")
         mock_download.side_effect = [combined, vix]
 
-        df, _, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
+        df, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
 
         ohlcv_fields = df.columns.get_level_values(0).unique().tolist()
         assert "Dividends" not in ohlcv_fields
@@ -229,22 +229,10 @@ class TestOhlcvFields:
         vix = _make_vix("2023-01-01", "2023-06-30")
         mock_download.side_effect = [combined, vix]
 
-        _, _, div_df, _ = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
+        _, _, div_df = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
 
         assert "SPY" in div_df.columns
         assert (div_df["SPY"] > 0).any()
-
-    @patch("src.backtest.cache.yf.download")
-    def test_splits_extracted_correctly(self, mock_download, cache):
-        """주식분할 데이터가 통합 다운로드에서 올바르게 추출되어야 한다"""
-        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-06-30")
-        vix = _make_vix("2023-01-01", "2023-06-30")
-        mock_download.side_effect = [combined, vix]
-
-        _, _, _, splits_df = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
-
-        assert "SPY" in splits_df.columns
-        assert (splits_df["SPY"] > 0).any()
 
     @patch("src.backtest.cache.yf.download")
     def test_ohlcv_does_not_contain_adj_close(self, mock_download, cache):
@@ -253,21 +241,10 @@ class TestOhlcvFields:
         vix = _make_vix("2023-01-01", "2023-06-30")
         mock_download.side_effect = [combined, vix]
 
-        df, _, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
+        df, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-06-30")
 
         ohlcv_fields = df.columns.get_level_values(0).unique().tolist()
         assert "Adj Close" not in ohlcv_fields
-
-    @patch("src.backtest.cache.yf.download")
-    def test_saves_splits_parquet_after_download(self, mock_download, cache):
-        """주식분할 parquet 파일이 저장되어야 한다"""
-        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-03-31")
-        vix = _make_vix("2023-01-01", "2023-03-31")
-        mock_download.side_effect = [combined, vix]
-
-        cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
-
-        assert cache.splits_path.exists()
 
 
 # ── 단일 티커 정규화 ──────────────────────────────────────────────────────────
@@ -285,7 +262,7 @@ class TestSingleTickerNormalization:
         vix = _make_vix("2023-01-01", "2023-03-31")
         mock_download.side_effect = [single_df, vix]
 
-        df, _, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
+        df, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
 
         assert isinstance(df.columns, pd.MultiIndex)
         assert "SPY" in df.columns.get_level_values(1).unique()
@@ -322,7 +299,6 @@ class TestClear:
         assert not cache.ohlcv_path.exists()
         assert not cache.vix_path.exists()
         assert not cache.dividends_path.exists()
-        assert not cache.splits_path.exists()
 
 
 # ── 로거 ─────────────────────────────────────────────────────────────────────
@@ -389,7 +365,7 @@ class TestLogger:
         mock_download.side_effect = [combined, vix]
 
         cache = BacktestDataCache(cache_dir=tmp_cache_dir)
-        df, vix_df, _, _ = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
+        df, vix_df, _ = cache.get_data(["SPY"], "2023-01-01", "2023-12-31")
 
         assert not df.empty
         assert not vix_df.empty

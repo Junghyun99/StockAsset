@@ -25,7 +25,7 @@ def download_historical_data(
     real_start = datetime.strptime(start_date, "%Y-%m-%d") - timedelta(days=500)
     real_start_str = real_start.strftime("%Y-%m-%d")
 
-    df, vix, dividends, splits = cache.get_data(tickers, real_start_str, end_date)
+    df, vix, dividends = cache.get_data(tickers, real_start_str, end_date)
 
     print("✅ Data Ready.")
-    return df, vix, dividends, splits
+    return df, vix, dividends
