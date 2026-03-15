@@ -264,7 +264,10 @@ def run_compare_backtest(
                     ctx["broker"].receive_dividends(div_income)
                     ctx["dividend_income"] += div_income
 
-            _apply_stock_splits(today, full_splits, ctx["broker"])
+            # 주식분할 주수 적용 제거:
+            # auto_adjust=False 에서도 Yahoo Finance Close는 분할이 소급 반영된 가격이므로
+            # 주수를 추가로 곱하면 이중 반영(double-counting)이 발생한다.
+            # 배당은 Close에 미반영이므로 수동 현금 추가가 올바르다.
 
             try:
                 result = ctx["engine"].run_one_cycle(ctx["loader"], sim_date=sim_date)

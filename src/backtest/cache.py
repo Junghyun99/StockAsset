@@ -8,7 +8,7 @@ from src.core.interfaces import ILogger
 CACHE_DIR = Path(__file__).parent / "cache"
 
 # OHLCV에 포함할 필드 (Adj Close, Dividends, Stock Splits 제외)
-# auto_adjust=False 사용으로 비수정주가(원주가) 저장
+# auto_adjust=False: Close는 분할 소급 반영(split-adjusted), 배당 미반영(not dividend-adjusted)
 _OHLCV_FIELDS = ["Close", "Open", "High", "Low", "Volume"]
 
 
@@ -43,7 +43,7 @@ class BacktestDataCache:
     ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         기존 캐시를 삭제하고 전체 티커를 새로 다운로드한다.
-        비수정주가(원주가)를 사용하며 배당/주식분할 정보를 별도 저장한다.
+        Close(분할 소급 반영, 배당 미반영)를 사용하며 배당/주식분할 정보를 별도 저장한다.
 
         1. 기존 캐시 삭제
         2. 전 티커 일괄 다운로드 (auto_adjust=False)
@@ -138,9 +138,9 @@ class BacktestDataCache:
     ) -> Tuple[Optional[pd.DataFrame], pd.DataFrame, pd.DataFrame]:
         """
         단일 yf.download(auto_adjust=False, actions=True) 호출로
-        비수정 OHLCV, 실제 배당금액, 주식분할 정보를 함께 다운로드한다.
+        OHLCV, 실제 배당금액, 주식분할 정보를 함께 다운로드한다.
 
-        auto_adjust=False: 배당/분할이 반영되지 않은 원주가 반환
+        auto_adjust=False: Close는 분할 소급 반영(split-adjusted), 배당 미반영
         actions=True: Dividends, Stock Splits 컬럼 포함
         """
         try:
