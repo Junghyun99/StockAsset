@@ -1,37 +1,189 @@
 [
     {
-        "id": "tx_20230102",
-        "date": "2023-01-02",
-        "portfolio_value": 9893.72396097561,
-        "total_trade_amount": 9749.16,
+        "id": "tx_20160104",
+        "date": "2016-01-04",
+        "portfolio_value": 9893.764948142089,
+        "total_trade_amount": 9745.44,
         "reason": "첫 투자: 100:0 비율로 진입",
         "executions": [
             {
                 "ticker": "SPY",
                 "action": "BUY",
-                "quantity": 51,
-                "price": 191.16,
+                "quantity": 48,
+                "price": 203.03,
                 "fee": 9.75,
-                "date": "2023-01-02",
+                "date": "2016-01-04",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20230103",
-        "date": "2023-01-03",
-        "portfolio_value": 9904.076456097562,
-        "total_trade_amount": 191.41,
+        "id": "tx_20160105",
+        "date": "2016-01-05",
+        "portfolio_value": 9907.867798754118,
+        "total_trade_amount": 203.37,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 203.37,
+                "fee": 0.2,
+                "date": "2016-01-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20161216",
+        "date": "2016-12-16",
+        "portfolio_value": 11288.12074954132,
+        "total_trade_amount": 227.29,
         "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SPY",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 191.41,
-                "fee": 0.19,
-                "date": "2023-01-03",
+                "price": 227.29,
+                "fee": 0.23,
+                "date": "2016-12-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20180208",
+        "date": "2018-02-08",
+        "portfolio_value": 13154.884823021544,
+        "total_trade_amount": 260.21,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 260.21,
+                "fee": 0.26,
+                "date": "2018-02-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20181221",
+        "date": "2018-12-21",
+        "portfolio_value": 12548.955311392057,
+        "total_trade_amount": 243.11,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 243.11,
+                "fee": 0.24,
+                "date": "2018-12-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200227",
+        "date": "2020-02-27",
+        "portfolio_value": 15791.988392688445,
+        "total_trade_amount": 300.49,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 300.49,
+                "fee": 0.3,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210618",
+        "date": "2021-06-18",
+        "portfolio_value": 22452.435317432402,
+        "total_trade_amount": 419.07,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 419.07,
+                "fee": 0.42,
+                "date": "2021-06-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220916",
+        "date": "2022-09-16",
+        "portfolio_value": 21273.14944492569,
+        "total_trade_amount": 389.42,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 389.42,
+                "fee": 0.39,
+                "date": "2022-09-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231215",
+        "date": "2023-12-15",
+        "portfolio_value": 26338.10151752548,
+        "total_trade_amount": 474.02,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 474.02,
+                "fee": 0.47,
+                "date": "2023-12-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250404",
+        "date": "2025-04-04",
+        "portfolio_value": 28836.41106833267,
+        "total_trade_amount": 510.33,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 510.33,
+                "fee": 0.51,
+                "date": "2025-04-04",
                 "status": "FILLED",
                 "reason": ""
             }
