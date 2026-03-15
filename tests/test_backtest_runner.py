@@ -10,7 +10,7 @@ from src.core.models import MarketRegime, TradeExecution, OrderAction, Execution
 
 
 ALL_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "PDBC", "SHV"]
-ENGINE_TICKERS_SCHD = ["SPY", "QLD", "SCHD"]
+ENGINE_TICKERS_SCHD = ["SPY", "QLD", "SCHD", "SHV"]
 ENGINE_TICKERS_SHV = ["SPY", "QLD", "SHV"]
 
 
@@ -702,12 +702,12 @@ def test_engine_asset_groups_used_for_rebalancer(mock_savefig, mock_download):
     """
     mock_download.return_value = _make_engine_price_df(ENGINE_TICKERS_SCHD)
 
-    captured_groups = {}
+    captured_all_groups = []
 
     original_init = __import__('src.core.logic', fromlist=['Rebalancer']).Rebalancer.__init__
 
     def capture_init(self, asset_groups, *args, **kwargs):
-        captured_groups['groups'] = asset_groups
+        captured_all_groups.append(asset_groups)
         original_init(self, asset_groups, *args, **kwargs)
 
     with patch("src.core.engine.Rebalancer.__init__", capture_init):
@@ -717,9 +717,11 @@ def test_engine_asset_groups_used_for_rebalancer(mock_savefig, mock_download):
             engine_class=QldSchdEngine,
         )
 
-    assert captured_groups.get('groups') == QldSchdEngine.ASSET_GROUPS, (
+    # SpyEngine 벤치마크도 Rebalancer를 생성하므로 첫 번째 호출(main engine)을 확인
+    assert len(captured_all_groups) > 0, "Rebalancer.__init__가 최소 1회 호출되어야 함"
+    assert captured_all_groups[0] == QldSchdEngine.ASSET_GROUPS, (
         f"rebalancer가 QldSchdEngine.ASSET_GROUPS를 사용해야 함. "
-        f"실제: {captured_groups.get('groups')}"
+        f"실제 (첫 번째 호출): {captured_all_groups[0]}"
     )
 
 
@@ -755,12 +757,12 @@ def test_qld_schd_engine_ratio_a_used(mock_savefig, mock_download):
     """
     mock_download.return_value = _make_engine_price_df(ENGINE_TICKERS_SCHD)
 
-    captured_ratio = {}
+    captured_all_ratios = []
 
     original_init = __import__('src.core.logic', fromlist=['Rebalancer']).Rebalancer.__init__
 
     def capture_init(self, asset_groups, logger=None, ratio_a=0.5):
-        captured_ratio['ratio_a'] = ratio_a
+        captured_all_ratios.append(ratio_a)
         original_init(self, asset_groups, logger=logger, ratio_a=ratio_a)
 
     with patch("src.core.engine.Rebalancer.__init__", capture_init):
@@ -770,9 +772,11 @@ def test_qld_schd_engine_ratio_a_used(mock_savefig, mock_download):
             engine_class=QldSchdEngine,
         )
 
-    assert captured_ratio.get('ratio_a') == QldSchdEngine.REBALANCE_RATIO_A, (
+    # SpyEngine 벤치마크도 Rebalancer를 생성하므로 첫 번째 호출(main engine)을 확인
+    assert len(captured_all_ratios) > 0, "Rebalancer.__init__가 최소 1회 호출되어야 함"
+    assert captured_all_ratios[0] == QldSchdEngine.REBALANCE_RATIO_A, (
         f"QldSchdEngine의 REBALANCE_RATIO_A({QldSchdEngine.REBALANCE_RATIO_A})가 "
-        f"rebalancer에 적용되어야 함. 실제: {captured_ratio.get('ratio_a')}"
+        f"rebalancer에 적용되어야 함. 실제 (첫 번째 호출): {captured_all_ratios[0]}"
     )
 
 

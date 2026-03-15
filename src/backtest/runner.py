@@ -87,13 +87,12 @@ def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeL
 def _calculate_metrics(
     summary_data: list,
     initial_cash: float,
-    full_df: pd.DataFrame,
     sim_days: list,
-) -> Optional[Tuple[pd.DataFrame, float, float, float, float, Optional[float], Dict[str, float]]]:
+) -> Optional[Tuple[pd.DataFrame, float, float, float, float, Dict[str, float]]]:
     """백테스트 결과 메트릭을 계산한다.
 
     Returns:
-        (res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns)
+        (res_df, final_value, cagr, mdd, sharpe_ratio, regime_returns)
         또는 데이터가 없으면 None
     """
     if not summary_data:
@@ -126,16 +125,6 @@ def _calculate_metrics(
     else:
         sharpe_ratio = 0.0
 
-    # SPY 벤치마크
-    spy_cagr = None
-    try:
-        spy_prices = full_df['Close']['SPY'].loc[sim_days].dropna()
-        if len(spy_prices) >= 2:
-            spy_return = spy_prices.iloc[-1] / spy_prices.iloc[0] - 1
-            spy_cagr = float((1 + spy_return) ** (1 / years) - 1) if years > 0 else 0.0
-    except Exception:
-        spy_cagr = None
-
     # 국면별 수익률
     res_df['daily_return'] = res_df['total_value'].pct_change()
     regime_returns: Dict[str, float] = {}
@@ -144,7 +133,80 @@ def _calculate_metrics(
         if len(regime_daily) > 0:
             regime_returns[str(regime_val)] = float(regime_daily.mean() * 252)
 
-    return res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns
+    return res_df, final_value, cagr, mdd, sharpe_ratio, regime_returns
+
+
+def _run_spy_engine_simulation(
+    full_df: pd.DataFrame,
+    full_vix,
+    full_dividends,
+    sim_days: list,
+    initial_cash: float,
+    trading_interval_days: int,
+    logger: TradeLogger,
+    reinvest_dividends: bool = True,
+) -> Tuple[Optional[float], Optional[pd.Series]]:
+    """SpyEngine를 실행하여 벤치마크 CAGR과 포트폴리오 가치 시계열을 반환한다."""
+    import tempfile
+    try:
+        spy_groups = SpyEngine.ASSET_GROUPS
+        _cfg = Config()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            broker = BacktestBroker(initial_cash, logger=logger)
+            repo = JsonRepository(
+                tmp_dir,
+                asset_groups=spy_groups,
+                max_summary_records=_cfg.MAX_SUMMARY_RECORDS,
+                max_history_records=_cfg.MAX_HISTORY_RECORDS,
+            )
+            loader = BacktestDataLoader(full_df, full_vix)
+            engine = SpyEngine(
+                asset_groups=spy_groups,
+                ratio_a=SpyEngine.REBALANCE_RATIO_A,
+                broker=broker,
+                repo=repo,
+                logger=logger,
+                trading_interval_days=trading_interval_days,
+                notifier=None,
+                is_live_trading=False,
+            )
+
+            prev_prices: Dict[str, float] = {}
+            for today in sim_days:
+                try:
+                    close_prices = full_df['Close'].loc[today]
+                    current_prices = {
+                        t: (p if not pd.isna(p) else prev_prices.get(t))
+                        for t, p in close_prices.to_dict().items()
+                        if not pd.isna(p) or prev_prices.get(t) is not None
+                    }
+                    prev_prices = current_prices
+                except Exception:
+                    continue
+
+                loader.set_date(today)
+                broker.set_date(today)
+                broker.set_prices(current_prices)
+
+                if reinvest_dividends and full_dividends is not None:
+                    div_income = _calculate_dividend_income(today, full_dividends, broker)
+                    if div_income > 0:
+                        broker.receive_dividends(div_income)
+
+                try:
+                    engine.run_one_cycle(loader, sim_date=today.strftime("%Y-%m-%d"))
+                except Exception:
+                    pass
+
+            summary_data = repo._load_json(repo.summary_file, default=[])
+            metrics = _calculate_metrics(summary_data, initial_cash, sim_days)
+            if metrics is None:
+                return None, None
+
+            res_df, _, cagr, _, _, _ = metrics
+            return cagr, res_df['total_value']
+    except Exception:
+        return None, None
 
 
 def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
@@ -171,8 +233,14 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     for group in effective_asset_groups.values():
         tickers.extend(group)
     tickers = list(set(tickers))  # 중복 제거
-    if "SPY" not in tickers:
-        tickers.append("SPY")  # 벤치마크 계산에 필요
+    # SpyEngine 벤치마크 실행에 필요한 티커 추가 (engine_class가 SpyEngine이 아닌 경우)
+    if engine_class is not SpyEngine:
+        for group in SpyEngine.ASSET_GROUPS.values():
+            for t in group:
+                if t not in tickers:
+                    tickers.append(t)
+    elif "SPY" not in tickers:
+        tickers.append("SPY")
 
     # 2. 데이터 준비 (10년치 한방에 로딩)
     logger.info("--- Preparing Data ---")
@@ -291,12 +359,20 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     logger.info("--- Backtest Finished ---")
 
     summary_data = backtest_repo._load_json(backtest_repo.summary_file, default=[])
-    metrics = _calculate_metrics(summary_data, initial_cash, full_df, sim_days)
+    metrics = _calculate_metrics(summary_data, initial_cash, sim_days)
     if metrics is None:
         logger.warning("No trading data available for the given period.")
         return None
 
-    res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns = metrics
+    res_df, final_value, cagr, mdd, sharpe_ratio, regime_returns = metrics
+
+    # SpyEngine 결과로 벤치마크 계산 (현재 엔진이 SpyEngine이면 스킵)
+    spy_cagr, spy_portfolio = None, None
+    if engine_class is not SpyEngine:
+        spy_cagr, spy_portfolio = _run_spy_engine_simulation(
+            full_df, full_vix, full_dividends, sim_days,
+            initial_cash, strategy.TRADING_INTERVAL_DAYS, logger, reinvest_dividends,
+        )
 
     # 결과 출력
     logger.info(f"Initial: ${initial_cash:,.0f} -> Final: ${final_value:,.0f}")
@@ -331,14 +407,9 @@ def run_backtest(start_date: str, end_date: str, initial_cash: float = 10000.0,
     chart_path = f"{output_dir}/backtest_{start_date}_{end_date}{run_suffix}.png"
     plt.figure(figsize=(12, 6))
     plt.plot(res_df['total_value'], label='Portfolio Value')
-    if spy_cagr is not None:
-        try:
-            spy_benchmark = full_df['Close']['SPY'].loc[sim_days].dropna()
-            spy_scaled = spy_benchmark / spy_benchmark.iloc[0] * initial_cash
-            plt.plot(spy_scaled, label=f'SPY Buy&Hold (CAGR: {spy_cagr:.2%})',
-                     linestyle='--', alpha=0.7)
-        except Exception:
-            pass
+    if spy_cagr is not None and spy_portfolio is not None:
+        plt.plot(spy_portfolio, label=f'SPY Buy&Hold (CAGR: {spy_cagr:.2%})',
+                 linestyle='--', alpha=0.7)
     plt.title(f"Backtest Result ({start_date} ~ {end_date})")
     plt.legend()
     plt.savefig(chart_path)
@@ -490,19 +561,15 @@ def run_compare_backtest(
     logger.info("--- Compare Backtest Finished ---")
 
     engine_results: Dict[str, BacktestResult] = {}
-    compare_spy_cagr: Optional[float] = None
 
     for name, ctx in engines.items():
         summary_data = ctx["repo"]._load_json(ctx["repo"].summary_file, default=[])
-        metrics = _calculate_metrics(summary_data, initial_cash, full_df, sim_days)
+        metrics = _calculate_metrics(summary_data, initial_cash, sim_days)
         if metrics is None:
             logger.warning(f"[{name}] No trading data available.")
             continue
 
-        res_df, final_value, cagr, mdd, sharpe_ratio, spy_cagr, regime_returns = metrics
-
-        if compare_spy_cagr is None and spy_cagr is not None:
-            compare_spy_cagr = spy_cagr
+        res_df, final_value, cagr, mdd, sharpe_ratio, regime_returns = metrics
 
         logger.info(f"[{name}] Final: ${final_value:,.0f} | CAGR: {cagr:.2%} | MDD: {mdd:.2%} | Sharpe: {sharpe_ratio:.2f}")
 
@@ -520,13 +587,24 @@ def run_compare_backtest(
             cagr=cagr,
             mdd=mdd,
             sharpe_ratio=sharpe_ratio,
-            spy_cagr=spy_cagr,
+            spy_cagr=None,  # 아래에서 SpyEngine 결과로 일괄 설정
             regime_returns=regime_returns,
             chart_path=None,
             trade_executions=ctx["executions"],
             trade_reason_summary=ctx["reason_counter"] if ctx["reason_counter"] else None,
             total_dividend_income=ctx["dividend_income"],
         )
+
+    # SpyEngine 결과를 벤치마크로 설정
+    spy_engine_result = engine_results.get('SpyEngine')
+    compare_spy_cagr: Optional[float] = spy_engine_result.cagr if spy_engine_result is not None else None
+    spy_portfolio: Optional[pd.Series] = (
+        spy_engine_result.history['total_value'] if spy_engine_result is not None else None
+    )
+    # 각 엔진의 spy_cagr을 SpyEngine 결과로 설정 (SpyEngine 자신은 제외)
+    for name, br in engine_results.items():
+        if name != 'SpyEngine':
+            br.spy_cagr = compare_spy_cagr
 
     if not engine_results:
         logger.warning("No engine produced results.")
@@ -543,15 +621,10 @@ def run_compare_backtest(
         plt.plot(br.history['total_value'],
                  label=f'{name} (CAGR: {br.cagr:.2%})', color=color)
 
-    # SPY 벤치마크
-    if compare_spy_cagr is not None:
-        try:
-            spy_benchmark = full_df['Close']['SPY'].loc[sim_days].dropna()
-            spy_scaled = spy_benchmark / spy_benchmark.iloc[0] * initial_cash
-            plt.plot(spy_scaled, label=f'SPY Buy&Hold (CAGR: {compare_spy_cagr:.2%})',
-                     linestyle='--', color='gray', alpha=0.7)
-        except Exception:
-            pass
+    # SpyEngine 포트폴리오를 벤치마크 라인으로 표시 (이미 엔진 라인에 포함되어 있으나 강조)
+    if compare_spy_cagr is not None and spy_portfolio is not None:
+        plt.plot(spy_portfolio, label=f'SPY Buy&Hold (CAGR: {compare_spy_cagr:.2%})',
+                 linestyle='--', color='gray', alpha=0.7)
 
     plt.title(f"Engine Comparison ({start_date} ~ {end_date})")
     plt.ylabel("Portfolio Value ($)")
