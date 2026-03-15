@@ -48,7 +48,7 @@ jobs:
         tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'PDBC', 'SHV', 'SCHD', 'SPY', 'VOO', 'IEMG', 'EMB']
 
         cache = BacktestDataCache(logger=TradeLogger())
-        ohlcv, vix, dividends = cache.get_data(tickers, real_start_str, end_date)
+        ohlcv, vix, dividends, splits = cache.get_data(tickers, real_start_str, end_date)
 
         print(f'OHLCV shape: {ohlcv.shape}')
         print(f'OHLCV range: {ohlcv.index.min()} ~ {ohlcv.index.max()}')
@@ -66,6 +66,12 @@ jobs:
             print(dividends[dividends.any(axis=1)].head(10))
         else:
             print('Dividends: empty')
+        print(f'Splits shape: {splits.shape}')
+        if not splits.empty:
+            print(f'Splits range: {splits.index.min()} ~ {splits.index.max()}')
+            print(splits[splits.any(axis=1)].head(10))
+        else:
+            print('Splits: empty')
 
         print('')
         print('=== NaN 진단 (Close 기준) ===')
