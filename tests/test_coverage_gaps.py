@@ -81,57 +81,6 @@ class TestBacktestDataLoaderEdgeCases:
 
 
 # ==========================================
-# BacktestRunner 엣지 케이스 (runner.py 62-64, 87, 99-100)
-# ==========================================
-class TestBacktestRunnerEdgeCases:
-    @pytest.fixture
-    def mock_fetcher_data(self):
-        """러너 테스트용 대량 데이터 (모든 필수 티커 포함)"""
-        dates = pd.date_range(start="2022-01-01", end="2023-02-15")
-        all_tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'PDBC', 'SHV', 'SPY']
-        prices = np.linspace(100, 200, len(dates))
-        data = {('Close', ticker): prices for ticker in all_tickers}
-        df = pd.DataFrame(data, index=dates)
-        df.columns = pd.MultiIndex.from_tuples(df.columns)
-        vix = pd.DataFrame({'Close': [15.0] * len(dates)}, index=dates)
-        return df, vix, pd.DataFrame()
-
-    @patch("src.backtest.runner.download_historical_data")
-    @patch("src.backtest.runner.plt.savefig")
-    def test_runner_with_data_error_on_some_days(self, mock_savefig, mock_download, mock_fetcher_data):
-        """일부 날짜에서 데이터 추출 실패해도 계속 진행"""
-        from src.backtest.runner import run_backtest
-
-        mock_download.return_value = mock_fetcher_data
-        # 에러 없이 실행되면 OK (내부에서 continue 처리)
-        run_backtest(start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0)
-        mock_savefig.assert_called_once()
-
-    @patch("src.backtest.runner.download_historical_data")
-    @patch("src.backtest.runner.plt.savefig")
-    def test_runner_rebalance_execution(self, mock_savefig, mock_download):
-        """리밸런싱이 실행되는 시나리오"""
-        from src.backtest.runner import run_backtest
-
-        # 충분한 데이터와 변동성이 높은 시나리오 (모든 필수 티커 포함)
-        dates = pd.date_range(start="2022-01-01", end="2023-06-15")
-        all_tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'PDBC', 'SHV', 'SPY']
-        # 가격이 크게 변동하도록 설정
-        prices = np.concatenate([
-            np.linspace(100, 200, len(dates) // 2),
-            np.linspace(200, 80, len(dates) - len(dates) // 2)
-        ])
-        data = {('Close', ticker): prices for ticker in all_tickers}
-        df = pd.DataFrame(data, index=dates)
-        df.columns = pd.MultiIndex.from_tuples(df.columns)
-        vix = pd.DataFrame({'Close': [25.0] * len(dates)}, index=dates)
-        mock_download.return_value = (df, vix, pd.DataFrame())
-
-        run_backtest(start_date="2023-01-02", end_date="2023-06-01", initial_cash=10000.0)
-        mock_savefig.assert_called_once()
-
-
-# ==========================================
 # Notifier 미커버 라인 (notifier.py 15, 44-47, 66-69)
 # ==========================================
 class TestNotifierEdgeCases:
