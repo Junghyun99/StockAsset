@@ -35,15 +35,14 @@ class BacktestDataCache:
         self.ohlcv_path = self.cache_dir / "ohlcv.parquet"
         self.vix_path = self.cache_dir / "vix.parquet"
         self.dividends_path = self.cache_dir / "dividends.parquet"
-        self.splits_path = self.cache_dir / "splits.parquet"
         self._logger: ILogger = logger if logger is not None else _NullLogger()
 
     def get_data(
         self, tickers: List[str], start_date: str, end_date: str
-    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """
         기존 캐시를 삭제하고 전체 티커를 새로 다운로드한다.
-        Close(분할 소급 반영, 배당 미반영)를 사용하며 배당/주식분할 정보를 별도 저장한다.
+        Close(분할 소급 반영, 배당 미반영)를 사용하며 배당 정보를 별도 저장한다.
 
         1. 기존 캐시 삭제
         2. 전 티커 일괄 다운로드 (auto_adjust=False)
@@ -52,7 +51,7 @@ class BacktestDataCache:
         5. 저장 후 반환
 
         Returns:
-            (ohlcv, vix, dividends, splits)
+            (ohlcv, vix, dividends)
         """
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -64,7 +63,7 @@ class BacktestDataCache:
 
         # 2. 전체 다운로드
         self._logger.info(f"전체 다운로드 시작: {tickers} ({start_date} ~ {end_date})")
-        ohlcv, divs, splits = self._download_ohlcv_and_actions(tickers, need_start, need_end)
+        ohlcv, divs = self._download_ohlcv_and_actions(tickers, need_start, need_end)
         vix = self._download_vix(need_start, need_end)
 
         if ohlcv is None or ohlcv.empty:
@@ -84,7 +83,6 @@ class BacktestDataCache:
         # 5. 저장
         self._save_parquet(ohlcv, self.ohlcv_path)
         self._save_parquet(divs if divs is not None else pd.DataFrame(), self.dividends_path)
-        self._save_parquet(splits if splits is not None else pd.DataFrame(), self.splits_path)
         if vix is not None and not vix.empty:
             self._save_parquet(vix, self.vix_path)
 
@@ -92,7 +90,6 @@ class BacktestDataCache:
             ohlcv,
             vix if vix is not None else pd.DataFrame(),
             divs if divs is not None else pd.DataFrame(),
-            splits if splits is not None else pd.DataFrame(),
         )
 
     # ── 상장일 조정 ────────────────────────────────────────
@@ -135,13 +132,13 @@ class BacktestDataCache:
 
     def _download_ohlcv_and_actions(
         self, tickers: List[str], start: pd.Timestamp, end: pd.Timestamp
-    ) -> Tuple[Optional[pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+    ) -> Tuple[Optional[pd.DataFrame], pd.DataFrame]:
         """
         단일 yf.download(auto_adjust=False, actions=True) 호출로
-        OHLCV, 실제 배당금액, 주식분할 정보를 함께 다운로드한다.
+        OHLCV와 실제 배당금액을 함께 다운로드한다.
 
         auto_adjust=False: Close는 분할 소급 반영(split-adjusted), 배당 미반영
-        actions=True: Dividends, Stock Splits 컬럼 포함
+        actions=True: Dividends 컬럼 포함
         """
         try:
             df = yf.download(
@@ -149,7 +146,7 @@ class BacktestDataCache:
                 auto_adjust=False, back_adjust=False, actions=True, progress=True
             )
             if df is None or df.empty:
-                return None, pd.DataFrame(), pd.DataFrame()
+                return None, pd.DataFrame()
 
             # 단일 티커 + SingleIndex → MultiIndex로 정규화
             if not isinstance(df.columns, pd.MultiIndex) and len(tickers) == 1:
@@ -169,18 +166,10 @@ class BacktestDataCache:
             else:
                 divs = pd.DataFrame()
 
-            # 주식분할 추출
-            if "Stock Splits" in level0:
-                splits = df["Stock Splits"]
-                if isinstance(splits, pd.Series):
-                    splits = splits.to_frame(name=tickers[0])
-            else:
-                splits = pd.DataFrame()
-
-            return ohlcv, divs, splits
+            return ohlcv, divs
         except Exception as e:
             self._logger.warning(f"OHLCV 다운로드 실패: {e}")
-            return None, pd.DataFrame(), pd.DataFrame()
+            return None, pd.DataFrame()
 
     def _download_vix(
         self, start: pd.Timestamp, end: pd.Timestamp
@@ -212,7 +201,7 @@ class BacktestDataCache:
 
     def clear(self):
         """캐시 파일 삭제"""
-        for p in [self.ohlcv_path, self.vix_path, self.dividends_path, self.splits_path]:
+        for p in [self.ohlcv_path, self.vix_path, self.dividends_path]:
             if p.exists():
                 p.unlink()
         self._logger.info("기존 캐시 삭제 완료")

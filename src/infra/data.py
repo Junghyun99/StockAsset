@@ -16,7 +16,7 @@ class YFinanceLoader(IDataProvider):
     def fetch_ohlcv(self, tickers: List[str], days: int = 365) -> pd.DataFrame:
         self.logger.info(f"[Data] Fetching {tickers} history for {days} days...")
         try:
-            df = yf.download(tickers, period=f"{days}d", auto_adjust=True, progress=False)
+            df = yf.download(tickers, period=f"{days}d", auto_adjust=False, progress=False)
 
             if df is None or df.empty:
                 raise ValueError("No data fetched from Yahoo Finance.")
@@ -37,7 +37,7 @@ class YFinanceLoader(IDataProvider):
         self.logger.info("[Data] 🔍 Fetching VIX data from Yahoo Finance...")
 
         try:
-            vix_df = yf.download("^VIX", period="5d",auto_adjust=True,  progress=False)
+            vix_df = yf.download("^VIX", period="5d", auto_adjust=False, progress=False)
 
             # 1. 데이터가 비어있는 경우
             if vix_df is None or vix_df.empty:
