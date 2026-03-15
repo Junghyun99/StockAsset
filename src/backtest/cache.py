@@ -146,7 +146,7 @@ class BacktestDataCache:
         try:
             df = yf.download(
                 tickers, start=start, end=end,
-                auto_adjust=False, actions=True, progress=True
+                auto_adjust=False, back_adjust=False, actions=True, progress=True
             )
             if df is None or df.empty:
                 return None, pd.DataFrame(), pd.DataFrame()
