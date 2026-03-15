@@ -66,6 +66,25 @@ def _calculate_dividend_income(
         return 0.0
 
 
+def _apply_stock_splits(
+    today: pd.Timestamp,
+    splits_df: pd.DataFrame,
+    broker: "BacktestBroker",
+) -> None:
+    """오늘 날짜의 주식분할 비율을 broker 보유 주수에 반영한다. 오류 시 무시."""
+    try:
+        if splits_df is None or splits_df.empty:
+            return
+        if today not in splits_df.index:
+            return
+        row = splits_df.loc[today]
+        for ticker, ratio in row.items():
+            if ratio > 0 and ratio != 1.0:
+                broker.apply_stock_split(ticker, float(ratio))
+    except Exception:
+        return
+
+
 def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeLogger) -> List[str]:
     """
     full_df에 실제로 수신된 티커와 required를 비교해 누락된 티커를 반환한다.
@@ -161,7 +180,7 @@ def run_compare_backtest(
 
     # 2. 데이터 1회 다운로드
     logger.info("--- Preparing Data (Compare Mode) ---")
-    full_df, full_vix, full_dividends = download_historical_data(tickers, start_date, end_date)
+    full_df, full_vix, full_dividends, full_splits = download_historical_data(tickers, start_date, end_date)
 
     if _validate_tickers(full_df, tickers, logger):
         return None
@@ -244,6 +263,8 @@ def run_compare_backtest(
                 if div_income > 0:
                     ctx["broker"].receive_dividends(div_income)
                     ctx["dividend_income"] += div_income
+
+            _apply_stock_splits(today, full_splits, ctx["broker"])
 
             try:
                 result = ctx["engine"].run_one_cycle(ctx["loader"], sim_date=sim_date)

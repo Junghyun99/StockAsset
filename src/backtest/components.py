@@ -104,6 +104,18 @@ class BacktestBroker(MockBroker):
             if self.logger:
                 self.logger.info(f"[Dividend] +${amount:.2f} 배당금 수령")
 
+    def apply_stock_split(self, ticker: str, ratio: float) -> None:
+        """주식분할을 보유 주수에 반영한다. ratio > 1이면 정분할, 0 < ratio < 1이면 역분할."""
+        if ratio <= 0 or ratio == 1.0:
+            return
+        current_shares = self.holdings.get(ticker, 0)
+        if current_shares == 0:
+            return
+        new_shares = int(round(current_shares * ratio))
+        self.holdings[ticker] = new_shares
+        if self.logger:
+            self.logger.info(f"[Split] {ticker}: {current_shares}주 → {new_shares}주 (ratio: {ratio})")
+
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         # 백테스트에서는 모든 주문이 즉시 체결됨 (폴링 불필요)
         return True
