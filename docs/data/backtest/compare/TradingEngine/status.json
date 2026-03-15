@@ -1,55 +1,55 @@
 {
-    "last_updated": "2023-01-05",
-    "last_rebalancing_date": "2023-01-05",
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-30",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 15.0,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.19670681750293384,
-            "spy_price": 190.0,
-            "spy_ma180": 168.1707317073171,
-            "spy_volatility": 0.00016701957528333187
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.0792850839061815,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 631.5758433024089,
+            "spy_volatility": 0.08459772510334514
         }
     },
     "portfolio": {
-        "total_value": 9932.393170731708,
-        "cash_balance": 432.3931707317074,
+        "total_value": 11800.81172597586,
+        "cash_balance": 574.2614349144579,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 13,
-                "price": 190.0,
-                "value": 2470.0
+                "qty": 48,
+                "price": 58.79999923706055,
+                "value": 2822.3999633789062
             },
             {
                 "ticker": "QLD",
-                "qty": 13,
-                "price": 190.0,
-                "value": 2470.0
+                "qty": 40,
+                "price": 71.61000061035156,
+                "value": 2864.4000244140625
             },
             {
                 "ticker": "IEF",
-                "qty": 8,
-                "price": 190.0,
-                "value": 1520.0
+                "qty": 20,
+                "price": 95.88851165771484,
+                "value": 1917.7702331542969
             },
             {
                 "ticker": "GLD",
-                "qty": 8,
-                "price": 190.0,
-                "value": 1520.0
+                "qty": 4,
+                "price": 398.8900146484375,
+                "value": 1595.56005859375
             },
             {
                 "ticker": "PDBC",
-                "qty": 8,
-                "price": 190.0,
-                "value": 1520.0
+                "qty": 151,
+                "price": 13.420000076293945,
+                "value": 2026.4200115203857
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2023-01-02"
+    "backtest_start_date": "2016-01-01"
 }
