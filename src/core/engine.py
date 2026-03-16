@@ -497,11 +497,11 @@ class QldQqqShvRegimeEngine(TradingEngine):
     - 자산군 C: [SHV]  (초단기 국채 ETF — 현금 대용)
 
     국면별 배분 전략:
-    - BULL:        QLD 27% + QQQ 63% + SHV 10%  → 실효 레버리지 1.17x
-    - SIDEWAYS:    QLD 40% + QQQ 40% + SHV 20%  → 실효 레버리지 1.20x
-    - BEAR_WEAK:   QLD 56% + QQQ 24% + SHV 20%  → 실효 레버리지 1.36x
-    - BEAR_STRONG: QLD 77% + QQQ  9% + SHV 15%  → 실효 레버리지 1.62x
-    - CRASH:       QLD 90% + QQQ  5% + SHV  5%  → 실효 레버리지 1.85x
+    - BULL:        QLD 21% + QQQ 49% + SHV 30%  → 실효 레버리지 0.91x
+    - SIDEWAYS:    QLD 30% + QQQ 30% + SHV 40%  → 실효 레버리지 0.90x
+    - BEAR_WEAK:   QLD 42% + QQQ 18% + SHV 40%  → 실효 레버리지 1.02x
+    - BEAR_STRONG: QLD 59% + QQQ  7% + SHV 35%  → 실효 레버리지 1.24x
+    - CRASH:       QLD 71% + QQQ  4% + SHV 25%  → 실효 레버리지 1.46x
     """
 
     ASSET_GROUPS: dict = {
@@ -523,11 +523,11 @@ class QldQqqShvRegimeEngine(TradingEngine):
 
     # 국면별 exposure (A+B 위험자산 비중): BULL→CRASH 순으로 증가
     REGIME_EXPOSURE_MAP: Dict[MarketRegime, float] = {
-        MarketRegime.BULL:        0.9,
-        MarketRegime.SIDEWAYS:    0.8,
-        MarketRegime.BEAR_WEAK:   0.8,
-        MarketRegime.BEAR_STRONG: 0.85,
-        MarketRegime.CRASH:       0.95,
+        MarketRegime.BULL:        0.7,
+        MarketRegime.SIDEWAYS:    0.6,
+        MarketRegime.BEAR_WEAK:   0.6,
+        MarketRegime.BEAR_STRONG: 0.65,
+        MarketRegime.CRASH:       0.75,
     }
 
     def analyze_strategy(

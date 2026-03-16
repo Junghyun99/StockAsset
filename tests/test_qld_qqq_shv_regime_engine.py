@@ -200,11 +200,11 @@ def test_regime_engine_all_tickers():
 # ─────────────────────────────────────────────────────────────────
 
 @pytest.mark.parametrize("regime,expected_exposure", [
-    (MarketRegime.BULL, 0.9),
-    (MarketRegime.SIDEWAYS, 0.8),
-    (MarketRegime.BEAR_WEAK, 0.8),
-    (MarketRegime.BEAR_STRONG, 0.85),
-    (MarketRegime.CRASH, 0.95),
+    (MarketRegime.BULL, 0.7),
+    (MarketRegime.SIDEWAYS, 0.6),
+    (MarketRegime.BEAR_WEAK, 0.6),
+    (MarketRegime.BEAR_STRONG, 0.65),
+    (MarketRegime.CRASH, 0.75),
 ])
 def test_regime_engine_exposure_per_regime(regime, expected_exposure):
     """각 국면에서 REGIME_EXPOSURE_MAP에 따른 exposure가 반환된다."""
@@ -237,33 +237,33 @@ def test_regime_engine_does_not_call_targeter():
 # ─────────────────────────────────────────────────────────────────
 
 def test_regime_engine_end_to_end_bull():
-    """BULL 사이클: exposure=0.9가 rebalancer에 전달된다."""
+    """BULL 사이클: exposure=0.7이 rebalancer에 전달된다."""
     engine, mocks = _build_regime_engine(repo_last_reb=None)
     md = _make_market_data()
     mocks["calculator"].calculate.return_value = md
     mocks["analyzer"].analyze.return_value = MarketRegime.BULL
     engine.rebalancer = MagicMock()
-    engine.rebalancer.generate_signal.return_value = TradeSignal(0.9, [], "Hold")
+    engine.rebalancer.generate_signal.return_value = TradeSignal(0.7, [], "Hold")
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
-    assert result.exposure == 0.9
+    assert result.exposure == 0.7
     call_args = engine.rebalancer.generate_signal.call_args
-    assert call_args[0][1] == 0.9  # exposure 인자
+    assert call_args[0][1] == 0.7  # exposure 인자
 
 
 def test_regime_engine_end_to_end_crash():
-    """CRASH 사이클: exposure=0.95로 공격적 리밸런싱."""
+    """CRASH 사이클: exposure=0.75로 리밸런싱."""
     engine, mocks = _build_regime_engine(repo_last_reb=None)
     md = _make_market_data(vix=38.0, mdd=-0.28)
     mocks["calculator"].calculate.return_value = md
     mocks["analyzer"].analyze.return_value = MarketRegime.CRASH
     engine.rebalancer = MagicMock()
-    engine.rebalancer.generate_signal.return_value = TradeSignal(0.95, [], "Max Leverage")
+    engine.rebalancer.generate_signal.return_value = TradeSignal(0.75, [], "Max Leverage")
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
-    assert result.exposure == 0.95
+    assert result.exposure == 0.75
     assert result.is_rebalancing is True
 
 
