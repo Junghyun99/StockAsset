@@ -148,7 +148,7 @@ def run_compare_backtest(
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
 
     strategy = StrategyConfig(trading_interval_days=execution_interval)
-    logger = TradeLogger(log_dir="logs/backtest")
+    logger = TradeLogger(log_dir="logs/backtest", run_number=run_number)
 
     # 1. 전체 엔진의 티커 합집합 수집
     all_tickers: set = set()
