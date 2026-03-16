@@ -1,0 +1,31 @@
+{
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-29",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 1.0,
+        "trigger_reason": "Bull (모니터링)",
+        "market_score": {
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.07283166806694336,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 634.814166937934,
+            "spy_volatility": 0.08132782725116947
+        }
+    },
+    "portfolio": {
+        "total_value": 59453.17463224335,
+        "cash_balance": 607.3253280441279,
+        "holdings": [
+            {
+                "ticker": "QQQ",
+                "qty": 95,
+                "price": 619.4299926757812,
+                "value": 58845.84930419922
+            }
+        ]
+    },
+    "initial_cash": 10000.0,
+    "backtest_start_date": "2016-01-01"
+}
