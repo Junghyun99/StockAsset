@@ -448,6 +448,24 @@ class SpyEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.999
 
 
+@register_engine(color="#17becf")
+class QqqEngine(FullExposureEngine):
+    """QQQ Buy&Hold 벤치마크 시뮬레이션 엔진.
+
+    - 자산군 A: [QQQ]  (나스닥100 ETF — 벤치마크 자산)
+    - 자산군 B: [SHV]  (초단기 국채 ETF — 잔여 현금 대용)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - REBALANCE_RATIO_A=0.999 → 사실상 100% QQQ 투자
+      (ratio_a=1.0은 Rebalancer 내부 ZeroDivisionError 방지 제약으로 사용 불가)
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['QQQ'],
+        'B': ['SHV'],
+    }
+    REBALANCE_RATIO_A: float = 0.999
+
+
 @register_engine(color="#9467bd")
 class Asset5Engine(FullExposureEngine):
     """자산5분법 — VOO/IEMG(A그룹) + TLT/EMB/GLD(B그룹) Full Exposure 전략 엔진.
