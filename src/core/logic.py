@@ -120,20 +120,33 @@ class Rebalancer:
                  logger: Optional[ILogger] = None,
                  threshold_map: Optional[Dict[MarketRegime, float]] = None,
                  min_order_pct: float = DEFAULT_MIN_ORDER_PCT,
-                 ratio_a: float = DEFAULT_RATIO_A):
+                 ratio_a: float = DEFAULT_RATIO_A,
+                 regime_ratio_a_map: Optional[Dict[MarketRegime, float]] = None):
         if not (0.0 < ratio_a < 1.0):
             raise ValueError(f"ratio_a must be between 0 and 1 exclusive, got {ratio_a}")
+        if regime_ratio_a_map is not None:
+            for regime, val in regime_ratio_a_map.items():
+                if not (0.0 <= val < 1.0):
+                    raise ValueError(f"regime_ratio_a_map[{regime.value}] must be in [0, 1), got {val}")
         self.groups = asset_groups
         self._logger = logger
         self._threshold_map = threshold_map if threshold_map is not None else dict(self.DEFAULT_THRESHOLD_MAP)
         self.min_order_pct = min_order_pct
         self.ratio_a = ratio_a
         self.ratio_b = round(1.0 - ratio_a, 10)
+        self._regime_ratio_a_map = regime_ratio_a_map
 
     def generate_signal(self,
                         portfolio: Portfolio,
                         target_exposure: float,
                         regime: MarketRegime) -> TradeSignal:
+
+        # 국면별 ratio_a 조회 (맵이 없으면 고정값 사용)
+        if self._regime_ratio_a_map is not None:
+            effective_ratio_a = self._regime_ratio_a_map.get(regime, self.ratio_a)
+        else:
+            effective_ratio_a = self.ratio_a
+        effective_ratio_b = round(1.0 - effective_ratio_a, 10)
 
         # ── 섹션 1: 시작 구분선 + 입력 컨텍스트 ──────────────────────────────
         if self._logger:
@@ -144,6 +157,10 @@ class Rebalancer:
                 f"[입력] Regime={regime.value} | TargetExposure={target_exposure:.2f} "
                 f"| TotalValue=${portfolio.total_value:,.2f} | Cash=${portfolio.total_cash:,.2f}"
             )
+            if self._regime_ratio_a_map is not None:
+                self._logger.info(
+                    f"[국면별 ratio_a] {regime.value} → ratio_a={effective_ratio_a:.2f}"
+                )
 
         # 1. 국면별 리밸런싱 임계치 설정
         threshold = self._threshold_map.get(regime, 0.05)
@@ -174,12 +191,12 @@ class Rebalancer:
         is_first_investment = (val_risky == 0)
 
         # 비율 문자열 (로그/reason용)
-        ratio_str = f"{self.ratio_a*100:.0f}:{self.ratio_b*100:.0f}"
+        ratio_str = f"{effective_ratio_a*100:.0f}:{effective_ratio_b*100:.0f}"
 
         # A, B 상대 비중
         if is_first_investment:
-            ratio_a = self.ratio_a
-            ratio_b = self.ratio_b
+            ratio_a = effective_ratio_a
+            ratio_b = effective_ratio_b
             needs_rebalance = True
             rel_dev_a = 0.0
             rel_dev_b = 0.0
@@ -188,8 +205,8 @@ class Rebalancer:
             ratio_b = val_b / val_risky
 
             # 개별 상대이탈: 각 그룹이 목표 대비 몇 % 벗어났는지 계산
-            rel_dev_a = round(abs(ratio_a - self.ratio_a) / self.ratio_a, 6)
-            rel_dev_b = round(abs(ratio_b - self.ratio_b) / self.ratio_b, 6)
+            rel_dev_a = round(abs(ratio_a - effective_ratio_a) / effective_ratio_a, 6) if effective_ratio_a > 0 else 0.0
+            rel_dev_b = round(abs(ratio_b - effective_ratio_b) / effective_ratio_b, 6) if effective_ratio_b > 0 else 0.0
 
             needs_rebalance = (rel_dev_a > threshold) or (rel_dev_b > threshold)
 
@@ -209,8 +226,8 @@ class Rebalancer:
 
         # 3. 목표 금액 계산
         if needs_rebalance:
-            target_ratio_a = self.ratio_a
-            target_ratio_b = self.ratio_b
+            target_ratio_a = effective_ratio_a
+            target_ratio_b = effective_ratio_b
         else:
             target_ratio_a = ratio_a
             target_ratio_b = ratio_b

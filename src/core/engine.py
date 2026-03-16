@@ -65,10 +65,14 @@ class TradingEngine:
         if groups is None:
             raise ValueError("asset_groups must be provided when ASSET_GROUPS class attribute is not set")
 
+        # 국면별 ratio_a 맵 (클래스 속성 우선)
+        regime_ratio_a_map = getattr(type(self), 'REGIME_RATIO_A_MAP', None)
+
         self.calculator = IndicatorCalculator()
         self.analyzer = RegimeAnalyzer()
         self.targeter = VolatilityTargeter(target_vol=target_vol)
-        self.rebalancer = Rebalancer(groups, logger=logger, ratio_a=effective_ratio_a)
+        self.rebalancer = Rebalancer(groups, logger=logger, ratio_a=effective_ratio_a,
+                                     regime_ratio_a_map=regime_ratio_a_map)
         self.broker = broker
         self.repo = repo
         self.logger = logger
@@ -481,3 +485,75 @@ class Asset5Engine(FullExposureEngine):
         'B': ['TLT', 'EMB', 'GLD'],
     }
     REBALANCE_RATIO_A: float = 0.4
+
+
+@register_engine(color="#8c564b")
+class QldQqqShvRegimeEngine(TradingEngine):
+    """QLD/QQQ/SHV 3-자산 국면 적응형 레버리지 엔진.
+
+    BULL→CRASH 순으로 QLD(2x 레버리지) 비중을 높여 실효 레버리지를 점진적으로 증가시킨다.
+    - 자산군 A: [QLD]  (2x 레버리지 나스닥 ETF)
+    - 자산군 B: [QQQ]  (1x 나스닥 100 ETF)
+    - 자산군 C: [SHV]  (초단기 국채 ETF — 현금 대용)
+
+    국면별 배분 전략:
+    - BULL:        QLD 27% + QQQ 63% + SHV 10%  → 실효 레버리지 1.17x
+    - SIDEWAYS:    QLD 40% + QQQ 40% + SHV 20%  → 실효 레버리지 1.20x
+    - BEAR_WEAK:   QLD 56% + QQQ 24% + SHV 20%  → 실효 레버리지 1.36x
+    - BEAR_STRONG: QLD 77% + QQQ  9% + SHV 15%  → 실효 레버리지 1.62x
+    - CRASH:       QLD 90% + QQQ  5% + SHV  5%  → 실효 레버리지 1.85x
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['QLD'],
+        'B': ['QQQ'],
+        'C': ['SHV'],
+    }
+
+    REBALANCE_RATIO_A: float = 0.5  # fallback (국면 맵에 없는 경우)
+
+    # 국면별 ratio_a (QLD 비중): BULL→CRASH 순으로 증가
+    REGIME_RATIO_A_MAP: Dict[MarketRegime, float] = {
+        MarketRegime.BULL:        0.3,
+        MarketRegime.SIDEWAYS:    0.5,
+        MarketRegime.BEAR_WEAK:   0.7,
+        MarketRegime.BEAR_STRONG: 0.9,
+        MarketRegime.CRASH:       0.95,
+    }
+
+    # 국면별 exposure (A+B 위험자산 비중): BULL→CRASH 순으로 증가
+    REGIME_EXPOSURE_MAP: Dict[MarketRegime, float] = {
+        MarketRegime.BULL:        0.9,
+        MarketRegime.SIDEWAYS:    0.8,
+        MarketRegime.BEAR_WEAK:   0.8,
+        MarketRegime.BEAR_STRONG: 0.85,
+        MarketRegime.CRASH:       0.95,
+    }
+
+    def analyze_strategy(
+        self, market_data: MarketData
+    ) -> Tuple[MarketRegime, float, List[str]]:
+        """Step 3 오버라이드: 국면별 고정 exposure 매핑 사용."""
+        nan_fields = market_data.nan_fields()
+        prev_regime = self.analyzer._prev_regime
+
+        if nan_fields:
+            self.logger.error(
+                f"NaN detected in: {', '.join(nan_fields)}. Treating as CRASH."
+            )
+            regime = MarketRegime.CRASH
+            exposure = 0.0
+        else:
+            regime = self.analyzer.analyze(market_data)
+            exposure = self.REGIME_EXPOSURE_MAP.get(regime, 0.8)
+
+        # 국면 변화 로그
+        if prev_regime is not None and regime != prev_regime:
+            self.logger.info(
+                f"Regime Change: {prev_regime.value} → {regime.value} "
+                f"(Price={market_data.spy_price:.2f}, MA180={market_data.spy_ma180:.2f}, "
+                f"Momentum={market_data.spy_momentum:.4f}, "
+                f"VIX={market_data.vix:.1f}, MDD={market_data.spy_mdd:.2%})"
+            )
+
+        return regime, exposure, nan_fields

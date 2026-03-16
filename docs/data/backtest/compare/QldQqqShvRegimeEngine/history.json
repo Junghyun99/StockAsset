@@ -2,26 +2,36 @@
     {
         "id": "tx_20230102",
         "date": "2023-01-02",
-        "portfolio_value": 9893.723960975609,
-        "total_trade_amount": 9749.16,
+        "portfolio_value": 9891.64011707317,
+        "total_trade_amount": 9940.32,
         "reason": "첫 투자: 30:70 비율로 진입",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 15,
+                "quantity": 14,
                 "price": 191.16,
-                "fee": 2.87,
+                "fee": 2.68,
                 "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
             },
             {
-                "ticker": "SCHD",
+                "ticker": "QQQ",
                 "action": "BUY",
-                "quantity": 36,
+                "quantity": 33,
                 "price": 191.16,
-                "fee": 6.88,
+                "fee": 6.31,
+                "date": "2023-01-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 191.16,
+                "fee": 0.96,
                 "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
