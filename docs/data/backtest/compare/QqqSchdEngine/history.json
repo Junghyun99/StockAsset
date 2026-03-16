@@ -1,18 +1,732 @@
 [
     {
-        "id": "tx_20230102",
-        "date": "2023-01-02",
-        "portfolio_value": 9893.723960975609,
-        "total_trade_amount": 9749.16,
+        "id": "tx_20160104",
+        "date": "2016-01-04",
+        "portfolio_value": 9892.602219352208,
+        "total_trade_amount": 9849.98,
         "reason": "첫 투자: 30:70 비율로 진입",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
-                "quantity": 15,
-                "price": 191.16,
-                "fee": 2.87,
-                "date": "2023-01-02",
+                "quantity": 27,
+                "price": 110.59,
+                "fee": 2.99,
+                "date": "2016-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 535,
+                "price": 12.83,
+                "fee": 6.87,
+                "date": "2016-01-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160328",
+        "date": "2016-03-28",
+        "portfolio_value": 10175.446756832276,
+        "total_trade_amount": 134.94,
+        "reason": "비율 재조정: 상대이탈 3.4% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 108.18,
+                "fee": 0.11,
+                "date": "2016-03-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 13.38,
+                "fee": 0.03,
+                "date": "2016-03-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160509",
+        "date": "2016-05-09",
+        "portfolio_value": 10213.955838336535,
+        "total_trade_amount": 39.75,
+        "reason": "비율 재조정: 상대이탈 2.6% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 13.25,
+                "fee": 0.04,
+                "date": "2016-05-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160620",
+        "date": "2016-06-20",
+        "portfolio_value": 10444.498433944796,
+        "total_trade_amount": 135.75,
+        "reason": "비율 재조정: 상대이탈 2.7% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 108.23,
+                "fee": 0.11,
+                "date": "2016-06-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 13.76,
+                "fee": 0.03,
+                "date": "2016-06-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160912",
+        "date": "2016-09-12",
+        "portfolio_value": 10949.10993907564,
+        "total_trade_amount": 228.93,
+        "reason": "비율 재조정: 상대이탈 3.0% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 115.17,
+                "fee": 0.12,
+                "date": "2016-09-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 14.22,
+                "fee": 0.11,
+                "date": "2016-09-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20170522",
+        "date": "2017-05-22",
+        "portfolio_value": 12259.939491235522,
+        "total_trade_amount": 713.4100000000001,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 137.61,
+                "fee": 0.28,
+                "date": "2017-05-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 29,
+                "price": 15.11,
+                "fee": 0.44,
+                "date": "2017-05-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20180326",
+        "date": "2018-03-26",
+        "portfolio_value": 13927.79354012377,
+        "total_trade_amount": 605.8299999999999,
+        "reason": "비율 재조정: 상대이탈 4.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 162.76,
+                "fee": 0.16,
+                "date": "2018-03-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 27,
+                "price": 16.41,
+                "fee": 0.44,
+                "date": "2018-03-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20180416",
+        "date": "2018-04-16",
+        "portfolio_value": 14061.702300307372,
+        "total_trade_amount": 98.28,
+        "reason": "비율 재조정: 상대이탈 3.2% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 16.38,
+                "fee": 0.1,
+                "date": "2018-04-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190819",
+        "date": "2019-08-19",
+        "portfolio_value": 15763.910674619627,
+        "total_trade_amount": 568.96,
+        "reason": "비율 재조정: 상대이탈 3.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 32,
+                "price": 17.78,
+                "fee": 0.57,
+                "date": "2019-08-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190930",
+        "date": "2019-09-30",
+        "portfolio_value": 16293.008315511619,
+        "total_trade_amount": 36.16,
+        "reason": "비율 재조정: 상대이탈 2.6% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 18.08,
+                "fee": 0.04,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200227",
+        "date": "2020-02-27",
+        "portfolio_value": 16272.958894513877,
+        "total_trade_amount": 951.8299999999999,
+        "reason": "비율 재조정: 상대이탈 7.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 203.58,
+                "fee": 0.41,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 31,
+                "price": 17.57,
+                "fee": 0.54,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200416",
+        "date": "2020-04-16",
+        "portfolio_value": 15716.034691796534,
+        "total_trade_amount": 650.95,
+        "reason": "비율 재조정: 상대이탈 5.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 211.12,
+                "fee": 0.21,
+                "date": "2020-04-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 27,
+                "price": 16.29,
+                "fee": 0.44,
+                "date": "2020-04-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200624",
+        "date": "2020-06-24",
+        "portfolio_value": 17004.650301106012,
+        "total_trade_amount": 874.9200000000001,
+        "reason": "비율 재조정: 상대이탈 5.9% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 241.27,
+                "fee": 0.48,
+                "date": "2020-06-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 23,
+                "price": 17.06,
+                "fee": 0.39,
+                "date": "2020-06-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210315",
+        "date": "2021-03-15",
+        "portfolio_value": 23937.465399251534,
+        "total_trade_amount": 955.65,
+        "reason": "비율 재조정: 상대이탈 9.3% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 13,
+                "price": 23.97,
+                "fee": 0.31,
+                "date": "2021-03-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 322.02,
+                "fee": 0.64,
+                "date": "2021-03-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20211122",
+        "date": "2021-11-22",
+        "portfolio_value": 27450.37701166621,
+        "total_trade_amount": 1901.1,
+        "reason": "비율 재조정: 상대이탈 8.9% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 395.31,
+                "fee": 0.79,
+                "date": "2021-11-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 42,
+                "price": 26.44,
+                "fee": 1.11,
+                "date": "2021-11-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220118",
+        "date": "2022-01-18",
+        "portfolio_value": 27569.30863665254,
+        "total_trade_amount": 1201.57,
+        "reason": "비율 재조정: 상대이탈 9.1% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 17,
+                "price": 26.65,
+                "fee": 0.45,
+                "date": "2022-01-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 374.26,
+                "fee": 0.75,
+                "date": "2022-01-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220307",
+        "date": "2022-03-07",
+        "portfolio_value": 25480.582021689464,
+        "total_trade_amount": 730.83,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 16,
+                "price": 25.17,
+                "fee": 0.4,
+                "date": "2022-03-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 328.11,
+                "fee": 0.33,
+                "date": "2022-03-07",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220506",
+        "date": "2022-05-06",
+        "portfolio_value": 25426.834585219618,
+        "total_trade_amount": 515.7,
+        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 25.42,
+                "fee": 0.2,
+                "date": "2022-05-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 312.34,
+                "fee": 0.31,
+                "date": "2022-05-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220524",
+        "date": "2022-05-24",
+        "portfolio_value": 24679.566906412627,
+        "total_trade_amount": 591.55,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 12,
+                "price": 25.12,
+                "fee": 0.3,
+                "date": "2022-05-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 290.11,
+                "fee": 0.29,
+                "date": "2022-05-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220720",
+        "date": "2022-07-20",
+        "portfolio_value": 24401.698274476927,
+        "total_trade_amount": 933.88,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 300.0,
+                "fee": 0.3,
+                "date": "2022-07-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 24.38,
+                "fee": 0.63,
+                "date": "2022-07-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221011",
+        "date": "2022-10-11",
+        "portfolio_value": 22364.621945695108,
+        "total_trade_amount": 465.0,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 22.18,
+                "fee": 0.2,
+                "date": "2022-10-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 265.38,
+                "fee": 0.27,
+                "date": "2022-10-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221102",
+        "date": "2022-11-02",
+        "portfolio_value": 23710.882838619265,
+        "total_trade_amount": 604.3399999999999,
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 14,
+                "price": 24.0,
+                "fee": 0.34,
+                "date": "2022-11-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 268.34,
+                "fee": 0.27,
+                "date": "2022-11-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221227",
+        "date": "2022-12-27",
+        "portfolio_value": 24542.944925791766,
+        "total_trade_amount": 391.37,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 25.03,
+                "fee": 0.13,
+                "date": "2022-12-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 266.22,
+                "fee": 0.27,
+                "date": "2022-12-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230201",
+        "date": "2023-02-01",
+        "portfolio_value": 25904.632807834307,
+        "total_trade_amount": 1195.6599999999999,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 297.91,
+                "fee": 0.6,
+                "date": "2023-02-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 23,
+                "price": 26.08,
+                "fee": 0.6,
+                "date": "2023-02-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230403",
+        "date": "2023-04-03",
+        "portfolio_value": 25610.86288108458,
+        "total_trade_amount": 1010.51,
+        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 316.95,
+                "fee": 0.32,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 28,
+                "price": 24.77,
+                "fee": 0.69,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230515",
+        "date": "2023-05-15",
+        "portfolio_value": 24941.31763168608,
+        "total_trade_amount": 1025.12,
+        "reason": "비율 재조정: 상대이탈 4.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 323.52,
+                "fee": 0.65,
+                "date": "2023-05-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 23.63,
+                "fee": 0.38,
+                "date": "2023-05-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231009",
+        "date": "2023-10-09",
+        "portfolio_value": 26203.781644757066,
+        "total_trade_amount": 1216.09,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 362.89,
+                "fee": 0.36,
+                "date": "2023-10-09",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -20,9 +734,202 @@
                 "ticker": "SCHD",
                 "action": "BUY",
                 "quantity": 36,
-                "price": 191.16,
-                "fee": 6.88,
-                "date": "2023-01-02",
+                "price": 23.7,
+                "fee": 0.85,
+                "date": "2023-10-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240528",
+        "date": "2024-05-28",
+        "portfolio_value": 30358.857453897213,
+        "total_trade_amount": 1979.0300000000002,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 455.08,
+                "fee": 0.91,
+                "date": "2024-05-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 41,
+                "price": 26.07,
+                "fee": 1.07,
+                "date": "2024-05-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240805",
+        "date": "2024-08-05",
+        "portfolio_value": 30547.201070865154,
+        "total_trade_amount": 1166.1,
+        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 26.06,
+                "fee": 0.29,
+                "date": "2024-08-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 439.72,
+                "fee": 0.88,
+                "date": "2024-08-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241230",
+        "date": "2024-12-30",
+        "portfolio_value": 33391.60804079842,
+        "total_trade_amount": 2313.4,
+        "reason": "비율 재조정: 상대이탈 9.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 510.45,
+                "fee": 1.02,
+                "date": "2024-12-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 47,
+                "price": 27.5,
+                "fee": 1.29,
+                "date": "2024-12-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250303",
+        "date": "2025-03-03",
+        "portfolio_value": 34032.28331243988,
+        "total_trade_amount": 1064.42,
+        "reason": "비율 재조정: 상대이탈 7.0% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 28.12,
+                "fee": 0.56,
+                "date": "2025-03-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 502.02,
+                "fee": 0.5,
+                "date": "2025-03-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250404",
+        "date": "2025-04-04",
+        "portfolio_value": 30144.19298839831,
+        "total_trade_amount": 552.05,
+        "reason": "비율 재조정: 상대이탈 5.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 25.03,
+                "fee": 0.13,
+                "date": "2025-04-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 426.9,
+                "fee": 0.43,
+                "date": "2025-04-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250514",
+        "date": "2025-05-14",
+        "portfolio_value": 32730.04062058642,
+        "total_trade_amount": 2800.95,
+        "reason": "비율 재조정: 상대이탈 11.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 513.49,
+                "fee": 1.54,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SCHD",
+                "action": "BUY",
+                "quantity": 48,
+                "price": 26.26,
+                "fee": 1.26,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250623",
+        "date": "2025-06-23",
+        "portfolio_value": 33590.95299877131,
+        "total_trade_amount": 52.86,
+        "reason": "비율 재조정: 상대이탈 3.7% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SCHD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 26.43,
+                "fee": 0.05,
+                "date": "2025-06-23",
                 "status": "FILLED",
                 "reason": ""
             }
