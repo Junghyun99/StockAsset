@@ -29,551 +29,145 @@
         ]
     },
     {
-        "id": "tx_20160216",
-        "date": "2016-02-16",
-        "portfolio_value": 9021.636365906112,
-        "total_trade_amount": 715.74,
-        "reason": "비율 재조정: 상대이탈 6.9% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 3,
-                "price": 109.22,
-                "fee": 0.33,
-                "date": "2016-02-16",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 99,
-                "price": 3.92,
-                "fee": 0.39,
-                "date": "2016-02-16",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20160307",
-        "date": "2016-03-07",
-        "portfolio_value": 9453.884816421243,
-        "total_trade_amount": 445.90999999999997,
-        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 53,
-                "price": 4.21,
-                "fee": 0.22,
-                "date": "2016-03-07",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 111.39,
-                "fee": 0.22,
-                "date": "2016-03-07",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20160328",
-        "date": "2016-03-28",
-        "portfolio_value": 9658.762917181837,
-        "total_trade_amount": 212.4,
-        "reason": "비율 재조정: 상대이탈 3.1% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 23,
-                "price": 4.39,
-                "fee": 0.1,
-                "date": "2016-03-28",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 111.43,
-                "fee": 0.11,
-                "date": "2016-03-28",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20160418",
-        "date": "2016-04-18",
-        "portfolio_value": 10022.885598391511,
-        "total_trade_amount": 407.45000000000005,
-        "reason": "비율 재조정: 상대이탈 4.5% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 39,
-                "price": 4.73,
-                "fee": 0.18,
-                "date": "2016-04-18",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 111.49,
-                "fee": 0.22,
-                "date": "2016-04-18",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20160509",
-        "date": "2016-05-09",
-        "portfolio_value": 9542.390519498269,
-        "total_trade_amount": 462.78000000000003,
-        "reason": "비율 재조정: 상대이탈 4.6% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 2,
-                "price": 109.31,
-                "fee": 0.22,
-                "date": "2016-05-09",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 56,
-                "price": 4.36,
-                "fee": 0.24,
-                "date": "2016-05-09",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20160531",
-        "date": "2016-05-31",
-        "portfolio_value": 9939.134161100365,
-        "total_trade_amount": 315.63,
-        "reason": "비율 재조정: 상대이탈 4.3% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 44,
-                "price": 4.64,
-                "fee": 0.2,
-                "date": "2016-05-31",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 111.47,
-                "fee": 0.11,
-                "date": "2016-05-31",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20160912",
-        "date": "2016-09-12",
-        "portfolio_value": 10461.178240531613,
-        "total_trade_amount": 590.35,
-        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 50,
-                "price": 5.12,
-                "fee": 0.26,
-                "date": "2016-09-12",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 111.45,
-                "fee": 0.33,
-                "date": "2016-09-12",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20161003",
-        "date": "2016-10-03",
-        "portfolio_value": 10683.320828595071,
-        "total_trade_amount": 223.59,
-        "reason": "비율 재조정: 상대이탈 2.5% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 21,
-                "price": 5.34,
-                "fee": 0.11,
-                "date": "2016-10-03",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 111.45,
-                "fee": 0.11,
-                "date": "2016-10-03",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20161114",
-        "date": "2016-11-14",
-        "portfolio_value": 10316.464321015555,
-        "total_trade_amount": 401.34000000000003,
-        "reason": "비율 재조정: 상대이탈 3.1% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 2,
-                "price": 109.23,
-                "fee": 0.22,
-                "date": "2016-11-14",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 36,
-                "price": 5.08,
-                "fee": 0.18,
-                "date": "2016-11-14",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20170117",
-        "date": "2017-01-17",
-        "portfolio_value": 11078.668501567874,
-        "total_trade_amount": 822.6600000000001,
-        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 66,
-                "price": 5.71,
-                "fee": 0.38,
-                "date": "2017-01-17",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 111.45,
-                "fee": 0.45,
-                "date": "2017-01-17",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20170501",
-        "date": "2017-05-01",
-        "portfolio_value": 12422.208297580952,
-        "total_trade_amount": 1336.44,
-        "reason": "비율 재조정: 상대이탈 11.1% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 94,
-                "price": 7.11,
-                "fee": 0.67,
-                "date": "2017-05-01",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 6,
-                "price": 111.35,
-                "fee": 0.67,
-                "date": "2017-05-01",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20170905",
-        "date": "2017-09-05",
-        "portfolio_value": 13082.193768749,
-        "total_trade_amount": 656.17,
-        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 41,
-                "price": 7.85,
-                "fee": 0.32,
-                "date": "2017-09-05",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 111.44,
-                "fee": 0.33,
-                "date": "2017-09-05",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20171127",
-        "date": "2017-11-27",
-        "portfolio_value": 14141.365047543995,
-        "total_trade_amount": 965.56,
-        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 57,
-                "price": 9.12,
-                "fee": 0.52,
-                "date": "2017-11-27",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 111.43,
-                "fee": 0.45,
-                "date": "2017-11-27",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20180129",
-        "date": "2018-01-29",
-        "portfolio_value": 15432.500158363508,
-        "total_trade_amount": 1315.98,
-        "reason": "비율 재조정: 상대이탈 9.3% > 임계치 7.5%",
+        "id": "tx_20160831",
+        "date": "2016-08-31",
+        "portfolio_value": 10434.927815526675,
+        "total_trade_amount": 754.3599999999999,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
                 "quantity": 60,
-                "price": 10.79,
-                "fee": 0.65,
-                "date": "2018-01-29",
+                "price": 5.14,
+                "fee": 0.31,
+                "date": "2016-08-31",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 6,
-                "price": 111.43,
-                "fee": 0.67,
-                "date": "2018-01-29",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20180205",
-        "date": "2018-02-05",
-        "portfolio_value": 14367.729332767727,
-        "total_trade_amount": 968.72,
-        "reason": "비율 재조정: 상대이탈 6.7% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
                 "quantity": 4,
-                "price": 109.18,
-                "fee": 0.44,
-                "date": "2018-02-05",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 56,
-                "price": 9.5,
-                "fee": 0.53,
-                "date": "2018-02-05",
+                "price": 111.49,
+                "fee": 0.45,
+                "date": "2016-08-31",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20180326",
-        "date": "2018-03-26",
-        "portfolio_value": 14869.107237797769,
-        "total_trade_amount": 471.80000000000007,
-        "reason": "비율 재조정: 상대이탈 3.5% > 임계치 2.5%",
+        "id": "tx_20170428",
+        "date": "2017-04-28",
+        "portfolio_value": 12307.124908444785,
+        "total_trade_amount": 1820.79,
+        "reason": "비율 재조정: 상대이탈 15.6% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 25,
-                "price": 9.96,
-                "fee": 0.25,
-                "date": "2018-03-26",
+                "quantity": 133,
+                "price": 6.99,
+                "fee": 0.93,
+                "date": "2017-04-28",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 2,
-                "price": 111.4,
-                "fee": 0.22,
-                "date": "2018-03-26",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20180820",
-        "date": "2018-08-20",
-        "portfolio_value": 16189.247866000398,
-        "total_trade_amount": 1275.8400000000001,
-        "reason": "비율 재조정: 상대이탈 8.2% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 52,
-                "price": 11.67,
-                "fee": 0.61,
-                "date": "2018-08-20",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 6,
-                "price": 111.5,
-                "fee": 0.67,
-                "date": "2018-08-20",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20181112",
-        "date": "2018-11-12",
-        "portfolio_value": 14931.171918076641,
-        "total_trade_amount": 1307.4499999999998,
-        "reason": "비율 재조정: 상대이탈 8.3% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 6,
-                "price": 109.25,
-                "fee": 0.66,
-                "date": "2018-11-12",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 65,
-                "price": 10.03,
-                "fee": 0.65,
-                "date": "2018-11-12",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20181203",
-        "date": "2018-12-03",
-        "portfolio_value": 15417.941659634793,
-        "total_trade_amount": 463.36,
-        "reason": "비율 재조정: 상대이탈 3.6% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 23,
-                "price": 10.46,
-                "fee": 0.24,
-                "date": "2018-12-03",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
+                "quantity": 8,
                 "price": 111.39,
-                "fee": 0.22,
-                "date": "2018-12-03",
+                "fee": 0.89,
+                "date": "2017-04-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20170828",
+        "date": "2017-08-28",
+        "portfolio_value": 12860.516002624501,
+        "total_trade_amount": 600.47,
+        "reason": "비율 재조정: 상대이탈 4.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 35,
+                "price": 7.6,
+                "fee": 0.27,
+                "date": "2017-08-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 111.49,
+                "fee": 0.33,
+                "date": "2017-08-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20171226",
+        "date": "2017-12-26",
+        "portfolio_value": 14185.117584873247,
+        "total_trade_amount": 1318.93,
+        "reason": "비율 재조정: 상대이탈 9.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 71,
+                "price": 9.17,
+                "fee": 0.65,
+                "date": "2017-12-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 111.31,
+                "fee": 0.67,
+                "date": "2017-12-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20180612",
+        "date": "2018-06-12",
+        "portfolio_value": 15804.685758201495,
+        "total_trade_amount": 1554.74,
+        "reason": "비율 재조정: 상대이탈 10.3% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 69,
+                "price": 11.23,
+                "fee": 0.77,
+                "date": "2018-06-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 111.41,
+                "fee": 0.78,
+                "date": "2018-06-12",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -582,16 +176,16 @@
     {
         "id": "tx_20181221",
         "date": "2018-12-21",
-        "portfolio_value": 13300.356186244833,
-        "total_trade_amount": 2053.3199999999997,
-        "reason": "비율 재조정: 상대이탈 15.2% > 임계치 5.0%",
+        "portfolio_value": 13308.321669430661,
+        "total_trade_amount": 2527.7200000000003,
+        "reason": "비율 재조정: 상대이탈 18.8% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 9,
+                "quantity": 11,
                 "price": 109.16,
-                "fee": 0.98,
+                "fee": 1.2,
                 "date": "2018-12-21",
                 "status": "FILLED",
                 "reason": ""
@@ -599,9 +193,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 138,
+                "quantity": 171,
                 "price": 7.76,
-                "fee": 1.07,
+                "fee": 1.33,
                 "date": "2018-12-21",
                 "status": "FILLED",
                 "reason": ""
@@ -609,203 +203,87 @@
         ]
     },
     {
-        "id": "tx_20190122",
-        "date": "2019-01-22",
-        "portfolio_value": 14627.050817781852,
-        "total_trade_amount": 1326.06,
-        "reason": "비율 재조정: 상대이탈 9.3% > 임계치 5.0%",
+        "id": "tx_20190430",
+        "date": "2019-04-30",
+        "portfolio_value": 17480.611955500768,
+        "total_trade_amount": 4046.16,
+        "reason": "비율 재조정: 상대이탈 24.0% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 72,
-                "price": 9.12,
-                "fee": 0.66,
-                "date": "2019-01-22",
+                "quantity": 165,
+                "price": 12.34,
+                "fee": 2.04,
+                "date": "2019-04-30",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 6,
-                "price": 111.57,
-                "fee": 0.67,
-                "date": "2019-01-22",
+                "quantity": 18,
+                "price": 111.67,
+                "fee": 2.01,
+                "date": "2019-04-30",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20190304",
-        "date": "2019-03-04",
-        "portfolio_value": 15742.61321059336,
-        "total_trade_amount": 1102.78,
-        "reason": "비율 재조정: 상대이탈 7.3% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 52,
-                "price": 10.49,
-                "fee": 0.55,
-                "date": "2019-03-04",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 5,
-                "price": 111.46,
-                "fee": 0.56,
-                "date": "2019-03-04",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20190506",
-        "date": "2019-05-06",
-        "portfolio_value": 17183.974259773964,
-        "total_trade_amount": 1362.22,
-        "reason": "비율 재조정: 상대이탈 8.5% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 56,
-                "price": 12.38,
-                "fee": 0.69,
-                "date": "2019-05-06",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 6,
-                "price": 111.49,
-                "fee": 0.67,
-                "date": "2019-05-06",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20190528",
-        "date": "2019-05-28",
-        "portfolio_value": 16046.16351161341,
-        "total_trade_amount": 1117.1200000000001,
-        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 2.5%",
+        "id": "tx_20190828",
+        "date": "2019-08-28",
+        "portfolio_value": 16966.272833417963,
+        "total_trade_amount": 524.32,
+        "reason": "비율 재조정: 상대이탈 2.7% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 5,
-                "price": 109.44,
-                "fee": 0.55,
-                "date": "2019-05-28",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 52,
-                "price": 10.96,
-                "fee": 0.57,
-                "date": "2019-05-28",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20190617",
-        "date": "2019-06-17",
-        "portfolio_value": 16597.329747995816,
-        "total_trade_amount": 598.85,
-        "reason": "비율 재조정: 상대이탈 3.6% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 23,
-                "price": 11.47,
-                "fee": 0.26,
-                "date": "2019-06-17",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 111.68,
-                "fee": 0.34,
-                "date": "2019-06-17",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20190909",
-        "date": "2019-09-09",
-        "portfolio_value": 17212.07250277203,
-        "total_trade_amount": 480.7,
-        "reason": "비율 재조정: 상대이탈 3.4% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 21,
-                "price": 12.26,
-                "fee": 0.26,
-                "date": "2019-09-09",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
                 "quantity": 2,
-                "price": 111.62,
+                "price": 109.54,
                 "fee": 0.22,
-                "date": "2019-09-09",
+                "date": "2019-08-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 11.74,
+                "fee": 0.31,
+                "date": "2019-08-28",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20191223",
-        "date": "2019-12-23",
-        "portfolio_value": 19149.92956499205,
-        "total_trade_amount": 1932.79,
-        "reason": "비율 재조정: 상대이탈 10.6% > 임계치 7.5%",
+        "id": "tx_20191226",
+        "date": "2019-12-26",
+        "portfolio_value": 19753.56863471107,
+        "total_trade_amount": 2792.51,
+        "reason": "비율 재조정: 상대이탈 14.5% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 62,
-                "price": 14.99,
-                "fee": 0.93,
-                "date": "2019-12-23",
+                "quantity": 88,
+                "price": 15.26,
+                "fee": 1.34,
+                "date": "2019-12-26",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 9,
-                "price": 111.49,
-                "fee": 1.0,
-                "date": "2019-12-23",
+                "quantity": 13,
+                "price": 111.51,
+                "fee": 1.45,
+                "date": "2019-12-26",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -814,16 +292,16 @@
     {
         "id": "tx_20200309",
         "date": "2020-03-09",
-        "portfolio_value": 17426.243864209464,
-        "total_trade_amount": 1799.94,
-        "reason": "비율 재조정: 상대이탈 10.0% > 임계치 5.0%",
+        "portfolio_value": 17823.89145120832,
+        "total_trade_amount": 2021.82,
+        "reason": "비율 재조정: 상대이탈 11.1% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 8,
+                "quantity": 9,
                 "price": 109.83,
-                "fee": 0.88,
+                "fee": 0.99,
                 "date": "2020-03-09",
                 "status": "FILLED",
                 "reason": ""
@@ -831,9 +309,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 74,
+                "quantity": 83,
                 "price": 12.45,
-                "fee": 0.92,
+                "fee": 1.03,
                 "date": "2020-03-09",
                 "status": "FILLED",
                 "reason": ""
@@ -843,16 +321,16 @@
     {
         "id": "tx_20200310",
         "date": "2020-03-10",
-        "portfolio_value": 18345.555958986562,
-        "total_trade_amount": 920.81,
-        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "portfolio_value": 18765.394840146346,
+        "total_trade_amount": 934.3199999999999,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 35,
+                "quantity": 36,
                 "price": 13.51,
-                "fee": 0.47,
+                "fee": 0.49,
                 "date": "2020-03-10",
                 "status": "FILLED",
                 "reason": ""
@@ -872,16 +350,16 @@
     {
         "id": "tx_20200312",
         "date": "2020-03-12",
-        "portfolio_value": 15975.491376189017,
-        "total_trade_amount": 2246.1,
+        "portfolio_value": 16337.600823785873,
+        "total_trade_amount": 2417.41,
         "reason": "비율 재조정: 상대이탈 14.3% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 10,
+                "quantity": 11,
                 "price": 109.81,
-                "fee": 1.1,
+                "fee": 1.21,
                 "date": "2020-03-12",
                 "status": "FILLED",
                 "reason": ""
@@ -889,9 +367,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 112,
+                "quantity": 118,
                 "price": 10.25,
-                "fee": 1.15,
+                "fee": 1.21,
                 "date": "2020-03-12",
                 "status": "FILLED",
                 "reason": ""
@@ -901,16 +379,16 @@
     {
         "id": "tx_20200313",
         "date": "2020-03-13",
-        "portfolio_value": 17472.527765544448,
-        "total_trade_amount": 1401.44,
-        "reason": "비율 재조정: 상대이탈 8.5% > 임계치 5.0%",
+        "portfolio_value": 17875.24510894548,
+        "total_trade_amount": 1573.22,
+        "reason": "비율 재조정: 상대이탈 9.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 61,
+                "quantity": 66,
                 "price": 11.96,
-                "fee": 0.73,
+                "fee": 0.79,
                 "date": "2020-03-13",
                 "status": "FILLED",
                 "reason": ""
@@ -918,9 +396,9 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 7,
                 "price": 111.98,
-                "fee": 0.67,
+                "fee": 0.78,
                 "date": "2020-03-13",
                 "status": "FILLED",
                 "reason": ""
@@ -930,16 +408,16 @@
     {
         "id": "tx_20200316",
         "date": "2020-03-16",
-        "portfolio_value": 15331.314228399595,
-        "total_trade_amount": 2041.4700000000003,
-        "reason": "비율 재조정: 상대이탈 13.3% > 임계치 5.0%",
+        "portfolio_value": 15682.596114785018,
+        "total_trade_amount": 2188.2200000000003,
+        "reason": "비율 재조정: 상대이탈 13.4% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 9,
+                "quantity": 10,
                 "price": 109.79,
-                "fee": 0.99,
+                "fee": 1.1,
                 "date": "2020-03-16",
                 "status": "FILLED",
                 "reason": ""
@@ -947,9 +425,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 114,
+                "quantity": 118,
                 "price": 9.24,
-                "fee": 1.05,
+                "fee": 1.09,
                 "date": "2020-03-16",
                 "status": "FILLED",
                 "reason": ""
@@ -959,16 +437,16 @@
     {
         "id": "tx_20200317",
         "date": "2020-03-17",
-        "portfolio_value": 16354.177058463301,
-        "total_trade_amount": 951.8,
-        "reason": "비율 재조정: 상대이탈 6.3% > 임계치 5.0%",
+        "portfolio_value": 16729.81425401231,
+        "total_trade_amount": 1094.6599999999999,
+        "reason": "비율 재조정: 상대이탈 6.9% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 49,
+                "quantity": 52,
                 "price": 10.28,
-                "fee": 0.5,
+                "fee": 0.53,
                 "date": "2020-03-17",
                 "status": "FILLED",
                 "reason": ""
@@ -976,9 +454,9 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 4,
+                "quantity": 5,
                 "price": 112.02,
-                "fee": 0.45,
+                "fee": 0.56,
                 "date": "2020-03-17",
                 "status": "FILLED",
                 "reason": ""
@@ -988,16 +466,16 @@
     {
         "id": "tx_20200320",
         "date": "2020-03-20",
-        "portfolio_value": 15324.219453955597,
-        "total_trade_amount": 944.03,
-        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
+        "portfolio_value": 15675.086601889034,
+        "total_trade_amount": 1081.46,
+        "reason": "비율 재조정: 상대이탈 6.5% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 4,
+                "quantity": 5,
                 "price": 109.92,
-                "fee": 0.44,
+                "fee": 0.55,
                 "date": "2020-03-20",
                 "status": "FILLED",
                 "reason": ""
@@ -1005,9 +483,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 55,
+                "quantity": 58,
                 "price": 9.17,
-                "fee": 0.5,
+                "fee": 0.53,
                 "date": "2020-03-20",
                 "status": "FILLED",
                 "reason": ""
@@ -1017,16 +495,16 @@
     {
         "id": "tx_20200324",
         "date": "2020-03-24",
-        "portfolio_value": 16521.91605383901,
-        "total_trade_amount": 1154.12,
-        "reason": "비율 재조정: 상대이탈 7.3% > 임계치 5.0%",
+        "portfolio_value": 16902.581595574757,
+        "total_trade_amount": 1185.35,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 57,
+                "quantity": 60,
                 "price": 10.41,
-                "fee": 0.59,
+                "fee": 0.62,
                 "date": "2020-03-24",
                 "status": "FILLED",
                 "reason": ""
@@ -1046,16 +524,16 @@
     {
         "id": "tx_20200406",
         "date": "2020-04-06",
-        "portfolio_value": 17565.8356881144,
-        "total_trade_amount": 1088.3,
-        "reason": "비율 재조정: 상대이탈 6.4% > 임계치 5.0%",
+        "portfolio_value": 17970.56267813886,
+        "total_trade_amount": 1100.04,
+        "reason": "비율 재조정: 상대이탈 6.8% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 45,
+                "quantity": 46,
                 "price": 11.74,
-                "fee": 0.53,
+                "fee": 0.54,
                 "date": "2020-04-06",
                 "status": "FILLED",
                 "reason": ""
@@ -1075,16 +553,16 @@
     {
         "id": "tx_20200414",
         "date": "2020-04-14",
-        "portfolio_value": 18941.768082591298,
-        "total_trade_amount": 1365.21,
-        "reason": "비율 재조정: 상대이탈 7.5% > 임계치 5.0%",
+        "portfolio_value": 19377.018051312498,
+        "total_trade_amount": 1490.82,
+        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 51,
+                "quantity": 52,
                 "price": 13.59,
-                "fee": 0.69,
+                "fee": 0.71,
                 "date": "2020-04-14",
                 "status": "FILLED",
                 "reason": ""
@@ -1092,9 +570,9 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 7,
                 "price": 112.02,
-                "fee": 0.67,
+                "fee": 0.78,
                 "date": "2020-04-14",
                 "status": "FILLED",
                 "reason": ""
@@ -1104,16 +582,16 @@
     {
         "id": "tx_20200508",
         "date": "2020-05-08",
-        "portfolio_value": 20045.59859759292,
-        "total_trade_amount": 1122.0,
-        "reason": "비율 재조정: 상대이탈 5.9% > 임계치 5.0%",
+        "portfolio_value": 20506.56186675817,
+        "total_trade_amount": 1137.2,
+        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 37,
+                "quantity": 38,
                 "price": 15.2,
-                "fee": 0.56,
+                "fee": 0.58,
                 "date": "2020-05-08",
                 "status": "FILLED",
                 "reason": ""
@@ -1133,7 +611,7 @@
     {
         "id": "tx_20200603",
         "date": "2020-06-03",
-        "portfolio_value": 21084.790421050257,
+        "portfolio_value": 21569.903186095635,
         "total_trade_amount": 1096.4299999999998,
         "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
         "executions": [
@@ -1160,19 +638,19 @@
         ]
     },
     {
-        "id": "tx_20200701",
-        "date": "2020-07-01",
-        "portfolio_value": 22294.63129311721,
-        "total_trade_amount": 1158.83,
-        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "id": "tx_20200623",
+        "date": "2020-06-23",
+        "portfolio_value": 22673.99186213037,
+        "total_trade_amount": 1115.1000000000001,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 32,
-                "price": 18.74,
-                "fee": 0.6,
-                "date": "2020-07-01",
+                "quantity": 30,
+                "price": 18.53,
+                "fee": 0.56,
+                "date": "2020-06-23",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -1180,67 +658,67 @@
                 "ticker": "SHV",
                 "action": "BUY",
                 "quantity": 5,
-                "price": 111.83,
+                "price": 111.84,
                 "fee": 0.56,
-                "date": "2020-07-01",
+                "date": "2020-06-23",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20200710",
-        "date": "2020-07-10",
-        "portfolio_value": 23507.98121894115,
-        "total_trade_amount": 1295.04,
-        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "id": "tx_20200709",
+        "date": "2020-07-09",
+        "portfolio_value": 23866.252514375512,
+        "total_trade_amount": 1174.2,
+        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
                 "quantity": 30,
-                "price": 20.8,
-                "fee": 0.62,
-                "date": "2020-07-10",
+                "price": 20.5,
+                "fee": 0.61,
+                "date": "2020-07-09",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 5,
                 "price": 111.84,
-                "fee": 0.67,
-                "date": "2020-07-10",
+                "fee": 0.56,
+                "date": "2020-07-09",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20200826",
-        "date": "2020-08-26",
-        "portfolio_value": 25986.833928447242,
-        "total_trade_amount": 2466.7799999999997,
-        "reason": "비율 재조정: 상대이탈 9.7% > 임계치 7.5%",
+        "id": "tx_20200903",
+        "date": "2020-09-03",
+        "portfolio_value": 26080.831705637527,
+        "total_trade_amount": 2238.2,
+        "reason": "비율 재조정: 상대이탈 8.9% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 49,
-                "price": 25.24,
-                "fee": 1.24,
-                "date": "2020-08-26",
+                "quantity": 46,
+                "price": 24.35,
+                "fee": 1.12,
+                "date": "2020-09-03",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 11,
-                "price": 111.82,
-                "fee": 1.23,
-                "date": "2020-08-26",
+                "quantity": 10,
+                "price": 111.81,
+                "fee": 1.12,
+                "date": "2020-09-03",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1249,16 +727,16 @@
     {
         "id": "tx_20200908",
         "date": "2020-09-08",
-        "portfolio_value": 24007.46050502294,
-        "total_trade_amount": 1948.5900000000001,
-        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 5.0%",
+        "portfolio_value": 24508.180660600217,
+        "total_trade_amount": 1554.45,
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 9,
+                "quantity": 7,
                 "price": 109.59,
-                "fee": 0.99,
+                "fee": 0.77,
                 "date": "2020-09-08",
                 "status": "FILLED",
                 "reason": ""
@@ -1266,9 +744,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 44,
+                "quantity": 36,
                 "price": 21.87,
-                "fee": 0.96,
+                "fee": 0.79,
                 "date": "2020-09-08",
                 "status": "FILLED",
                 "reason": ""
@@ -1278,16 +756,16 @@
     {
         "id": "tx_20201009",
         "date": "2020-10-09",
-        "portfolio_value": 25357.01147659282,
-        "total_trade_amount": 1363.32,
-        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "portfolio_value": 25887.02258265775,
+        "total_trade_amount": 1387.1999999999998,
+        "reason": "비율 재조정: 상대이탈 5.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 29,
+                "quantity": 30,
                 "price": 23.88,
-                "fee": 0.69,
+                "fee": 0.72,
                 "date": "2020-10-09",
                 "status": "FILLED",
                 "reason": ""
@@ -1305,29 +783,29 @@
         ]
     },
     {
-        "id": "tx_20201028",
-        "date": "2020-10-28",
-        "portfolio_value": 24079.014250954813,
-        "total_trade_amount": 1293.3899999999999,
-        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "id": "tx_20201030",
+        "date": "2020-10-30",
+        "portfolio_value": 24401.325081572853,
+        "total_trade_amount": 1413.19,
+        "reason": "비율 재조정: 상대이탈 5.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
                 "quantity": 6,
-                "price": 109.57,
+                "price": 109.59,
                 "fee": 0.66,
-                "date": "2020-10-28",
+                "date": "2020-10-30",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 29,
-                "price": 21.93,
-                "fee": 0.64,
-                "date": "2020-10-28",
+                "quantity": 35,
+                "price": 21.59,
+                "fee": 0.76,
+                "date": "2020-10-30",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1336,75 +814,17 @@
     {
         "id": "tx_20201104",
         "date": "2020-11-04",
-        "portfolio_value": 25404.632380159295,
-        "total_trade_amount": 1339.6000000000001,
-        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "portfolio_value": 25957.472969249837,
+        "total_trade_amount": 1570.83,
+        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 28,
+                "quantity": 33,
                 "price": 23.89,
-                "fee": 0.67,
+                "fee": 0.79,
                 "date": "2020-11-04",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 6,
-                "price": 111.78,
-                "fee": 0.67,
-                "date": "2020-11-04",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20210104",
-        "date": "2021-01-04",
-        "portfolio_value": 27399.878958553767,
-        "total_trade_amount": 2001.51,
-        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 36,
-                "price": 27.69,
-                "fee": 1.0,
-                "date": "2021-01-04",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 9,
-                "price": 111.63,
-                "fee": 1.0,
-                "date": "2021-01-04",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20210202",
-        "date": "2021-02-02",
-        "portfolio_value": 28990.852464077638,
-        "total_trade_amount": 1585.7800000000002,
-        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 26,
-                "price": 30.94,
-                "fee": 0.8,
-                "date": "2021-02-02",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -1412,96 +832,96 @@
                 "ticker": "SHV",
                 "action": "BUY",
                 "quantity": 7,
-                "price": 111.62,
+                "price": 111.78,
                 "fee": 0.78,
-                "date": "2021-02-02",
+                "date": "2020-11-04",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20210809",
-        "date": "2021-08-09",
-        "portfolio_value": 32426.740542574953,
-        "total_trade_amount": 3549.84,
-        "reason": "비율 재조정: 상대이탈 11.2% > 임계치 7.5%",
+        "id": "tx_20210127",
+        "date": "2021-01-27",
+        "portfolio_value": 28965.736326658967,
+        "total_trade_amount": 2984.67,
+        "reason": "비율 재조정: 상대이탈 10.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 46,
-                "price": 38.36,
-                "fee": 1.76,
-                "date": "2021-08-09",
+                "quantity": 52,
+                "price": 29.49,
+                "fee": 1.53,
+                "date": "2021-01-27",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 16,
-                "price": 111.58,
-                "fee": 1.79,
-                "date": "2021-08-09",
+                "quantity": 13,
+                "price": 111.63,
+                "fee": 1.45,
+                "date": "2021-01-27",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20211122",
-        "date": "2021-11-22",
-        "portfolio_value": 35060.35736523967,
-        "total_trade_amount": 2678.88,
-        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "id": "tx_20210930",
+        "date": "2021-09-30",
+        "portfolio_value": 32132.214004398076,
+        "total_trade_amount": 3146.86,
+        "reason": "비율 재조정: 상대이탈 10.4% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 30,
-                "price": 44.68,
-                "fee": 1.34,
-                "date": "2021-11-22",
+                "quantity": 44,
+                "price": 36.02,
+                "fee": 1.58,
+                "date": "2021-09-30",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 12,
-                "price": 111.54,
-                "fee": 1.34,
-                "date": "2021-11-22",
+                "quantity": 14,
+                "price": 111.57,
+                "fee": 1.56,
+                "date": "2021-09-30",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20220118",
-        "date": "2022-01-18",
-        "portfolio_value": 32459.498766010012,
-        "total_trade_amount": 2447.5,
-        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
+        "id": "tx_20211201",
+        "date": "2021-12-01",
+        "portfolio_value": 34717.59666010898,
+        "total_trade_amount": 2790.56,
+        "reason": "비율 재조정: 상대이탈 8.1% > 임계치 5.0%",
         "executions": [
             {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 11,
-                "price": 109.22,
-                "fee": 1.2,
-                "date": "2022-01-18",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
                 "ticker": "QLD",
-                "action": "BUY",
+                "action": "SELL",
                 "quantity": 32,
-                "price": 38.94,
-                "fee": 1.25,
-                "date": "2022-01-18",
+                "price": 41.9,
+                "fee": 1.34,
+                "date": "2021-12-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 13,
+                "price": 111.52,
+                "fee": 1.45,
+                "date": "2021-12-01",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1510,16 +930,16 @@
     {
         "id": "tx_20220125",
         "date": "2022-01-25",
-        "portfolio_value": 30222.09364516334,
-        "total_trade_amount": 2201.3,
-        "reason": "비율 재조정: 상대이탈 7.4% > 임계치 5.0%",
+        "portfolio_value": 30955.709984539677,
+        "total_trade_amount": 3671.65,
+        "reason": "비율 재조정: 상대이탈 11.9% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 10,
+                "quantity": 17,
                 "price": 109.25,
-                "fee": 1.09,
+                "fee": 1.86,
                 "date": "2022-01-25",
                 "status": "FILLED",
                 "reason": ""
@@ -1527,9 +947,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 33,
+                "quantity": 54,
                 "price": 33.6,
-                "fee": 1.11,
+                "fee": 1.81,
                 "date": "2022-01-25",
                 "status": "FILLED",
                 "reason": ""
@@ -1539,9 +959,9 @@
     {
         "id": "tx_20220223",
         "date": "2022-02-23",
-        "portfolio_value": 28749.776364150195,
+        "portfolio_value": 29448.067714207682,
         "total_trade_amount": 1523.83,
-        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
@@ -1568,7 +988,7 @@
     {
         "id": "tx_20220228",
         "date": "2022-02-28",
-        "portfolio_value": 30290.763072113987,
+        "portfolio_value": 31024.91440370834,
         "total_trade_amount": 1571.73,
         "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
         "executions": [
@@ -1597,9 +1017,9 @@
     {
         "id": "tx_20220307",
         "date": "2022-03-07",
-        "portfolio_value": 28351.59733869659,
-        "total_trade_amount": 1953.09,
-        "reason": "비율 재조정: 상대이탈 6.7% > 임계치 5.0%",
+        "portfolio_value": 29038.95821921058,
+        "total_trade_amount": 1982.4899999999998,
+        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
@@ -1614,9 +1034,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 33,
+                "quantity": 34,
                 "price": 29.4,
-                "fee": 0.97,
+                "fee": 1.0,
                 "date": "2022-03-07",
                 "status": "FILLED",
                 "reason": ""
@@ -1626,16 +1046,16 @@
     {
         "id": "tx_20220317",
         "date": "2022-03-17",
-        "portfolio_value": 30002.930818350596,
-        "total_trade_amount": 1617.2600000000002,
+        "portfolio_value": 30729.849756324267,
+        "total_trade_amount": 1760.8700000000001,
         "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 26,
+                "quantity": 27,
                 "price": 32.21,
-                "fee": 0.84,
+                "fee": 0.87,
                 "date": "2022-03-17",
                 "status": "FILLED",
                 "reason": ""
@@ -1643,9 +1063,9 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 7,
+                "quantity": 8,
                 "price": 111.4,
-                "fee": 0.78,
+                "fee": 0.89,
                 "date": "2022-03-17",
                 "status": "FILLED",
                 "reason": ""
@@ -1655,16 +1075,16 @@
     {
         "id": "tx_20220426",
         "date": "2022-04-26",
-        "portfolio_value": 27568.560252693092,
-        "total_trade_amount": 2250.52,
-        "reason": "비율 재조정: 상대이탈 8.3% > 임계치 5.0%",
+        "portfolio_value": 28236.098275026354,
+        "total_trade_amount": 2414.83,
+        "reason": "비율 재조정: 상대이탈 8.6% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 10,
+                "quantity": 11,
                 "price": 109.09,
-                "fee": 1.09,
+                "fee": 1.2,
                 "date": "2022-04-26",
                 "status": "FILLED",
                 "reason": ""
@@ -1672,9 +1092,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 42,
+                "quantity": 44,
                 "price": 27.61,
-                "fee": 1.16,
+                "fee": 1.21,
                 "date": "2022-04-26",
                 "status": "FILLED",
                 "reason": ""
@@ -1684,16 +1104,16 @@
     {
         "id": "tx_20220509",
         "date": "2022-05-09",
-        "portfolio_value": 25772.669758304437,
-        "total_trade_amount": 1761.99,
-        "reason": "비율 재조정: 상대이탈 7.0% > 임계치 5.0%",
+        "portfolio_value": 26392.54673066051,
+        "total_trade_amount": 1919.16,
+        "reason": "비율 재조정: 상대이탈 6.9% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 8,
+                "quantity": 9,
                 "price": 109.11,
-                "fee": 0.87,
+                "fee": 0.98,
                 "date": "2022-05-09",
                 "status": "FILLED",
                 "reason": ""
@@ -1701,9 +1121,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 37,
+                "quantity": 39,
                 "price": 24.03,
-                "fee": 0.89,
+                "fee": 0.94,
                 "date": "2022-05-09",
                 "status": "FILLED",
                 "reason": ""
@@ -1713,16 +1133,16 @@
     {
         "id": "tx_20220613",
         "date": "2022-06-13",
-        "portfolio_value": 23726.47662004947,
-        "total_trade_amount": 2123.38,
-        "reason": "비율 재조정: 상대이탈 8.6% > 임계치 5.0%",
+        "portfolio_value": 24291.772631902117,
+        "total_trade_amount": 1994.19,
+        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 10,
+                "quantity": 9,
                 "price": 108.91,
-                "fee": 1.09,
+                "fee": 0.98,
                 "date": "2022-06-13",
                 "status": "FILLED",
                 "reason": ""
@@ -1730,9 +1150,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 51,
+                "quantity": 50,
                 "price": 20.28,
-                "fee": 1.03,
+                "fee": 1.01,
                 "date": "2022-06-13",
                 "status": "FILLED",
                 "reason": ""
@@ -1742,16 +1162,16 @@
     {
         "id": "tx_20220624",
         "date": "2022-06-24",
-        "portfolio_value": 25426.437000549464,
-        "total_trade_amount": 1753.78,
-        "reason": "비율 재조정: 상대이탈 7.1% > 임계치 5.0%",
+        "portfolio_value": 26032.23049807443,
+        "total_trade_amount": 1776.53,
+        "reason": "비율 재조정: 상대이탈 6.9% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 38,
+                "quantity": 39,
                 "price": 22.75,
-                "fee": 0.86,
+                "fee": 0.89,
                 "date": "2022-06-24",
                 "status": "FILLED",
                 "reason": ""
@@ -1771,9 +1191,9 @@
     {
         "id": "tx_20220630",
         "date": "2022-06-30",
-        "portfolio_value": 24161.627997317613,
-        "total_trade_amount": 1281.3,
-        "reason": "비율 재조정: 상대이탈 5.0% > 임계치 5.0%",
+        "portfolio_value": 24737.803529589077,
+        "total_trade_amount": 1302.21,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
@@ -1788,9 +1208,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 30,
+                "quantity": 31,
                 "price": 20.91,
-                "fee": 0.63,
+                "fee": 0.65,
                 "date": "2022-06-30",
                 "status": "FILLED",
                 "reason": ""
@@ -1800,16 +1220,16 @@
     {
         "id": "tx_20220707",
         "date": "2022-07-07",
-        "portfolio_value": 25425.93708278514,
-        "total_trade_amount": 1301.6,
-        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
+        "portfolio_value": 26032.5720138026,
+        "total_trade_amount": 1324.27,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 28,
+                "quantity": 29,
                 "price": 22.67,
-                "fee": 0.63,
+                "fee": 0.66,
                 "date": "2022-07-07",
                 "status": "FILLED",
                 "reason": ""
@@ -1827,77 +1247,19 @@
         ]
     },
     {
-        "id": "tx_20220816",
-        "date": "2022-08-16",
-        "portfolio_value": 28651.476094433856,
-        "total_trade_amount": 3149.3,
-        "reason": "비율 재조정: 상대이탈 11.5% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 56,
-                "price": 28.45,
-                "fee": 1.59,
-                "date": "2022-08-16",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 14,
-                "price": 111.15,
-                "fee": 1.56,
-                "date": "2022-08-16",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20220906",
-        "date": "2022-09-06",
-        "portfolio_value": 25370.21695737468,
-        "total_trade_amount": 3139.2799999999997,
-        "reason": "비율 재조정: 상대이탈 12.3% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 14,
-                "price": 108.88,
-                "fee": 1.52,
-                "date": "2022-09-06",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 72,
-                "price": 22.43,
-                "fee": 1.62,
-                "date": "2022-09-06",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20220923",
-        "date": "2022-09-23",
-        "portfolio_value": 23828.79696025554,
-        "total_trade_amount": 1532.02,
-        "reason": "비율 재조정: 상대이탈 6.3% > 임계치 5.0%",
+        "id": "tx_20220922",
+        "date": "2022-09-22",
+        "portfolio_value": 24510.874552631678,
+        "total_trade_amount": 1557.69,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
                 "quantity": 7,
-                "price": 108.88,
+                "price": 108.87,
                 "fee": 0.76,
-                "date": "2022-09-23",
+                "date": "2022-09-22",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -1905,96 +1267,96 @@
                 "ticker": "QLD",
                 "action": "BUY",
                 "quantity": 39,
-                "price": 19.74,
-                "fee": 0.77,
-                "date": "2022-09-23",
+                "price": 20.4,
+                "fee": 0.8,
+                "date": "2022-09-22",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20221014",
-        "date": "2022-10-14",
-        "portfolio_value": 22467.963902655538,
-        "total_trade_amount": 1334.58,
-        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
+        "id": "tx_20221010",
+        "date": "2022-10-10",
+        "portfolio_value": 23242.559999049525,
+        "total_trade_amount": 1292.9499999999998,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
                 "quantity": 6,
-                "price": 108.81,
+                "price": 108.8,
                 "fee": 0.65,
-                "date": "2022-10-14",
+                "date": "2022-10-10",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 39,
-                "price": 17.48,
-                "fee": 0.68,
-                "date": "2022-10-14",
+                "quantity": 35,
+                "price": 18.29,
+                "fee": 0.64,
+                "date": "2022-10-10",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20221021",
-        "date": "2022-10-21",
-        "portfolio_value": 23740.559685039952,
-        "total_trade_amount": 1204.31,
-        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "id": "tx_20221025",
+        "date": "2022-10-25",
+        "portfolio_value": 24773.66894781284,
+        "total_trade_amount": 1548.8899999999999,
+        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 34,
-                "price": 19.09,
-                "fee": 0.65,
-                "date": "2022-10-21",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 5,
-                "price": 111.05,
-                "fee": 0.56,
-                "date": "2022-10-21",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20221103",
-        "date": "2022-11-03",
-        "portfolio_value": 22419.093376512425,
-        "total_trade_amount": 1201.33,
-        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 5,
-                "price": 108.71,
-                "fee": 0.54,
-                "date": "2022-11-03",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
                 "quantity": 38,
-                "price": 17.31,
-                "fee": 0.66,
-                "date": "2022-11-03",
+                "price": 20.3,
+                "fee": 0.77,
+                "date": "2022-10-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 111.07,
+                "fee": 0.78,
+                "date": "2022-10-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221102",
+        "date": "2022-11-02",
+        "portfolio_value": 23144.272171868015,
+        "total_trade_amount": 1571.0700000000002,
+        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 108.66,
+                "fee": 0.76,
+                "date": "2022-11-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 45,
+                "price": 18.01,
+                "fee": 0.81,
+                "date": "2022-11-02",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2003,16 +1365,16 @@
     {
         "id": "tx_20221110",
         "date": "2022-11-10",
-        "portfolio_value": 24305.00075696294,
-        "total_trade_amount": 1820.72,
-        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 5.0%",
+        "portfolio_value": 24577.977566179386,
+        "total_trade_amount": 1380.42,
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 47,
+                "quantity": 36,
                 "price": 19.84,
-                "fee": 0.93,
+                "fee": 0.71,
                 "date": "2022-11-10",
                 "status": "FILLED",
                 "reason": ""
@@ -2020,9 +1382,9 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 8,
+                "quantity": 6,
                 "price": 111.03,
-                "fee": 0.89,
+                "fee": 0.67,
                 "date": "2022-11-10",
                 "status": "FILLED",
                 "reason": ""
@@ -2032,9 +1394,9 @@
     {
         "id": "tx_20221222",
         "date": "2022-12-22",
-        "portfolio_value": 22920.41188191358,
+        "portfolio_value": 23177.433179151874,
         "total_trade_amount": 1436.2,
-        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
@@ -2059,222 +1421,77 @@
         ]
     },
     {
-        "id": "tx_20230201",
-        "date": "2023-02-01",
-        "portfolio_value": 25876.657443417065,
-        "total_trade_amount": 2890.8999999999996,
-        "reason": "비율 재조정: 상대이탈 11.5% > 임계치 2.5%",
+        "id": "tx_20230512",
+        "date": "2023-05-12",
+        "portfolio_value": 28272.50964830154,
+        "total_trade_amount": 4816.66,
+        "reason": "비율 재조정: 상대이탈 17.7% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 66,
-                "price": 21.93,
-                "fee": 1.45,
-                "date": "2023-02-01",
+                "quantity": 95,
+                "price": 24.92,
+                "fee": 2.37,
+                "date": "2023-05-12",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 13,
-                "price": 111.04,
-                "fee": 1.44,
-                "date": "2023-02-01",
+                "quantity": 22,
+                "price": 111.33,
+                "fee": 2.45,
+                "date": "2023-05-12",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20230403",
-        "date": "2023-04-03",
-        "portfolio_value": 27421.899707096953,
-        "total_trade_amount": 1461.88,
-        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 2.5%",
+        "id": "tx_20230911",
+        "date": "2023-09-11",
+        "portfolio_value": 32801.7101269722,
+        "total_trade_amount": 4390.05,
+        "reason": "비율 재조정: 상대이탈 13.9% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 28,
-                "price": 24.41,
-                "fee": 0.68,
-                "date": "2023-04-03",
+                "quantity": 63,
+                "price": 32.59,
+                "fee": 2.05,
+                "date": "2023-09-11",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 7,
-                "price": 111.2,
-                "fee": 0.78,
-                "date": "2023-04-03",
+                "quantity": 21,
+                "price": 111.28,
+                "fee": 2.34,
+                "date": "2023-09-11",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20230605",
-        "date": "2023-06-05",
-        "portfolio_value": 30366.003333321318,
-        "total_trade_amount": 2832.81,
-        "reason": "비율 재조정: 상대이탈 9.7% > 임계치 2.5%",
+        "id": "tx_20240508",
+        "date": "2024-05-08",
+        "portfolio_value": 38178.05458746002,
+        "total_trade_amount": 4775.0,
+        "reason": "비율 재조정: 상대이탈 13.1% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 47,
-                "price": 29.54,
-                "fee": 1.39,
-                "date": "2023-06-05",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 13,
-                "price": 111.11,
-                "fee": 1.44,
-                "date": "2023-06-05",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20230828",
-        "date": "2023-08-28",
-        "portfolio_value": 31269.802377066473,
-        "total_trade_amount": 755.7,
-        "reason": "비율 재조정: 상대이탈 2.6% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 10,
-                "price": 30.97,
-                "fee": 0.31,
-                "date": "2023-08-28",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 111.5,
-                "fee": 0.45,
-                "date": "2023-08-28",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20231030",
-        "date": "2023-10-30",
-        "portfolio_value": 29765.28022936025,
-        "total_trade_amount": 1724.53,
-        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 7,
-                "price": 109.39,
-                "fee": 0.77,
-                "date": "2023-10-30",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 34,
-                "price": 28.2,
-                "fee": 0.96,
-                "date": "2023-10-30",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20231120",
-        "date": "2023-11-20",
-        "portfolio_value": 33427.64452759023,
-        "total_trade_amount": 3574.2,
-        "reason": "비율 재조정: 상대이탈 11.2% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 52,
-                "price": 34.43,
-                "fee": 1.79,
-                "date": "2023-11-20",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 16,
-                "price": 111.49,
-                "fee": 1.78,
-                "date": "2023-11-20",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20240122",
-        "date": "2024-01-22",
-        "portfolio_value": 36129.302916154986,
-        "total_trade_amount": 2680.41,
-        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 31,
-                "price": 39.69,
-                "fee": 1.23,
-                "date": "2024-01-22",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 13,
-                "price": 111.54,
-                "fee": 1.45,
-                "date": "2024-01-22",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20240617",
-        "date": "2024-06-17",
-        "portfolio_value": 41441.27047122384,
-        "total_trade_amount": 4954.41,
-        "reason": "비율 재조정: 상대이탈 12.3% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 45,
-                "price": 50.69,
-                "fee": 2.28,
-                "date": "2024-06-17",
+                "quantity": 50,
+                "price": 42.1,
+                "fee": 2.1,
+                "date": "2024-05-08",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -2282,125 +1499,38 @@
                 "ticker": "SHV",
                 "action": "BUY",
                 "quantity": 24,
-                "price": 111.39,
+                "price": 111.25,
                 "fee": 2.67,
-                "date": "2024-06-17",
+                "date": "2024-05-08",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20240805",
-        "date": "2024-08-05",
-        "portfolio_value": 37340.71587862386,
-        "total_trade_amount": 4144.389999999999,
-        "reason": "비율 재조정: 상대이탈 11.1% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 18,
-                "price": 109.08,
-                "fee": 1.96,
-                "date": "2024-08-05",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 53,
-                "price": 41.15,
-                "fee": 2.18,
-                "date": "2024-08-05",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20240827",
-        "date": "2024-08-27",
-        "portfolio_value": 40882.181375098466,
-        "total_trade_amount": 3400.8,
-        "reason": "비율 재조정: 상대이탈 8.6% > 임계치 7.5%",
+        "id": "tx_20241205",
+        "date": "2024-12-05",
+        "portfolio_value": 45057.65758999057,
+        "total_trade_amount": 6310.98,
+        "reason": "비율 재조정: 상대이탈 14.6% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 36,
-                "price": 47.95,
-                "fee": 1.73,
-                "date": "2024-08-27",
+                "quantity": 51,
+                "price": 56.11,
+                "fee": 2.86,
+                "date": "2024-12-05",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 15,
-                "price": 111.64,
-                "fee": 1.67,
-                "date": "2024-08-27",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20241209",
-        "date": "2024-12-09",
-        "portfolio_value": 44639.87981745866,
-        "total_trade_amount": 3633.05,
-        "reason": "비율 재조정: 상대이탈 8.3% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 29,
-                "price": 56.17,
-                "fee": 1.63,
-                "date": "2024-12-09",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 18,
-                "price": 111.34,
-                "fee": 2.0,
-                "date": "2024-12-09",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20250303",
-        "date": "2025-03-03",
-        "portfolio_value": 42344.915381678744,
-        "total_trade_amount": 2464.4,
-        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 10,
-                "price": 109.01,
-                "fee": 1.09,
-                "date": "2025-03-03",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "QLD",
-                "action": "BUY",
-                "quantity": 27,
-                "price": 50.9,
-                "fee": 1.37,
-                "date": "2025-03-03",
+                "quantity": 31,
+                "price": 111.27,
+                "fee": 3.45,
+                "date": "2024-12-05",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2409,16 +1539,16 @@
     {
         "id": "tx_20250403",
         "date": "2025-04-03",
-        "portfolio_value": 38394.275159676865,
-        "total_trade_amount": 3986.55,
-        "reason": "비율 재조정: 상대이탈 10.3% > 임계치 5.0%",
+        "portfolio_value": 39038.898637305334,
+        "total_trade_amount": 6056.700000000001,
+        "reason": "비율 재조정: 상대이탈 15.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 18,
+                "quantity": 26,
                 "price": 109.02,
-                "fee": 1.96,
+                "fee": 2.83,
                 "date": "2025-04-03",
                 "status": "FILLED",
                 "reason": ""
@@ -2426,9 +1556,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 49,
+                "quantity": 78,
                 "price": 41.31,
-                "fee": 2.02,
+                "fee": 3.22,
                 "date": "2025-04-03",
                 "status": "FILLED",
                 "reason": ""
@@ -2438,9 +1568,9 @@
     {
         "id": "tx_20250404",
         "date": "2025-04-04",
-        "portfolio_value": 36033.95426073598,
-        "total_trade_amount": 2396.35,
-        "reason": "비율 재조정: 상대이탈 6.5% > 임계치 5.0%",
+        "portfolio_value": 36643.3673913689,
+        "total_trade_amount": 2432.6099999999997,
+        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
@@ -2455,9 +1585,9 @@
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 33,
+                "quantity": 34,
                 "price": 36.26,
-                "fee": 1.2,
+                "fee": 1.23,
                 "date": "2025-04-04",
                 "status": "FILLED",
                 "reason": ""
@@ -2467,9 +1597,9 @@
     {
         "id": "tx_20250409",
         "date": "2025-04-09",
-        "portfolio_value": 39470.17244543504,
+        "portfolio_value": 40134.95557118514,
         "total_trade_amount": 3407.49,
-        "reason": "비율 재조정: 상대이탈 8.9% > 임계치 5.0%",
+        "reason": "비율 재조정: 상대이탈 8.8% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
@@ -2496,9 +1626,9 @@
     {
         "id": "tx_20250421",
         "date": "2025-04-21",
-        "portfolio_value": 36749.68444855958,
+        "portfolio_value": 37367.757575225216,
         "total_trade_amount": 2690.73,
-        "reason": "비율 재조정: 상대이탈 7.2% > 임계치 5.0%",
+        "reason": "비율 재조정: 상대이탈 7.1% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
@@ -2525,9 +1655,9 @@
     {
         "id": "tx_20250424",
         "date": "2025-04-24",
-        "portfolio_value": 39668.05953045076,
+        "portfolio_value": 40333.5426607785,
         "total_trade_amount": 2933.59,
-        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 5.0%",
+        "reason": "비율 재조정: 상대이탈 7.5% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "QLD",
@@ -2552,87 +1682,29 @@
         ]
     },
     {
-        "id": "tx_20250514",
-        "date": "2025-05-14",
-        "portfolio_value": 44115.634905741244,
-        "total_trade_amount": 4459.82,
-        "reason": "비율 재조정: 상대이탈 10.4% > 임계치 2.5%",
+        "id": "tx_20250822",
+        "date": "2025-08-22",
+        "portfolio_value": 49838.55916777786,
+        "total_trade_amount": 9142.68,
+        "reason": "비율 재조정: 상대이탈 18.9% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QLD",
                 "action": "SELL",
-                "quantity": 43,
-                "price": 51.94,
-                "fee": 2.23,
-                "date": "2025-05-14",
+                "quantity": 72,
+                "price": 61.94,
+                "fee": 4.46,
+                "date": "2025-08-22",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 20,
-                "price": 111.32,
-                "fee": 2.23,
-                "date": "2025-05-14",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20250804",
-        "date": "2025-08-04",
-        "portfolio_value": 47941.271599795815,
-        "total_trade_amount": 3696.04,
-        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 28,
-                "price": 60.49,
-                "fee": 1.69,
-                "date": "2025-08-04",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 18,
-                "price": 111.24,
-                "fee": 2.0,
-                "date": "2025-08-04",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20251027",
-        "date": "2025-10-27",
-        "portfolio_value": 53405.771235844244,
-        "total_trade_amount": 5187.32,
-        "reason": "비율 재조정: 상대이탈 9.9% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QLD",
-                "action": "SELL",
-                "quantity": 34,
-                "price": 73.82,
-                "fee": 2.51,
-                "date": "2025-10-27",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 24,
-                "price": 111.56,
-                "fee": 2.68,
-                "date": "2025-10-27",
+                "quantity": 42,
+                "price": 111.5,
+                "fee": 4.68,
+                "date": "2025-08-22",
                 "status": "FILLED",
                 "reason": ""
             }
