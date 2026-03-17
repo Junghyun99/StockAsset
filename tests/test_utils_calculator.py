@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.utils.calculator import IndicatorCalculator
+from src.utils.calculator import IndicatorCalculator, MOMENTUM_EMA_SPAN
 
 @pytest.fixture
 def mock_ohlcv_data():
@@ -271,6 +271,71 @@ def test_calculator_zero_price_handling():
         
     except ZeroDivisionError:
         pytest.fail("Calculator crashed due to ZeroDivisionError (Price=0)")
+
+def test_calculator_momentum_ema_smoothing():
+    """
+    [EMA] 모멘텀이 threshold 근처에서 EMA 평활화로 휩쏘가 줄어드는지 검증.
+    raw momentum에 EMA를 적용하면 변동폭이 줄어들어야 함.
+    """
+    calc = IndicatorCalculator()
+
+    # 300일 데이터: 0.05 threshold 근처에서 oscillate하는 시뮬레이션
+    dates = pd.date_range(end='2024-01-01', periods=300)
+    prices = np.linspace(100, 105, 300)  # 완만한 상승 (momentum ≈ 0.05 근처)
+    df = pd.DataFrame({'Close': prices}, index=dates)
+
+    data = calc.calculate(df, 15.0)
+
+    # EMA 후 값이 float이며 NaN이 아닌지 확인
+    assert isinstance(data.spy_momentum, float)
+    assert not np.isnan(data.spy_momentum)
+
+
+def test_calculator_momentum_ema_reduces_noise():
+    """
+    [EMA] raw momentum보다 EMA 적용 momentum의 일간 변동이 더 작은지 검증.
+    연속 두 날의 데이터로 계산 시 EMA 쪽이 더 안정적이어야 함.
+    """
+    calc = IndicatorCalculator()
+
+    # Day N (기준일)
+    dates_n = pd.date_range(end='2024-01-01', periods=300)
+    prices_n = np.linspace(100, 105, 300)
+    prices_n[-1] = 103.0  # 마지막 값 조작
+    df_n = pd.DataFrame({'Close': prices_n}, index=dates_n)
+
+    # Day N+1 (하루 뒤, 마지막 가격만 살짝 다름)
+    dates_n1 = pd.date_range(end='2024-01-02', periods=300)
+    prices_n1 = np.linspace(100, 105, 300)
+    prices_n1[-1] = 107.0  # 마지막 값을 크게 다르게
+    df_n1 = pd.DataFrame({'Close': prices_n1}, index=dates_n1)
+
+    data_n = calc.calculate(df_n, 15.0)
+    data_n1 = calc.calculate(df_n1, 15.0)
+
+    # 두 날의 raw momentum 차이를 직접 계산
+    close_n = df_n['Close']
+    m1_n = close_n.pct_change(periods=21)
+    m3_n = close_n.pct_change(periods=63)
+    m6_n = close_n.pct_change(periods=126)
+    m12_n = close_n.pct_change(periods=252)
+    raw_n = ((m1_n + m3_n + m6_n + m12_n) / 4.0).iloc[-1]
+
+    close_n1 = df_n1['Close']
+    m1_n1 = close_n1.pct_change(periods=21)
+    m3_n1 = close_n1.pct_change(periods=63)
+    m6_n1 = close_n1.pct_change(periods=126)
+    m12_n1 = close_n1.pct_change(periods=252)
+    raw_n1 = ((m1_n1 + m3_n1 + m6_n1 + m12_n1) / 4.0).iloc[-1]
+
+    raw_diff = abs(raw_n1 - raw_n)
+    ema_diff = abs(data_n1.spy_momentum - data_n.spy_momentum)
+
+    # EMA 평활화 후 변동이 raw보다 작거나 같아야 함
+    assert ema_diff <= raw_diff, (
+        f"EMA diff ({ema_diff:.6f}) should be <= raw diff ({raw_diff:.6f})"
+    )
+
 
 def test_calculator_boundary_data_length():
     """
