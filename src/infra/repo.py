@@ -74,6 +74,7 @@ class JsonRepository(IRepository):
             "spy_volatility": market.spy_volatility, # [추가]
             "spy_momentum": market.spy_momentum,     # [추가]
             "mdd": market.spy_mdd,
+            "vix": market.vix,                       # [추가] 디버깅 및 분석용
 
             # [전략 상태]
             "regime": regime.value,          # MarketRegime enum 값 (예: "Bull", "Bear", "Crash")
