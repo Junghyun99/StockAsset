@@ -481,7 +481,7 @@ class Asset5Engine(FullExposureEngine):
     """
 
     ASSET_GROUPS: dict = {
-        'A': ['VOO', 'IEMG'],
+        'A': ['VOO', 'EEM'],
         'B': ['TLT', 'EMB', 'GLD'],
     }
     REBALANCE_RATIO_A: float = 0.4
