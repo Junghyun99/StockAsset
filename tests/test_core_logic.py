@@ -90,7 +90,7 @@ def test_regime_crash_hysteresis_partial_exit_fails(create_market_data):
 
 def test_regime_crash_hysteresis_reentry(create_market_data):
     """
-    [히스테리시스] CRASH 탈출 후 다시 진입 조건 충족 시 재진입해야 한다.
+    [히스테리시스] CRASH 탈출 후 MDD≤-20% 극단적 하락 시 쿨다운 무시하고 즉시 재진입해야 한다.
     """
     analyzer = RegimeAnalyzer()
 
@@ -101,7 +101,66 @@ def test_regime_crash_hysteresis_reentry(create_market_data):
     data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
     assert analyzer.analyze(data_exit) != MarketRegime.CRASH
 
-    # 다시 CRASH 진입 (VIX=31, MDD=-0.11 → 복합 조건 충족)
+    # 극단적 하락 (MDD≤-20%) → 쿨다운 중에도 즉시 CRASH 재진입
+    assert analyzer.analyze(create_market_data(vix=31, mdd=-0.21)) == MarketRegime.CRASH
+
+
+def test_regime_crash_cooldown_blocks_vix_reentry(create_market_data):
+    """
+    [쿨다운] CRASH 탈출 후 쿨다운 기간(기본 10일) 동안 VIX/MDD 복합 조건에 의한
+    재진입이 차단되어야 한다.
+    """
+    analyzer = RegimeAnalyzer(crash_cooldown_days=3)
+
+    # CRASH 진입 (VIX=35, MDD=-0.12)
+    assert analyzer.analyze(create_market_data(vix=35, mdd=-0.12)) == MarketRegime.CRASH
+
+    # CRASH 탈출 (VIX=20, MDD=-0.05) → 쿨다운 3일 시작
+    data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_exit) != MarketRegime.CRASH
+
+    # 쿨다운 중 VIX/MDD 복합 조건 (VIX=31, MDD=-0.11) → 차단되어야 함 (day 1/3)
+    assert analyzer.analyze(create_market_data(vix=31, mdd=-0.11)) != MarketRegime.CRASH
+
+    # 쿨다운 중 (day 2/3)
+    assert analyzer.analyze(create_market_data(vix=31, mdd=-0.11)) != MarketRegime.CRASH
+
+    # 쿨다운 만료 (day 3/3)
+    assert analyzer.analyze(create_market_data(vix=31, mdd=-0.11)) != MarketRegime.CRASH
+
+    # 쿨다운 종료 후 → CRASH 재진입 허용
+    assert analyzer.analyze(create_market_data(vix=31, mdd=-0.11)) == MarketRegime.CRASH
+
+
+def test_regime_crash_cooldown_allows_extreme_mdd(create_market_data):
+    """
+    [쿨다운] 쿨다운 기간 중에도 MDD≤-20% 극단적 하락 시 즉시 CRASH 진입해야 한다.
+    """
+    analyzer = RegimeAnalyzer(crash_cooldown_days=10)
+
+    # CRASH 진입 후 탈출
+    assert analyzer.analyze(create_market_data(vix=35, mdd=-0.12)) == MarketRegime.CRASH
+    data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_exit) != MarketRegime.CRASH
+
+    # 쿨다운 중 MDD=-25% → 즉시 CRASH 재진입 허용
+    assert analyzer.analyze(create_market_data(vix=25, mdd=-0.25)) == MarketRegime.CRASH
+
+
+def test_regime_crash_cooldown_zero_disables_cooldown(create_market_data):
+    """
+    [쿨다운] crash_cooldown_days=0 시 쿨다운 없이 기존 동작과 동일해야 한다.
+    """
+    analyzer = RegimeAnalyzer(crash_cooldown_days=0)
+
+    # CRASH 진입
+    assert analyzer.analyze(create_market_data(vix=35, mdd=-0.12)) == MarketRegime.CRASH
+
+    # CRASH 탈출
+    data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_exit) != MarketRegime.CRASH
+
+    # 탈출 직후 VIX/MDD 복합 조건 충족 → 즉시 재진입 허용 (쿨다운 없음)
     assert analyzer.analyze(create_market_data(vix=31, mdd=-0.11)) == MarketRegime.CRASH
 
 
