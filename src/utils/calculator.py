@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 from src.core.models import MarketData
 
+MOMENTUM_EMA_SPAN = 5  # 모멘텀 EMA 평활화 기간 (작을수록 빠른 반응, 클수록 안정적)
+
+
 class IndicatorCalculator:
     def calculate(self, df: pd.DataFrame, vix_now: float) -> MarketData:
         """
@@ -39,13 +42,15 @@ class IndicatorCalculator:
         # 21일 표준편차 * sqrt(252)
         volatility = daily_ret.rolling(window=21).std().iloc[-1] * np.sqrt(252)
         
-        # 5. 모멘텀 스코어 ((1M + 3M + 6M + 12M) / 4)
+        # 5. 모멘텀 스코어 ((1M + 3M + 6M + 12M) / 4) + EMA 평활화
         # 영업일 기준: 1M=21, 3M=63, 6M=126, 12M=252
-        m1 = close.pct_change(periods=21).iloc[-1]
-        m3 = close.pct_change(periods=63).iloc[-1]
-        m6 = close.pct_change(periods=126).iloc[-1]
-        m12 = close.pct_change(periods=252).iloc[-1]
-        momentum = (m1 + m3 + m6 + m12) / 4.0
+        # EMA 적용으로 일일 노이즈로 인한 휩쏘(whipsaw) 방지
+        m1 = close.pct_change(periods=21)
+        m3 = close.pct_change(periods=63)
+        m6 = close.pct_change(periods=126)
+        m12 = close.pct_change(periods=252)
+        raw_momentum = (m1 + m3 + m6 + m12) / 4.0
+        momentum = raw_momentum.ewm(span=MOMENTUM_EMA_SPAN, adjust=False).mean().iloc[-1]
         
         # 6. MDD (최근 1년 고점 대비 현재가 하락률)
         rolling_max = close.rolling(window=252, min_periods=1).max().iloc[-1]

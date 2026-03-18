@@ -1,132 +1,37 @@
 [
     {
-        "id": "tx_20160104",
-        "date": "2016-01-04",
-        "portfolio_value": 9893.90764,
-        "total_trade_amount": 9731.92,
+        "id": "tx_20230102",
+        "date": "2023-01-02",
+        "portfolio_value": 9893.72396097561,
+        "total_trade_amount": 9749.16,
         "reason": "첫 투자: 100:0 비율로 진입",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
-                "quantity": 88,
-                "price": 110.59,
-                "fee": 9.73,
-                "date": "2016-01-04",
+                "quantity": 51,
+                "price": 191.16,
+                "fee": 9.75,
+                "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20160503",
-        "date": "2016-05-03",
-        "portfolio_value": 9587.803760736237,
-        "total_trade_amount": 213.58,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 106.79,
-                "fee": 0.21,
-                "date": "2016-05-03",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20161229",
-        "date": "2016-12-29",
-        "portfolio_value": 10928.925369124832,
-        "total_trade_amount": 120.91,
+        "id": "tx_20230103",
+        "date": "2023-01-03",
+        "portfolio_value": 9904.076456097562,
+        "total_trade_amount": 191.41,
         "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 120.91,
-                "fee": 0.12,
-                "date": "2016-12-29",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20181010",
-        "date": "2018-10-10",
-        "portfolio_value": 15868.789316390914,
-        "total_trade_amount": 173.45,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 2.5%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 173.45,
-                "fee": 0.17,
-                "date": "2018-10-10",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20191226",
-        "date": "2019-12-26",
-        "portfolio_value": 19920.23126395546,
-        "total_trade_amount": 215.93,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 215.93,
-                "fee": 0.22,
-                "date": "2019-12-26",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20220426",
-        "date": "2022-04-26",
-        "portfolio_value": 29851.838539088516,
-        "total_trade_amount": 320.31,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 320.31,
-                "fee": 0.32,
-                "date": "2022-04-26",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20240508",
-        "date": "2024-05-08",
-        "portfolio_value": 41853.61187207008,
-        "total_trade_amount": 444.46,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 444.46,
-                "fee": 0.44,
-                "date": "2024-05-08",
+                "price": 191.41,
+                "fee": 0.19,
+                "date": "2023-01-03",
                 "status": "FILLED",
                 "reason": ""
             }
