@@ -32,7 +32,7 @@ class StrategyConfig:
         # 1. 자산군 정의
         self.ASSET_GROUPS: dict = asset_groups or {
             'A': ['SSO', 'QLD'],           # 성장성
-            'B': ['IEF', 'GLD', 'PDBC'],   # 안전성
+            'B': ['IEF', 'GLD', 'DBC'],   # 안전성
             'C': ['SHV'],                  # 현금성
         }
 
