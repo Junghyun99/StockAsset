@@ -22,16 +22,25 @@ class RegimeAnalyzer:
     # 단, MDD≤-20% 극단적 하락 시에는 쿨다운 무시하고 즉시 CRASH 진입
     DEFAULT_CRASH_COOLDOWN_DAYS = 10
 
+    # Bear_Strong 탈출 히스테리시스 기본값 (Bear_Strong↔Bear_Weak 휩쏘 방지)
+    # 탈출: momentum > 0.01 AND price > MA180 * 1.01
+    DEFAULT_BEAR_STRONG_EXIT_MOMENTUM_THRESHOLD = 0.01
+    DEFAULT_BEAR_STRONG_EXIT_MA_BUFFER = 0.01
+
     def __init__(self, bull_momentum_threshold: float = 0.05,
                  bull_exit_momentum_threshold: float = DEFAULT_BULL_EXIT_MOMENTUM_THRESHOLD,
                  crash_exit_vix: float = DEFAULT_CRASH_EXIT_VIX,
                  crash_exit_mdd: float = DEFAULT_CRASH_EXIT_MDD,
-                 crash_cooldown_days: int = DEFAULT_CRASH_COOLDOWN_DAYS):
+                 crash_cooldown_days: int = DEFAULT_CRASH_COOLDOWN_DAYS,
+                 bear_strong_exit_momentum_threshold: float = DEFAULT_BEAR_STRONG_EXIT_MOMENTUM_THRESHOLD,
+                 bear_strong_exit_ma_buffer: float = DEFAULT_BEAR_STRONG_EXIT_MA_BUFFER):
         self.bull_momentum_threshold = bull_momentum_threshold
         self.bull_exit_momentum_threshold = bull_exit_momentum_threshold
         self.crash_exit_vix = crash_exit_vix
         self.crash_exit_mdd = crash_exit_mdd
         self.crash_cooldown_days = crash_cooldown_days
+        self.bear_strong_exit_momentum_threshold = bear_strong_exit_momentum_threshold
+        self.bear_strong_exit_ma_buffer = bear_strong_exit_ma_buffer
         self._prev_regime: Optional[MarketRegime] = None
         self._crash_cooldown_remaining: int = 0  # 쿨다운 잔여 거래일
 
@@ -73,7 +82,18 @@ class RegimeAnalyzer:
 
         if is_bear_momentum and is_below_ma:
             return MarketRegime.BEAR_STRONG
-        elif is_bear_momentum or is_below_ma:
+
+        # Bear_Strong 히스테리시스: 이전 국면이 BEAR_STRONG이면 버퍼 조건 충족 시에만 탈출 허용
+        # (momentum≈0 또는 price≈MA180 경계에서 Bear_Strong↔Bear_Weak 휩쏘 방지)
+        if self._prev_regime == MarketRegime.BEAR_STRONG:
+            can_exit = (
+                data.spy_momentum > self.bear_strong_exit_momentum_threshold
+                and data.spy_price > data.spy_ma180 * (1 + self.bear_strong_exit_ma_buffer)
+            )
+            if not can_exit:
+                return MarketRegime.BEAR_STRONG  # 탈출 조건 미충족 → BEAR_STRONG 유지
+
+        if is_bear_momentum or is_below_ma:
             return MarketRegime.BEAR_WEAK
 
         # 이 시점: momentum >= 0 AND price >= MA
