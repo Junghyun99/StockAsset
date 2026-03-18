@@ -199,19 +199,138 @@ def test_regime_crash_default_hysteresis_thresholds():
 
 
 def test_regime_bear_classifications(create_market_data):
-    analyzer = RegimeAnalyzer()
-    
     # Case 1: Bear Strong (가격 < MA 그리고 모멘텀 < 0)
+    analyzer1 = RegimeAnalyzer()
+    data_strong = create_market_data(price=90, ma=100, mom=-0.01)
+    assert analyzer1.analyze(data_strong) == MarketRegime.BEAR_STRONG
+
+    # Case 2: Bear Weak (가격 < MA 이지만 모멘텀 > 0) — 이전 국면 없음, 진입 판정
+    analyzer2 = RegimeAnalyzer()
+    data_weak_1 = create_market_data(price=90, ma=100, mom=0.01)
+    assert analyzer2.analyze(data_weak_1) == MarketRegime.BEAR_WEAK
+
+    # Case 3: Bear Weak (가격 > MA 이지만 모멘텀 < 0) — 이전 국면 없음, 진입 판정
+    analyzer3 = RegimeAnalyzer()
+    data_weak_2 = create_market_data(price=110, ma=100, mom=-0.01)
+    assert analyzer3.analyze(data_weak_2) == MarketRegime.BEAR_WEAK
+
+def test_regime_bear_strong_hysteresis_stays_in_bear_strong(create_market_data):
+    """
+    [이슈 #191] Bear_Strong↔Bear_Weak 히스테리시스:
+    BEAR_STRONG 진입 후 momentum이 0을 막 넘어도 출구 임계치(0.01) 이하이면
+    BEAR_STRONG을 유지해야 한다 (휩쏘 방지).
+    진입: momentum < 0 AND price < MA180
+    탈출: momentum > 0.01 AND price > MA180 * 1.01
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: BEAR_STRONG 진입 (momentum=-0.0022, price < MA)
+    data_strong = create_market_data(price=90, ma=100, mom=-0.0022)
+    assert analyzer.analyze(data_strong) == MarketRegime.BEAR_STRONG
+
+    # Step 2: momentum이 +0.003으로 반전했지만 출구 임계치(0.01) 미달 → BEAR_STRONG 유지
+    data_boundary = create_market_data(price=90, ma=100, mom=0.003)
+    assert analyzer.analyze(data_boundary) == MarketRegime.BEAR_STRONG
+
+    # Step 3: momentum=0.009 (여전히 임계치 미달) → BEAR_STRONG 유지
+    data_below_threshold = create_market_data(price=90, ma=100, mom=0.009)
+    assert analyzer.analyze(data_below_threshold) == MarketRegime.BEAR_STRONG
+
+
+def test_regime_bear_strong_hysteresis_exits_when_clear(create_market_data):
+    """
+    [이슈 #191] BEAR_STRONG에서 momentum과 price가 모두 출구 조건을 명확히 충족하면
+    탈출해야 한다.
+    탈출 조건: momentum > 0.01 AND price > MA180 * 1.01
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: BEAR_STRONG 진입
+    data_strong = create_market_data(price=90, ma=100, mom=-0.02)
+    assert analyzer.analyze(data_strong) == MarketRegime.BEAR_STRONG
+
+    # Step 2: 출구 조건 충족 (momentum=0.02 > 0.01, price=103 > 100*1.01=101)
+    # → BEAR_STRONG 탈출, 두 조건 모두 양수이므로 SIDEWAYS 또는 BULL
+    data_clear = create_market_data(price=103, ma=100, mom=0.02)
+    result = analyzer.analyze(data_clear)
+    assert result in (MarketRegime.SIDEWAYS, MarketRegime.BULL)
+
+
+def test_regime_bear_strong_hysteresis_ma_buffer(create_market_data):
+    """
+    [이슈 #191] price가 MA180 근처에서 진동할 때:
+    momentum은 임계치 초과지만 price가 MA*1.01 미달이면 BEAR_STRONG 유지.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: BEAR_STRONG 진입 (price < MA)
+    data_strong = create_market_data(price=98, ma=100, mom=-0.01)
+    assert analyzer.analyze(data_strong) == MarketRegime.BEAR_STRONG
+
+    # Step 2: momentum > 0.01 충족, 하지만 price=100.5 < MA*1.01=101 → BEAR_STRONG 유지
+    data_ma_border = create_market_data(price=100.5, ma=100, mom=0.015)
+    assert analyzer.analyze(data_ma_border) == MarketRegime.BEAR_STRONG
+
+    # Step 3: 이번엔 price=102 > MA*1.01=101 AND momentum=0.015 > 0.01 → 탈출
+    data_clear_ma = create_market_data(price=102, ma=100, mom=0.015)
+    result = analyzer.analyze(data_clear_ma)
+    assert result in (MarketRegime.SIDEWAYS, MarketRegime.BULL)
+
+
+def test_regime_bear_strong_custom_exit_thresholds(create_market_data):
+    """
+    [이슈 #191] bear_strong_exit_momentum_threshold와 bear_strong_exit_ma_buffer를
+    커스텀 값으로 주입하면 해당 임계치가 적용되어야 한다.
+    """
+    # 더 엄격한 출구 조건 (momentum > 0.02 AND price > MA * 1.02)
+    analyzer = RegimeAnalyzer(
+        bear_strong_exit_momentum_threshold=0.02,
+        bear_strong_exit_ma_buffer=0.02,
+    )
+
+    # Step 1: BEAR_STRONG 진입
     data_strong = create_market_data(price=90, ma=100, mom=-0.01)
     assert analyzer.analyze(data_strong) == MarketRegime.BEAR_STRONG
-    
-    # Case 2: Bear Weak (가격 < MA 이지만 모멘텀 > 0)
-    data_weak_1 = create_market_data(price=90, ma=100, mom=0.01)
-    assert analyzer.analyze(data_weak_1) == MarketRegime.BEAR_WEAK
-    
-    # Case 3: Bear Weak (가격 > MA 이지만 모멘텀 < 0)
-    data_weak_2 = create_market_data(price=110, ma=100, mom=-0.01)
-    assert analyzer.analyze(data_weak_2) == MarketRegime.BEAR_WEAK
+
+    # Step 2: momentum=0.015 > 기본 0.01이지만 커스텀 0.02 미달 → BEAR_STRONG 유지
+    data_below_custom = create_market_data(price=103, ma=100, mom=0.015)
+    assert analyzer.analyze(data_below_custom) == MarketRegime.BEAR_STRONG
+
+    # Step 3: momentum=0.025 > 0.02 AND price=103 > 100*1.02=102 → 탈출
+    data_above_custom = create_market_data(price=103, ma=100, mom=0.025)
+    result = analyzer.analyze(data_above_custom)
+    assert result in (MarketRegime.SIDEWAYS, MarketRegime.BULL)
+
+
+def test_regime_bear_strong_default_exit_thresholds():
+    """
+    [이슈 #191] 기본 Bear_Strong 탈출 임계치가 올바르게 설정되어 있는지 확인.
+    """
+    analyzer = RegimeAnalyzer()
+    assert analyzer.bear_strong_exit_momentum_threshold == 0.01
+    assert analyzer.bear_strong_exit_ma_buffer == 0.01
+    assert analyzer.bear_strong_exit_momentum_threshold == RegimeAnalyzer.DEFAULT_BEAR_STRONG_EXIT_MOMENTUM_THRESHOLD
+    assert analyzer.bear_strong_exit_ma_buffer == RegimeAnalyzer.DEFAULT_BEAR_STRONG_EXIT_MA_BUFFER
+
+
+def test_regime_bear_strong_hysteresis_whipsaw_scenario(create_market_data):
+    """
+    [이슈 #191] 실제 2023년 3월 휩쏘 시나리오 재현:
+    momentum이 -0.03 ~ 0.003 사이에서 진동할 때 BEAR_STRONG이 유지되어야 한다.
+    히스테리시스 없으면 6번 전환, 히스테리시스 적용 후 BEAR_STRONG 유지.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # BEAR_STRONG 진입
+    assert analyzer.analyze(create_market_data(price=90, ma=100, mom=-0.0344)) == MarketRegime.BEAR_STRONG
+    # 이슈 데이터: momentum이 -0.03 ~ +0.003 사이에서 진동
+    assert analyzer.analyze(create_market_data(price=103, ma=100, mom=-0.0303)) == MarketRegime.BEAR_STRONG
+    assert analyzer.analyze(create_market_data(price=90, ma=100, mom=-0.0466)) == MarketRegime.BEAR_STRONG
+    assert analyzer.analyze(create_market_data(price=103, ma=100, mom=-0.0278)) == MarketRegime.BEAR_STRONG
+    assert analyzer.analyze(create_market_data(price=90, ma=100, mom=-0.0206)) == MarketRegime.BEAR_STRONG
+    # momentum=-0.0096, price가 MA 위 → 이전엔 Bear_Weak로 전환됐지만 이제 BEAR_STRONG 유지
+    assert analyzer.analyze(create_market_data(price=103, ma=100, mom=-0.0096)) == MarketRegime.BEAR_STRONG
+
 
 def test_regime_bull_vs_sideways(create_market_data):
     analyzer = RegimeAnalyzer()
