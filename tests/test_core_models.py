@@ -26,19 +26,35 @@ def test_market_data_boundary_conditions():
     )
     assert data_safe_mdd.is_risk_condition() is False
 
-    # Case 3: VIX 30.0 (Risk) — 경계값 포함
+    # Case 3: VIX 30.0 AND MDD -10% (Risk) — 복합 조건 경계값
+    # 새 조건: VIX ≥ 30 AND MDD ≤ -10% → CRASH
     data_boundary_vix = MarketData(
         date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
         spy_mdd=-0.10, vix=30.0
     )
     assert data_boundary_vix.is_risk_condition() is True
 
-    # Case 4: VIX 29.9 (Safe) — 경계값 미달
+    # Case 4: VIX 29.9 AND MDD -10% (Safe) — VIX 경계값 미달
     data_safe_vix = MarketData(
         date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
         spy_mdd=-0.10, vix=29.9
     )
     assert data_safe_vix.is_risk_condition() is False
+
+    # Case 5: VIX 35.0, MDD -3% (Safe) — VIX 스파이크지만 실제 하락 미미
+    # 이슈 #192: 강한 상승장에서 VIX 단독 스파이크 시 CRASH 제외
+    data_vix_spike_only = MarketData(
+        date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
+        spy_mdd=-0.03, vix=35.0
+    )
+    assert data_vix_spike_only.is_risk_condition() is False
+
+    # Case 6: VIX 30.0, MDD -9.9% (Safe) — MDD가 -10% 미만이면 CRASH 제외
+    data_vix_with_mild_drop = MarketData(
+        date="2024-01-01", spy_price=100, spy_ma180=90, spy_volatility=0.1, spy_momentum=0.1,
+        spy_mdd=-0.099, vix=30.0
+    )
+    assert data_vix_with_mild_drop.is_risk_condition() is False
 
 
 # ==========================================

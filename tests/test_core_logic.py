@@ -9,12 +9,17 @@ from src.core.models import MarketRegime, Order, OrderAction
 # ==========================================
 
 def test_regime_crash_conditions(create_market_data):
-    # Case 1: VIX > 30 -> CRASH
+    # Case 1: VIX ≥ 30 AND MDD ≤ -10% → CRASH (복합 조건)
     analyzer1 = RegimeAnalyzer()
-    data_vix = create_market_data(vix=30.1)
+    data_vix = create_market_data(vix=30.1, mdd=-0.11)
     assert analyzer1.analyze(data_vix) == MarketRegime.CRASH
 
-    # Case 2: MDD < -20% -> CRASH
+    # Case 1b: VIX ≥ 30이지만 MDD -3% (미미한 하락) → CRASH 아님 (이슈 #192 수정)
+    analyzer1b = RegimeAnalyzer()
+    data_vix_spike_only = create_market_data(vix=35.0, mdd=-0.03)
+    assert analyzer1b.analyze(data_vix_spike_only) != MarketRegime.CRASH
+
+    # Case 2: MDD ≤ -20% → CRASH (VIX 무관)
     analyzer2 = RegimeAnalyzer()
     data_mdd = create_market_data(mdd=-0.21)
     assert analyzer2.analyze(data_mdd) == MarketRegime.CRASH
@@ -89,15 +94,15 @@ def test_regime_crash_hysteresis_reentry(create_market_data):
     """
     analyzer = RegimeAnalyzer()
 
-    # CRASH 진입
-    assert analyzer.analyze(create_market_data(vix=35)) == MarketRegime.CRASH
+    # CRASH 진입 (VIX=35, MDD=-0.12 → 복합 조건 충족)
+    assert analyzer.analyze(create_market_data(vix=35, mdd=-0.12)) == MarketRegime.CRASH
 
     # CRASH 탈출 (VIX=20, MDD=-0.05)
     data_exit = create_market_data(vix=20, mdd=-0.05, price=110, ma=100, mom=0.06)
     assert analyzer.analyze(data_exit) != MarketRegime.CRASH
 
-    # 다시 CRASH 진입 (VIX=31)
-    assert analyzer.analyze(create_market_data(vix=31)) == MarketRegime.CRASH
+    # 다시 CRASH 진입 (VIX=31, MDD=-0.11 → 복합 조건 충족)
+    assert analyzer.analyze(create_market_data(vix=31, mdd=-0.11)) == MarketRegime.CRASH
 
 
 def test_regime_crash_hysteresis_custom_thresholds(create_market_data):
@@ -107,8 +112,8 @@ def test_regime_crash_hysteresis_custom_thresholds(create_market_data):
     # 탈출 조건을 더 느슨하게 설정: VIX<28, MDD>-18%
     analyzer = RegimeAnalyzer(crash_exit_vix=28.0, crash_exit_mdd=-0.18)
 
-    # CRASH 진입
-    assert analyzer.analyze(create_market_data(vix=32)) == MarketRegime.CRASH
+    # CRASH 진입 (VIX=32, MDD=-0.11 → 복합 조건 충족)
+    assert analyzer.analyze(create_market_data(vix=32, mdd=-0.11)) == MarketRegime.CRASH
 
     # VIX=27 < 28 AND MDD=-0.10 > -18% → 탈출 성공
     data_exit = create_market_data(vix=27, mdd=-0.10, price=110, ma=100, mom=0.06)
