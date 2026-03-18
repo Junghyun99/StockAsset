@@ -17,30 +17,51 @@ class RegimeAnalyzer:
     DEFAULT_CRASH_EXIT_VIX = 25.0
     DEFAULT_CRASH_EXIT_MDD = -0.15
 
+    # CRASH 탈출 후 쿨다운 기간 기본값 (거래일 기준)
+    # 쿨다운 기간 동안 VIX/MDD 복합 조건(VIX≥30 AND MDD≤-10%)에 의한 재진입을 차단
+    # 단, MDD≤-20% 극단적 하락 시에는 쿨다운 무시하고 즉시 CRASH 진입
+    DEFAULT_CRASH_COOLDOWN_DAYS = 10
+
     def __init__(self, bull_momentum_threshold: float = 0.05,
                  bull_exit_momentum_threshold: float = DEFAULT_BULL_EXIT_MOMENTUM_THRESHOLD,
                  crash_exit_vix: float = DEFAULT_CRASH_EXIT_VIX,
-                 crash_exit_mdd: float = DEFAULT_CRASH_EXIT_MDD):
+                 crash_exit_mdd: float = DEFAULT_CRASH_EXIT_MDD,
+                 crash_cooldown_days: int = DEFAULT_CRASH_COOLDOWN_DAYS):
         self.bull_momentum_threshold = bull_momentum_threshold
         self.bull_exit_momentum_threshold = bull_exit_momentum_threshold
         self.crash_exit_vix = crash_exit_vix
         self.crash_exit_mdd = crash_exit_mdd
+        self.crash_cooldown_days = crash_cooldown_days
         self._prev_regime: Optional[MarketRegime] = None
+        self._crash_cooldown_remaining: int = 0  # 쿨다운 잔여 거래일
 
     def analyze(self, data: MarketData) -> MarketRegime:
-        # 1. CRASH 진입 조건 충족 → 무조건 CRASH
+        # 1. CRASH 진입 조건 확인
         if data.is_risk_condition():
-            regime = MarketRegime.CRASH
+            # MDD≤-20% 극단적 하락 → 쿨다운 무시하고 즉시 CRASH 진입
+            if data.spy_mdd <= -0.20:
+                regime = MarketRegime.CRASH
+            # 쿨다운 기간 중이면 VIX/MDD 복합 조건에 의한 재진입 차단
+            elif self._crash_cooldown_remaining > 0:
+                regime = self._classify_non_crash(data)
+            else:
+                regime = MarketRegime.CRASH
         # 2. 이전에 CRASH였으면 탈출 조건 확인 (히스테리시스)
         elif self._prev_regime == MarketRegime.CRASH:
             can_exit = data.vix < self.crash_exit_vix and data.spy_mdd > self.crash_exit_mdd
             if can_exit:
                 regime = self._classify_non_crash(data)
+                self._crash_cooldown_remaining = self.crash_cooldown_days  # 쿨다운 시작
             else:
                 regime = MarketRegime.CRASH  # 탈출 조건 미충족 → CRASH 유지
         # 3. 일반 국면 판정
         else:
             regime = self._classify_non_crash(data)
+
+        # 쿨다운 카운터 감소 (CRASH가 아닌 국면일 때만)
+        # CRASH 탈출 당일(prev_regime=CRASH)은 감소하지 않음 → 탈출 다음 날부터 카운트
+        if regime != MarketRegime.CRASH and self._crash_cooldown_remaining > 0 and self._prev_regime != MarketRegime.CRASH:
+            self._crash_cooldown_remaining -= 1
 
         self._prev_regime = regime
         return regime
