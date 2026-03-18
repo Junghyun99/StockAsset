@@ -7,6 +7,10 @@ class RegimeAnalyzer:
     # BULL/SIDEWAYS 판정 기본 모멘텀 임계치 (SPY 6개월 수익률 기준)
     DEFAULT_BULL_MOMENTUM_THRESHOLD = 0.05
 
+    # BULL 탈출 히스테리시스 기본값 (진입보다 낮게 설정하여 Bull↔Sideways 휩쏘 방지)
+    # 진입: momentum ≥ 0.05, 탈출: momentum < 0.03
+    DEFAULT_BULL_EXIT_MOMENTUM_THRESHOLD = 0.03
+
     # CRASH 탈출 히스테리시스 기본값 (진입보다 엄격하게 설정하여 휩쏘 방지)
     # 진입: VIX ≥ 30 OR MDD ≤ -20%
     # 탈출: VIX < 25 AND MDD > -15%
@@ -14,9 +18,11 @@ class RegimeAnalyzer:
     DEFAULT_CRASH_EXIT_MDD = -0.15
 
     def __init__(self, bull_momentum_threshold: float = 0.05,
+                 bull_exit_momentum_threshold: float = DEFAULT_BULL_EXIT_MOMENTUM_THRESHOLD,
                  crash_exit_vix: float = DEFAULT_CRASH_EXIT_VIX,
                  crash_exit_mdd: float = DEFAULT_CRASH_EXIT_MDD):
         self.bull_momentum_threshold = bull_momentum_threshold
+        self.bull_exit_momentum_threshold = bull_exit_momentum_threshold
         self.crash_exit_vix = crash_exit_vix
         self.crash_exit_mdd = crash_exit_mdd
         self._prev_regime: Optional[MarketRegime] = None
@@ -50,7 +56,12 @@ class RegimeAnalyzer:
             return MarketRegime.BEAR_WEAK
 
         # 이 시점: momentum >= 0 AND price >= MA
-        if data.spy_momentum >= self.bull_momentum_threshold:
+        # Bull 히스테리시스: 이전 국면이 BULL이면 낮은 출구 임계치 적용하여 휩쏘 방지
+        if self._prev_regime == MarketRegime.BULL:
+            threshold = self.bull_exit_momentum_threshold
+        else:
+            threshold = self.bull_momentum_threshold
+        if data.spy_momentum >= threshold:
             return MarketRegime.BULL
         else:
             # momentum이 0 이상 임계치 미만 → 횡보장

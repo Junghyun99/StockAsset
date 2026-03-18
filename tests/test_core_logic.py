@@ -196,6 +196,59 @@ def test_regime_default_bull_threshold_unchanged():
     assert analyzer.bull_momentum_threshold == RegimeAnalyzer.DEFAULT_BULL_MOMENTUM_THRESHOLD
 
 
+def test_regime_bull_sideways_hysteresis_stays_in_bull(create_market_data):
+    """
+    [이슈 #190] Bull↔Sideways 히스테리시스: BULL 진입 후 momentum이 진입 임계치(0.05) 아래로
+    내려가도 출구 임계치(0.03) 이상이면 BULL을 유지해야 한다 (휩쏘 방지).
+    진입: momentum ≥ 0.05, 탈출: momentum < 0.03
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: BULL 진입 (momentum=0.06 ≥ 0.05)
+    data_bull = create_market_data(price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_bull) == MarketRegime.BULL
+
+    # Step 2: momentum이 0.04로 하락 → 진입 임계치 미충족이지만 출구 임계치(0.03) 이상 → BULL 유지
+    data_boundary = create_market_data(price=110, ma=100, mom=0.04)
+    assert analyzer.analyze(data_boundary) == MarketRegime.BULL  # 히스테리시스로 BULL 유지
+
+    # Step 3: momentum이 0.035로 추가 하락 → 여전히 출구 임계치(0.03) 이상 → BULL 유지
+    data_still_bull = create_market_data(price=110, ma=100, mom=0.035)
+    assert analyzer.analyze(data_still_bull) == MarketRegime.BULL
+
+
+def test_regime_bull_sideways_hysteresis_exits_bull(create_market_data):
+    """
+    [이슈 #190] Bull↔Sideways 히스테리시스: BULL 진입 후 momentum이 출구 임계치(0.03) 미만으로
+    내려가면 SIDEWAYS로 전환되어야 한다.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: BULL 진입
+    data_bull = create_market_data(price=110, ma=100, mom=0.06)
+    assert analyzer.analyze(data_bull) == MarketRegime.BULL
+
+    # Step 2: momentum이 0.02로 하락 → 출구 임계치(0.03) 미만 → SIDEWAYS 전환
+    data_exit = create_market_data(price=110, ma=100, mom=0.02)
+    assert analyzer.analyze(data_exit) == MarketRegime.SIDEWAYS
+
+
+def test_regime_bull_exit_threshold_not_applied_without_prior_bull(create_market_data):
+    """
+    [이슈 #190] 이전 국면이 BULL이 아닌 경우, 진입 임계치(0.05)가 적용되어야 한다.
+    SIDEWAYS에서 momentum=0.04는 BULL로 진입할 수 없다.
+    """
+    analyzer = RegimeAnalyzer()
+
+    # Step 1: SIDEWAYS 진입 (momentum=0.04 < 0.05)
+    data_side = create_market_data(price=110, ma=100, mom=0.04)
+    assert analyzer.analyze(data_side) == MarketRegime.SIDEWAYS
+
+    # Step 2: 이전 국면이 SIDEWAYS이므로 진입 임계치 적용 → momentum=0.04는 여전히 SIDEWAYS
+    data_still_side = create_market_data(price=110, ma=100, mom=0.04)
+    assert analyzer.analyze(data_still_side) == MarketRegime.SIDEWAYS
+
+
 # ==========================================
 # 2. VolatilityTargeter 테스트 (비중 계산의 한계점)
 # ==========================================
