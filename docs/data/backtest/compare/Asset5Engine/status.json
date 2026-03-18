@@ -1,55 +1,55 @@
 {
-    "last_updated": "2023-01-05",
-    "last_rebalancing_date": "2023-01-05",
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-29",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "비율 유지, 추가 주문 없음",
+        "trigger_reason": "Bull (모니터링)",
         "market_score": {
-            "vix": 15.0,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.19739402765997863,
-            "spy_price": 190.0,
-            "spy_ma180": 168.1707317073171,
-            "spy_volatility": 0.00016701957528333187
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.08066743721575032,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 634.814166937934,
+            "spy_volatility": 0.08132782725116947
         }
     },
     "portfolio": {
-        "total_value": 9932.393170731708,
-        "cash_balance": 432.3931707317072,
+        "total_value": 21773.204830494687,
+        "cash_balance": 1042.8148005874625,
         "holdings": [
             {
                 "ticker": "VOO",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
+                "qty": 6,
+                "price": 631.719970703125,
+                "value": 3790.31982421875
             },
             {
                 "ticker": "IEMG",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
+                "qty": 62,
+                "price": 67.38999938964844,
+                "value": 4178.179962158203
             },
             {
                 "ticker": "TLT",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
+                "qty": 47,
+                "price": 87.86000061035156,
+                "value": 4129.420028686523
             },
             {
                 "ticker": "EMB",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
+                "qty": 44,
+                "price": 96.47000122070312,
+                "value": 4244.6800537109375
             },
             {
                 "ticker": "GLD",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
+                "qty": 11,
+                "price": 398.8900146484375,
+                "value": 4387.7901611328125
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2023-01-02"
+    "backtest_start_date": "2016-01-01"
 }
