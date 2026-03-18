@@ -43,8 +43,9 @@ class MarketData:
         return [f for f in fields if math.isnan(getattr(self, f))]
 
     def is_risk_condition(self) -> bool:
-        """MDD -20% 이하 or VIX 30 이상"""
-        return self.spy_mdd <= -0.20 or self.vix >= 30
+        """MDD -20% 이하 OR (VIX 30 이상 AND MDD -10% 이하)
+        VIX 단독 스파이크(MDD 미미)는 CRASH 제외 — 과민 반응 방지"""
+        return self.spy_mdd <= -0.20 or (self.vix >= 30 and self.spy_mdd <= -0.10)
 
 @dataclass
 class Portfolio:
