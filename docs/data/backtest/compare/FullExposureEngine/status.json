@@ -1,6 +1,6 @@
 {
     "last_updated": "2025-12-30",
-    "last_rebalancing_date": "2025-12-29",
+    "last_rebalancing_date": "2025-12-22",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
@@ -15,41 +15,41 @@
         }
     },
     "portfolio": {
-        "total_value": 55344.40749012296,
-        "cash_balance": 713.186840403724,
+        "total_value": 76805.04381431581,
+        "cash_balance": 139.8633524322657,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 234,
+                "qty": 331,
                 "price": 58.79999923706055,
-                "value": 13759.199821472168
+                "value": 19462.79974746704
             },
             {
                 "ticker": "QLD",
-                "qty": 193,
+                "qty": 271,
                 "price": 71.61000061035156,
-                "value": 13820.730117797852
+                "value": 19406.310165405273
             },
             {
                 "ticker": "IEF",
-                "qty": 88,
+                "qty": 131,
                 "price": 96.4800033569336,
-                "value": 8490.240295410156
+                "value": 12638.8804397583
             },
             {
                 "ticker": "GLD",
-                "qty": 25,
+                "qty": 31,
                 "price": 398.8900146484375,
-                "value": 9972.250366210938
+                "value": 12365.590454101562
             },
             {
-                "ticker": "PDBC",
-                "qty": 640,
-                "price": 13.420000076293945,
-                "value": 8588.800048828125
+                "ticker": "DBC",
+                "qty": 565,
+                "price": 22.639999389648438,
+                "value": 12791.599655151367
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2016-01-01"
+    "backtest_start_date": "2012-01-01"
 }

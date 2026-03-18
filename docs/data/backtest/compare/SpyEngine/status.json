@@ -1,6 +1,6 @@
 {
     "last_updated": "2025-12-30",
-    "last_rebalancing_date": "2025-12-29",
+    "last_rebalancing_date": "2025-12-22",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
@@ -15,17 +15,17 @@
         }
     },
     "portfolio": {
-        "total_value": 39318.24337851181,
-        "cash_balance": 158.67282187118394,
+        "total_value": 58678.24763485626,
+        "cash_balance": 282.39680477813647,
         "holdings": [
             {
                 "ticker": "SPY",
-                "qty": 57,
+                "qty": 85,
                 "price": 687.010009765625,
-                "value": 39159.570556640625
+                "value": 58395.850830078125
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2016-01-01"
+    "backtest_start_date": "2012-01-01"
 }

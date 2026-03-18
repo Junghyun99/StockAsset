@@ -1,6 +1,6 @@
 {
     "last_updated": "2025-12-30",
-    "last_rebalancing_date": "2025-12-29",
+    "last_rebalancing_date": "2025-12-22",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
@@ -15,17 +15,17 @@
         }
     },
     "portfolio": {
-        "total_value": 59453.17463224335,
-        "cash_balance": 607.3253280441279,
+        "total_value": 103467.11658178565,
+        "cash_balance": 641.7377976059721,
         "holdings": [
             {
                 "ticker": "QQQ",
-                "qty": 95,
+                "qty": 166,
                 "price": 619.4299926757812,
-                "value": 58845.84930419922
+                "value": 102825.37878417969
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2016-01-01"
+    "backtest_start_date": "2012-01-01"
 }

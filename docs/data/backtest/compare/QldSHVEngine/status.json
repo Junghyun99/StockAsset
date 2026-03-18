@@ -1,6 +1,6 @@
 {
     "last_updated": "2025-12-30",
-    "last_rebalancing_date": "2025-12-29",
+    "last_rebalancing_date": "2025-12-22",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
@@ -15,23 +15,23 @@
         }
     },
     "portfolio": {
-        "total_value": 51610.92772852139,
-        "cash_balance": 415.88686548427756,
+        "total_value": 90580.13798402566,
+        "cash_balance": 904.4665362717557,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 352,
+                "qty": 671,
                 "price": 71.61000061035156,
-                "value": 25206.72021484375
+                "value": 48050.3104095459
             },
             {
                 "ticker": "SHV",
-                "qty": 236,
+                "qty": 378,
                 "price": 110.12000274658203,
-                "value": 25988.32064819336
+                "value": 41625.36103820801
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2016-01-01"
+    "backtest_start_date": "2012-01-01"
 }
