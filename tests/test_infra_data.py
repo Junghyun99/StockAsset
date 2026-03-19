@@ -173,3 +173,54 @@ def test_fetch_ohlcv_datetime_index(mock_yf_download, mock_logger):
     # 인덱스 타입 확인
     assert isinstance(df.index, pd.DatetimeIndex)
     assert len(df) == 3
+
+
+def test_fetch_daily_dividends_returns_dividend_on_ex_date(mock_yf_download, mock_logger):
+    """오늘 배당락일인 종목의 주당 배당금을 반환하는지 확인"""
+    from datetime import date
+    import pandas as pd
+
+    today = pd.Timestamp(date.today())
+    # Dividends 컬럼이 있는 MultiIndex DataFrame 생성
+    columns = pd.MultiIndex.from_product([['Close', 'Dividends'], ['IEF', 'GLD']])
+    data = {
+        ('Close', 'IEF'): [100.0],
+        ('Close', 'GLD'): [200.0],
+        ('Dividends', 'IEF'): [0.35],
+        ('Dividends', 'GLD'): [0.0],
+    }
+    mock_df = pd.DataFrame(data, index=[today])
+    mock_yf_download.return_value = mock_df
+
+    loader = YFinanceLoader(mock_logger)
+    result = loader.fetch_daily_dividends(['IEF', 'GLD'])
+
+    assert result == {'IEF': 0.35}   # GLD는 0이므로 제외
+
+
+def test_fetch_daily_dividends_returns_empty_when_no_dividend(mock_yf_download, mock_logger):
+    """오늘 배당이 없으면 빈 dict 반환"""
+    from datetime import date, timedelta
+    import pandas as pd
+
+    yesterday = pd.Timestamp(date.today() - timedelta(days=1))
+    columns = pd.MultiIndex.from_product([['Close', 'Dividends'], ['IEF']])
+    data = {('Close', 'IEF'): [100.0], ('Dividends', 'IEF'): [0.35]}
+    mock_df = pd.DataFrame(data, index=[yesterday])   # 오늘 날짜 없음
+    mock_yf_download.return_value = mock_df
+
+    loader = YFinanceLoader(mock_logger)
+    result = loader.fetch_daily_dividends(['IEF'])
+
+    assert result == {}
+
+
+def test_fetch_daily_dividends_returns_empty_on_error(mock_yf_download, mock_logger):
+    """yfinance 오류 시 빈 dict 반환 (봇 중단 없음)"""
+    mock_yf_download.side_effect = Exception("Network Error")
+
+    loader = YFinanceLoader(mock_logger)
+    result = loader.fetch_daily_dividends(['IEF'])
+
+    assert result == {}
+    mock_logger.error.assert_called_once()
