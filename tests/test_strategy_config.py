@@ -12,7 +12,7 @@ def test_default_values():
     assert cfg.REBALANCE_RATIO_A == 0.5
     assert cfg.ASSET_GROUPS == {
         'A': ['SSO', 'QLD'],
-        'B': ['IEF', 'GLD', 'PDBC'],
+        'B': ['IEF', 'GLD', 'DBC'],
         'C': ['SHV'],
     }
 
