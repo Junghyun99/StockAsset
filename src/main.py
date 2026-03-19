@@ -65,7 +65,19 @@ class TradingBot:
 
     def run(self):
         try:
-            self.engine.run_one_cycle(self.data_loader)
+            # 배당 계산: 당일 보유 수량 × 주당 배당금
+            daily_dividend = 0.0
+            try:
+                portfolio = self.broker.get_portfolio()
+                divs = self.data_loader.fetch_daily_dividends(self.engine.all_tickers)
+                daily_dividend = sum(
+                    portfolio.holdings.get(t, 0) * div
+                    for t, div in divs.items()
+                )
+            except Exception as e:
+                self.logger.warning(f"배당 조회 실패, 0.0으로 처리: {e}")
+
+            self.engine.run_one_cycle(self.data_loader, daily_dividend=daily_dividend)
         except Exception as e:
             error_msg = f"Critical Error:\n{traceback.format_exc()}"
             self.logger.error(error_msg)

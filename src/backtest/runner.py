@@ -239,6 +239,7 @@ def run_compare_backtest(
             ctx["broker"].set_date(today)
             ctx["broker"].set_prices(current_prices)
 
+            div_income = 0.0
             if reinvest_dividends:
                 div_income = _calculate_dividend_income(today, full_dividends, ctx["broker"])
                 if div_income > 0:
@@ -246,7 +247,11 @@ def run_compare_backtest(
                     ctx["dividend_income"] += div_income
 
             try:
-                result = ctx["engine"].run_one_cycle(ctx["loader"], sim_date=sim_date)
+                result = ctx["engine"].run_one_cycle(
+                    ctx["loader"],
+                    sim_date=sim_date,
+                    daily_dividend=div_income,
+                )
                 ctx["executions"].extend(result.executions)
                 if result.signal.has_orders:
                     ctx["reason_counter"][result.signal.reason] = (

@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-from typing import List
+from typing import List, Dict
 from src.core.interfaces import IDataProvider
 # TradeLogger 타입 힌팅을 위해 (선택 사항, TYPE_CHECKING 이용 가능)
 # from src.utils.logger import TradeLogger 
@@ -62,3 +62,29 @@ class YFinanceLoader(IDataProvider):
             # 3. 에러 발생 시
             self.logger.error(f"[Data] ❌ Error fetching VIX: {e}. Returning safety default: 20.0")
             return 20.0
+
+    def fetch_daily_dividends(self, tickers: List[str]) -> Dict[str, float]:
+        """오늘 날짜의 티커별 주당 배당금 조회. {ticker: div_per_share}.
+        배당락일이 아니거나 오류 시 {} 반환.
+        """
+        from datetime import date as _date
+        try:
+            df = yf.download(tickers, period="5d", auto_adjust=False, actions=True, progress=False)
+            if df is None or df.empty:
+                return {}
+            if not isinstance(df.columns, pd.MultiIndex) and len(tickers) == 1:
+                df.columns = pd.MultiIndex.from_product([df.columns, tickers])
+            level0 = df.columns.get_level_values(0)
+            if "Dividends" not in level0:
+                return {}
+            divs = df["Dividends"]
+            if isinstance(divs, pd.Series):
+                divs = divs.to_frame(name=tickers[0])
+            today_ts = pd.Timestamp(_date.today())
+            if today_ts not in divs.index:
+                return {}
+            row = divs.loc[today_ts]
+            return {t: float(v) for t, v in row.items() if float(v) > 0}
+        except Exception as e:
+            self.logger.error(f"[Data] ❌ Error fetching dividends: {e}. Returning empty.")
+            return {}

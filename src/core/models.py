@@ -104,3 +104,4 @@ class DayResult:
     final_pf: Portfolio
     is_rebalancing: bool
     nan_fields: List[str]
+    daily_dividend: float = 0.0
