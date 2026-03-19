@@ -496,3 +496,37 @@ def test_day_result_daily_dividend_set():
         daily_dividend=42.5,
     )
     assert result.daily_dividend == 42.5
+
+
+def test_run_one_cycle_passes_daily_dividend_to_repo():
+    """run_one_cycle(daily_dividend=X) 전달 시 repo.save_daily_summary에 X가 전달되는지 확인"""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    mocks["broker"].execute_orders.return_value = []
+
+    engine.run_one_cycle(mocks["data_provider"], daily_dividend=99.9)
+
+    call_kwargs = mocks["repo"].save_daily_summary.call_args
+    assert call_kwargs.kwargs.get("daily_dividend") == 99.9 \
+        or (len(call_kwargs.args) >= 5 and call_kwargs.args[4] == 99.9)
+
+
+def test_run_one_cycle_day_result_contains_daily_dividend():
+    """DayResult.daily_dividend에 전달된 값이 반영되는지 확인"""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    mocks["broker"].execute_orders.return_value = []
+
+    result = engine.run_one_cycle(mocks["data_provider"], daily_dividend=77.3)
+
+    assert result.daily_dividend == 77.3

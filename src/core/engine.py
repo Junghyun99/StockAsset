@@ -95,6 +95,7 @@ class TradingEngine:
         self,
         data_provider: IDataProvider,
         sim_date: Optional[str] = None,
+        daily_dividend: float = 0.0,
     ) -> DayResult:
         """하루치 트레이딩 사이클 전체를 실행한다 (Template Method).
 
@@ -139,7 +140,7 @@ class TradingEngine:
 
         # Step 6: 저장
         self.logger.info(">>> Step 6: Archiving Data")
-        self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date)
+        self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend)
 
         return DayResult(
             market_data=market_data,
@@ -150,6 +151,7 @@ class TradingEngine:
             final_pf=final_pf,
             is_rebalancing=is_rebalancing,
             nan_fields=nan_fields,
+            daily_dividend=daily_dividend,
         )
 
     # ── Overridable step methods ─────────────────────────────────────────────
@@ -284,10 +286,11 @@ class TradingEngine:
         exposure: float,
         is_rebalancing: bool,
         sim_date: Optional[str],
+        daily_dividend: float = 0.0,
     ) -> None:
         """Step 6: 저장 3종 호출."""
         rebalancing_date = (sim_date or market_data.date) if is_rebalancing else None
-        self.repo.save_daily_summary(market_data, signal, final_pf, regime)
+        self.repo.save_daily_summary(market_data, signal, final_pf, regime, daily_dividend=daily_dividend)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,
