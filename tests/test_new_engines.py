@@ -634,8 +634,8 @@ def test_qqq_schd_a_group_differs_from_qld_schd():
 # ─────────────────────────────────────────────────────────────────
 
 def test_asset5_asset_groups_A():
-    """Asset5Engine의 A그룹은 [VOO, IEMG]."""
-    assert Asset5Engine.ASSET_GROUPS['A'] == ['VOO', 'IEMG']
+    """Asset5Engine의 A그룹은 [VOO, EEM]."""
+    assert Asset5Engine.ASSET_GROUPS['A'] == ['VOO', 'EEM']
 
 
 def test_asset5_asset_groups_B():
@@ -708,7 +708,7 @@ def test_asset5_all_tickers():
         MockAnalyzer.return_value._prev_regime = None
         engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
 
-    assert set(engine.all_tickers) == {'VOO', 'IEMG', 'TLT', 'EMB', 'GLD'}
+    assert set(engine.all_tickers) == {'VOO', 'EEM', 'TLT', 'EMB', 'GLD'}
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -727,7 +727,7 @@ def _build_asset5_engine(repo_last_reb=None, notifier=None):
     broker.get_portfolio.return_value = Portfolio(
         total_cash=50000.0,
         holdings={'VOO': 50},
-        current_prices={'VOO': 400.0, 'IEMG': 50.0, 'TLT': 95.0, 'EMB': 90.0, 'GLD': 180.0},
+        current_prices={'VOO': 400.0, 'EEM': 50.0, 'TLT': 95.0, 'EMB': 90.0, 'GLD': 180.0},
     )
     broker.fetch_current_prices.return_value = {}
 
