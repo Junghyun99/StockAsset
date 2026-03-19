@@ -522,6 +522,33 @@ def test_load_json_propagates_system_exit(repo, monkeypatch):
         repo._load_json(repo.status_file, default={})
 
 
+def test_save_daily_summary_records_dividend(repo, dummy_market_data, dummy_portfolio):
+    """daily_dividend가 summary.json 레코드에 저장되는지 확인"""
+    import json
+    signal = TradeSignal(1.0, [], "test")
+
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL,
+                            daily_dividend=55.25)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+
+    assert data[0]['daily_dividend'] == 55.25
+
+
+def test_save_daily_summary_default_dividend_zero(repo, dummy_market_data, dummy_portfolio):
+    """daily_dividend 미전달 시 기본값 0.0으로 저장되는지 확인"""
+    import json
+    signal = TradeSignal(1.0, [], "test")
+
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+
+    assert data[0]['daily_dividend'] == 0.0
+
+
 def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
     """
     [시나리오] 일주일(7일) 동안 봇이 매일 실행되어 데이터를 쌓는 상황 시뮬레이션
