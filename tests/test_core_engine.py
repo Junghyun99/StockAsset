@@ -465,3 +465,34 @@ def test_step_methods_called_in_order():
         "collect_data", "calculate_indicators", "analyze_strategy",
         "get_portfolio", "execute_cycle", "persist",
     ]
+
+
+def test_day_result_daily_dividend_default_zero():
+    """DayResult 생성 시 daily_dividend 기본값이 0.0인지 확인"""
+    result = DayResult(
+        market_data=MarketData("2024-01-01", 100.0, 90.0, 0.12, 0.05, -0.05, 18.0),
+        regime=MarketRegime.BULL,
+        exposure=1.0,
+        signal=TradeSignal(1.0, [], "test"),
+        executions=[],
+        final_pf=Portfolio(1000.0, {}, {}),
+        is_rebalancing=False,
+        nan_fields=[],
+    )
+    assert result.daily_dividend == 0.0
+
+
+def test_day_result_daily_dividend_set():
+    """DayResult에 daily_dividend 값을 설정할 수 있는지 확인"""
+    result = DayResult(
+        market_data=MarketData("2024-01-01", 100.0, 90.0, 0.12, 0.05, -0.05, 18.0),
+        regime=MarketRegime.BULL,
+        exposure=1.0,
+        signal=TradeSignal(1.0, [], "test"),
+        executions=[],
+        final_pf=Portfolio(1000.0, {}, {}),
+        is_rebalancing=False,
+        nan_fields=[],
+        daily_dividend=42.5,
+    )
+    assert result.daily_dividend == 42.5
