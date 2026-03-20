@@ -7,6 +7,8 @@ import { filterByDateRange, getAssetGroup, formatCurrency } from './utils.js?v=2
 let stratChart = null;
 let groupBarChartInstance = null;
 let unifiedChart = null;
+let cumulativeDividendChart = null;
+let yearlyDividendChart = null;
 
 /**
  * Strategy Analysis 차트 렌더링 (투자 비중 + 모멘텀 듀얼 축)
@@ -183,8 +185,161 @@ export function renderGroupBarChart(statusData, groupConfig) {
  * 모든 차트 리사이즈 (탭 전환 시 사용)
  */
 export function resizeAllCharts() {
-    [stratChart, groupBarChartInstance, unifiedChart].forEach(chart => {
+    [stratChart, groupBarChartInstance, unifiedChart, cumulativeDividendChart, yearlyDividendChart].forEach(chart => {
         if (chart) chart.resize();
+    });
+}
+
+/**
+ * 누적 배당금 차트 (전체 기간 누적 합계 라인 차트)
+ */
+export function renderCumulativeDividendChart(summaryData) {
+    const canvas = document.getElementById('cumulativeDividendChart');
+    if (!canvas) return;
+
+    // 배당금이 있는 날짜만 추출해 누적 합산
+    let cumulative = 0;
+    const labels = [];
+    const cumulativeData = [];
+
+    summaryData.forEach(d => {
+        const div = d.daily_dividend || 0;
+        if (div > 0) {
+            cumulative += div;
+            labels.push(d.date);
+            cumulativeData.push(parseFloat(cumulative.toFixed(2)));
+        }
+    });
+
+    // 배당이 없으면 빈 상태 표시
+    if (labels.length === 0) {
+        labels.push(summaryData[0]?.date || '-');
+        cumulativeData.push(0);
+    }
+
+    if (cumulativeDividendChart) cumulativeDividendChart.destroy();
+
+    cumulativeDividendChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: '누적 배당금 ($)',
+                data: cumulativeData,
+                borderColor: '#198754',
+                backgroundColor: 'rgba(25, 135, 84, 0.15)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 4,
+                pointBackgroundColor: '#198754',
+                stepped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Cumulative Dividend ($)' },
+                    ticks: {
+                        callback: v => '$' + v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `누적 배당금: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 최근 1년 월별 배당금 바 차트
+ */
+export function renderYearlyDividendChart(summaryData) {
+    const canvas = document.getElementById('yearlyDividendChart');
+    if (!canvas) return;
+
+    // 최근 1년치 데이터 필터
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    const recentData = summaryData.filter(d => new Date(d.date) >= oneYearAgo);
+
+    // 월별 집계
+    const monthlyMap = {};
+    recentData.forEach(d => {
+        const div = d.daily_dividend || 0;
+        if (div > 0) {
+            const month = d.date.slice(0, 7); // "YYYY-MM"
+            monthlyMap[month] = (monthlyMap[month] || 0) + div;
+        }
+    });
+
+    // 최근 12개월 레이블 생성 (배당이 없는 달도 0으로 표시)
+    const months = [];
+    const now = new Date();
+    for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        months.push(key);
+    }
+
+    const labels = months.map(m => {
+        const [y, mo] = m.split('-');
+        return `${y}.${mo}`;
+    });
+    const barData = months.map(m => parseFloat((monthlyMap[m] || 0).toFixed(2)));
+
+    if (yearlyDividendChart) yearlyDividendChart.destroy();
+
+    yearlyDividendChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '월별 배당금 ($)',
+                data: barData,
+                backgroundColor: barData.map(v =>
+                    v > 0 ? 'rgba(25, 135, 84, 0.75)' : 'rgba(200, 200, 200, 0.3)'
+                ),
+                borderColor: barData.map(v =>
+                    v > 0 ? '#198754' : 'rgba(200,200,200,0.5)'
+                ),
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Dividend ($)' },
+                    ticks: {
+                        callback: v => '$' + v.toFixed(0)
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `배당금: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                    }
+                }
+            }
+        }
     });
 }
 

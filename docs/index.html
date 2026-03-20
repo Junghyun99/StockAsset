@@ -262,6 +262,38 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Dividend Charts -->
+                <div class="row g-4 mb-4">
+                    <!-- Cumulative Dividend -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-piggy-bank me-2 text-success"></i>누적 배당금</h5>
+                                <div class="text-muted small mt-1">전체 기간 배당금 누적 합계</div>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 250px;">
+                                    <canvas id="cumulativeDividendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Yearly Dividend (Monthly Bar) -->
+                    <div class="col-lg-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-white py-3">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2 text-success"></i>최근 1년 월별 배당금</h5>
+                                <div class="text-muted small mt-1">최근 12개월 월별 수령 배당금</div>
+                            </div>
+                            <div class="card-body">
+                                <div style="height: 250px;">
+                                    <canvas id="yearlyDividendChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- ==================== TAB 3: TRADES ==================== -->

@@ -6,7 +6,9 @@ import {
     renderUnifiedChart,
     renderGroupBarChart,
     resizeAllCharts,
-    updatePerformanceChartRange
+    updatePerformanceChartRange,
+    renderCumulativeDividendChart,
+    renderYearlyDividendChart
 } from './charts.js?v=2';
 
 import {
@@ -97,6 +99,8 @@ async function loadLiveMode() {
         renderPerformanceSummaryCards(summaryData);
         renderUnifiedChart(summaryData);
         renderStrategyChart(summaryData);
+        renderCumulativeDividendChart(summaryData);
+        renderYearlyDividendChart(summaryData);
         setupTimeRangeSelector(summaryData);
         perfRendered = true;
     }
