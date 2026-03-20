@@ -1,0 +1,43 @@
+{
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-22",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 0.9,
+        "trigger_reason": "Bull (모니터링)",
+        "market_score": {
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.08066743721575032,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 634.814166937934,
+            "spy_volatility": 0.08132782725116947
+        }
+    },
+    "portfolio": {
+        "total_value": 31654.801462221316,
+        "cash_balance": 100.99191861169696,
+        "holdings": [
+            {
+                "ticker": "QLD",
+                "qty": 119,
+                "price": 71.61000061035156,
+                "value": 8521.590072631836
+            },
+            {
+                "ticker": "SCHD",
+                "qty": 722,
+                "price": 27.6299991607666,
+                "value": 19948.859394073486
+            },
+            {
+                "ticker": "SHV",
+                "qty": 28,
+                "price": 110.12000274658203,
+                "value": 3083.360076904297
+            }
+        ]
+    },
+    "initial_cash": 10000.0,
+    "backtest_start_date": "2012-01-01"
+}
