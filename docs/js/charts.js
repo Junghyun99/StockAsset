@@ -262,51 +262,40 @@ export function renderCumulativeDividendChart(summaryData) {
 }
 
 /**
- * 최근 1년 월별 배당금 바 차트
+ * 전체 기간 연간 배당금 바 차트
  */
 export function renderYearlyDividendChart(summaryData) {
     const canvas = document.getElementById('yearlyDividendChart');
     if (!canvas) return;
 
-    // 최근 1년치 데이터 필터
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
-    const recentData = summaryData.filter(d => new Date(d.date) >= oneYearAgo);
-
-    // 월별 집계
-    const monthlyMap = {};
-    recentData.forEach(d => {
+    // 전체 기간 연도별 집계
+    const yearlyMap = {};
+    summaryData.forEach(d => {
         const div = d.daily_dividend || 0;
         if (div > 0) {
-            const month = d.date.slice(0, 7); // "YYYY-MM"
-            monthlyMap[month] = (monthlyMap[month] || 0) + div;
+            const year = d.date.slice(0, 4); // "YYYY"
+            yearlyMap[year] = (yearlyMap[year] || 0) + div;
         }
     });
 
-    // 최근 12개월 레이블 생성 (배당이 없는 달도 0으로 표시)
-    const months = [];
-    const now = new Date();
-    for (let i = 11; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        months.push(key);
+    // 데이터 범위 내 연도 레이블 생성
+    const years = Object.keys(yearlyMap).sort();
+    if (years.length === 0 && summaryData.length > 0) {
+        const firstYear = summaryData[0].date.slice(0, 4);
+        const lastYear = summaryData[summaryData.length - 1].date.slice(0, 4);
+        for (let y = parseInt(firstYear); y <= parseInt(lastYear); y++) years.push(String(y));
     }
 
-    const labels = months.map(m => {
-        const [y, mo] = m.split('-');
-        return `${y}.${mo}`;
-    });
-    const barData = months.map(m => parseFloat((monthlyMap[m] || 0).toFixed(2)));
+    const barData = years.map(y => parseFloat((yearlyMap[y] || 0).toFixed(2)));
 
     if (yearlyDividendChart) yearlyDividendChart.destroy();
 
     yearlyDividendChart = new Chart(canvas, {
         type: 'bar',
         data: {
-            labels,
+            labels: years,
             datasets: [{
-                label: '월별 배당금 ($)',
+                label: '연간 배당금 ($)',
                 data: barData,
                 backgroundColor: barData.map(v =>
                     v > 0 ? 'rgba(25, 135, 84, 0.75)' : 'rgba(200, 200, 200, 0.3)'
@@ -325,7 +314,7 @@ export function renderYearlyDividendChart(summaryData) {
                 x: { grid: { display: false } },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Dividend ($)' },
+                    title: { display: true, text: 'Annual Dividend ($)' },
                     ticks: {
                         callback: v => '$' + v.toFixed(0)
                     }
@@ -335,7 +324,7 @@ export function renderYearlyDividendChart(summaryData) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: ctx => `배당금: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        label: ctx => `연간 배당금: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     }
                 }
             }

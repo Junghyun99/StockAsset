@@ -273,7 +273,7 @@ export function renderCompareCumulativeDividendChart(enginesData) {
 }
 
 /**
- * 멀티 엔진 월별 배당금 비교 바 차트 (최근 1년)
+ * 멀티 엔진 연간 배당금 비교 바 차트 (전체 기간)
  * @param {Map<string, Object>} enginesData
  */
 export function renderCompareYearlyDividendChart(enginesData) {
@@ -282,40 +282,36 @@ export function renderCompareYearlyDividendChart(enginesData) {
 
     if (compareYearlyDividendChart) compareYearlyDividendChart.destroy();
 
-    // 최근 12개월 레이블 생성
-    const months = [];
-    const now = new Date();
-    for (let i = 11; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`);
-    }
-    const labels = months.map(m => {
-        const [y, mo] = m.split('-');
-        return `${y}.${mo}`;
-    });
-
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-
     const engineNames = [...enginesData.keys()];
-    const datasets = [];
 
+    // 전체 기간의 연도 범위 수집
+    const yearSet = new Set();
+    for (const name of engineNames) {
+        const summary = enginesData.get(name).summary;
+        if (!summary) continue;
+        summary.forEach(d => {
+            if ((d.daily_dividend || 0) > 0) yearSet.add(d.date.slice(0, 4));
+        });
+    }
+    const years = [...yearSet].sort();
+
+    const datasets = [];
     for (const name of engineNames) {
         const summary = enginesData.get(name).summary;
         if (!summary) continue;
 
-        const monthlyMap = {};
-        summary.filter(d => new Date(d.date) >= oneYearAgo).forEach(d => {
+        const yearlyMap = {};
+        summary.forEach(d => {
             const div = d.daily_dividend || 0;
             if (div > 0) {
-                const month = d.date.slice(0, 7);
-                monthlyMap[month] = (monthlyMap[month] || 0) + div;
+                const year = d.date.slice(0, 4);
+                yearlyMap[year] = (yearlyMap[year] || 0) + div;
             }
         });
 
         datasets.push({
             label: name,
-            data: months.map(m => parseFloat((monthlyMap[m] || 0).toFixed(2))),
+            data: years.map(y => parseFloat((yearlyMap[y] || 0).toFixed(2))),
             backgroundColor: ENGINE_COLORS[name] ? ENGINE_COLORS[name].replace(')', ', 0.65)').replace('rgb', 'rgba') : 'rgba(108,117,125,0.65)',
             borderColor: ENGINE_COLORS[name] || '#6c757d',
             borderWidth: 1,
@@ -325,7 +321,7 @@ export function renderCompareYearlyDividendChart(enginesData) {
 
     compareYearlyDividendChart = new Chart(canvas, {
         type: 'bar',
-        data: { labels, datasets },
+        data: { labels: years, datasets },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -334,12 +330,22 @@ export function renderCompareYearlyDividendChart(enginesData) {
                 x: { grid: { display: false } },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Dividend ($)' },
+                    title: { display: true, text: 'Annual Dividend ($)' },
                     ticks: { callback: v => '$' + v.toFixed(0) },
                 },
             },
             plugins: {
-                legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 15 } },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: { usePointStyle: true, padding: 15 },
+                    onClick: (e, legendItem, legend) => {
+                        const index = legendItem.datasetIndex;
+                        const meta = legend.chart.getDatasetMeta(index);
+                        meta.hidden = !meta.hidden;
+                        legend.chart.update();
+                    },
+                },
                 tooltip: {
                     callbacks: {
                         label: ctx => `${ctx.dataset.label}: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
