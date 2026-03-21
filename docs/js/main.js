@@ -33,6 +33,8 @@ import {
 import {
     renderComparePerformanceChart,
     renderCompareStrategyChart,
+    renderCompareCumulativeDividendChart,
+    renderCompareYearlyDividendChart,
     updateCompareChartRange,
     resizeCompareCharts,
 } from './compare-charts.js?v=2';
@@ -164,6 +166,8 @@ async function loadCompareMode() {
         setupComparePerformanceHTML();
         renderComparePerformanceChart(enginesData);
         renderCompareStrategyChart(enginesData);
+        renderCompareCumulativeDividendChart(enginesData);
+        renderCompareYearlyDividendChart(enginesData);
         setupCompareTimeRangeSelector(enginesData);
         perfRendered = true;
     }
@@ -226,6 +230,29 @@ function setupComparePerformanceHTML() {
             <div class="card-body">
                 <div style="height: 300px;">
                     <canvas id="compareStrategyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dividend Charts -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Cumulative Dividend Comparison</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px;">
+                    <canvas id="compareCumulativeDividendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Monthly Dividend Comparison (Last 12M)</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 280px;">
+                    <canvas id="compareYearlyDividendChart"></canvas>
                 </div>
             </div>
         </div>
