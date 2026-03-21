@@ -248,7 +248,7 @@ function setupComparePerformanceHTML() {
 
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">
-                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Monthly Dividend Comparison (Last 12M)</h5>
+                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Annual Dividend Comparison (Full Period)</h5>
             </div>
             <div class="card-body">
                 <div style="height: 280px;">
