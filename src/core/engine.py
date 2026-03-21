@@ -43,7 +43,7 @@ class TradingEngine:
     비즈니스 로직 자체는 단일 위치(이 클래스)에서만 관리된다.
 
     서브클래스에 ASSET_GROUPS / REBALANCE_RATIO_A 클래스 속성이 있으면
-    파라미터보다 우선 적용된다 (QldSchdEngine, QldSHVEngine 등).
+    파라미터보다 우선 적용된다 (QldSdyEngine, QldSHVEngine 등).
     """
 
     def __init__(
@@ -404,35 +404,35 @@ class QldSHVEngine(FullExposureEngine):
 
 
 @register_engine(color="#d62728")
-class QldSchdEngine(FullExposureEngine):
-    """QLD(A그룹) + SCHD(B그룹)으로 구성된 Full Exposure 전략 엔진.
+class QldSdyEngine(FullExposureEngine):
+    """QLD(A그룹) + SDY(B그룹)으로 구성된 Full Exposure 전략 엔진.
 
     - 자산군 A: [QLD]  (레버리지 나스닥 ETF)
-    - 자산군 B: [SCHD] (배당 성장 ETF)
+    - 자산군 B: [SDY] (배당 성장 ETF)
     - exposure=1.0 항상 유지 (FullExposureEngine 상속)
     - A:B 비율 = 0.3:0.7 (성장보다 배당 비중 강조)
     """
 
     ASSET_GROUPS: dict = {
         'A': ['QLD'],
-        'B': ['SCHD'],
+        'B': ['SDY'],
     }
     REBALANCE_RATIO_A: float = 0.3
 
 
 @register_engine(color="#1f77b4")
-class QqqSchdEngine(FullExposureEngine):
-    """QQQ(A그룹) + SCHD(B그룹)으로 구성된 Full Exposure 전략 엔진.
+class QqqSdyEngine(FullExposureEngine):
+    """QQQ(A그룹) + SDY(B그룹)으로 구성된 Full Exposure 전략 엔진.
 
     - 자산군 A: [QQQ]  (나스닥 100 ETF)
-    - 자산군 B: [SCHD] (배당 성장 ETF)
+    - 자산군 B: [SDY] (배당 성장 ETF)
     - exposure=1.0 항상 유지 (FullExposureEngine 상속)
     - A:B 비율 = 0.3:0.7 (성장보다 배당 비중 강조)
     """
 
     ASSET_GROUPS: dict = {
         'A': ['QQQ'],
-        'B': ['SCHD'],
+        'B': ['SDY'],
     }
     REBALANCE_RATIO_A: float = 0.3
 
@@ -491,32 +491,32 @@ class Asset5Engine(FullExposureEngine):
 
 
 @register_engine(color="#e377c2")
-class QldSchdShvEngine(TradingEngine):
-    """QLD/SCHD/SHV 3-자산 국면 적응형 배당+레버리지 엔진.
+class QldSdyShvEngine(TradingEngine):
+    """QLD/SDY/SHV 3-자산 국면 적응형 배당+레버리지 엔진.
 
-    SCHD(배당 성장)를 B그룹으로 활용하여 안정적 수익 기반을 확보하고,
+    SDY(배당 성장)를 B그룹으로 활용하여 안정적 수익 기반을 확보하고,
     국면에 따라 SHV(현금) 비중을 조절하여 하락장 방어력을 높인다.
     - 자산군 A: [QLD]  (2x 레버리지 나스닥 ETF)
-    - 자산군 B: [SCHD] (배당 성장 ETF)
+    - 자산군 B: [SDY] (배당 성장 ETF)
     - 자산군 C: [SHV]  (초단기 국채 ETF — 현금 대용)
 
-    국면별 배분 전략 (QldSchdEngine 대비 방어력 강화):
-    - BULL:        QLD 27% + SCHD 63% + SHV 10%  → 공격적 배분
-    - SIDEWAYS:    QLD 21% + SCHD 49% + SHV 30%  → 현금 비중 확대
-    - BEAR_WEAK:   QLD 15% + SCHD 35% + SHV 50%  → 절반 현금화
-    - BEAR_STRONG: QLD  9% + SCHD 21% + SHV 70%  → 대부분 현금
-    - CRASH:       QLD  6% + SCHD 14% + SHV 80%  → 최소 투자
+    국면별 배분 전략 (QldSdyEngine 대비 방어력 강화):
+    - BULL:        QLD 27% + SDY 63% + SHV 10%  → 공격적 배분
+    - SIDEWAYS:    QLD 21% + SDY 49% + SHV 30%  → 현금 비중 확대
+    - BEAR_WEAK:   QLD 15% + SDY 35% + SHV 50%  → 절반 현금화
+    - BEAR_STRONG: QLD  9% + SDY 21% + SHV 70%  → 대부분 현금
+    - CRASH:       QLD  6% + SDY 14% + SHV 80%  → 최소 투자
     """
 
     ASSET_GROUPS: dict = {
         'A': ['QLD'],
-        'B': ['SCHD'],
+        'B': ['SDY'],
         'C': ['SHV'],
     }
 
-    REBALANCE_RATIO_A: float = 0.3  # fallback (QldSchdEngine과 동일)
+    REBALANCE_RATIO_A: float = 0.3  # fallback (QldSdyEngine과 동일)
 
-    # 국면별 ratio_a (QLD vs SCHD 내 비중): 일관되게 0.3 유지
+    # 국면별 ratio_a (QLD vs SDY 내 비중): 일관되게 0.3 유지
     REGIME_RATIO_A_MAP: Dict[MarketRegime, float] = {
         MarketRegime.BULL:        0.3,
         MarketRegime.SIDEWAYS:    0.3,

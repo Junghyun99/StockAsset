@@ -1,5 +1,5 @@
 # tests/test_new_engines.py
-"""QldSHVEngine 및 QldSchdEngine 단위 테스트.
+"""QldSHVEngine 및 QldSdyEngine 단위 테스트.
 
 두 엔진 모두 FullExposureEngine을 상속하며:
 - 클래스 상수(ASSET_GROUPS, REBALANCE_RATIO_A) 검증
@@ -11,7 +11,7 @@ import math
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.core.engine import QldSHVEngine, QldSchdEngine, Asset5Engine, QqqSchdEngine
+from src.core.engine import QldSHVEngine, QldSdyEngine, Asset5Engine, QqqSdyEngine
 from src.core.logic import Rebalancer
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal,
@@ -38,7 +38,7 @@ def _make_portfolio(cash: float = 50000.0) -> Portfolio:
     return Portfolio(
         total_cash=cash,
         holdings={"QLD": 100},
-        current_prices={"QLD": 80.0, "SHV": 110.0, "SCHD": 75.0},
+        current_prices={"QLD": 80.0, "SHV": 110.0, "SDY": 75.0},
     )
 
 
@@ -86,7 +86,7 @@ def _build_qld_shv_engine(repo_last_reb=None, notifier=None):
 
 
 def _build_qld_schd_engine(repo_last_reb=None, notifier=None):
-    """QldSchdEngine을 Mock 의존성으로 조립."""
+    """QldSdyEngine을 Mock 의존성으로 조립."""
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
@@ -108,7 +108,7 @@ def _build_qld_schd_engine(repo_last_reb=None, notifier=None):
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
 
-        engine = QldSchdEngine(
+        engine = QldSdyEngine(
             broker=broker,
             repo=repo,
             logger=logger,
@@ -260,31 +260,31 @@ def test_qld_shv_end_to_end_nan_no_trade():
 
 
 # ─────────────────────────────────────────────────────────────────
-# QldSchdEngine — 클래스 상수 검증
+# QldSdyEngine — 클래스 상수 검증
 # ─────────────────────────────────────────────────────────────────
 
 def test_qld_schd_asset_groups_A():
-    """QldSchdEngine의 A그룹은 [QLD]."""
-    assert QldSchdEngine.ASSET_GROUPS['A'] == ['QLD']
+    """QldSdyEngine의 A그룹은 [QLD]."""
+    assert QldSdyEngine.ASSET_GROUPS['A'] == ['QLD']
 
 
 def test_qld_schd_asset_groups_B():
-    """QldSchdEngine의 B그룹은 [SCHD]."""
-    assert QldSchdEngine.ASSET_GROUPS['B'] == ['SCHD']
+    """QldSdyEngine의 B그룹은 [SDY]."""
+    assert QldSdyEngine.ASSET_GROUPS['B'] == ['SDY']
 
 
 def test_qld_schd_no_C_group():
-    """QldSchdEngine에는 C그룹(현금)이 없다."""
-    assert 'C' not in QldSchdEngine.ASSET_GROUPS
+    """QldSdyEngine에는 C그룹(현금)이 없다."""
+    assert 'C' not in QldSdyEngine.ASSET_GROUPS
 
 
 def test_qld_schd_rebalance_ratio_a_class_constant():
     """REBALANCE_RATIO_A 클래스 상수가 0.3이다."""
-    assert QldSchdEngine.REBALANCE_RATIO_A == 0.3
+    assert QldSdyEngine.REBALANCE_RATIO_A == 0.3
 
 
 # ─────────────────────────────────────────────────────────────────
-# QldSchdEngine — 기본 Rebalancer 자동 생성
+# QldSdyEngine — 기본 Rebalancer 자동 생성
 # ─────────────────────────────────────────────────────────────────
 
 def test_qld_schd_default_rebalancer_groups():
@@ -293,8 +293,8 @@ def test_qld_schd_default_rebalancer_groups():
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
-        engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
-    assert engine.rebalancer.groups == QldSchdEngine.ASSET_GROUPS
+        engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
+    assert engine.rebalancer.groups == QldSdyEngine.ASSET_GROUPS
 
 
 def test_qld_schd_default_rebalancer_ratio_a():
@@ -303,7 +303,7 @@ def test_qld_schd_default_rebalancer_ratio_a():
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
-        engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
+        engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.3
 
 
@@ -313,18 +313,18 @@ def test_qld_schd_default_rebalancer_ratio_b():
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
-        engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
+        engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.7) < 1e-9
 
 
 def test_qld_schd_all_tickers():
-    """all_tickers는 QLD + SCHD 조합이다."""
+    """all_tickers는 QLD + SDY 조합이다."""
     engine, _ = _build_qld_schd_engine()
-    assert set(engine.all_tickers) == {"QLD", "SCHD"}
+    assert set(engine.all_tickers) == {"QLD", "SDY"}
 
 
 # ─────────────────────────────────────────────────────────────────
-# QldSchdEngine — analyze_strategy (FullExposureEngine 상속)
+# QldSdyEngine — analyze_strategy (FullExposureEngine 상속)
 # ─────────────────────────────────────────────────────────────────
 
 def test_qld_schd_bull_exposure_1():
@@ -370,7 +370,7 @@ def test_qld_schd_does_not_call_targeter():
 
 
 # ─────────────────────────────────────────────────────────────────
-# QldSchdEngine — end-to-end 사이클
+# QldSdyEngine — end-to-end 사이클
 # ─────────────────────────────────────────────────────────────────
 
 def test_qld_schd_end_to_end_rebalancing():
@@ -426,54 +426,54 @@ def test_qld_schd_end_to_end_nan_no_trade():
 # ─────────────────────────────────────────────────────────────────
 
 def test_engines_ratio_a_differs():
-    """QldSHVEngine(0.5) vs QldSchdEngine(0.3) ratio_a 차이."""
+    """QldSHVEngine(0.5) vs QldSdyEngine(0.3) ratio_a 차이."""
     broker, repo, logger = _make_base_deps()
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
         shv_engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
-        schd_engine = QldSchdEngine(broker=broker, repo=repo, logger=logger)
+        schd_engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert shv_engine.rebalancer.ratio_a == 0.5
     assert schd_engine.rebalancer.ratio_a == 0.3
     assert shv_engine.rebalancer.ratio_a != schd_engine.rebalancer.ratio_a
 
 
 def test_engines_asset_groups_differ():
-    """두 엔진의 B그룹 자산이 다르다 (SHV vs SCHD)."""
-    assert QldSHVEngine.ASSET_GROUPS['B'] != QldSchdEngine.ASSET_GROUPS['B']
-    assert QldSHVEngine.ASSET_GROUPS['A'] == QldSchdEngine.ASSET_GROUPS['A']
+    """두 엔진의 B그룹 자산이 다르다 (SHV vs SDY)."""
+    assert QldSHVEngine.ASSET_GROUPS['B'] != QldSdyEngine.ASSET_GROUPS['B']
+    assert QldSHVEngine.ASSET_GROUPS['A'] == QldSdyEngine.ASSET_GROUPS['A']
 
 
 # ─────────────────────────────────────────────────────────────────
-# QqqSchdEngine — 클래스 상수 검증
+# QqqSdyEngine — 클래스 상수 검증
 # ─────────────────────────────────────────────────────────────────
 
 def test_qqq_schd_asset_groups_A():
-    """QqqSchdEngine의 A그룹은 [QQQ]."""
-    assert QqqSchdEngine.ASSET_GROUPS['A'] == ['QQQ']
+    """QqqSdyEngine의 A그룹은 [QQQ]."""
+    assert QqqSdyEngine.ASSET_GROUPS['A'] == ['QQQ']
 
 
 def test_qqq_schd_asset_groups_B():
-    """QqqSchdEngine의 B그룹은 [SCHD]."""
-    assert QqqSchdEngine.ASSET_GROUPS['B'] == ['SCHD']
+    """QqqSdyEngine의 B그룹은 [SDY]."""
+    assert QqqSdyEngine.ASSET_GROUPS['B'] == ['SDY']
 
 
 def test_qqq_schd_no_C_group():
-    """QqqSchdEngine에는 C그룹(현금)이 없다."""
-    assert 'C' not in QqqSchdEngine.ASSET_GROUPS
+    """QqqSdyEngine에는 C그룹(현금)이 없다."""
+    assert 'C' not in QqqSdyEngine.ASSET_GROUPS
 
 
 def test_qqq_schd_rebalance_ratio_a_class_constant():
     """REBALANCE_RATIO_A 클래스 상수가 0.3이다."""
-    assert QqqSchdEngine.REBALANCE_RATIO_A == 0.3
+    assert QqqSdyEngine.REBALANCE_RATIO_A == 0.3
 
 
 # ─────────────────────────────────────────────────────────────────
-# QqqSchdEngine — 기본 Rebalancer 자동 생성
+# QqqSdyEngine — 기본 Rebalancer 자동 생성
 # ─────────────────────────────────────────────────────────────────
 
 def _build_qqq_schd_engine(repo_last_reb=None, notifier=None):
-    """QqqSchdEngine을 Mock 의존성으로 조립."""
+    """QqqSdyEngine을 Mock 의존성으로 조립."""
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
@@ -495,7 +495,7 @@ def _build_qqq_schd_engine(repo_last_reb=None, notifier=None):
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
 
-        engine = QqqSchdEngine(
+        engine = QqqSdyEngine(
             broker=broker,
             repo=repo,
             logger=logger,
@@ -521,8 +521,8 @@ def test_qqq_schd_default_rebalancer_groups():
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
-        engine = QqqSchdEngine(broker=broker, repo=repo, logger=logger)
-    assert engine.rebalancer.groups == QqqSchdEngine.ASSET_GROUPS
+        engine = QqqSdyEngine(broker=broker, repo=repo, logger=logger)
+    assert engine.rebalancer.groups == QqqSdyEngine.ASSET_GROUPS
 
 
 def test_qqq_schd_default_rebalancer_ratio_a():
@@ -531,7 +531,7 @@ def test_qqq_schd_default_rebalancer_ratio_a():
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
-        engine = QqqSchdEngine(broker=broker, repo=repo, logger=logger)
+        engine = QqqSdyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.3
 
 
@@ -541,18 +541,18 @@ def test_qqq_schd_default_rebalancer_ratio_b():
     with patch('src.core.engine.IndicatorCalculator'), \
          patch('src.core.engine.RegimeAnalyzer'), \
          patch('src.core.engine.VolatilityTargeter'):
-        engine = QqqSchdEngine(broker=broker, repo=repo, logger=logger)
+        engine = QqqSdyEngine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.7) < 1e-9
 
 
 def test_qqq_schd_all_tickers():
-    """all_tickers는 QQQ + SCHD 조합이다."""
+    """all_tickers는 QQQ + SDY 조합이다."""
     engine, _ = _build_qqq_schd_engine()
-    assert set(engine.all_tickers) == {"QQQ", "SCHD"}
+    assert set(engine.all_tickers) == {"QQQ", "SDY"}
 
 
 # ─────────────────────────────────────────────────────────────────
-# QqqSchdEngine — analyze_strategy (FullExposureEngine 상속)
+# QqqSdyEngine — analyze_strategy (FullExposureEngine 상속)
 # ─────────────────────────────────────────────────────────────────
 
 def test_qqq_schd_bull_exposure_1():
@@ -590,7 +590,7 @@ def test_qqq_schd_does_not_call_targeter():
 
 
 # ─────────────────────────────────────────────────────────────────
-# QqqSchdEngine — end-to-end 사이클
+# QqqSdyEngine — end-to-end 사이클
 # ─────────────────────────────────────────────────────────────────
 
 def test_qqq_schd_end_to_end_rebalancing():
@@ -624,9 +624,9 @@ def test_qqq_schd_end_to_end_nan_no_trade():
 
 
 def test_qqq_schd_a_group_differs_from_qld_schd():
-    """QqqSchdEngine과 QldSchdEngine의 A그룹이 다르다 (QQQ vs QLD)."""
-    assert QqqSchdEngine.ASSET_GROUPS['A'] != QldSchdEngine.ASSET_GROUPS['A']
-    assert QqqSchdEngine.ASSET_GROUPS['B'] == QldSchdEngine.ASSET_GROUPS['B']
+    """QqqSdyEngine과 QldSdyEngine의 A그룹이 다르다 (QQQ vs QLD)."""
+    assert QqqSdyEngine.ASSET_GROUPS['A'] != QldSdyEngine.ASSET_GROUPS['A']
+    assert QqqSdyEngine.ASSET_GROUPS['B'] == QldSdyEngine.ASSET_GROUPS['B']
 
 
 # ─────────────────────────────────────────────────────────────────

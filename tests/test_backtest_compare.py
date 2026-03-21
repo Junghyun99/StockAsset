@@ -9,7 +9,7 @@ from src.backtest.runner import (
 
 
 # 모든 엔진의 티커 합집합 + SPY
-ALL_COMPARE_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "DBC", "SHV", "SCHD", "QQQ", "VOO", "EEM", "TLT", "EMB"]
+ALL_COMPARE_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "VOO", "EEM", "TLT", "EMB"]
 
 
 @pytest.fixture
@@ -63,7 +63,7 @@ def test_run_compare_single_data_download(mock_savefig, mock_download, mock_comp
     tickers_called = set(mock_download.call_args[0][0])
     assert "SPY" in tickers_called
     assert "QLD" in tickers_called
-    assert "SCHD" in tickers_called
+    assert "SDY" in tickers_called
     assert "SSO" in tickers_called
     assert "SHV" in tickers_called
 

@@ -3,7 +3,7 @@
     "last_rebalancing_date": "2023-01-05",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 1.0,
+        "target_exposure": 0.9,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
             "vix": 15.0,
@@ -15,38 +15,26 @@
         }
     },
     "portfolio": {
-        "total_value": 9932.393170731708,
-        "cash_balance": 432.3931707317072,
+        "total_value": 9929.688897560976,
+        "cash_balance": 49.68889756097599,
         "holdings": [
             {
-                "ticker": "VOO",
-                "qty": 10,
+                "ticker": "QLD",
+                "qty": 14,
                 "price": 190.0,
-                "value": 1900.0
+                "value": 2660.0
             },
             {
-                "ticker": "EEM",
-                "qty": 10,
+                "ticker": "SDY",
+                "qty": 33,
                 "price": 190.0,
-                "value": 1900.0
+                "value": 6270.0
             },
             {
-                "ticker": "TLT",
-                "qty": 10,
+                "ticker": "SHV",
+                "qty": 5,
                 "price": 190.0,
-                "value": 1900.0
-            },
-            {
-                "ticker": "EMB",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
-            },
-            {
-                "ticker": "GLD",
-                "qty": 10,
-                "price": 190.0,
-                "value": 1900.0
+                "value": 950.0
             }
         ]
     },
