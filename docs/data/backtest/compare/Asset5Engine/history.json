@@ -1,18 +1,861 @@
 [
     {
-        "id": "tx_20230102",
-        "date": "2023-01-02",
-        "portfolio_value": 9895.807804878048,
-        "total_trade_amount": 9558.0,
+        "id": "tx_20081218",
+        "date": "2008-12-18",
+        "portfolio_value": 9891.970209152565,
+        "total_trade_amount": 9909.67,
         "reason": "첫 투자: 40:60 비율로 진입",
         "executions": [
             {
                 "ticker": "SPY",
                 "action": "BUY",
-                "quantity": 10,
-                "price": 191.16,
-                "fee": 1.91,
-                "date": "2023-01-02",
+                "quantity": 22,
+                "price": 90.18,
+                "fee": 1.98,
+                "date": "2008-12-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 78,
+                "price": 25.6,
+                "fee": 2.0,
+                "date": "2008-12-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 123.35,
+                "fee": 1.97,
+                "date": "2008-12-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 23,
+                "price": 87.26,
+                "fee": 2.01,
+                "date": "2008-12-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 23,
+                "price": 84.71,
+                "fee": 1.95,
+                "date": "2008-12-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090106",
+        "date": "2009-01-06",
+        "portfolio_value": 10024.416072229042,
+        "total_trade_amount": 313.19,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 92.54,
+                "fee": 0.09,
+                "date": "2009-01-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 26.83,
+                "fee": 0.11,
+                "date": "2009-01-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 113.33,
+                "fee": 0.11,
+                "date": "2009-01-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090114",
+        "date": "2009-01-14",
+        "portfolio_value": 9512.035538326434,
+        "total_trade_amount": 581.88,
+        "reason": "비율 재조정: 상대이탈 7.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 114.74,
+                "fee": 0.11,
+                "date": "2009-01-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 87.6,
+                "fee": 0.18,
+                "date": "2009-01-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 85.21,
+                "fee": 0.09,
+                "date": "2009-01-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 22.97,
+                "fee": 0.21,
+                "date": "2009-01-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090130",
+        "date": "2009-01-30",
+        "portfolio_value": 9510.12026778139,
+        "total_trade_amount": 480.7800000000001,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 90.4,
+                "fee": 0.27,
+                "date": "2009-01-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 104.79,
+                "fee": 0.21,
+                "date": "2009-01-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090206",
+        "date": "2009-02-06",
+        "portfolio_value": 9651.388816890316,
+        "total_trade_amount": 406.19000000000005,
+        "reason": "비율 재조정: 상대이탈 6.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 24.69,
+                "fee": 0.15,
+                "date": "2009-02-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 83.78,
+                "fee": 0.17,
+                "date": "2009-02-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 90.49,
+                "fee": 0.09,
+                "date": "2009-02-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090217",
+        "date": "2009-02-17",
+        "portfolio_value": 9432.597907024556,
+        "total_trade_amount": 532.24,
+        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 104.54,
+                "fee": 0.1,
+                "date": "2009-02-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 94.5,
+                "fee": 0.19,
+                "date": "2009-02-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 80.01,
+                "fee": 0.08,
+                "date": "2009-02-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 22.67,
+                "fee": 0.16,
+                "date": "2009-02-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090316",
+        "date": "2009-03-16",
+        "portfolio_value": 9329.234519076614,
+        "total_trade_amount": 582.28,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 23.15,
+                "fee": 0.07,
+                "date": "2009-03-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 82.88,
+                "fee": 0.17,
+                "date": "2009-03-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 76.62,
+                "fee": 0.15,
+                "date": "2009-03-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 102.12,
+                "fee": 0.1,
+                "date": "2009-03-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 91.71,
+                "fee": 0.09,
+                "date": "2009-03-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090317",
+        "date": "2009-03-17",
+        "portfolio_value": 9401.715402449721,
+        "total_trade_amount": 232.95,
+        "reason": "비율 재조정: 상대이탈 5.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 77.4,
+                "fee": 0.08,
+                "date": "2009-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 23.65,
+                "fee": 0.07,
+                "date": "2009-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 84.6,
+                "fee": 0.08,
+                "date": "2009-03-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090326",
+        "date": "2009-03-26",
+        "portfolio_value": 9855.450831542663,
+        "total_trade_amount": 470.73,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 82.28,
+                "fee": 0.08,
+                "date": "2009-03-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 26.12,
+                "fee": 0.1,
+                "date": "2009-03-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 104.83,
+                "fee": 0.1,
+                "date": "2009-03-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 86.29,
+                "fee": 0.09,
+                "date": "2009-03-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 92.85,
+                "fee": 0.09,
+                "date": "2009-03-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090501",
+        "date": "2009-05-01",
+        "portfolio_value": 10097.999530621872,
+        "total_trade_amount": 512.8499999999999,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 28.8,
+                "fee": 0.06,
+                "date": "2009-05-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 90.29,
+                "fee": 0.18,
+                "date": "2009-05-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 88.77,
+                "fee": 0.09,
+                "date": "2009-05-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 98.08,
+                "fee": 0.1,
+                "date": "2009-05-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 87.82,
+                "fee": 0.09,
+                "date": "2009-05-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090504",
+        "date": "2009-05-04",
+        "portfolio_value": 10352.637682043418,
+        "total_trade_amount": 644.8,
+        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 89.97,
+                "fee": 0.18,
+                "date": "2009-05-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 30.79,
+                "fee": 0.18,
+                "date": "2009-05-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 98.4,
+                "fee": 0.1,
+                "date": "2009-05-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 92.19,
+                "fee": 0.09,
+                "date": "2009-05-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 89.53,
+                "fee": 0.09,
+                "date": "2009-05-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20090723",
+        "date": "2009-07-23",
+        "portfolio_value": 10915.579260895423,
+        "total_trade_amount": 359.89,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 35.21,
+                "fee": 0.18,
+                "date": "2009-07-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 91.92,
+                "fee": 0.18,
+                "date": "2009-07-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20091116",
+        "date": "2009-11-16",
+        "portfolio_value": 12365.523018748589,
+        "total_trade_amount": 629.26,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 110.51,
+                "fee": 0.22,
+                "date": "2009-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 112.32,
+                "fee": 0.11,
+                "date": "2009-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 95.97,
+                "fee": 0.19,
+                "date": "2009-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 103.98,
+                "fee": 0.1,
+                "date": "2009-11-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20100119",
+        "date": "2010-01-19",
+        "portfolio_value": 12439.527813207473,
+        "total_trade_amount": 754.4599999999999,
+        "reason": "비율 재조정: 상대이탈 7.5% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 113.91,
+                "fee": 0.23,
+                "date": "2010-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 42.37,
+                "fee": 0.13,
+                "date": "2010-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 91.73,
+                "fee": 0.18,
+                "date": "2010-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 103.43,
+                "fee": 0.1,
+                "date": "2010-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 112.64,
+                "fee": 0.11,
+                "date": "2010-01-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20100520",
+        "date": "2010-05-20",
+        "portfolio_value": 12225.563603983612,
+        "total_trade_amount": 844.1199999999999,
+        "reason": "비율 재조정: 상대이탈 9.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 97.35,
+                "fee": 0.29,
+                "date": "2010-05-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 114.68,
+                "fee": 0.11,
+                "date": "2010-05-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 108.62,
+                "fee": 0.11,
+                "date": "2010-05-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 36.53,
+                "fee": 0.33,
+                "date": "2010-05-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20100927",
+        "date": "2010-09-27",
+        "portfolio_value": 13656.2524573143,
+        "total_trade_amount": 439.76,
+        "reason": "비율 재조정: 상대이탈 2.7% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 43.6,
+                "fee": 0.22,
+                "date": "2010-09-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 115.41,
+                "fee": 0.12,
+                "date": "2010-09-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 106.35,
+                "fee": 0.11,
+                "date": "2010-09-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110110",
+        "date": "2011-01-10",
+        "portfolio_value": 13970.810357865868,
+        "total_trade_amount": 1081.78,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 125.71,
+                "fee": 0.13,
+                "date": "2011-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 46.29,
+                "fee": 0.14,
+                "date": "2011-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 132.78,
+                "fee": 0.13,
+                "date": "2011-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 93.78,
+                "fee": 0.47,
+                "date": "2011-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 107.76,
+                "fee": 0.22,
+                "date": "2011-01-10",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110804",
+        "date": "2011-08-04",
+        "portfolio_value": 14813.80578938488,
+        "total_trade_amount": 1202.5,
+        "reason": "비율 재조정: 상대이탈 10.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 104.31,
+                "fee": 0.21,
+                "date": "2011-08-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 159.03,
+                "fee": 0.32,
+                "date": "2011-08-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 121.46,
+                "fee": 0.24,
+                "date": "2011-08-04",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -20,39 +863,2933 @@
                 "ticker": "EEM",
                 "action": "BUY",
                 "quantity": 10,
-                "price": 191.16,
-                "fee": 1.91,
-                "date": "2023-01-02",
+                "price": 43.29,
+                "fee": 0.43,
+                "date": "2011-08-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110810",
+        "date": "2011-08-10",
+        "portfolio_value": 14649.195464189606,
+        "total_trade_amount": 985.9399999999999,
+        "reason": "비율 재조정: 상대이탈 6.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 107.93,
+                "fee": 0.22,
+                "date": "2011-08-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 172.83,
+                "fee": 0.35,
+                "date": "2011-08-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 113.41,
+                "fee": 0.23,
+                "date": "2011-08-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 39.52,
+                "fee": 0.2,
+                "date": "2011-08-10",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110811",
+        "date": "2011-08-11",
+        "portfolio_value": 14695.817323595733,
+        "total_trade_amount": 729.36,
+        "reason": "비율 재조정: 상대이탈 6.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 116.16,
+                "fee": 0.12,
+                "date": "2011-08-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 40.88,
+                "fee": 0.12,
+                "date": "2011-08-11",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "TLT",
                 "action": "BUY",
-                "quantity": 10,
-                "price": 191.16,
-                "fee": 1.91,
-                "date": "2023-01-02",
+                "quantity": 2,
+                "price": 104.56,
+                "fee": 0.21,
+                "date": "2011-08-11",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "EMB",
                 "action": "BUY",
-                "quantity": 10,
-                "price": 191.16,
-                "fee": 1.91,
-                "date": "2023-01-02",
+                "quantity": 1,
+                "price": 108.98,
+                "fee": 0.11,
+                "date": "2011-08-11",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "GLD",
                 "action": "BUY",
+                "quantity": 1,
+                "price": 172.46,
+                "fee": 0.17,
+                "date": "2011-08-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110822",
+        "date": "2011-08-22",
+        "portfolio_value": 14974.97264316536,
+        "total_trade_amount": 566.57,
+        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 109.81,
+                "fee": 0.11,
+                "date": "2011-08-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 182.74,
+                "fee": 0.18,
+                "date": "2011-08-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 113.86,
+                "fee": 0.11,
+                "date": "2011-08-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 40.04,
+                "fee": 0.16,
+                "date": "2011-08-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110829",
+        "date": "2011-08-29",
+        "portfolio_value": 15083.743629266051,
+        "total_trade_amount": 648.22,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 120.15,
+                "fee": 0.24,
+                "date": "2011-08-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 41.41,
+                "fee": 0.12,
+                "date": "2011-08-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 108.06,
+                "fee": 0.11,
+                "date": "2011-08-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 175.63,
+                "fee": 0.18,
+                "date": "2011-08-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20110921",
+        "date": "2011-09-21",
+        "portfolio_value": 14959.218135702171,
+        "total_trade_amount": 736.0,
+        "reason": "비율 재조정: 상대이탈 6.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 117.47,
+                "fee": 0.35,
+                "date": "2011-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 117.8,
+                "fee": 0.12,
+                "date": "2011-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 37.97,
+                "fee": 0.27,
+                "date": "2011-09-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20111014",
+        "date": "2011-10-14",
+        "portfolio_value": 14959.804066880379,
+        "total_trade_amount": 558.22,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 121.34,
+                "fee": 0.12,
+                "date": "2011-10-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 39.19,
+                "fee": 0.16,
+                "date": "2011-10-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 115.09,
+                "fee": 0.12,
+                "date": "2011-10-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 165.03,
+                "fee": 0.17,
+                "date": "2011-10-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20111123",
+        "date": "2011-11-23",
+        "portfolio_value": 14792.681548241006,
+        "total_trade_amount": 743.09,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 121.35,
+                "fee": 0.24,
+                "date": "2011-11-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 163.18,
+                "fee": 0.16,
+                "date": "2011-11-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 117.73,
+                "fee": 0.12,
+                "date": "2011-11-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 36.58,
+                "fee": 0.22,
+                "date": "2011-11-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20111130",
+        "date": "2011-11-30",
+        "portfolio_value": 15331.405174547348,
+        "total_trade_amount": 841.3700000000001,
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 123.74,
+                "fee": 0.12,
+                "date": "2011-11-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 39.61,
+                "fee": 0.2,
+                "date": "2011-11-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 119.06,
+                "fee": 0.24,
+                "date": "2011-11-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 109.63,
+                "fee": 0.11,
+                "date": "2011-11-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 171.83,
+                "fee": 0.17,
+                "date": "2011-11-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20120124",
+        "date": "2012-01-24",
+        "portfolio_value": 15549.129135786743,
+        "total_trade_amount": 376.62,
+        "reason": "비율 재조정: 상대이탈 3.2% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 130.15,
+                "fee": 0.13,
+                "date": "2012-01-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 41.42,
+                "fee": 0.08,
+                "date": "2012-01-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 163.63,
+                "fee": 0.16,
+                "date": "2012-01-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20120618",
+        "date": "2012-06-18",
+        "portfolio_value": 15852.437221424636,
+        "total_trade_amount": 800.01,
+        "reason": "비율 재조정: 상대이탈 3.3% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 125.81,
+                "fee": 0.25,
+                "date": "2012-06-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 112.66,
+                "fee": 0.11,
+                "date": "2012-06-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 39.46,
+                "fee": 0.28,
+                "date": "2012-06-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 159.51,
+                "fee": 0.16,
+                "date": "2012-06-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20130204",
+        "date": "2013-02-04",
+        "portfolio_value": 16779.78100816948,
+        "total_trade_amount": 958.06,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 148.04,
+                "fee": 0.15,
+                "date": "2013-02-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 43.48,
+                "fee": 0.22,
+                "date": "2013-02-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 118.19,
+                "fee": 0.47,
+                "date": "2013-02-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 119.86,
+                "fee": 0.12,
+                "date": "2013-02-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20130408",
+        "date": "2013-04-08",
+        "portfolio_value": 16789.68726665428,
+        "total_trade_amount": 870.35,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 154.65,
+                "fee": 0.15,
+                "date": "2013-04-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 120.66,
+                "fee": 0.12,
+                "date": "2013-04-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 119.28,
+                "fee": 0.12,
+                "date": "2013-04-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 42.1,
+                "fee": 0.17,
+                "date": "2013-04-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 153.68,
+                "fee": 0.31,
+                "date": "2013-04-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20130701",
+        "date": "2013-07-01",
+        "portfolio_value": 15477.186300835037,
+        "total_trade_amount": 856.5699999999999,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 159.75,
+                "fee": 0.16,
+                "date": "2013-07-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 109.31,
+                "fee": 0.11,
+                "date": "2013-07-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 108.77,
+                "fee": 0.11,
+                "date": "2013-07-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 39.01,
+                "fee": 0.23,
+                "date": "2013-07-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 122.34,
+                "fee": 0.24,
+                "date": "2013-07-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20130722",
+        "date": "2013-07-22",
+        "portfolio_value": 15918.776517474898,
+        "total_trade_amount": 1127.89,
+        "reason": "비율 재조정: 상대이탈 8.7% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 167.81,
+                "fee": 0.34,
+                "date": "2013-07-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 39.27,
+                "fee": 0.24,
+                "date": "2013-07-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 110.45,
+                "fee": 0.33,
+                "date": "2013-07-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 112.65,
+                "fee": 0.23,
+                "date": "2013-07-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20140915",
+        "date": "2014-09-15",
+        "portfolio_value": 17079.06231051613,
+        "total_trade_amount": 1106.3999999999999,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 196.99,
+                "fee": 0.2,
+                "date": "2014-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 43.13,
+                "fee": 0.09,
+                "date": "2014-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 114.69,
+                "fee": 0.11,
+                "date": "2014-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 114.57,
+                "fee": 0.23,
+                "date": "2014-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 119.83,
+                "fee": 0.48,
+                "date": "2014-09-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20141027",
+        "date": "2014-10-27",
+        "portfolio_value": 17039.02222948353,
+        "total_trade_amount": 556.2,
+        "reason": "비율 재조정: 상대이탈 3.4% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 118.74,
+                "fee": 0.24,
+                "date": "2014-10-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 113.17,
+                "fee": 0.11,
+                "date": "2014-10-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 41.11,
+                "fee": 0.21,
+                "date": "2014-10-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20150323",
+        "date": "2015-03-23",
+        "portfolio_value": 17547.067703861696,
+        "total_trade_amount": 1128.06,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 207.9,
+                "fee": 0.21,
+                "date": "2015-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 130.04,
+                "fee": 0.26,
+                "date": "2015-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 40.6,
+                "fee": 0.2,
+                "date": "2015-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 113.11,
+                "fee": 0.23,
+                "date": "2015-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 115.43,
+                "fee": 0.23,
+                "date": "2015-03-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20150824",
+        "date": "2015-08-24",
+        "portfolio_value": 16124.643298909912,
+        "total_trade_amount": 1004.8499999999999,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 125.1,
+                "fee": 0.13,
+                "date": "2015-08-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 104.48,
+                "fee": 0.1,
+                "date": "2015-08-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 109.42,
+                "fee": 0.11,
+                "date": "2015-08-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 191.4,
+                "fee": 0.19,
+                "date": "2015-08-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 31.63,
+                "fee": 0.47,
+                "date": "2015-08-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20150827",
+        "date": "2015-08-27",
+        "portfolio_value": 16462.081686958845,
+        "total_trade_amount": 666.47,
+        "reason": "비율 재조정: 상대이탈 5.9% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 197.28,
+                "fee": 0.2,
+                "date": "2015-08-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 33.88,
+                "fee": 0.24,
+                "date": "2015-08-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 123.22,
+                "fee": 0.12,
+                "date": "2015-08-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 108.81,
+                "fee": 0.11,
+                "date": "2015-08-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20151103",
+        "date": "2015-11-03",
+        "portfolio_value": 16870.401787449722,
+        "total_trade_amount": 655.9399999999999,
+        "reason": "비율 재조정: 상대이탈 3.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 208.89,
+                "fee": 0.21,
+                "date": "2015-11-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 35.67,
+                "fee": 0.11,
+                "date": "2015-11-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 122.16,
+                "fee": 0.12,
+                "date": "2015-11-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 109.83,
+                "fee": 0.11,
+                "date": "2015-11-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 108.05,
+                "fee": 0.11,
+                "date": "2015-11-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160104",
+        "date": "2016-01-04",
+        "portfolio_value": 16173.858291934699,
+        "total_trade_amount": 744.0799999999999,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 120.24,
+                "fee": 0.12,
+                "date": "2016-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 104.61,
+                "fee": 0.1,
+                "date": "2016-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 203.03,
+                "fee": 0.2,
+                "date": "2016-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
                 "quantity": 10,
-                "price": 191.16,
-                "fee": 1.91,
-                "date": "2023-01-02",
+                "price": 31.62,
+                "fee": 0.32,
+                "date": "2016-01-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160216",
+        "date": "2016-02-16",
+        "portfolio_value": 16439.234572711866,
+        "total_trade_amount": 949.07,
+        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 128.81,
+                "fee": 0.13,
+                "date": "2016-02-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 113.62,
+                "fee": 0.34,
+                "date": "2016-02-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 191.68,
+                "fee": 0.19,
+                "date": "2016-02-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 30.27,
+                "fee": 0.18,
+                "date": "2016-02-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 106.1,
+                "fee": 0.11,
+                "date": "2016-02-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160328",
+        "date": "2016-03-28",
+        "portfolio_value": 17258.01148292221,
+        "total_trade_amount": 648.8299999999999,
+        "reason": "비율 재조정: 상대이탈 4.4% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 201.21,
+                "fee": 0.2,
+                "date": "2016-03-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 33.14,
+                "fee": 0.2,
+                "date": "2016-03-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 131.01,
+                "fee": 0.13,
+                "date": "2016-03-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 117.77,
+                "fee": 0.12,
+                "date": "2016-03-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20160711",
+        "date": "2016-07-11",
+        "portfolio_value": 18604.420178159944,
+        "total_trade_amount": 449.06999999999994,
+        "reason": "비율 재조정: 상대이탈 3.1% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 128.0,
+                "fee": 0.13,
+                "date": "2016-07-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 215.53,
+                "fee": 0.22,
+                "date": "2016-07-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 35.18,
+                "fee": 0.11,
+                "date": "2016-07-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20161024",
+        "date": "2016-10-24",
+        "portfolio_value": 18516.247018000795,
+        "total_trade_amount": 676.64,
+        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 37.38,
+                "fee": 0.3,
+                "date": "2016-10-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 134.06,
+                "fee": 0.13,
+                "date": "2016-10-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 121.77,
+                "fee": 0.24,
+                "date": "2016-10-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20161114",
+        "date": "2016-11-14",
+        "portfolio_value": 17520.9929117778,
+        "total_trade_amount": 584.74,
+        "reason": "비율 재조정: 상대이탈 2.6% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 214.42,
+                "fee": 0.21,
+                "date": "2016-11-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 34.64,
+                "fee": 0.14,
+                "date": "2016-11-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 122.52,
+                "fee": 0.12,
+                "date": "2016-11-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 109.24,
+                "fee": 0.11,
+                "date": "2016-11-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20161205",
+        "date": "2016-12-05",
+        "portfolio_value": 17551.217378612633,
+        "total_trade_amount": 557.29,
+        "reason": "비율 재조정: 상대이탈 3.2% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 218.79,
+                "fee": 0.22,
+                "date": "2016-12-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 35.06,
+                "fee": 0.11,
+                "date": "2016-12-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 120.66,
+                "fee": 0.12,
+                "date": "2016-12-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 112.66,
+                "fee": 0.11,
+                "date": "2016-12-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20171016",
+        "date": "2017-10-16",
+        "portfolio_value": 20277.434215153084,
+        "total_trade_amount": 1418.1200000000001,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 12,
+                "price": 46.16,
+                "fee": 0.55,
+                "date": "2017-10-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 127.02,
+                "fee": 0.38,
+                "date": "2017-10-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 117.37,
+                "fee": 0.23,
+                "date": "2017-10-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 124.2,
+                "fee": 0.25,
+                "date": "2017-10-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20180820",
+        "date": "2018-08-20",
+        "portfolio_value": 19931.29705587536,
+        "total_trade_amount": 1161.3,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 282.81,
+                "fee": 0.28,
+                "date": "2018-08-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 120.57,
+                "fee": 0.12,
+                "date": "2018-08-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 42.82,
+                "fee": 0.43,
+                "date": "2018-08-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 107.95,
+                "fee": 0.22,
+                "date": "2018-08-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 113.82,
+                "fee": 0.11,
+                "date": "2018-08-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20181224",
+        "date": "2018-12-24",
+        "portfolio_value": 19129.858992809066,
+        "total_trade_amount": 1049.37,
+        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 118.82,
+                "fee": 0.36,
+                "date": "2018-12-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 236.68,
+                "fee": 0.47,
+                "date": "2018-12-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 38.54,
+                "fee": 0.12,
+                "date": "2018-12-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 103.93,
+                "fee": 0.1,
+                "date": "2018-12-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190122",
+        "date": "2019-01-22",
+        "portfolio_value": 20002.735076393357,
+        "total_trade_amount": 706.87,
+        "reason": "비율 재조정: 상대이탈 5.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 260.23,
+                "fee": 0.26,
+                "date": "2019-01-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 40.42,
+                "fee": 0.08,
+                "date": "2019-01-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 121.57,
+                "fee": 0.24,
+                "date": "2019-01-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 122.66,
+                "fee": 0.12,
+                "date": "2019-01-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190304",
+        "date": "2019-03-04",
+        "portfolio_value": 20486.192966257782,
+        "total_trade_amount": 604.4200000000001,
+        "reason": "비율 재조정: 상대이탈 3.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 276.61,
+                "fee": 0.28,
+                "date": "2019-03-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 42.12,
+                "fee": 0.08,
+                "date": "2019-03-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 120.79,
+                "fee": 0.12,
+                "date": "2019-03-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 122.78,
+                "fee": 0.12,
+                "date": "2019-03-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190528",
+        "date": "2019-05-28",
+        "portfolio_value": 20668.54529274372,
+        "total_trade_amount": 660.29,
+        "reason": "비율 재조정: 상대이탈 3.8% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 127.41,
+                "fee": 0.25,
+                "date": "2019-05-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 40.49,
+                "fee": 0.28,
+                "date": "2019-05-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 122.04,
+                "fee": 0.12,
+                "date": "2019-05-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190819",
+        "date": "2019-08-19",
+        "portfolio_value": 22233.747489277343,
+        "total_trade_amount": 1589.8500000000001,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 142.6,
+                "fee": 0.29,
+                "date": "2019-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 139.7,
+                "fee": 0.42,
+                "date": "2019-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 295.25,
+                "fee": 0.3,
+                "date": "2019-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 40.1,
+                "fee": 0.36,
+                "date": "2019-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 114.7,
+                "fee": 0.23,
+                "date": "2019-08-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20191021",
+        "date": "2019-10-21",
+        "portfolio_value": 22470.5250403627,
+        "total_trade_amount": 969.6600000000001,
+        "reason": "비율 재조정: 상대이탈 4.4% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 296.99,
+                "fee": 0.3,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 41.94,
+                "fee": 0.25,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 139.92,
+                "fee": 0.28,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 141.19,
+                "fee": 0.14,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200227",
+        "date": "2020-02-27",
+        "portfolio_value": 23393.981269823304,
+        "total_trade_amount": 1391.2700000000002,
+        "reason": "비율 재조정: 상대이탈 6.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 150.36,
+                "fee": 0.3,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 152.46,
+                "fee": 0.3,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 300.49,
+                "fee": 0.3,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 41.08,
+                "fee": 0.37,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 115.42,
+                "fee": 0.12,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200309",
+        "date": "2020-03-09",
+        "portfolio_value": 23035.854337264176,
+        "total_trade_amount": 1734.6599999999999,
+        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 169.58,
+                "fee": 0.68,
+                "date": "2020-03-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 156.23,
+                "fee": 0.16,
+                "date": "2020-03-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 276.97,
+                "fee": 0.28,
+                "date": "2020-03-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 37.76,
+                "fee": 0.3,
+                "date": "2020-03-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 107.02,
+                "fee": 0.32,
+                "date": "2020-03-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200323",
+        "date": "2020-03-23",
+        "portfolio_value": 20288.557948974914,
+        "total_trade_amount": 1439.26,
+        "reason": "비율 재조정: 상대이탈 7.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 164.34,
+                "fee": 0.33,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 144.84,
+                "fee": 0.29,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 225.18,
+                "fee": 0.45,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 30.92,
+                "fee": 0.28,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 92.26,
+                "fee": 0.09,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200325",
+        "date": "2020-03-25",
+        "portfolio_value": 21506.79727418953,
+        "total_trade_amount": 1024.85,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 244.32,
+                "fee": 0.24,
+                "date": "2020-03-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 33.73,
+                "fee": 0.2,
+                "date": "2020-03-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 97.0,
+                "fee": 0.1,
+                "date": "2020-03-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 164.17,
+                "fee": 0.33,
+                "date": "2020-03-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 152.81,
+                "fee": 0.15,
+                "date": "2020-03-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200429",
+        "date": "2020-04-29",
+        "portfolio_value": 23283.713772755433,
+        "total_trade_amount": 1129.04,
+        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 290.28,
+                "fee": 0.58,
+                "date": "2020-04-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 37.06,
+                "fee": 0.07,
+                "date": "2020-04-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 170.4,
+                "fee": 0.17,
+                "date": "2020-04-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 101.32,
+                "fee": 0.3,
+                "date": "2020-04-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200826",
+        "date": "2020-08-26",
+        "portfolio_value": 26265.02227951332,
+        "total_trade_amount": 1343.25,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 44.89,
+                "fee": 0.09,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 111.94,
+                "fee": 0.22,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 181.53,
+                "fee": 0.18,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 351.05,
+                "fee": 0.35,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 165.67,
+                "fee": 0.5,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20201026",
+        "date": "2020-10-26",
+        "portfolio_value": 25850.708103361587,
+        "total_trade_amount": 1469.18,
+        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 336.0,
+                "fee": 0.34,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 45.26,
+                "fee": 0.41,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 161.07,
+                "fee": 0.32,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 111.68,
+                "fee": 0.22,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 180.34,
+                "fee": 0.18,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210119",
+        "date": "2021-01-19",
+        "portfolio_value": 27385.74402730583,
+        "total_trade_amount": 2354.54,
+        "reason": "비율 재조정: 상대이탈 11.0% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 374.86,
+                "fee": 0.37,
+                "date": "2021-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 14,
+                "price": 54.7,
+                "fee": 0.77,
+                "date": "2021-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 153.83,
+                "fee": 0.46,
+                "date": "2021-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 114.73,
+                "fee": 0.23,
+                "date": "2021-01-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 174.31,
+                "fee": 0.52,
+                "date": "2021-01-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210524",
+        "date": "2021-05-24",
+        "portfolio_value": 27395.39694437233,
+        "total_trade_amount": 1497.2900000000002,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 414.98,
+                "fee": 0.41,
+                "date": "2021-05-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 110.2,
+                "fee": 0.11,
+                "date": "2021-05-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 174.59,
+                "fee": 0.17,
+                "date": "2021-05-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 54.12,
+                "fee": 0.38,
+                "date": "2021-05-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 139.56,
+                "fee": 0.42,
+                "date": "2021-05-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210726",
+        "date": "2021-07-26",
+        "portfolio_value": 27714.987884799193,
+        "total_trade_amount": 1391.04,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 436.61,
+                "fee": 0.44,
+                "date": "2021-07-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 146.58,
+                "fee": 0.29,
+                "date": "2021-07-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 52.03,
+                "fee": 0.21,
+                "date": "2021-07-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 113.47,
+                "fee": 0.11,
+                "date": "2021-07-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 169.84,
+                "fee": 0.34,
+                "date": "2021-07-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220223",
+        "date": "2022-02-23",
+        "portfolio_value": 26631.33629159218,
+        "total_trade_amount": 1406.46,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 176.51,
+                "fee": 0.53,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 47.94,
+                "fee": 0.1,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 138.05,
+                "fee": 0.28,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 100.99,
+                "fee": 0.5,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220426",
+        "date": "2022-04-26",
+        "portfolio_value": 24943.0370513649,
+        "total_trade_amount": 1342.7600000000002,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 411.94,
+                "fee": 0.41,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 175.55,
+                "fee": 0.18,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 41.56,
+                "fee": 0.29,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 123.63,
+                "fee": 0.37,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 93.46,
+                "fee": 0.09,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230104",
+        "date": "2023-01-04",
+        "portfolio_value": 23499.178433845675,
+        "total_trade_amount": 1242.76,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 38.98,
+                "fee": 0.08,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 170.94,
+                "fee": 0.17,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 387.6,
+                "fee": 0.39,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 103.88,
+                "fee": 0.52,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 86.86,
+                "fee": 0.09,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230807",
+        "date": "2023-08-07",
+        "portfolio_value": 24568.85146567192,
+        "total_trade_amount": 1322.6,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 446.2,
+                "fee": 0.45,
+                "date": "2023-08-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 177.98,
+                "fee": 0.18,
+                "date": "2023-08-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 40.88,
+                "fee": 0.41,
+                "date": "2023-08-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 96.54,
+                "fee": 0.29,
+                "date": "2023-08-07",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231009",
+        "date": "2023-10-09",
+        "portfolio_value": 23202.001539805526,
+        "total_trade_amount": 1091.5500000000002,
+        "reason": "비율 재조정: 상대이탈 4.8% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 427.97,
+                "fee": 0.43,
+                "date": "2023-10-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 37.27,
+                "fee": 0.15,
+                "date": "2023-10-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 87.65,
+                "fee": 0.35,
+                "date": "2023-10-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 81.95,
+                "fee": 0.16,
+                "date": "2023-10-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240415",
+        "date": "2024-04-15",
+        "portfolio_value": 26268.989444775507,
+        "total_trade_amount": 1530.7100000000003,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 218.74,
+                "fee": 0.44,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 40.67,
+                "fee": 0.2,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 89.78,
+                "fee": 0.54,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 87.8,
+                "fee": 0.35,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241111",
+        "date": "2024-11-11",
+        "portfolio_value": 29053.10177221989,
+        "total_trade_amount": 1472.36,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 592.77,
+                "fee": 0.59,
+                "date": "2024-11-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 239.72,
+                "fee": 0.24,
+                "date": "2024-11-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 44.75,
+                "fee": 0.27,
+                "date": "2024-11-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 92.96,
+                "fee": 0.28,
+                "date": "2024-11-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 92.49,
+                "fee": 0.09,
+                "date": "2024-11-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250317",
+        "date": "2025-03-17",
+        "portfolio_value": 29865.658512986756,
+        "total_trade_amount": 2078.01,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 44.89,
+                "fee": 0.31,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 273.96,
+                "fee": 0.27,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 572.82,
+                "fee": 0.57,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 91.53,
+                "fee": 0.46,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 91.87,
+                "fee": 0.46,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250403",
+        "date": "2025-04-03",
+        "portfolio_value": 29528.40058495018,
+        "total_trade_amount": 1993.98,
+        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "TLT",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 90.93,
+                "fee": 0.27,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 89.0,
+                "fee": 0.18,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 283.56,
+                "fee": 0.57,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 542.07,
+                "fee": 0.54,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 43.4,
+                "fee": 0.43,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250514",
+        "date": "2025-05-14",
+        "portfolio_value": 30296.3955539674,
+        "total_trade_amount": 1687.6100000000001,
+        "reason": "비율 재조정: 상대이탈 6.8% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 581.71,
+                "fee": 0.58,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EEM",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 45.85,
+                "fee": 0.32,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 86.17,
+                "fee": 0.6,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 90.88,
+                "fee": 0.18,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251208",
+        "date": "2025-12-08",
+        "portfolio_value": 35182.89188579289,
+        "total_trade_amount": 1957.67,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 381.57,
+                "fee": 0.76,
+                "date": "2025-12-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "TLT",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 88.76,
+                "fee": 0.71,
+                "date": "2025-12-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "EMB",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 96.89,
+                "fee": 0.48,
+                "date": "2025-12-08",
                 "status": "FILLED",
                 "reason": ""
             }

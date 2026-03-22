@@ -1,43 +1,43 @@
 {
-    "last_updated": "2023-01-05",
-    "last_rebalancing_date": "2023-01-05",
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-29",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 0.9,
-        "trigger_reason": "비율 유지, 추가 주문 없음",
+        "trigger_reason": "Bull (모니터링)",
         "market_score": {
-            "vix": 15.0,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.19739402765997863,
-            "spy_price": 190.0,
-            "spy_ma180": 168.1707317073171,
-            "spy_volatility": 0.00016701957528333187
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.08066743721575032,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 634.814166937934,
+            "spy_volatility": 0.08132782725116947
         }
     },
     "portfolio": {
-        "total_value": 9929.688897560976,
-        "cash_balance": 49.68889756097599,
+        "total_value": 41168.94345116978,
+        "cash_balance": 290.6841661966319,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 14,
-                "price": 190.0,
-                "value": 2660.0
+                "qty": 150,
+                "price": 71.61000061035156,
+                "value": 10741.500091552734
             },
             {
                 "ticker": "SDY",
-                "qty": 33,
-                "price": 190.0,
-                "value": 6270.0
+                "qty": 186,
+                "price": 140.1199951171875,
+                "value": 26062.319091796875
             },
             {
                 "ticker": "SHV",
-                "qty": 5,
-                "price": 190.0,
-                "value": 950.0
+                "qty": 37,
+                "price": 110.12000274658203,
+                "value": 4074.440101623535
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2023-01-02"
+    "backtest_start_date": "2008-01-01"
 }
