@@ -376,9 +376,9 @@ def test_rebalancer_regime_ratio_a_map_allows_zero():
 
 def test_existing_engines_no_regime_ratio_map():
     """기존 엔진(QldSHVEngine 등)은 REGIME_RATIO_A_MAP이 없다."""
-    from src.core.engine import QldSHVEngine, QldSchdEngine
+    from src.core.engine import QldSHVEngine, QldSdyEngine
     assert not hasattr(QldSHVEngine, 'REGIME_RATIO_A_MAP')
-    assert not hasattr(QldSchdEngine, 'REGIME_RATIO_A_MAP')
+    assert not hasattr(QldSdyEngine, 'REGIME_RATIO_A_MAP')
 
 
 def test_existing_engine_rebalancer_no_regime_map():

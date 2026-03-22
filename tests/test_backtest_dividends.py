@@ -66,8 +66,8 @@ class TestCalculateDividendIncome:
     def test_returns_zero_when_date_not_in_index(self):
         """배당일이 아닌 날짜는 0.0 반환"""
         dates = pd.date_range("2023-01-01", periods=5)
-        divs = _make_dividends_df(["SCHD"], dates)
-        broker = self._make_broker(holdings={"SCHD": 100})
+        divs = _make_dividends_df(["SDY"], dates)
+        broker = self._make_broker(holdings={"SDY": 100})
         today = pd.Timestamp("2024-01-01")  # 인덱스에 없는 날짜
         result = _calculate_dividend_income(today, divs, broker)
         assert result == 0.0
@@ -75,7 +75,7 @@ class TestCalculateDividendIncome:
     def test_returns_zero_when_no_holdings(self):
         """배당일이지만 보유 주식이 없으면 0.0 반환"""
         dates = pd.date_range("2023-03-15", periods=1)
-        divs = _make_dividends_df(["SCHD"], dates, {"2023-03-15": {"SCHD": 0.5}})
+        divs = _make_dividends_df(["SDY"], dates, {"2023-03-15": {"SDY": 0.5}})
         broker = self._make_broker(holdings={})  # 보유 없음
         today = pd.Timestamp("2023-03-15")
         result = _calculate_dividend_income(today, divs, broker)
@@ -84,8 +84,8 @@ class TestCalculateDividendIncome:
     def test_calculates_shares_times_dividend(self):
         """배당금 = 보유 주수 × 주당 배당금"""
         dates = pd.date_range("2023-03-15", periods=1)
-        divs = _make_dividends_df(["SCHD"], dates, {"2023-03-15": {"SCHD": 0.5}})
-        broker = self._make_broker(holdings={"SCHD": 100})
+        divs = _make_dividends_df(["SDY"], dates, {"2023-03-15": {"SDY": 0.5}})
+        broker = self._make_broker(holdings={"SDY": 100})
         today = pd.Timestamp("2023-03-15")
         result = _calculate_dividend_income(today, divs, broker)
         assert abs(result - 50.0) < 1e-6  # 100주 × $0.5
@@ -94,10 +94,10 @@ class TestCalculateDividendIncome:
         """여러 티커의 배당금을 합산"""
         dates = pd.date_range("2023-03-15", periods=1)
         divs = _make_dividends_df(
-            ["SCHD", "IEF"], dates,
-            {"2023-03-15": {"SCHD": 0.5, "IEF": 0.3}}
+            ["SDY", "IEF"], dates,
+            {"2023-03-15": {"SDY": 0.5, "IEF": 0.3}}
         )
-        broker = self._make_broker(holdings={"SCHD": 100, "IEF": 50})
+        broker = self._make_broker(holdings={"SDY": 100, "IEF": 50})
         today = pd.Timestamp("2023-03-15")
         result = _calculate_dividend_income(today, divs, broker)
         # 100 × 0.5 + 50 × 0.3 = 50 + 15 = 65
@@ -106,15 +106,15 @@ class TestCalculateDividendIncome:
     def test_zero_dividend_rows_contribute_nothing(self):
         """배당금이 0인 티커는 합산에 기여하지 않음"""
         dates = pd.date_range("2023-03-15", periods=1)
-        # SCHD: 0.5, QLD: 0.0 (레버리지 ETF는 배당 없음)
+        # SDY: 0.5, QLD: 0.0 (레버리지 ETF는 배당 없음)
         divs = _make_dividends_df(
-            ["SCHD", "QLD"], dates,
-            {"2023-03-15": {"SCHD": 0.5, "QLD": 0.0}}
+            ["SDY", "QLD"], dates,
+            {"2023-03-15": {"SDY": 0.5, "QLD": 0.0}}
         )
-        broker = self._make_broker(holdings={"SCHD": 100, "QLD": 200})
+        broker = self._make_broker(holdings={"SDY": 100, "QLD": 200})
         today = pd.Timestamp("2023-03-15")
         result = _calculate_dividend_income(today, divs, broker)
-        assert abs(result - 50.0) < 1e-6  # SCHD만
+        assert abs(result - 50.0) < 1e-6  # SDY만
 
     def test_exception_returns_zero(self):
         """내부 오류 발생 시 0.0 반환 (안전 처리)"""
