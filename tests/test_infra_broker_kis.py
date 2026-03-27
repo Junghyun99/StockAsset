@@ -503,7 +503,7 @@ def test_paper_broker_send_order_real_mode_tr_ids(live_broker, mock_requests):
     live_broker._send_order(buy_order)
     # 두 번째 post call의 headers에서 tr_id 확인
     call_args = mock_requests.post.call_args_list[1]
-    assert call_args[1]['headers']['tr_id'] == 'TTTS1002U'
+    assert call_args[1]['headers']['tr_id'] == 'TTTT1002U'
 
     mock_requests.post.reset_mock()
     mock_requests.post.side_effect = [hash_response, order_response]
@@ -511,7 +511,7 @@ def test_paper_broker_send_order_real_mode_tr_ids(live_broker, mock_requests):
     sell_order = Order('SPY', OrderAction.SELL, 1, 100.0)
     live_broker._send_order(sell_order)
     call_args = mock_requests.post.call_args_list[1]
-    assert call_args[1]['headers']['tr_id'] == 'TTTS1006U'
+    assert call_args[1]['headers']['tr_id'] == 'TTTT1006U'
 
 
 # --- execute_orders 테스트 ---

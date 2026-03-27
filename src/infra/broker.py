@@ -268,13 +268,14 @@ class KisBrokerBase(IBrokerAdapter):
 
     def get_portfolio(self) -> Portfolio:
         """
-        해외주식 잔고 및 예수금 조회 (NAS/NYS/AMS 전 거래소 통합)
+        해외주식 잔고 및 예수금 조회 (NASD/NYSE/AMEX 전 거래소 통합)
         _get_pending_orders_count()와 동일하게 모든 거래소를 순회하여 누락 없이 수집한다.
         """
         tr_id = self.PORTFOLIO_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-balance"
 
-        target_exchanges = ["NAS", "NYS", "AMS"]
+        # 잔고/미체결 API는 전체 거래소 코드(NASD, NYSE, AMEX) 사용
+        target_exchanges = ["NASD", "NYSE", "AMEX"]
 
         total_cash = 0.0
         cash_fetched = False
@@ -287,8 +288,8 @@ class KisBrokerBase(IBrokerAdapter):
                 "ACNT_PRDT_CD": self.acnt_prdt_cd,
                 "OVRS_EXCG_CD": exch,
                 "TR_CRCY_CD": "USD",
-                "CTX_AREA_FK100": "",
-                "CTX_AREA_NK100": ""
+                "CTX_AREA_FK200": "",
+                "CTX_AREA_NK200": ""
             }
             headers = self._get_header(tr_id)
             try:
@@ -388,16 +389,17 @@ class KisBrokerBase(IBrokerAdapter):
         tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
 
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
-        exch = self._get_exchange_code(order.ticker)
-        
+        # 주문 API는 전체 거래소 코드 사용 (NASD, NYSE, AMEX)
+        exch = self._get_exchange_code(order.ticker, api_type="order")
+
         # 가격: 시장가인 경우 0 (또는 Limit 가격)
         # 미국주식은 보통 시장가(MKT)를 지원하지 않거나 조건이 까다로움.
-        # 전략상 계산된 price(현재가)로 지정가 주문을 내되, 
+        # 전략상 계산된 price(현재가)로 지정가 주문을 내되,
         # Buy는 높게, Sell은 낮게 내서 즉시 체결을 유도하는 것이 일반적임.
-        
+
         # 주문단가 (소수점 2자리)
         order_price = round(order.price, 2)
-        
+
         data = {
             "CANO": self.cano,
             "ACNT_PRDT_CD": self.acnt_prdt_cd,
@@ -405,8 +407,11 @@ class KisBrokerBase(IBrokerAdapter):
             "PDNO": order.ticker,
             "ORD_QTY": str(order.quantity),
             "OVRS_ORD_UNPR": str(order_price),
+            "CTAC_TLNO": "",
+            "MGCO_APTM_ODNO": "",
+            "SLL_TYPE": "00" if order.action == OrderAction.SELL else "",
             "ORD_SVR_DVSN_CD": "0",
-            "ORD_DVSN": "00" # 00: 지정가 (미국은 보통 지정가 사용)
+            "ORD_DVSN": "00"  # 00: 지정가 (미국은 보통 지정가 사용)
         }
         
         try:
@@ -449,22 +454,23 @@ class KisBrokerBase(IBrokerAdapter):
     def _get_pending_orders_count(self) -> int:
         """
         [해외주식] 미체결 내역 조회
-        NAS -> NYS -> AMS 순으로 조회하며, 미체결이 하나라도 발견되면 즉시 반환합니다.
+        NASD -> NYSE -> AMEX 순으로 조회하며, 미체결이 하나라도 발견되면 즉시 반환합니다.
         (전체 개수 합산보다 존재 여부가 중요함)
         """
         tr_id = self.PENDING_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-nccs"
-        
-        target_exchanges = ["NAS", "NYS", "AMS"]
-        
+
+        # 미체결 API는 전체 거래소 코드(NASD, NYSE, AMEX) 사용
+        target_exchanges = ["NASD", "NYSE", "AMEX"]
+
         for exch in target_exchanges:
             params = {
                 "CANO": self.cano,
                 "ACNT_PRDT_CD": self.acnt_prdt_cd,
                 "OVRS_EXCG_CD": exch,
                 "SORT_SQN": "DS",
-                "CTX_AREA_FK100": "",
-                "CTX_AREA_NK100": ""
+                "CTX_AREA_FK200": "",
+                "CTX_AREA_NK200": ""
             }
             
             headers = self._get_header(tr_id)
@@ -476,7 +482,7 @@ class KisBrokerBase(IBrokerAdapter):
                 data = res.json()
                 
                 if data['rt_cd'] == '0':
-                    count = len(data['output'])
+                    count = len(data.get('output', []))
                     if count > 0:
                         self.logger.info(f"[KisBroker] Found {count} pending orders in {exch}. Waiting...")
                         return count # [핵심] 발견 즉시 리턴 (다른 거래소 조회 생략)
@@ -488,22 +494,37 @@ class KisBrokerBase(IBrokerAdapter):
                 
         return 0 # 모든 거래소를 다 봤는데 미체결이 없음
     
-    def _get_exchange_code(self, ticker: str) -> str:
+    def _get_exchange_code(self, ticker: str, api_type: str = "price") -> str:
         """
         티커별 거래소 코드 매핑
-        (한투 API는 NAS, NYS, AMS를 구분해서 넣어야 함)
+        - api_type="price"  : 현재가 조회 API용 단축 코드 (NAS, NYS, AMS)
+        - api_type="order"  : 주문/잔고/미체결 API용 전체 코드 (NASD, NYSE, AMEX)
         """
-        # 주요 ETF 매핑
-        mapping = {
-            'SPY': 'AMS', # AMEX (Arca)
-            'QLD': 'AMS', # ProShares는 보통 Arca
+        # 현재가 조회 API: 단축 코드
+        price_mapping = {
+            'SPY': 'AMS',
+            'QLD': 'AMS',
             'SSO': 'AMS',
-            'IEF': 'NAS', # NASDAQ
-            'GLD': 'NYS', # NYSE
+            'IEF': 'NAS',
+            'GLD': 'NYS',
             'PDBC': 'NAS',
-            'SHV': 'NAS'
+            'SHV': 'NAS',
+            'SDY': 'NYS',
         }
-        return mapping.get(ticker, 'NAS') # 기본값
+        # 주문/잔고/미체결 API: 전체 코드
+        order_mapping = {
+            'SPY': 'AMEX',
+            'QLD': 'AMEX',
+            'SSO': 'AMEX',
+            'IEF': 'NASD',
+            'GLD': 'NYSE',
+            'PDBC': 'NASD',
+            'SHV': 'NASD',
+            'SDY': 'NYSE',
+        }
+        if api_type == "order":
+            return order_mapping.get(ticker, 'NASD')
+        return price_mapping.get(ticker, 'NAS')
 
 
 class KisPaperBroker(KisBrokerBase):
@@ -513,7 +534,7 @@ class KisPaperBroker(KisBrokerBase):
     PORTFOLIO_TR_ID = "VTTS3012R"
     BUY_TR_ID = "VTTT1002U"
     SELL_TR_ID = "VTTT1006U"
-    PENDING_TR_ID = "VTTT3018R"
+    PENDING_TR_ID = "VTTS3018R"
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         super().__init__(app_key, app_secret, acc_no, logger)
@@ -525,8 +546,8 @@ class KisLiveBroker(KisBrokerBase):
     BASE_URL = "https://openapi.koreainvestment.com:9443"
     PRICE_TR_ID = "HHDFS00000300"
     PORTFOLIO_TR_ID = "TTTS3012R"
-    BUY_TR_ID = "TTTS1002U"
-    SELL_TR_ID = "TTTS1006U"
+    BUY_TR_ID = "TTTT1002U"   # 미국 매수 (TTTS는 홍콩용)
+    SELL_TR_ID = "TTTT1006U"  # 미국 매도
     PENDING_TR_ID = "TTTS3018R"
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
