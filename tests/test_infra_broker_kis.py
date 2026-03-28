@@ -638,6 +638,53 @@ def test_paper_broker_execute_sell_timeout(mock_sleep, paper_broker, mock_reques
 
 
 @patch('src.infra.broker.time.sleep')
+def test_paper_broker_execute_sell_then_buy_calls_sleep2(mock_sleep, paper_broker, mock_requests):
+    """매도 후 매수 시 정산 대기 sleep(2) 호출 확인"""
+    with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+
+        from src.core.models import TradeExecution
+        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        mock_send.side_effect = [sell_exec, buy_exec]
+        mock_get_pf.return_value = Portfolio(
+            total_cash=10000.0, holdings={}, current_prices={}
+        )
+
+        orders = [
+            Order('SPY', OrderAction.SELL, 5, 150.0),
+            Order('IEF', OrderAction.BUY, 10, 100.0),
+        ]
+        paper_broker.execute_orders(orders)
+
+        # 매도가 있으므로 sleep(2) 호출되어야 함
+        sleep_calls = [c.args[0] for c in mock_sleep.call_args_list]
+        assert 2 in sleep_calls, "매도+매수 시 sleep(2)가 호출되어야 합니다"
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_execute_buy_only_no_sleep2(mock_sleep, paper_broker, mock_requests):
+    """매수만 있는 경우 정산 대기 sleep(2) 미호출 확인"""
+    with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+
+        from src.core.models import TradeExecution
+        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        mock_send.return_value = buy_exec
+        mock_get_pf.return_value = Portfolio(
+            total_cash=10000.0, holdings={}, current_prices={}
+        )
+
+        orders = [Order('IEF', OrderAction.BUY, 10, 100.0)]
+        paper_broker.execute_orders(orders)
+
+        # 매도가 없으므로 sleep(2) 호출되지 않아야 함
+        sleep_calls = [c.args[0] for c in mock_sleep.call_args_list]
+        assert 2 not in sleep_calls, "매수만 있을 때 sleep(2)는 호출되면 안 됩니다"
+
+
+@patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_send_order_returns_none(mock_sleep, paper_broker, mock_requests):
     """_send_order가 None을 반환하는 경우 (주문 실패)"""
     with patch.object(paper_broker, '_send_order', return_value=None) as mock_send, \

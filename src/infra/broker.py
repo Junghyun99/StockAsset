@@ -359,15 +359,10 @@ class KisBrokerBase(IBrokerAdapter):
 
         # === 2. 잔고 갱신 및 매수 재계산 ===
         if buy_orders:
-            # 매도가 있었다면 잔고가 변했을 것이므로 갱신 (API 재호출)
             if sell_orders:
                 time.sleep(2) # 정산 대기
-                pf = self.get_portfolio()
-                current_cash = pf.total_cash
-            else:
-                # 매도가 없었다면 로컬에 저장된 잔고로는 불안하므로 한번 더 조회 권장
-                pf = self.get_portfolio()
-                current_cash = pf.total_cash
+            pf = self.get_portfolio()
+            current_cash = pf.total_cash
 
             self.logger.info(f"[KisBroker] Available Cash for BUY: ${current_cash:,.2f}")
 
