@@ -196,6 +196,7 @@ class KisBrokerBase(IBrokerAdapter):
         }
         try:
             res = requests.post(url, json=payload)
+            res.raise_for_status()
             data = res.json()
             if 'access_token' not in data:
                 raise Exception(f"Auth Failed: {data}")
@@ -239,6 +240,7 @@ class KisBrokerBase(IBrokerAdapter):
                 "appkey": self.app_key,
                 "appsecret": self.app_secret
             }, json=data)
+            res.raise_for_status()
             return res.json()["HASH"]
         except Exception as e:
             self.logger.error(f"[KisBroker] HashKey 생성 실패: {e}")
@@ -264,8 +266,9 @@ class KisBrokerBase(IBrokerAdapter):
                 # 잦은 호출 방지 (초당 제한 고려)
                 time.sleep(0.1) 
                 res = requests.get(url, headers=headers, params=params)
+                res.raise_for_status()
                 data = res.json()
-                
+
                 if data['rt_cd'] == '0': # 성공
                     # last: 현재가
                     price = float(data['output']['last'])
@@ -308,6 +311,7 @@ class KisBrokerBase(IBrokerAdapter):
             try:
                 time.sleep(0.2)  # API 제한 고려
                 res = requests.get(url, headers=headers, params=params)
+                res.raise_for_status()
                 data = res.json()
 
                 if data['rt_cd'] != '0':
@@ -430,6 +434,7 @@ class KisBrokerBase(IBrokerAdapter):
         try:
             headers = self._get_header(tr_id, data)
             res = requests.post(url, headers=headers, json=data)
+            res.raise_for_status()
             resp_data = res.json()
             
             if resp_data['rt_cd'] != '0':
@@ -492,8 +497,9 @@ class KisBrokerBase(IBrokerAdapter):
                 time.sleep(0.2) # API 제한 고려
                 
                 res = requests.get(url, headers=headers, params=params)
+                res.raise_for_status()
                 data = res.json()
-                
+
                 if data['rt_cd'] == '0':
                     count = len(data.get('output', []))
                     if count > 0:
