@@ -780,3 +780,86 @@ def test_mock_broker_buy_price_zero():
     orders = [Order('SPY', OrderAction.BUY, 10, 0.0)]
     executions = broker.execute_orders(orders)
     assert len(executions) == 0
+
+
+# --- _ensure_token / 토큰 만료 처리 테스트 ---
+
+from datetime import datetime, timedelta
+
+
+def test_auth_stores_token_expires_at(mock_requests, mock_logger):
+    """_auth 호출 시 token_expires_at이 설정됨"""
+    auth_response = MagicMock()
+    auth_response.json.return_value = {'access_token': 'tok', 'expires_in': 3600}
+    mock_requests.post.return_value = auth_response
+
+    broker = KisPaperBroker('k', 's', '1234567890', mock_logger)
+
+    assert broker.token_expires_at is not None
+    # 약 3600초 후 만료 (오차 5초 허용)
+    expected = datetime.now() + timedelta(seconds=3600)
+    assert abs((broker.token_expires_at - expected).total_seconds()) < 5
+
+
+def test_auth_uses_default_expires_in_when_missing(mock_requests, mock_logger):
+    """expires_in 필드 없을 때 기본값 86400초 적용"""
+    auth_response = MagicMock()
+    auth_response.json.return_value = {'access_token': 'tok'}
+    mock_requests.post.return_value = auth_response
+
+    broker = KisPaperBroker('k', 's', '1234567890', mock_logger)
+
+    expected = datetime.now() + timedelta(seconds=86400)
+    assert abs((broker.token_expires_at - expected).total_seconds()) < 5
+
+
+def test_ensure_token_refreshes_when_expired(paper_broker, mock_requests):
+    """토큰이 만료된 경우 _ensure_token이 _auth를 재호출"""
+    # 토큰을 이미 만료된 상태로 설정
+    paper_broker.token_expires_at = datetime.now() - timedelta(seconds=1)
+
+    new_auth_response = MagicMock()
+    new_auth_response.json.return_value = {'access_token': 'new_token', 'expires_in': 86400}
+    mock_requests.post.return_value = new_auth_response
+
+    paper_broker._ensure_token()
+
+    assert paper_broker.access_token == 'new_token'
+    paper_broker.logger.info.assert_called_with("[KisBroker] Access Token 갱신 중...")
+
+
+def test_ensure_token_refreshes_within_60s_buffer(paper_broker, mock_requests):
+    """만료 59초 전이면 미리 갱신"""
+    paper_broker.token_expires_at = datetime.now() + timedelta(seconds=59)
+
+    new_auth_response = MagicMock()
+    new_auth_response.json.return_value = {'access_token': 'refreshed_token', 'expires_in': 86400}
+    mock_requests.post.return_value = new_auth_response
+
+    paper_broker._ensure_token()
+
+    assert paper_broker.access_token == 'refreshed_token'
+
+
+def test_ensure_token_does_not_refresh_when_valid(paper_broker, mock_requests):
+    """유효한 토큰은 갱신하지 않음"""
+    paper_broker.token_expires_at = datetime.now() + timedelta(seconds=3600)
+    original_token = paper_broker.access_token
+
+    paper_broker._ensure_token()
+
+    assert paper_broker.access_token == original_token
+    mock_requests.post.assert_not_called()
+
+
+def test_get_header_triggers_token_refresh_when_expired(paper_broker, mock_requests):
+    """_get_header 호출 시 토큰이 만료됐으면 자동 갱신 후 헤더에 새 토큰 반영"""
+    paper_broker.token_expires_at = datetime.now() - timedelta(seconds=1)
+
+    new_auth_response = MagicMock()
+    new_auth_response.json.return_value = {'access_token': 'fresh_token', 'expires_in': 86400}
+    mock_requests.post.return_value = new_auth_response
+
+    headers = paper_broker._get_header("HHDFS00000300")
+
+    assert headers['authorization'] == 'Bearer fresh_token'
