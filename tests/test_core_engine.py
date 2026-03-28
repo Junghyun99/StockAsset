@@ -190,7 +190,94 @@ def test_nan_data_skips_trade():
 
 
 # ─────────────────────────────────────────────────────────────────
-# 시나리오 5: 최초 실행 (last_rebalancing_date=None → is_due=True)
+# 시나리오 5: 보유 종목 가격 조회 실패 → 매매 중단
+# ─────────────────────────────────────────────────────────────────
+
+def test_zero_price_holding_skips_trade():
+    """보유 종목(SSO 10주) 가격이 0.0 → 리밸런싱 중단, 알림 발송."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier)
+    md = _make_market_data()
+
+    # SSO 보유 중인데 가격이 0.0 (fetch 실패)
+    portfolio_with_zero = Portfolio(
+        total_cash=10000.0,
+        holdings={"SSO": 10},
+        current_prices={"SSO": 0.0},
+    )
+    mocks["broker"].get_portfolio.return_value = portfolio_with_zero
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 0.0}
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    assert result.is_rebalancing is False
+    assert result.signal.orders == []
+    assert "SSO" in result.signal.reason
+    mocks["rebalancer"].generate_signal.assert_not_called()
+    mocks["broker"].execute_orders.assert_not_called()
+    notifier.send_alert.assert_called_once()
+    mocks["repo"].save_daily_summary.assert_called_once()
+
+
+def test_zero_price_holding_missing_from_prices():
+    """보유 종목(SSO 10주) 가격이 current_prices에 아예 없음 → 리밸런싱 중단."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier)
+    md = _make_market_data()
+
+    # SSO 보유 중인데 current_prices에 가격 정보 없음
+    portfolio_missing_price = Portfolio(
+        total_cash=10000.0,
+        holdings={"SSO": 10},
+        current_prices={},  # SSO 가격 누락
+    )
+    mocks["broker"].get_portfolio.return_value = portfolio_missing_price
+    mocks["broker"].fetch_current_prices.return_value = {}
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    assert result.is_rebalancing is False
+    assert result.signal.orders == []
+    mocks["rebalancer"].generate_signal.assert_not_called()
+    notifier.send_alert.assert_called_once()
+
+
+def test_zero_price_non_holding_does_not_abort():
+    """보유하지 않은 종목(QLD 0주)의 가격이 0.0 → 정상 리밸런싱 진행."""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    md = _make_market_data()
+
+    # SSO만 보유(정상 가격), QLD는 미보유 → QLD 가격 0.0이어도 무관
+    portfolio_partial = Portfolio(
+        total_cash=10000.0,
+        holdings={"SSO": 10},  # QLD 미보유
+        current_prices={"SSO": 100.0, "QLD": 0.0},
+    )
+    mocks["broker"].get_portfolio.return_value = portfolio_partial
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 100.0, "QLD": 0.0}
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    # 보유 종목(SSO)은 가격 정상 → 리밸런싱 실행돼야 함
+    assert result.is_rebalancing is True
+    mocks["rebalancer"].generate_signal.assert_called_once()
+
+
+# ─────────────────────────────────────────────────────────────────
+# 시나리오 6: 최초 실행 (last_rebalancing_date=None → is_due=True)
 # ─────────────────────────────────────────────────────────────────
 
 def test_first_run_is_always_due():
