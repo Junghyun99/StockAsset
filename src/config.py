@@ -4,6 +4,31 @@ from dotenv import load_dotenv
 # .env 파일 로드
 load_dotenv()
 
+# 티커별 거래소 단축 코드 (현재가 조회 API용)
+# 새 티커 추가 시 이 딕셔너리만 수정하면 됩니다.
+TICKER_EXCHANGE_MAP: dict[str, str] = {
+    'SPY': 'AMS',
+    'QLD': 'AMS',
+    'SSO': 'AMS',
+    'IEF': 'NAS',
+    'GLD': 'NYS',
+    'PDBC': 'NAS',
+    'SHV': 'NAS',
+    'SDY': 'NYS',
+    'QQQ': 'NAS',
+    'EEM': 'NYS',
+    'TLT': 'NAS',
+    'EMB': 'NYS',
+    'DBC': 'NYS',
+}
+
+# 단축 코드 → 주문/잔고/미체결 API용 전체 코드 변환
+EXCHANGE_CODE_SHORT_TO_FULL: dict[str, str] = {
+    'NAS': 'NASD',
+    'NYS': 'NYSE',
+    'AMS': 'AMEX',
+}
+
 class Config:
     def __init__(self):  # <--- [중요] 모든 설정 로직을 이 함수 안으로 넣어야 합니다.
         # 1. API 설정 (인스턴스 생성 시점에 환경변수 읽기)

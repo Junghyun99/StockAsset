@@ -2,6 +2,7 @@
 from typing import List, Dict, Optional
 from src.core.interfaces import IBrokerAdapter, ILogger
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
+from src.config import TICKER_EXCHANGE_MAP, EXCHANGE_CODE_SHORT_TO_FULL
 import time
 import requests
 from datetime import datetime, timedelta
@@ -510,35 +511,21 @@ class KisBrokerBase(IBrokerAdapter):
     
     def _get_exchange_code(self, ticker: str, api_type: str = "price") -> str:
         """
-        티커별 거래소 코드 매핑
+        티커별 거래소 코드 반환 (config.TICKER_EXCHANGE_MAP 참조)
         - api_type="price"  : 현재가 조회 API용 단축 코드 (NAS, NYS, AMS)
         - api_type="order"  : 주문/잔고/미체결 API용 전체 코드 (NASD, NYSE, AMEX)
+        새 티커 추가 시 src/config.py의 TICKER_EXCHANGE_MAP만 수정하면 됩니다.
         """
-        # 현재가 조회 API: 단축 코드
-        price_mapping = {
-            'SPY': 'AMS',
-            'QLD': 'AMS',
-            'SSO': 'AMS',
-            'IEF': 'NAS',
-            'GLD': 'NYS',
-            'PDBC': 'NAS',
-            'SHV': 'NAS',
-            'SDY': 'NYS',
-        }
-        # 주문/잔고/미체결 API: 전체 코드
-        order_mapping = {
-            'SPY': 'AMEX',
-            'QLD': 'AMEX',
-            'SSO': 'AMEX',
-            'IEF': 'NASD',
-            'GLD': 'NYSE',
-            'PDBC': 'NASD',
-            'SHV': 'NASD',
-            'SDY': 'NYSE',
-        }
+        price_code = TICKER_EXCHANGE_MAP.get(ticker)
+        if price_code is None:
+            self.logger.warning(
+                f"[KisBroker] 알 수 없는 티커 '{ticker}' - 기본 거래소 코드(NAS/NASD) 사용. "
+                f"src/config.py의 TICKER_EXCHANGE_MAP에 티커를 추가하세요."
+            )
+            price_code = 'NAS'
         if api_type == "order":
-            return order_mapping.get(ticker, 'NASD')
-        return price_mapping.get(ticker, 'NAS')
+            return EXCHANGE_CODE_SHORT_TO_FULL.get(price_code, 'NASD')
+        return price_code
 
 
 class KisPaperBroker(KisBrokerBase):
