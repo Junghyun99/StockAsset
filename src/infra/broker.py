@@ -98,25 +98,28 @@ class MockBroker(IBrokerAdapter):
         # 슬리피지 시뮬레이션
         slippage = 1.01 if order.action == OrderAction.BUY else 0.99
         exec_price = order.price * slippage
-        
-        # 수수료 시뮬레이션 (0.1%)
-        fee = (exec_price * order.quantity) * 0.001
-        
-        if self.logger: self.logger.info(f"[FILLED] {order.action} {order.ticker}: {order.quantity} @ ${exec_price:.2f} (Fee: ${fee:.2f})")
-        
-        # 잔고 반영
+
+        # 잔고 반영 및 실제 체결 수량 결정 (수수료는 actual_qty 확정 후 단일 계산)
         if order.action == OrderAction.BUY:
-            amount = exec_price * order.quantity
-            self.cash -= (amount + fee)
-            self.holdings[order.ticker] = self.holdings.get(order.ticker, 0) + order.quantity
             actual_qty = order.quantity
+            amount = exec_price * actual_qty
+            fee = amount * 0.001
+            self.cash -= (amount + fee)
+            self.holdings[order.ticker] = self.holdings.get(order.ticker, 0) + actual_qty
         elif order.action == OrderAction.SELL:
             current_qty = self.holdings.get(order.ticker, 0)
             actual_qty = min(order.quantity, current_qty)  # 보유량 한도 제한
+            if actual_qty < order.quantity and self.logger:
+                self.logger.warning(
+                    f"[QTY ADJUSTED] {order.ticker} SELL: 요청 {order.quantity}주 → 실제 체결 {actual_qty}주 (보유량 부족)"
+                )
             amount = exec_price * actual_qty
             fee = amount * 0.001
             self.cash += (amount - fee)
             self.holdings[order.ticker] = current_qty - actual_qty
+
+        if self.logger:
+            self.logger.info(f"[FILLED] {order.action} {order.ticker}: {actual_qty} @ ${exec_price:.2f} (Fee: ${fee:.2f})")
 
         return TradeExecution(
             ticker=order.ticker,
