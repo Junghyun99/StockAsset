@@ -222,6 +222,12 @@ class TradingEngine:
         final_pf = portfolio
         is_rebalancing = False
 
+        # 보유 종목 중 가격 조회 실패(0.0 또는 누락) 종목 감지
+        zero_price_tickers = [
+            t for t, q in portfolio.holdings.items()
+            if q > 0 and portfolio.current_prices.get(t, 0) <= 0
+        ]
+
         if nan_fields:
             signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
             msg = (
@@ -229,6 +235,18 @@ class TradingEngine:
                 f"날짜: {market_data.date}\n"
                 f"NaN 필드: {', '.join(nan_fields)}\n"
                 f"데이터 품질 이상으로 매매를 중단합니다."
+            )
+            self.logger.error(msg)
+            self._notify_alert(msg)
+
+        elif zero_price_tickers:
+            signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(zero_price_tickers)}")
+            msg = (
+                f"⚠️ Price Data Alert — 매매 중단\n"
+                f"날짜: {market_data.date}\n"
+                f"가격 조회 실패 종목: {', '.join(zero_price_tickers)}\n"
+                f"보유 종목 가격 이상으로 리밸런싱을 중단합니다.\n"
+                f"total_value 왜곡으로 인한 비정상 주문 방지."
             )
             self.logger.error(msg)
             self._notify_alert(msg)
