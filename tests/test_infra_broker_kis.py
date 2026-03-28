@@ -549,6 +549,7 @@ def test_paper_broker_execute_sell_then_buy(mock_sleep, paper_broker, mock_reque
 def test_paper_broker_execute_buy_only(mock_sleep, paper_broker, mock_requests):
     """매수만 있는 경우"""
     with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
@@ -568,6 +569,7 @@ def test_paper_broker_execute_buy_only(mock_sleep, paper_broker, mock_requests):
 def test_paper_broker_execute_buy_qty_adjusted(mock_sleep, paper_broker, mock_requests):
     """매수 시 잔고 부족으로 수량 조정"""
     with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
@@ -590,6 +592,7 @@ def test_paper_broker_execute_buy_qty_adjusted(mock_sleep, paper_broker, mock_re
 def test_paper_broker_execute_buy_zero_price(mock_sleep, paper_broker, mock_requests):
     """매수 가격이 0인 경우 스킵"""
     with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         mock_get_pf.return_value = Portfolio(
@@ -607,6 +610,7 @@ def test_paper_broker_execute_buy_zero_price(mock_sleep, paper_broker, mock_requ
 def test_paper_broker_execute_buy_zero_qty_after_adjust(mock_sleep, paper_broker, mock_requests):
     """수량 조정 후 0이 되면 주문 안 함"""
     with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         mock_get_pf.return_value = Portfolio(
@@ -667,6 +671,7 @@ def test_paper_broker_execute_sell_then_buy_calls_sleep2(mock_sleep, paper_broke
 def test_paper_broker_execute_buy_only_no_sleep2(mock_sleep, paper_broker, mock_requests):
     """매수만 있는 경우 정산 대기 sleep(2) 미호출 확인"""
     with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
@@ -688,6 +693,7 @@ def test_paper_broker_execute_buy_only_no_sleep2(mock_sleep, paper_broker, mock_
 def test_paper_broker_execute_send_order_returns_none(mock_sleep, paper_broker, mock_requests):
     """_send_order가 None을 반환하는 경우 (주문 실패)"""
     with patch.object(paper_broker, '_send_order', return_value=None) as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         mock_get_pf.return_value = Portfolio(
@@ -844,6 +850,66 @@ def test_mock_broker_buy_price_zero():
     orders = [Order('SPY', OrderAction.BUY, 10, 0.0)]
     executions = broker.execute_orders(orders)
     assert len(executions) == 0
+
+
+# --- #222 execute_orders 매수 로직 개선 테스트 ---
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_execute_buy_calls_wait_for_completion(mock_sleep, paper_broker, mock_requests):
+    """[#222] 매수 주문 후 _wait_for_completion이 호출되어야 함"""
+    with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True) as mock_wait, \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        mock_send.return_value = buy_exec
+        mock_get_pf.return_value = Portfolio(total_cash=50000.0, holdings={}, current_prices={})
+
+        paper_broker.execute_orders([Order('SPY', OrderAction.BUY, 5, 100.0)])
+
+        mock_wait.assert_called_once_with(timeout=60)
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_execute_buy_timeout_logs_warning(mock_sleep, paper_broker, mock_requests):
+    """[#222] 매수 체결 대기 타임아웃 시 warning 로그 출력"""
+    with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=False), \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        mock_send.return_value = buy_exec
+        mock_get_pf.return_value = Portfolio(total_cash=50000.0, holdings={}, current_prices={})
+
+        executions = paper_broker.execute_orders([Order('SPY', OrderAction.BUY, 5, 100.0)])
+
+        # 타임아웃이어도 실행 결과는 반환
+        assert len(executions) == 1
+        paper_broker.logger.warning.assert_called()
+        warning_calls = [str(c) for c in paper_broker.logger.warning.call_args_list]
+        assert any("Buy orders timed out" in c for c in warning_calls)
+
+
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_execute_buy_calls_get_portfolio_per_order(mock_sleep, paper_broker, mock_requests):
+    """[#222] 매수 주문마다 get_portfolio()를 호출하여 실제 가용 금액 조회"""
+    with patch.object(paper_broker, '_send_order') as mock_send, \
+         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+
+        buy_exec_spy = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec_ief = TradeExecution('IEF', OrderAction.BUY, 3, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        mock_send.side_effect = [buy_exec_spy, buy_exec_ief]
+        mock_get_pf.return_value = Portfolio(total_cash=50000.0, holdings={}, current_prices={})
+
+        orders = [
+            Order('SPY', OrderAction.BUY, 5, 100.0),
+            Order('IEF', OrderAction.BUY, 3, 100.0),
+        ]
+        paper_broker.execute_orders(orders)
+
+        # 매수 주문 2건이면 get_portfolio도 2번 호출되어야 함
+        assert mock_get_pf.call_count == 2
 
 
 # --- _ensure_token / 토큰 만료 처리 테스트 ---
