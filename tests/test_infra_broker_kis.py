@@ -803,6 +803,23 @@ def test_paper_broker_exchange_code_default(paper_broker):
     assert paper_broker._get_exchange_code('AAPL') == 'NAS'
 
 
+def test_paper_broker_exchange_code_unknown_logs_warning(paper_broker):
+    """매핑에 없는 티커 사용 시 경고 로그 출력"""
+    paper_broker._get_exchange_code('UNKNOWN_TICKER')
+    paper_broker.logger.warning.assert_called_once()
+    call_args = paper_broker.logger.warning.call_args[0][0]
+    assert 'UNKNOWN_TICKER' in call_args
+    assert 'TICKER_EXCHANGE_MAP' in call_args
+
+
+def test_paper_broker_exchange_code_order_mapping(paper_broker):
+    """order api_type 시 전체 코드 반환"""
+    assert paper_broker._get_exchange_code('SPY', api_type='order') == 'AMEX'
+    assert paper_broker._get_exchange_code('IEF', api_type='order') == 'NASD'
+    assert paper_broker._get_exchange_code('GLD', api_type='order') == 'NYSE'
+    assert paper_broker._get_exchange_code('UNKNOWN', api_type='order') == 'NASD'
+
+
 # --- MockBroker 추가 테스트 ---
 
 def test_mock_broker_fetch_current_prices():
