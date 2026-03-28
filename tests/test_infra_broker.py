@@ -227,6 +227,52 @@ def test_mock_broker_qty_adjustment_uses_logger_warning():
         "수량 조정 시 ILogger.warning()이 호출되어야 함"
 
 
+def test_mock_broker_sell_qty_adjusted_log_shows_actual_qty():
+    """
+    [이슈 #211] 보유량 초과 매도 시 logger.info에 실제 체결 수량(actual_qty)이 기록되어야 함.
+    요청 수량(order.quantity)이 아닌 보유량 한도로 조정된 수량이어야 한다.
+    """
+    from unittest.mock import MagicMock
+    from src.core.interfaces import ILogger
+
+    mock_logger = MagicMock(spec=ILogger)
+    broker = MockBroker(initial_cash=0.0, holdings={'SPY': 5}, logger=mock_logger)
+
+    # 10주 매도 시도 (보유는 5주)
+    orders = [Order('SPY', OrderAction.SELL, 10, 100.0)]
+    broker.execute_orders(orders)
+
+    # logger.info 호출 내용에서 실제 체결 수량(5)이 포함되어야 함
+    info_calls = [str(call) for call in mock_logger.info.call_args_list]
+    assert any("5" in call and "FILLED" in call for call in info_calls), \
+        "로그에 실제 체결 수량(5주)이 포함되어야 함"
+    # 요청 수량(10)이 FILLED 로그에 포함되면 안 됨
+    assert not any("10" in call and "FILLED" in call for call in info_calls), \
+        "FILLED 로그에 요청 수량(10주)이 출력되면 안 됨"
+
+
+def test_mock_broker_sell_qty_adjusted_emits_warning():
+    """
+    [이슈 #211] 보유량 초과 매도 시 logger.warning이 호출되어야 함.
+    수량 조정이 없는 정상 매도에서는 warning이 호출되지 않아야 함.
+    """
+    from unittest.mock import MagicMock
+    from src.core.interfaces import ILogger
+
+    mock_logger = MagicMock(spec=ILogger)
+
+    # 과매도: warning 발생해야 함
+    broker = MockBroker(initial_cash=0.0, holdings={'SPY': 5}, logger=mock_logger)
+    broker.execute_orders([Order('SPY', OrderAction.SELL, 10, 100.0)])
+    assert mock_logger.warning.called, "수량 조정 시 warning 로그가 호출되어야 함"
+
+    # 정상 매도: warning 없어야 함
+    mock_logger.reset_mock()
+    broker2 = MockBroker(initial_cash=0.0, holdings={'SPY': 5}, logger=mock_logger)
+    broker2.execute_orders([Order('SPY', OrderAction.SELL, 3, 100.0)])
+    assert not mock_logger.warning.called, "정상 매도 시 warning 로그가 호출되면 안 됨"
+
+
 def test_mock_broker_cash_recycling_logic():
     """
     [심화] 매도 대금이 즉시 매수 재원으로 활용되는지 검증
