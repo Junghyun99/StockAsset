@@ -863,3 +863,82 @@ def test_get_header_triggers_token_refresh_when_expired(paper_broker, mock_reque
     headers = paper_broker._get_header("HHDFS00000300")
 
     assert headers['authorization'] == 'Bearer fresh_token'
+
+
+# --- raise_for_status 검증 테스트 (Issue #213) ---
+
+def test_auth_raise_for_status_on_http_error(mock_requests, mock_logger):
+    """_auth: HTTP 에러 응답(500 등) 시 예외가 전파됨"""
+    auth_response = MagicMock()
+    auth_response.raise_for_status.side_effect = Exception("500 Server Error")
+    mock_requests.post.return_value = auth_response
+
+    with pytest.raises(Exception, match="500 Server Error"):
+        KisPaperBroker('key', 'secret', '1234567890', mock_logger)
+
+
+def test_get_hashkey_raise_for_status_on_http_error(paper_broker, mock_requests):
+    """_get_hashkey: HTTP 에러 응답 시 None 반환 및 에러 로깅"""
+    hash_response = MagicMock()
+    hash_response.raise_for_status.side_effect = Exception("429 Too Many Requests")
+    mock_requests.post.return_value = hash_response
+
+    result = paper_broker._get_hashkey({"test": "data"})
+
+    assert result is None
+    paper_broker.logger.error.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_fetch_prices_raise_for_status_on_http_error(mock_sleep, paper_broker, mock_requests):
+    """fetch_current_prices: HTTP 에러 응답 시 해당 티커 가격 0.0 반환"""
+    price_response = MagicMock()
+    price_response.raise_for_status.side_effect = Exception("503 Service Unavailable")
+    mock_requests.get.return_value = price_response
+
+    prices = paper_broker.fetch_current_prices(['SPY'])
+
+    assert prices['SPY'] == 0.0
+    paper_broker.logger.error.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_get_portfolio_raise_for_status_on_http_error(mock_sleep, paper_broker, mock_requests):
+    """get_portfolio: HTTP 에러 응답 시 에러 로깅 후 빈 포트폴리오 반환"""
+    portfolio_response = MagicMock()
+    portfolio_response.raise_for_status.side_effect = Exception("500 Internal Server Error")
+    mock_requests.get.return_value = portfolio_response
+
+    pf = paper_broker.get_portfolio()
+
+    assert pf.total_cash == 0.0
+    assert pf.holdings == {}
+    paper_broker.logger.error.assert_called()
+
+
+def test_send_order_raise_for_status_on_http_error(paper_broker, mock_requests):
+    """_send_order: HTTP 에러 응답 시 None 반환 및 에러 로깅"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+    order_response = MagicMock()
+    order_response.raise_for_status.side_effect = Exception("429 Rate Limit Exceeded")
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    order = Order('SPY', OrderAction.BUY, 10, 150.0)
+    result = paper_broker._send_order(order)
+
+    assert result is None
+    paper_broker.logger.error.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_pending_orders_raise_for_status_on_http_error(mock_sleep, paper_broker, mock_requests):
+    """_get_pending_orders_count: HTTP 에러 응답 시 에러 로깅 후 0 반환"""
+    pending_response = MagicMock()
+    pending_response.raise_for_status.side_effect = Exception("500 Server Error")
+    mock_requests.get.return_value = pending_response
+
+    count = paper_broker._get_pending_orders_count()
+
+    assert count == 0
+    paper_broker.logger.error.assert_called()
