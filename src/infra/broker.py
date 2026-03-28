@@ -4,7 +4,7 @@ from src.core.interfaces import IBrokerAdapter, ILogger
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
 import time
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class MockBroker(IBrokerAdapter):
     """
@@ -183,10 +183,11 @@ class KisBrokerBase(IBrokerAdapter):
 
         # URL은 서브클래스 클래스 상수에서 설정
         self.base_url = self.BASE_URL
+        self.token_expires_at: Optional[datetime] = None
         self.access_token = self._auth()
 
     def _auth(self) -> str:
-        """접근 토큰 발급"""
+        """접근 토큰 발급 및 만료 시각 저장"""
         url = f"{self.base_url}/oauth2/tokenP"
         payload = {
             "grant_type": "client_credentials",
@@ -198,13 +199,22 @@ class KisBrokerBase(IBrokerAdapter):
             data = res.json()
             if 'access_token' not in data:
                 raise Exception(f"Auth Failed: {data}")
+            expires_in = int(data.get('expires_in', 86400))
+            self.token_expires_at = datetime.now() + timedelta(seconds=expires_in)
             return data['access_token']
         except Exception as e:
             self.logger.error(f"[KisBroker] Auth Error: {e}")
             raise e
 
+    def _ensure_token(self) -> None:
+        """토큰 만료 60초 전이면 자동 재발급"""
+        if self.token_expires_at is None or datetime.now() >= self.token_expires_at - timedelta(seconds=60):
+            self.logger.info("[KisBroker] Access Token 갱신 중...")
+            self.access_token = self._auth()
+
     def _get_header(self, tr_id: str, data: dict = None) -> dict:
         """API 공통 헤더 생성 (HashKey 포함)"""
+        self._ensure_token()
         headers = {
             "Content-Type": "application/json; charset=utf-8",
             "authorization": f"Bearer {self.access_token}",
