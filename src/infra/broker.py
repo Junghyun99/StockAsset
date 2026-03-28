@@ -362,21 +362,24 @@ class KisBrokerBase(IBrokerAdapter):
         if buy_orders:
             if sell_orders:
                 time.sleep(2) # 정산 대기
-            pf = self.get_portfolio()
-            current_cash = pf.total_cash
-
-            self.logger.info(f"[KisBroker] Available Cash for BUY: ${current_cash:,.2f}")
 
             # === 3. 매수 실행 ===
             for order in buy_orders:
+                # 매수 주문마다 증권사 API로 실제 가용 금액 조회
+                # (메모리 차감 방식은 지정가 미체결 시 실제 잔고와 괴리 발생 가능 - #222)
+                # ※ total_cash가 미체결 예약금을 제외한 실제 가용 금액인지 KIS API 검증 필요 (#225)
+                pf = self.get_portfolio()
+                current_cash = pf.total_cash
+                self.logger.info(f"[KisBroker] Available Cash for BUY: ${current_cash:,.2f}")
+
                 # 안전 마진 (98%)
                 SAFE_MARGIN = 0.98
                 budget = current_cash * SAFE_MARGIN
-                
+
                 # 시장가(지정가) 매수 대비 2% 버퍼
                 estimated_price = order.price * 1.02
                 if estimated_price <= 0: continue
-                
+
                 # 수량 재계산
                 max_qty = int(budget / estimated_price)
                 # 원본 Order 객체를 변경하지 않고 조정된 수량으로 로컬 변수 사용
@@ -391,9 +394,11 @@ class KisBrokerBase(IBrokerAdapter):
                     res = self._send_order(adjusted_order)
                     if res:
                         executions.append(res)
-                        # 메모리상 잔고 차감 (다음 주문을 위해)
-                        current_cash -= (res.price * res.quantity)
                     time.sleep(0.2)
+
+            # 매수 후 체결 대기 (매도와 동일하게 미체결 확인)
+            if not self._wait_for_completion(timeout=60):
+                self.logger.warning("[KisBroker] Buy orders timed out or pending.")
 
         return executions
 
