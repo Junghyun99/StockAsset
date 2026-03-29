@@ -9,7 +9,7 @@ from src.strategy_config import StrategyConfig
 from src.core.engine import TradingEngine
 from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
-from src.infra.broker import KisPaperBroker, KisLiveBroker
+from src.infra.broker import KisPaperBroker, KisLiveBroker, KisDomesticPaperBroker, KisDomesticLiveBroker
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
 
@@ -33,23 +33,42 @@ class TradingBot:
         )
         self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL, self.logger)
 
-        # 브로커 선택 (실전 vs 모의)
-        if self.config.IS_LIVE_TRADING:
-            self.logger.info("Mode: LIVE TRADING (KisLiveBroker)")
-            self.broker = KisLiveBroker(
-                self.config.KIS_APP_KEY,
-                self.config.KIS_APP_SECRET,
-                self.config.KIS_ACC_NO,
-                self.logger,
-            )
+        # 브로커 선택 (시장유형 × 실전/모의)
+        is_domestic = self.config.MARKET_TYPE == "domestic"
+        if is_domestic:
+            if self.config.IS_LIVE_TRADING:
+                self.logger.info("Mode: LIVE TRADING — 국내주식 (KisDomesticLiveBroker)")
+                self.broker = KisDomesticLiveBroker(
+                    self.config.KIS_APP_KEY,
+                    self.config.KIS_APP_SECRET,
+                    self.config.KIS_ACC_NO,
+                    self.logger,
+                )
+            else:
+                self.logger.info("Mode: PAPER TRADING — 국내주식 (KisDomesticPaperBroker)")
+                self.broker = KisDomesticPaperBroker(
+                    self.config.KIS_APP_KEY,
+                    self.config.KIS_APP_SECRET,
+                    self.config.KIS_ACC_NO,
+                    self.logger,
+                )
         else:
-            self.logger.info("Mode: PAPER TRADING (KisPaperBroker)")
-            self.broker = KisPaperBroker(
-                self.config.KIS_APP_KEY,
-                self.config.KIS_APP_SECRET,
-                self.config.KIS_ACC_NO,
-                self.logger,
-            )
+            if self.config.IS_LIVE_TRADING:
+                self.logger.info("Mode: LIVE TRADING — 해외주식 (KisLiveBroker)")
+                self.broker = KisLiveBroker(
+                    self.config.KIS_APP_KEY,
+                    self.config.KIS_APP_SECRET,
+                    self.config.KIS_ACC_NO,
+                    self.logger,
+                )
+            else:
+                self.logger.info("Mode: PAPER TRADING — 해외주식 (KisPaperBroker)")
+                self.broker = KisPaperBroker(
+                    self.config.KIS_APP_KEY,
+                    self.config.KIS_APP_SECRET,
+                    self.config.KIS_ACC_NO,
+                    self.logger,
+                )
 
         # 3. TradingEngine 조립 (core 로직은 엔진 내부에서 생성)
         self.engine = TradingEngine(

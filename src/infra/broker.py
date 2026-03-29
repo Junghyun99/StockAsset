@@ -161,9 +161,11 @@ class MockBroker(IBrokerAdapter):
         # 실제 구현 시: KIS API 잔고 조회 후 self.cash 업데이트
 
 
-class KisBrokerBase(IBrokerAdapter):
+class KisBrokerCommon(IBrokerAdapter):
     """한국투자증권 REST API 공통 베이스 클래스.
-    서브클래스에서 BASE_URL 및 TR_* 상수를 반드시 정의해야 한다.
+    인증, 헤더, 해시키, 주문 흐름(매도우선) 등 시장 무관 로직을 담당한다.
+    서브클래스(KisOverseasBrokerBase, KisDomesticBrokerBase)에서
+    시장별 API 호출 메서드를 반드시 구현해야 한다.
     """
     BASE_URL: str = ""
     PRICE_TR_ID: str = ""
@@ -171,9 +173,9 @@ class KisBrokerBase(IBrokerAdapter):
     BUY_TR_ID: str = ""
     SELL_TR_ID: str = ""
     PENDING_TR_ID: str = ""
-    FILL_TR_ID: str = ""    # 해외주식 체결내역 조회 (inquire-ccnl)
-    CANCEL_TR_ID: str = ""  # 해외주식 주문 취소 (TTTT1004U / VTTT1004U)
-    ASKING_PRICE_TR_ID: str = "HHDFS76200100"  # 해외주식 호가 조회 (실전/모의 동일)
+    FILL_TR_ID: str = ""
+    CANCEL_TR_ID: str = ""
+    ASKING_PRICE_TR_ID: str = ""
 
     SPREAD_THRESHOLD_PCT: float = 0.5  # 스프레드 임계값 (%) — 초과 시 주문 보류
 
@@ -252,13 +254,120 @@ class KisBrokerBase(IBrokerAdapter):
             self.logger.error(f"[KisBroker] HashKey 생성 실패: {e}")
             return None
     
+    # --- 추상 메서드 (서브클래스에서 구현 필수) ---
+
+    def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]:
+        raise NotImplementedError
+
+    def get_portfolio(self) -> Portfolio:
+        raise NotImplementedError
+
+    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> Optional[TradeExecution]:
+        raise NotImplementedError
+
+    def _fetch_asking_price(self, ticker: str) -> tuple:
+        raise NotImplementedError
+
+    def _get_pending_orders_count(self) -> int:
+        raise NotImplementedError
+
+    # --- 공통 오케스트레이션 로직 ---
+
+    def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
+        executions = []
+        sell_orders = [o for o in orders if o.action == OrderAction.SELL]
+        buy_orders = [o for o in orders if o.action == OrderAction.BUY]
+
+        # === 1. 매도 실행 (주문 + 체결 대기 통합) ===
+        if sell_orders:
+            self.logger.info(f"[KisBroker] Processing {len(sell_orders)} SELL orders...")
+            for order in sell_orders:
+                res = self._send_order_and_wait(order, timeout=30)
+                if res: executions.append(res)
+                time.sleep(0.2) # API 제한 고려
+
+        # === 2. 잔고 갱신 및 매수 재계산 ===
+        # 매도 미체결(타임아웃) 시 매수 중단 — 이중 매도 및 자금 부족 방지 (#227)
+        sell_timed_out = any(
+            e.status == ExecutionStatus.ORDERED
+            for e in executions
+            if e.action == OrderAction.SELL
+        )
+        if sell_timed_out:
+            self.logger.error("[KisBroker] 매도 미체결 주문 존재 — 매수 중단 (#227)")
+            return executions
+
+        if buy_orders:
+            if sell_orders:
+                time.sleep(2) # 정산 대기
+
+            # === 3. 매수 실행 (주문 + 체결 대기 통합) ===
+            for order in buy_orders:
+                # 매수 주문마다 증권사 API로 실제 가용 금액 조회
+                pf = self.get_portfolio()
+                current_cash = pf.total_cash
+                self.logger.info(f"[KisBroker] Available Cash for BUY: {current_cash:,.0f}")
+
+                # 안전 마진 (98%)
+                SAFE_MARGIN = 0.98
+                budget = current_cash * SAFE_MARGIN
+
+                # 호가 기반 매수가 추정 (ask 가격 사용, 실패 시 2% 버퍼)
+                bid, ask = self._fetch_asking_price(order.ticker)
+                if not self._check_spread(bid, ask):
+                    self.logger.warning(f"[KisBroker] 스프레드 비정상 — {order.ticker} 매수 건너뜀")
+                    continue
+                estimated_price = ask if ask > 0 else order.price * 1.02
+                if estimated_price <= 0: continue
+
+                # 수량 재계산
+                max_qty = int(budget / estimated_price)
+                actual_qty = min(order.quantity, max_qty)
+
+                if max_qty < order.quantity:
+                    self.logger.warning(f"⚠️ Qty Adjusted: {order.ticker} {order.quantity} -> {actual_qty}")
+
+                if actual_qty > 0:
+                    adjusted_order = Order(ticker=order.ticker, action=order.action, quantity=actual_qty, price=order.price)
+                    res = self._send_order_and_wait(adjusted_order, timeout=30)
+                    if res:
+                        executions.append(res)
+                    time.sleep(0.2)
+
+        return executions
+
+    def _wait_for_completion(self, timeout: int = 60) -> bool:
+        """미체결 내역이 없을 때까지 대기"""
+        start = time.time()
+        while (time.time() - start) < timeout:
+            count = self._get_pending_orders_count()
+            if count == 0:
+                return True
+            time.sleep(2)
+        return False
+
+    def _check_spread(self, bid: float, ask: float) -> bool:
+        """스프레드 정상 여부 반환. bid/ask가 0이면 True (fallback 허용)"""
+        if bid <= 0 or ask <= 0:
+            return True
+        mid = (bid + ask) / 2
+        spread_pct = (ask - bid) / mid * 100
+        return spread_pct <= self.SPREAD_THRESHOLD_PCT
+
+
+class KisOverseasBrokerBase(KisBrokerCommon):
+    """해외주식(미국) 전용 브로커 베이스 클래스.
+    KisBrokerCommon의 추상 메서드를 해외주식 API로 구현한다.
+    """
+    ASKING_PRICE_TR_ID: str = "HHDFS76200100"  # 해외주식 호가 조회 (실전/모의 동일)
+
     def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]:
         """
         해외주식 현재가 조회 (반복 호출)
         """
         prices = {}
         tr_id = self.PRICE_TR_ID
-        url = f"{self.base_url}/uapi/overseas-price/v1/quotations/price" 
+        url = f"{self.base_url}/uapi/overseas-price/v1/quotations/price"
         for ticker in tickers:
             exch = self._get_exchange_code(ticker)
             params = {
@@ -349,74 +458,6 @@ class KisBrokerBase(IBrokerAdapter):
             holdings=all_holdings,
             current_prices=all_prices
         )
-
-    def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
-        executions = []
-        sell_orders = [o for o in orders if o.action == OrderAction.SELL]
-        buy_orders = [o for o in orders if o.action == OrderAction.BUY]
-
-        # === 1. 매도 실행 (주문 + 체결 대기 통합) ===
-        if sell_orders:
-            self.logger.info(f"[KisBroker] Processing {len(sell_orders)} SELL orders...")
-            for order in sell_orders:
-                res = self._send_order_and_wait(order, timeout=30)
-                if res: executions.append(res)
-                time.sleep(0.2) # API 제한 고려
-
-        # === 2. 잔고 갱신 및 매수 재계산 ===
-        # 매도 미체결(타임아웃) 시 매수 중단 — 이중 매도 및 자금 부족 방지 (#227)
-        sell_timed_out = any(
-            e.status == ExecutionStatus.ORDERED
-            for e in executions
-            if e.action == OrderAction.SELL
-        )
-        if sell_timed_out:
-            self.logger.error("[KisBroker] 매도 미체결 주문 존재 — 매수 중단 (#227)")
-            return executions
-
-        if buy_orders:
-            if sell_orders:
-                time.sleep(2) # 정산 대기
-
-            # === 3. 매수 실행 (주문 + 체결 대기 통합) ===
-            for order in buy_orders:
-                # 매수 주문마다 증권사 API로 실제 가용 금액 조회
-                # (메모리 차감 방식은 지정가 미체결 시 실제 잔고와 괴리 발생 가능 - #222)
-                # get_portfolio()의 total_cash는 ovrs_ord_psbl_amt(해외주문가능금액)로,
-                # KIS API가 미체결 예약금을 차감한 실제 가용 금액을 반환한다. (#225)
-                pf = self.get_portfolio()
-                current_cash = pf.total_cash
-                self.logger.info(f"[KisBroker] Available Cash for BUY: ${current_cash:,.2f}")
-
-                # 안전 마진 (98%)
-                SAFE_MARGIN = 0.98
-                budget = current_cash * SAFE_MARGIN
-
-                # 호가 기반 매수가 추정 (ask 가격 사용, 실패 시 2% 버퍼)
-                bid, ask = self._fetch_asking_price(order.ticker)
-                if not self._check_spread(bid, ask):
-                    self.logger.warning(f"[KisBroker] 스프레드 비정상 — {order.ticker} 매수 건너뜀")
-                    continue
-                estimated_price = ask if ask > 0 else order.price * 1.02
-                if estimated_price <= 0: continue
-
-                # 수량 재계산
-                max_qty = int(budget / estimated_price)
-                # 원본 Order 객체를 변경하지 않고 조정된 수량으로 로컬 변수 사용
-                actual_qty = min(order.quantity, max_qty)
-
-                if max_qty < order.quantity:
-                    self.logger.warning(f"⚠️ Qty Adjusted: {order.ticker} {order.quantity} -> {actual_qty}")
-
-                if actual_qty > 0:
-                    # 조정된 수량으로 새 Order 생성 (원본 불변 유지)
-                    adjusted_order = Order(ticker=order.ticker, action=order.action, quantity=actual_qty, price=order.price)
-                    res = self._send_order_and_wait(adjusted_order, timeout=30)
-                    if res:
-                        executions.append(res)
-                    time.sleep(0.2)
-
-        return executions
 
     def _send_order(self, order: Order) -> Optional[TradeExecution]:
         """실제 주문 API 호출"""
@@ -708,16 +749,6 @@ class KisBrokerBase(IBrokerAdapter):
             self.logger.error(f"[KisBroker] Cancel Error: {ticker} ODNO={odno} — {e}")
             return False
 
-    def _wait_for_completion(self, timeout: int = 60) -> bool:
-        """미체결 내역이 없을 때까지 대기"""
-        start = time.time()
-        while (time.time() - start) < timeout:
-            count = self._get_pending_orders_count()
-            if count == 0:
-                return True
-            time.sleep(2)
-        return False
-
     def _get_pending_orders_count(self) -> int:
         """
         [해외주식] 미체결 내역 조회
@@ -794,14 +825,6 @@ class KisBrokerBase(IBrokerAdapter):
             self.logger.warning(f"[KisBroker] 호가 조회 에러 {ticker}: {e}")
             return (0.0, 0.0)
 
-    def _check_spread(self, bid: float, ask: float) -> bool:
-        """스프레드 정상 여부 반환. bid/ask가 0이면 True (fallback 허용)"""
-        if bid <= 0 or ask <= 0:
-            return True
-        mid = (bid + ask) / 2
-        spread_pct = (ask - bid) / mid * 100
-        return spread_pct <= self.SPREAD_THRESHOLD_PCT
-
     def _get_exchange_code(self, ticker: str, api_type: str = "price") -> str:
         """
         티커별 거래소 코드 반환 (config.TICKER_EXCHANGE_MAP 참조)
@@ -821,8 +844,8 @@ class KisBrokerBase(IBrokerAdapter):
         return price_code
 
 
-class KisPaperBroker(KisBrokerBase):
-    """한국투자증권 모의투자 브로커 (가상거래 서버)"""
+class KisPaperBroker(KisOverseasBrokerBase):
+    """한국투자증권 모의투자 브로커 — 해외주식 (가상거래 서버)"""
     BASE_URL = "https://openapivts.koreainvestment.com:29443"
     PRICE_TR_ID = "HHDFS00000300"  # 해외주식 현재가 조회 (실전/모의 동일 TR_ID)
     PORTFOLIO_TR_ID = "VTTS3012R"
@@ -837,8 +860,8 @@ class KisPaperBroker(KisBrokerBase):
         self.logger.info("[KisPaperBroker] Mode: PAPER TRADING (Virtual)")
 
 
-class KisLiveBroker(KisBrokerBase):
-    """한국투자증권 실전투자 브로커 (실거래 서버)"""
+class KisLiveBroker(KisOverseasBrokerBase):
+    """한국투자증권 실전투자 브로커 — 해외주식 (실거래 서버)"""
     BASE_URL = "https://openapi.koreainvestment.com:9443"
     PRICE_TR_ID = "HHDFS00000300"
     PORTFOLIO_TR_ID = "TTTS3012R"
@@ -851,3 +874,380 @@ class KisLiveBroker(KisBrokerBase):
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         super().__init__(app_key, app_secret, acc_no, logger)
         self.logger.info("[KisLiveBroker] Mode: LIVE TRADING")
+
+
+# ============================================================
+# 국내주식 브로커
+# ============================================================
+
+class KisDomesticBrokerBase(KisBrokerCommon):
+    """국내주식 전용 브로커 베이스 클래스.
+    KisBrokerCommon의 추상 메서드를 국내주식 KIS API로 구현한다.
+    """
+    ASKING_PRICE_TR_ID: str = "FHKST01010200"  # 국내주식 호가 조회 (실전/모의 동일)
+
+    def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]:
+        """국내주식 현재가 조회"""
+        prices = {}
+        tr_id = self.PRICE_TR_ID
+        url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-price"
+        for ticker in tickers:
+            params = {
+                "FID_COND_MRKT_DIV_CODE": "J",  # J: 주식/ETF
+                "FID_INPUT_ISCD": ticker          # 종목코드 (6자리)
+            }
+            headers = self._get_header(tr_id)
+            try:
+                time.sleep(0.1)
+                res = requests.get(url, headers=headers, params=params)
+                res.raise_for_status()
+                data = res.json()
+
+                if data['rt_cd'] == '0':
+                    price = float(data['output']['stck_prpr'])
+                    prices[ticker] = price
+                else:
+                    self.logger.warning(f"[KisDomestic] Price fetch failed for {ticker}: {data.get('msg1')}")
+                    prices[ticker] = 0.0
+            except Exception as e:
+                self.logger.error(f"[KisDomestic] Price fetch error {ticker}: {e}")
+                prices[ticker] = 0.0
+
+        return prices
+
+    def get_portfolio(self) -> Portfolio:
+        """국내주식 잔고 및 예수금 조회 (KRX 단일 거래소 — 1회 호출)"""
+        tr_id = self.PORTFOLIO_TR_ID
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/inquire-balance"
+
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "AFHR_FLPR_YN": "N",          # 시간외단일가 여부
+            "OFL_YN": "",                  # 오프라인 여부
+            "INQR_DVSN": "02",            # 조회구분 (02: 종목별)
+            "UNPR_DVSN": "01",            # 단가구분
+            "FUND_STTL_ICLD_YN": "N",     # 펀드결제분 포함 여부
+            "FNCG_AMT_AUTO_RDPT_YN": "N", # 융자금액 자동상환 여부
+            "PRCS_DVSN": "00",            # 처리구분 (00: 전일매매포함)
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": ""
+        }
+        headers = self._get_header(tr_id)
+
+        total_cash = 0.0
+        all_holdings: Dict[str, int] = {}
+        all_prices: Dict[str, float] = {}
+
+        try:
+            time.sleep(0.2)
+            res = requests.get(url, headers=headers, params=params)
+            res.raise_for_status()
+            data = res.json()
+
+            if data['rt_cd'] != '0':
+                self.logger.warning(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
+                return Portfolio(total_cash=0.0, holdings={}, current_prices={})
+
+            # 예수금 (dnca_tot_amt: 예수금총액)
+            total_cash = float(data.get('output2', [{}])[0].get('dnca_tot_amt', 0) or 0)
+
+            # 보유 종목
+            for item in data.get('output1', []):
+                qty = int(item.get('hldg_qty', 0) or 0)
+                if qty > 0:
+                    ticker = item['pdno']           # 종목코드
+                    all_holdings[ticker] = qty
+                    all_prices[ticker] = float(item.get('prpr', 0) or 0)  # 현재가
+
+        except Exception as e:
+            self.logger.error(f"[KisDomestic] Error getting portfolio: {e}")
+
+        return Portfolio(
+            total_cash=total_cash,
+            holdings=all_holdings,
+            current_prices=all_prices
+        )
+
+    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> Optional[TradeExecution]:
+        """국내주식 주문 전송 후 체결 대기."""
+        tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-cash"
+
+        # 호가 기반 주문가 결정
+        bid, ask = self._fetch_asking_price(order.ticker)
+
+        # 스프레드 이상 시 주문 거부
+        if not self._check_spread(bid, ask):
+            mid = (bid + ask) / 2
+            spread_pct = (ask - bid) / mid * 100
+            self.logger.warning(
+                f"[KisDomestic] 스프레드 비정상 — {order.ticker} "
+                f"bid={bid} ask={ask} spread={spread_pct:.2f}% > {self.SPREAD_THRESHOLD_PCT}% — 주문 보류"
+            )
+            return TradeExecution(
+                ticker=order.ticker, action=order.action, quantity=order.quantity,
+                price=order.price, fee=0.0,
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status=ExecutionStatus.REJECTED
+            )
+
+        # 매수: ask(매도호가), 매도: bid(매수호가). 호가 조회 실패 시 last price fallback
+        if order.action == OrderAction.BUY:
+            order_price = int(ask) if ask > 0 else int(order.price)
+        else:
+            order_price = int(bid) if bid > 0 else int(order.price)
+
+        data = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "PDNO": order.ticker,              # 종목코드 (6자리)
+            "ORD_DVSN": "00",                  # 00: 지정가
+            "ORD_QTY": str(order.quantity),
+            "ORD_UNPR": str(order_price),      # KRW 정수
+        }
+
+        try:
+            headers = self._get_header(tr_id, data)
+            res = requests.post(url, headers=headers, json=data)
+            res.raise_for_status()
+            resp_data = res.json()
+
+            if resp_data['rt_cd'] != '0':
+                self.logger.error(f"[KisDomestic] Order Failed: {resp_data.get('msg1')}")
+                return None
+
+            odno = resp_data.get('output', {}).get('ODNO', '')
+            self.logger.info(
+                f"[KisDomestic] Order Sent: {order.action} {order.ticker} "
+                f"{order.quantity} @ {order_price} (ODNO={odno})"
+            )
+
+            # 체결 대기 및 실제 체결 정보 조회
+            if odno:
+                filled = self._poll_order_fill(odno, timeout=timeout)
+                if filled:
+                    fill_price, fill_qty, fill_fee = self._query_fill_details(odno, order.ticker)
+                    actual_price = fill_price if fill_price > 0 else float(order_price)
+                    actual_qty = fill_qty if fill_qty > 0 else order.quantity
+                    self.logger.info(
+                        f"[KisDomestic] Order FILLED: {order.ticker} ODNO={odno} "
+                        f"price={actual_price} qty={actual_qty} fee={fill_fee}"
+                    )
+                    return TradeExecution(
+                        ticker=order.ticker,
+                        action=order.action,
+                        quantity=actual_qty,
+                        price=actual_price,
+                        fee=fill_fee,
+                        date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        status=ExecutionStatus.FILLED
+                    )
+                else:
+                    self.logger.warning(
+                        f"[KisDomestic] Order NOT confirmed within {timeout}s: "
+                        f"{order.ticker} ODNO={odno} — 미체결 주문 취소 시도"
+                    )
+                    cancelled = self._cancel_order(odno, order.ticker, order.quantity)
+                    if not cancelled:
+                        self.logger.error(
+                            f"[KisDomestic] 주문 취소 실패: {order.ticker} ODNO={odno} — 수동 확인 필요"
+                        )
+
+            # 타임아웃 또는 ODNO 미획득 시 ORDERED 반환
+            return TradeExecution(
+                ticker=order.ticker,
+                action=order.action,
+                quantity=order.quantity,
+                price=float(order_price),
+                fee=0.0,
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status=ExecutionStatus.ORDERED
+            )
+
+        except Exception as e:
+            self.logger.error(f"[KisDomestic] Order Error: {e}")
+            return None
+
+    def _poll_order_fill(self, odno: str, timeout: int = 30) -> bool:
+        """미체결 목록에서 해당 ODNO가 사라질 때까지 polling."""
+        start = time.time()
+        while (time.time() - start) < timeout:
+            try:
+                pending_ids = self._get_pending_order_ids()
+                if odno not in pending_ids:
+                    return True
+            except Exception as e:
+                self.logger.warning(f"[KisDomestic] Fill poll error (ODNO={odno}): {e}")
+            time.sleep(2)
+        return False
+
+    def _get_pending_order_ids(self) -> set:
+        """국내주식 미체결(정정/취소 가능) 주문번호 집합 반환."""
+        tr_id = self.PENDING_TR_ID
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl"
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": "",
+            "INQR_DVSN_1": "0",
+            "INQR_DVSN_2": "0"
+        }
+        headers = self._get_header(tr_id)
+        res = requests.get(url, headers=headers, params=params)
+        res.raise_for_status()
+        data = res.json()
+        if data['rt_cd'] == '0':
+            return {item.get('odno', '') for item in data.get('output', [])}
+        return set()
+
+    def _get_pending_orders_count(self) -> int:
+        """국내주식 미체결 건수 조회."""
+        try:
+            pending_ids = self._get_pending_order_ids()
+            count = len(pending_ids)
+            if count > 0:
+                self.logger.info(f"[KisDomestic] Found {count} pending orders. Waiting...")
+            return count
+        except Exception as e:
+            self.logger.error(f"[KisDomestic] Pending Check Error: {e}")
+            return 0
+
+    def _query_fill_details(self, odno: str, ticker: str):
+        """국내주식 체결내역 조회 — 실제 체결가·수량·수수료 반환."""
+        if not self.FILL_TR_ID:
+            return 0.0, 0, 0.0
+
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/inquire-daily-ccld"
+        today = datetime.now().strftime("%Y%m%d")
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "INQR_STRT_DT": today,
+            "INQR_END_DT": today,
+            "SLL_BUY_DVSN_CD": "00",      # 00: 전체
+            "INQR_DVSN": "00",
+            "PDNO": ticker,
+            "CCLD_DVSN": "01",             # 01: 체결만
+            "ORD_GNO_BRNO": "",
+            "ODNO": odno,
+            "INQR_DVSN_3": "00",
+            "INQR_DVSN_1": "",
+            "CTX_AREA_FK100": "",
+            "CTX_AREA_NK100": ""
+        }
+        try:
+            headers = self._get_header(self.FILL_TR_ID)
+            res = requests.get(url, headers=headers, params=params)
+            res.raise_for_status()
+            data = res.json()
+            if data['rt_cd'] != '0':
+                return 0.0, 0, 0.0
+
+            for item in data.get('output1', []):
+                if item.get('odno') != odno:
+                    continue
+                fill_price = float(item.get('avg_prvs', 0) or 0)    # 체결평균가
+                fill_qty = int(item.get('tot_ccld_qty', 0) or 0)    # 총체결수량
+                fill_fee = float(item.get('tot_ccld_amt', 0) or 0) * 0.00015  # 수수료 추정
+                return fill_price, fill_qty, fill_fee
+        except Exception as e:
+            self.logger.warning(f"[KisDomestic] Fill detail query error (ODNO={odno}): {e}")
+        return 0.0, 0, 0.0
+
+    def _cancel_order(self, odno: str, ticker: str, quantity: int) -> bool:
+        """국내주식 미체결 주문 취소."""
+        if not self.CANCEL_TR_ID:
+            self.logger.warning("[KisDomestic] CANCEL_TR_ID 미설정 — 주문 취소 불가")
+            return False
+
+        url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-rvsecncl"
+        data = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "KRX_FWDG_ORD_ORGNO": "",
+            "ORGN_ODNO": odno,
+            "ORD_DVSN": "00",             # 지정가
+            "RVSE_CNCL_DVSN_CD": "02",    # 02: 취소
+            "ORD_QTY": str(quantity),
+            "ORD_UNPR": "0",
+            "QTY_ALL_ORD_YN": "Y",        # 전량 취소
+        }
+        try:
+            headers = self._get_header(self.CANCEL_TR_ID, data)
+            res = requests.post(url, headers=headers, json=data)
+            res.raise_for_status()
+            resp_data = res.json()
+            if resp_data['rt_cd'] == '0':
+                self.logger.info(f"[KisDomestic] Order Cancelled: {ticker} ODNO={odno}")
+                return True
+            else:
+                self.logger.error(
+                    f"[KisDomestic] Cancel Failed: {ticker} ODNO={odno} — {resp_data.get('msg1')}"
+                )
+                return False
+        except Exception as e:
+            self.logger.error(f"[KisDomestic] Cancel Error: {ticker} ODNO={odno} — {e}")
+            return False
+
+    def _fetch_asking_price(self, ticker: str) -> tuple:
+        """국내주식 호가 조회: (best_bid, best_ask) 반환. 실패 시 (0.0, 0.0)"""
+        self._ensure_token()
+        url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn"
+        params = {
+            "FID_COND_MRKT_DIV_CODE": "J",
+            "FID_INPUT_ISCD": ticker
+        }
+        headers = self._get_header(self.ASKING_PRICE_TR_ID)
+        try:
+            time.sleep(0.1)
+            res = requests.get(url, headers=headers, params=params)
+            res.raise_for_status()
+            data = res.json()
+
+            if data['rt_cd'] != '0':
+                self.logger.warning(f"[KisDomestic] 호가 조회 실패 {ticker}: {data.get('msg1')}")
+                return (0.0, 0.0)
+
+            output1 = data.get('output1', {})
+            # 국내주식 호가: askp1(매도1호가), bidp1(매수1호가)
+            bid = float(output1.get('bidp1', 0) or 0)
+            ask = float(output1.get('askp1', 0) or 0)
+            return (bid, ask)
+
+        except Exception as e:
+            self.logger.warning(f"[KisDomestic] 호가 조회 에러 {ticker}: {e}")
+            return (0.0, 0.0)
+
+
+class KisDomesticPaperBroker(KisDomesticBrokerBase):
+    """한국투자증권 모의투자 브로커 — 국내주식 (가상거래 서버)"""
+    BASE_URL = "https://openapivts.koreainvestment.com:29443"
+    PRICE_TR_ID = "FHKST01010100"    # 국내주식 현재가 (실전/모의 동일)
+    PORTFOLIO_TR_ID = "VTTC8434R"    # 국내주식 잔고 (모의)
+    BUY_TR_ID = "VTTC0012U"         # 국내주식 매수 (모의)
+    SELL_TR_ID = "VTTC0011U"        # 국내주식 매도 (모의)
+    PENDING_TR_ID = "TTTC0084R"     # 국내주식 미체결 조회
+    FILL_TR_ID = "VTTC0081R"        # 국내주식 체결내역 (모의)
+    CANCEL_TR_ID = "VTTC0013U"      # 국내주식 주문 취소 (모의)
+
+    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
+        super().__init__(app_key, app_secret, acc_no, logger)
+        self.logger.info("[KisDomesticPaperBroker] Mode: PAPER TRADING (Virtual)")
+
+
+class KisDomesticLiveBroker(KisDomesticBrokerBase):
+    """한국투자증권 실전투자 브로커 — 국내주식 (실거래 서버)"""
+    BASE_URL = "https://openapi.koreainvestment.com:9443"
+    PRICE_TR_ID = "FHKST01010100"    # 국내주식 현재가 (실전/모의 동일)
+    PORTFOLIO_TR_ID = "TTTC8434R"    # 국내주식 잔고 (실전)
+    BUY_TR_ID = "TTTC0012U"         # 국내주식 매수 (실전)
+    SELL_TR_ID = "TTTC0011U"        # 국내주식 매도 (실전)
+    PENDING_TR_ID = "TTTC0084R"     # 국내주식 미체결 조회
+    FILL_TR_ID = "TTTC0081R"        # 국내주식 체결내역 (실전)
+    CANCEL_TR_ID = "TTTC0013U"      # 국내주식 주문 취소 (실전)
+
+    def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
+        super().__init__(app_key, app_secret, acc_no, logger)
+        self.logger.info("[KisDomesticLiveBroker] Mode: LIVE TRADING")
