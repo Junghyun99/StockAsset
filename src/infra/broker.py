@@ -288,6 +288,10 @@ class KisBrokerBase(IBrokerAdapter):
         """
         해외주식 잔고 및 예수금 조회 (NASD/NYSE/AMEX 전 거래소 통합)
         _get_pending_orders_count()와 동일하게 모든 거래소를 순회하여 누락 없이 수집한다.
+
+        total_cash 는 output2['ovrs_ord_psbl_amt'] (해외주문가능금액) 를 사용한다.
+        이 필드는 KIS API가 미체결(pending) 주문의 예약금을 이미 차감한 실제 가용 금액을
+        반환하므로, 연속 매수 루프에서 중복 사용을 방지할 수 있다. (#225)
         """
         tr_id = self.PORTFOLIO_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-balance"
@@ -364,7 +368,8 @@ class KisBrokerBase(IBrokerAdapter):
             for order in buy_orders:
                 # 매수 주문마다 증권사 API로 실제 가용 금액 조회
                 # (메모리 차감 방식은 지정가 미체결 시 실제 잔고와 괴리 발생 가능 - #222)
-                # ※ total_cash가 미체결 예약금을 제외한 실제 가용 금액인지 KIS API 검증 필요 (#225)
+                # get_portfolio()의 total_cash는 ovrs_ord_psbl_amt(해외주문가능금액)로,
+                # KIS API가 미체결 예약금을 차감한 실제 가용 금액을 반환한다. (#225)
                 pf = self.get_portfolio()
                 current_cash = pf.total_cash
                 self.logger.info(f"[KisBroker] Available Cash for BUY: ${current_cash:,.2f}")

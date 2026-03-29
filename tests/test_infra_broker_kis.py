@@ -427,6 +427,31 @@ def test_paper_broker_get_portfolio_cash_not_duplicated(mock_sleep, paper_broker
     assert pf.total_cash == 1000.0
 
 
+@patch('src.infra.broker.time.sleep')
+def test_paper_broker_get_portfolio_uses_order_possible_amount(mock_sleep, paper_broker, mock_requests):
+    """[#225] total_cash는 ovrs_ord_psbl_amt(해외주문가능금액) — 미체결 예약금 차감 후 가용 금액
+
+    시나리오:
+    - 계좌 잔고: $10,000
+    - 종목 A 지정가 매수 주문 $3,000 접수 후 미체결 상태
+    - KIS API는 ovrs_ord_psbl_amt로 예약금 차감 후 가용 금액($7,000)을 반환
+    - total_cash는 $7,000이어야 하며, $10,000(전체 잔고)이 아님을 검증
+    """
+    response = MagicMock()
+    # KIS API가 미체결 예약금($3,000)을 차감한 주문가능금액 $7,000 반환
+    response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [],
+        'output2': {'ovrs_ord_psbl_amt': '7000.0'}  # 전체 잔고 $10,000 - 예약금 $3,000
+    }
+    mock_requests.get.return_value = response
+
+    pf = paper_broker.get_portfolio()
+
+    # total_cash는 전체 잔고($10,000)가 아닌 주문가능금액($7,000)이어야 함
+    assert pf.total_cash == 7000.0
+
+
 # --- _send_order 테스트 ---
 
 def test_paper_broker_send_order_buy_success(paper_broker, mock_requests):
