@@ -1410,3 +1410,143 @@ def test_send_order_and_wait_fill_details_fallback_to_order_price(mock_sleep, pa
     assert result.status == ExecutionStatus.FILLED
     assert result.price == 99.50  # 주문가로 fallback
     assert result.quantity == 3   # 주문 수량으로 fallback
+
+
+# --- _cancel_order 테스트 (#227) ---
+
+def test_cancel_order_success(paper_broker, mock_requests):
+    """주문 취소 성공"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash_cancel'}
+
+    cancel_response = MagicMock()
+    cancel_response.json.return_value = {'rt_cd': '0', 'output': {}}
+    mock_requests.post.side_effect = [hash_response, cancel_response]
+
+    result = paper_broker._cancel_order('ORD001', 'NASD', 'SPY', 5)
+
+    assert result is True
+    paper_broker.logger.info.assert_called()
+
+
+def test_cancel_order_api_failure(paper_broker, mock_requests):
+    """주문 취소 API 오류 응답"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash_cancel'}
+
+    cancel_response = MagicMock()
+    cancel_response.json.return_value = {'rt_cd': '1', 'msg1': '취소 불가'}
+    mock_requests.post.side_effect = [hash_response, cancel_response]
+
+    result = paper_broker._cancel_order('ORD002', 'NASD', 'SPY', 5)
+
+    assert result is False
+    paper_broker.logger.error.assert_called()
+
+
+def test_cancel_order_network_exception(paper_broker, mock_requests):
+    """주문 취소 중 네트워크 예외"""
+    mock_requests.post.side_effect = Exception("Connection error")
+
+    result = paper_broker._cancel_order('ORD003', 'NASD', 'SPY', 5)
+
+    assert result is False
+    paper_broker.logger.error.assert_called()
+
+
+def test_cancel_order_no_cancel_tr_id(paper_broker):
+    """CANCEL_TR_ID 미설정 시 False 반환"""
+    paper_broker.CANCEL_TR_ID = ""
+
+    result = paper_broker._cancel_order('ORD004', 'NASD', 'SPY', 5)
+
+    assert result is False
+    paper_broker.logger.warning.assert_called()
+
+
+# --- _send_order_and_wait 타임아웃 시 취소 테스트 (#227) ---
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_timeout_calls_cancel(mock_sleep, paper_broker, mock_requests):
+    """타임아웃 시 _cancel_order 호출"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {'rt_cd': '0', 'output': {'ODNO': 'ORD999'}}
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    with patch.object(paper_broker, '_poll_order_fill', return_value=False), \
+         patch.object(paper_broker, '_cancel_order', return_value=True) as mock_cancel:
+        order = Order('SPY', OrderAction.SELL, 5, 150.0)
+        result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    mock_cancel.assert_called_once_with('ORD999', 'AMEX', 'SPY', 5)
+    assert result is not None
+    assert result.status == ExecutionStatus.ORDERED
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_timeout_cancel_fails_logs_error(mock_sleep, paper_broker, mock_requests):
+    """타임아웃 후 취소 실패 시 error 로그"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {'rt_cd': '0', 'output': {'ODNO': 'ORD999'}}
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    with patch.object(paper_broker, '_poll_order_fill', return_value=False), \
+         patch.object(paper_broker, '_cancel_order', return_value=False):
+        order = Order('SPY', OrderAction.SELL, 5, 150.0)
+        paper_broker._send_order_and_wait(order, timeout=30)
+
+    paper_broker.logger.error.assert_called()
+
+
+# --- execute_orders 매도 타임아웃 시 매수 차단 테스트 (#227) ---
+
+@patch('src.infra.broker.time.sleep')
+def test_execute_orders_sell_timeout_blocks_buy(mock_sleep, paper_broker, mock_requests):
+    """매도 ORDERED(타임아웃) 시 매수 실행 차단"""
+    sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+    buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+        mock_send.side_effect = [sell_exec, buy_exec]
+        mock_get_pf.return_value = Portfolio(total_cash=10000.0, holdings={}, current_prices={})
+
+        orders = [
+            Order('SPY', OrderAction.SELL, 5, 150.0),
+            Order('IEF', OrderAction.BUY, 10, 100.0),
+        ]
+        executions = paper_broker.execute_orders(orders)
+
+    # 매수 주문은 실행되지 않아야 함
+    assert len(executions) == 1
+    assert executions[0].action == OrderAction.SELL
+    assert mock_send.call_count == 1  # 매도만 호출됨
+    paper_broker.logger.error.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_execute_orders_sell_filled_proceeds_to_buy(mock_sleep, paper_broker, mock_requests):
+    """매도 FILLED 시 정상적으로 매수 진행"""
+    sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+    buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+        mock_send.side_effect = [sell_exec, buy_exec]
+        mock_get_pf.return_value = Portfolio(total_cash=10000.0, holdings={}, current_prices={})
+
+        orders = [
+            Order('SPY', OrderAction.SELL, 5, 150.0),
+            Order('IEF', OrderAction.BUY, 10, 100.0),
+        ]
+        executions = paper_broker.execute_orders(orders)
+
+    # 매도 FILLED → 매수도 정상 실행
+    assert len(executions) == 2
+    assert mock_send.call_count == 2
