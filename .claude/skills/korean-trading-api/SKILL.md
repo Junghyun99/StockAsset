@@ -96,6 +96,20 @@ params = {"AUTH": "", "EXCD": "NAS", "SYMB": "AAPL"}
 
 **거래소 코드 (현재가 조회용):** `NAS`(나스닥), `NYS`(뉴욕), `AMS`(아멕스)
 
+### 2.1.1 호가 조회 (1호가)
+- **Endpoint:** `GET /uapi/overseas-price/v1/quotations/inquire-asking-price`
+- **TR ID:** `HHDFS76200100` (실전/모의 동일)
+- **구현:** `_fetch_asking_price()` at `broker.py`
+
+```python
+params = {"AUTH": "", "EXCD": "NAS", "SYMB": "AAPL"}
+# Response: data['output2'] → 호가 데이터
+# output2['pbid1'] → 최우선 매수호가 (best bid)
+# output2['pask1'] → 최우선 매도호가 (best ask)
+```
+
+**용도:** 주문 가격 결정 시 bid/ask 기반 지정가 주문 + 스프레드 이상 감지 (임계값 0.5%)
+
 ### 2.2 매수/매도
 - **Endpoint:** `POST /uapi/overseas-stock/v1/trading/order`
 - **구현:** `_send_order()` at `broker.py:387`

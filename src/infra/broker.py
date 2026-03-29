@@ -173,6 +173,9 @@ class KisBrokerBase(IBrokerAdapter):
     PENDING_TR_ID: str = ""
     FILL_TR_ID: str = ""    # 해외주식 체결내역 조회 (inquire-ccnl)
     CANCEL_TR_ID: str = ""  # 해외주식 주문 취소 (TTTT1004U / VTTT1004U)
+    ASKING_PRICE_TR_ID: str = "HHDFS76200100"  # 해외주식 호가 조회 (실전/모의 동일)
+
+    SPREAD_THRESHOLD_PCT: float = 0.5  # 스프레드 임계값 (%) — 초과 시 주문 보류
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         self.app_key = app_key
@@ -389,8 +392,12 @@ class KisBrokerBase(IBrokerAdapter):
                 SAFE_MARGIN = 0.98
                 budget = current_cash * SAFE_MARGIN
 
-                # 시장가(지정가) 매수 대비 2% 버퍼
-                estimated_price = order.price * 1.02
+                # 호가 기반 매수가 추정 (ask 가격 사용, 실패 시 2% 버퍼)
+                bid, ask = self._fetch_asking_price(order.ticker)
+                if not self._check_spread(bid, ask):
+                    self.logger.warning(f"[KisBroker] 스프레드 비정상 — {order.ticker} 매수 건너뜀")
+                    continue
+                estimated_price = ask if ask > 0 else order.price * 1.02
                 if estimated_price <= 0: continue
 
                 # 수량 재계산
@@ -419,13 +426,24 @@ class KisBrokerBase(IBrokerAdapter):
         # 주문 API는 전체 거래소 코드 사용 (NASD, NYSE, AMEX)
         exch = self._get_exchange_code(order.ticker, api_type="order")
 
-        # 가격: 시장가인 경우 0 (또는 Limit 가격)
-        # 미국주식은 보통 시장가(MKT)를 지원하지 않거나 조건이 까다로움.
-        # 전략상 계산된 price(현재가)로 지정가 주문을 내되,
-        # Buy는 높게, Sell은 낮게 내서 즉시 체결을 유도하는 것이 일반적임.
+        # 호가 기반 주문가 결정
+        bid, ask = self._fetch_asking_price(order.ticker)
 
-        # 주문단가 (소수점 2자리)
-        order_price = round(order.price, 2)
+        # 스프레드 이상 시 주문 거부
+        if not self._check_spread(bid, ask):
+            mid = (bid + ask) / 2
+            spread_pct = (ask - bid) / mid * 100
+            self.logger.warning(
+                f"[KisBroker] 스프레드 비정상 — {order.ticker} "
+                f"bid={bid} ask={ask} spread={spread_pct:.2f}% > {self.SPREAD_THRESHOLD_PCT}% — 주문 보류"
+            )
+            return None
+
+        # 매수: ask(매도호가), 매도: bid(매수호가) 사용. 호가 조회 실패 시 last price fallback
+        if order.action == OrderAction.BUY:
+            order_price = round(ask, 2) if ask > 0 else round(order.price, 2)
+        else:
+            order_price = round(bid, 2) if bid > 0 else round(order.price, 2)
 
         data = {
             "CANO": self.cano,
@@ -474,7 +492,30 @@ class KisBrokerBase(IBrokerAdapter):
         tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
         exch = self._get_exchange_code(order.ticker, api_type="order")
-        order_price = round(order.price, 2)
+
+        # 호가 기반 주문가 결정
+        bid, ask = self._fetch_asking_price(order.ticker)
+
+        # 스프레드 이상 시 주문 거부
+        if not self._check_spread(bid, ask):
+            mid = (bid + ask) / 2
+            spread_pct = (ask - bid) / mid * 100
+            self.logger.warning(
+                f"[KisBroker] 스프레드 비정상 — {order.ticker} "
+                f"bid={bid} ask={ask} spread={spread_pct:.2f}% > {self.SPREAD_THRESHOLD_PCT}% — 주문 보류"
+            )
+            return TradeExecution(
+                ticker=order.ticker, action=order.action, quantity=order.quantity,
+                price=order.price, fee=0.0,
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status=ExecutionStatus.REJECTED
+            )
+
+        # 매수: ask(매도호가), 매도: bid(매수호가) 사용. 호가 조회 실패 시 last price fallback
+        if order.action == OrderAction.BUY:
+            order_price = round(ask, 2) if ask > 0 else round(order.price, 2)
+        else:
+            order_price = round(bid, 2) if bid > 0 else round(order.price, 2)
 
         data = {
             "CANO": self.cano,
@@ -721,6 +762,46 @@ class KisBrokerBase(IBrokerAdapter):
                 
         return 0 # 모든 거래소를 다 봤는데 미체결이 없음
     
+    def _fetch_asking_price(self, ticker: str) -> tuple:
+        """호가 조회: (best_bid, best_ask) 반환. 실패 시 (0.0, 0.0)"""
+        self._ensure_token()
+        url = f"{self.base_url}/uapi/overseas-price/v1/quotations/inquire-asking-price"
+        exch = self._get_exchange_code(ticker)
+        params = {
+            "AUTH": "",
+            "EXCD": exch,
+            "SYMB": ticker
+        }
+        headers = self._get_header(self.ASKING_PRICE_TR_ID)
+        try:
+            time.sleep(0.1)
+            res = requests.get(url, headers=headers, params=params)
+            res.raise_for_status()
+            data = res.json()
+
+            if data['rt_cd'] != '0':
+                self.logger.warning(f"[KisBroker] 호가 조회 실패 {ticker}: {data.get('msg1')}")
+                return (0.0, 0.0)
+
+            output2 = data.get('output2', {})
+            # REST API 호가 필드명 (소문자): pask1(매도1호가), pbid1(매수1호가)
+            self.logger.debug(f"[KisBroker] 호가 응답 {ticker}: {output2}")
+            bid = float(output2.get('pbid1', 0) or 0)
+            ask = float(output2.get('pask1', 0) or 0)
+            return (bid, ask)
+
+        except Exception as e:
+            self.logger.warning(f"[KisBroker] 호가 조회 에러 {ticker}: {e}")
+            return (0.0, 0.0)
+
+    def _check_spread(self, bid: float, ask: float) -> bool:
+        """스프레드 정상 여부 반환. bid/ask가 0이면 True (fallback 허용)"""
+        if bid <= 0 or ask <= 0:
+            return True
+        mid = (bid + ask) / 2
+        spread_pct = (ask - bid) / mid * 100
+        return spread_pct <= self.SPREAD_THRESHOLD_PCT
+
     def _get_exchange_code(self, ticker: str, api_type: str = "price") -> str:
         """
         티커별 거래소 코드 반환 (config.TICKER_EXCHANGE_MAP 참조)
