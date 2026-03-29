@@ -519,14 +519,12 @@ def test_paper_broker_send_order_real_mode_tr_ids(live_broker, mock_requests):
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_sell_then_buy(mock_sleep, paper_broker, mock_requests):
     """매도 후 매수 순서 실행"""
-    # _send_order와 _wait_for_completion, get_portfolio를 모킹
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
-        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.side_effect = [sell_exec, buy_exec]
 
         mock_get_pf.return_value = Portfolio(
@@ -548,12 +546,11 @@ def test_paper_broker_execute_sell_then_buy(mock_sleep, paper_broker, mock_reque
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_buy_only(mock_sleep, paper_broker, mock_requests):
     """매수만 있는 경우"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.return_value = buy_exec
         mock_get_pf.return_value = Portfolio(
             total_cash=50000.0, holdings={}, current_prices={}
@@ -568,12 +565,11 @@ def test_paper_broker_execute_buy_only(mock_sleep, paper_broker, mock_requests):
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_buy_qty_adjusted(mock_sleep, paper_broker, mock_requests):
     """매수 시 잔고 부족으로 수량 조정"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        buy_exec = TradeExecution('SPY', OrderAction.BUY, 1, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 1, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.return_value = buy_exec
         # 현금이 적어서 수량이 조정되어야 함
         mock_get_pf.return_value = Portfolio(
@@ -591,8 +587,7 @@ def test_paper_broker_execute_buy_qty_adjusted(mock_sleep, paper_broker, mock_re
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_buy_zero_price(mock_sleep, paper_broker, mock_requests):
     """매수 가격이 0인 경우 스킵"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         mock_get_pf.return_value = Portfolio(
@@ -609,8 +604,7 @@ def test_paper_broker_execute_buy_zero_price(mock_sleep, paper_broker, mock_requ
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_buy_zero_qty_after_adjust(mock_sleep, paper_broker, mock_requests):
     """수량 조정 후 0이 되면 주문 안 함"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         mock_get_pf.return_value = Portfolio(
@@ -625,11 +619,10 @@ def test_paper_broker_execute_buy_zero_qty_after_adjust(mock_sleep, paper_broker
 
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_sell_timeout(mock_sleep, paper_broker, mock_requests):
-    """매도 체결 대기 타임아웃"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=False):
-
+    """매도 체결 대기 타임아웃 시 ORDERED 반환"""
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send:
         from src.core.models import TradeExecution
+        # _send_order_and_wait 자체가 타임아웃 시 ORDERED 반환
         sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
         mock_send.return_value = sell_exec
 
@@ -638,19 +631,17 @@ def test_paper_broker_execute_sell_timeout(mock_sleep, paper_broker, mock_reques
 
         # 타임아웃이어도 실행 결과는 반환
         assert len(executions) == 1
-        paper_broker.logger.warning.assert_called()
 
 
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_sell_then_buy_calls_sleep2(mock_sleep, paper_broker, mock_requests):
     """매도 후 매수 시 정산 대기 sleep(2) 호출 확인"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
-        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.side_effect = [sell_exec, buy_exec]
         mock_get_pf.return_value = Portfolio(
             total_cash=10000.0, holdings={}, current_prices={}
@@ -670,12 +661,11 @@ def test_paper_broker_execute_sell_then_buy_calls_sleep2(mock_sleep, paper_broke
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_buy_only_no_sleep2(mock_sleep, paper_broker, mock_requests):
     """매수만 있는 경우 정산 대기 sleep(2) 미호출 확인"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         from src.core.models import TradeExecution
-        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.return_value = buy_exec
         mock_get_pf.return_value = Portfolio(
             total_cash=10000.0, holdings={}, current_prices={}
@@ -691,9 +681,8 @@ def test_paper_broker_execute_buy_only_no_sleep2(mock_sleep, paper_broker, mock_
 
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_send_order_returns_none(mock_sleep, paper_broker, mock_requests):
-    """_send_order가 None을 반환하는 경우 (주문 실패)"""
-    with patch.object(paper_broker, '_send_order', return_value=None) as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    """_send_order_and_wait가 None을 반환하는 경우 (주문 실패)"""
+    with patch.object(paper_broker, '_send_order_and_wait', return_value=None) as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
         mock_get_pf.return_value = Portfolio(
@@ -855,50 +844,45 @@ def test_mock_broker_buy_price_zero():
 # --- #222 execute_orders 매수 로직 개선 테스트 ---
 
 @patch('src.infra.broker.time.sleep')
-def test_paper_broker_execute_buy_calls_wait_for_completion(mock_sleep, paper_broker, mock_requests):
-    """[#222] 매수 주문 후 _wait_for_completion이 호출되어야 함"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True) as mock_wait, \
+def test_paper_broker_execute_buy_calls_send_order_and_wait(mock_sleep, paper_broker, mock_requests):
+    """[#222] 매수 주문 시 _send_order_and_wait이 호출되어야 함"""
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
-        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.return_value = buy_exec
         mock_get_pf.return_value = Portfolio(total_cash=50000.0, holdings={}, current_prices={})
 
         paper_broker.execute_orders([Order('SPY', OrderAction.BUY, 5, 100.0)])
 
-        mock_wait.assert_called_once_with(timeout=60)
+        mock_send.assert_called_once()
 
 
 @patch('src.infra.broker.time.sleep')
-def test_paper_broker_execute_buy_timeout_logs_warning(mock_sleep, paper_broker, mock_requests):
-    """[#222] 매수 체결 대기 타임아웃 시 warning 로그 출력"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=False), \
+def test_paper_broker_execute_buy_ordered_status_on_timeout(mock_sleep, paper_broker, mock_requests):
+    """[#222] 매수 체결 대기 타임아웃 시 ORDERED 상태로 반환"""
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
+        # _send_order_and_wait 자체가 타임아웃 시 ORDERED 반환
         buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
         mock_send.return_value = buy_exec
         mock_get_pf.return_value = Portfolio(total_cash=50000.0, holdings={}, current_prices={})
 
         executions = paper_broker.execute_orders([Order('SPY', OrderAction.BUY, 5, 100.0)])
 
-        # 타임아웃이어도 실행 결과는 반환
         assert len(executions) == 1
-        paper_broker.logger.warning.assert_called()
-        warning_calls = [str(c) for c in paper_broker.logger.warning.call_args_list]
-        assert any("Buy orders timed out" in c for c in warning_calls)
+        assert executions[0].status == ExecutionStatus.ORDERED
 
 
 @patch('src.infra.broker.time.sleep')
 def test_paper_broker_execute_buy_calls_get_portfolio_per_order(mock_sleep, paper_broker, mock_requests):
     """[#222] 매수 주문마다 get_portfolio()를 호출하여 실제 가용 금액 조회"""
-    with patch.object(paper_broker, '_send_order') as mock_send, \
-         patch.object(paper_broker, '_wait_for_completion', return_value=True), \
+    with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
          patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
 
-        buy_exec_spy = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
-        buy_exec_ief = TradeExecution('IEF', OrderAction.BUY, 3, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
+        buy_exec_spy = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+        buy_exec_ief = TradeExecution('IEF', OrderAction.BUY, 3, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.side_effect = [buy_exec_spy, buy_exec_ief]
         mock_get_pf.return_value = Portfolio(total_cash=50000.0, holdings={}, current_prices={})
 
@@ -1072,3 +1056,332 @@ def test_pending_orders_raise_for_status_on_http_error(mock_sleep, paper_broker,
 
     assert count == 0
     paper_broker.logger.error.assert_called()
+
+
+# ==========================================
+# FILL_TR_ID 상수 테스트
+# ==========================================
+
+def test_paper_broker_fill_tr_id(paper_broker):
+    """모의투자 브로커 체결내역 TR_ID 확인"""
+    assert paper_broker.FILL_TR_ID == "VTTS3035R"
+
+
+def test_live_broker_fill_tr_id(live_broker):
+    """실전투자 브로커 체결내역 TR_ID 확인"""
+    assert live_broker.FILL_TR_ID == "TTTS3035R"
+
+
+# ==========================================
+# _get_pending_order_ids 테스트
+# ==========================================
+
+@patch('src.infra.broker.time.sleep')
+def test_get_pending_order_ids_success(mock_sleep, paper_broker, mock_requests):
+    """미체결 주문번호 집합 반환 성공"""
+    pending_response = MagicMock()
+    pending_response.json.return_value = {
+        'rt_cd': '0',
+        'output': [
+            {'odno': 'ORD001', 'pdno': 'SPY'},
+            {'odno': 'ORD002', 'pdno': 'IEF'},
+        ]
+    }
+    mock_requests.get.return_value = pending_response
+
+    result = paper_broker._get_pending_order_ids("NASD")
+
+    assert result == {'ORD001', 'ORD002'}
+
+
+@patch('src.infra.broker.time.sleep')
+def test_get_pending_order_ids_empty(mock_sleep, paper_broker, mock_requests):
+    """미체결 주문 없을 때 빈 집합 반환"""
+    pending_response = MagicMock()
+    pending_response.json.return_value = {'rt_cd': '0', 'output': []}
+    mock_requests.get.return_value = pending_response
+
+    result = paper_broker._get_pending_order_ids("NASD")
+
+    assert result == set()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_get_pending_order_ids_api_error(mock_sleep, paper_broker, mock_requests):
+    """API 오류 시 빈 집합 반환"""
+    pending_response = MagicMock()
+    pending_response.json.return_value = {'rt_cd': '1', 'msg1': 'Error'}
+    mock_requests.get.return_value = pending_response
+
+    result = paper_broker._get_pending_order_ids("NASD")
+
+    assert result == set()
+
+
+# ==========================================
+# _poll_order_fill 테스트
+# ==========================================
+
+@patch('src.infra.broker.time.sleep')
+def test_poll_order_fill_filled_immediately(mock_sleep, paper_broker, mock_requests):
+    """첫 번째 polling에서 ODNO가 미체결 목록에 없으면 즉시 True 반환"""
+    pending_response = MagicMock()
+    pending_response.json.return_value = {'rt_cd': '0', 'output': []}
+    mock_requests.get.return_value = pending_response
+
+    result = paper_broker._poll_order_fill('ORD001', 'NASD', timeout=10)
+
+    assert result is True
+
+
+@patch('src.infra.broker.time.time')
+@patch('src.infra.broker.time.sleep')
+def test_poll_order_fill_timeout(mock_sleep, mock_time, paper_broker, mock_requests):
+    """타임아웃 시 False 반환"""
+    # time.time() 첫 호출: start=0, 이후: 0, 31, 31 (timeout=30 초과)
+    mock_time.side_effect = [0, 0, 31]
+    pending_response = MagicMock()
+    pending_response.json.return_value = {
+        'rt_cd': '0',
+        'output': [{'odno': 'ORD001'}]
+    }
+    mock_requests.get.return_value = pending_response
+
+    result = paper_broker._poll_order_fill('ORD001', 'NASD', timeout=30)
+
+    assert result is False
+
+
+@patch('src.infra.broker.time.sleep')
+def test_poll_order_fill_filled_after_retry(mock_sleep, paper_broker, mock_requests):
+    """두 번째 polling에서 ODNO가 사라져 True 반환"""
+    still_pending = MagicMock()
+    still_pending.json.return_value = {
+        'rt_cd': '0',
+        'output': [{'odno': 'ORD001'}]
+    }
+    now_filled = MagicMock()
+    now_filled.json.return_value = {'rt_cd': '0', 'output': []}
+    mock_requests.get.side_effect = [still_pending, now_filled]
+
+    result = paper_broker._poll_order_fill('ORD001', 'NASD', timeout=30)
+
+    assert result is True
+
+
+@patch('src.infra.broker.time.sleep')
+def test_poll_order_fill_warning_on_exception(mock_sleep, paper_broker, mock_requests):
+    """polling 중 예외 발생 시 warning 로깅 후 계속 시도"""
+    mock_requests.get.side_effect = [Exception("Network Error"), MagicMock(**{
+        'json.return_value': {'rt_cd': '0', 'output': []}
+    })]
+
+    result = paper_broker._poll_order_fill('ORD001', 'NASD', timeout=30)
+
+    assert result is True
+    paper_broker.logger.warning.assert_called()
+
+
+# ==========================================
+# _query_fill_details 테스트
+# ==========================================
+
+def test_query_fill_details_no_fill_tr_id(paper_broker):
+    """FILL_TR_ID 미설정 시 즉시 (0.0, 0, 0.0) 반환"""
+    paper_broker.FILL_TR_ID = ""
+
+    result = paper_broker._query_fill_details('ORD001', 'SPY', 'NASD')
+
+    assert result == (0.0, 0, 0.0)
+
+
+@patch('src.infra.broker.time.sleep')
+def test_query_fill_details_success(mock_sleep, paper_broker, mock_requests):
+    """체결내역 조회 성공 — 실제 체결가/수량/수수료 반환"""
+    fill_response = MagicMock()
+    fill_response.json.return_value = {
+        'rt_cd': '0',
+        'output': [
+            {'odno': 'ORD001', 'ft_ccld_unpr3': '151.25', 'ft_ccld_qty': '10', 'ovrs_stck_ccld_fee': '0.50'},
+            {'odno': 'ORD002', 'ft_ccld_unpr3': '200.00', 'ft_ccld_qty': '5', 'ovrs_stck_ccld_fee': '0.30'},
+        ]
+    }
+    mock_requests.get.return_value = fill_response
+
+    price, qty, fee = paper_broker._query_fill_details('ORD001', 'SPY', 'NASD')
+
+    assert price == 151.25
+    assert qty == 10
+    assert fee == 0.50
+
+
+@patch('src.infra.broker.time.sleep')
+def test_query_fill_details_odno_not_found(mock_sleep, paper_broker, mock_requests):
+    """ODNO가 체결내역에 없을 때 (0.0, 0, 0.0) 반환"""
+    fill_response = MagicMock()
+    fill_response.json.return_value = {
+        'rt_cd': '0',
+        'output': [{'odno': 'ORD999', 'ft_ccld_unpr3': '100.00', 'ft_ccld_qty': '1', 'ovrs_stck_ccld_fee': '0.1'}]
+    }
+    mock_requests.get.return_value = fill_response
+
+    result = paper_broker._query_fill_details('ORD001', 'SPY', 'NASD')
+
+    assert result == (0.0, 0, 0.0)
+
+
+@patch('src.infra.broker.time.sleep')
+def test_query_fill_details_api_error(mock_sleep, paper_broker, mock_requests):
+    """체결내역 API 오류 시 (0.0, 0, 0.0) 반환"""
+    fill_response = MagicMock()
+    fill_response.json.return_value = {'rt_cd': '1', 'msg1': 'Error'}
+    mock_requests.get.return_value = fill_response
+
+    result = paper_broker._query_fill_details('ORD001', 'SPY', 'NASD')
+
+    assert result == (0.0, 0, 0.0)
+
+
+@patch('src.infra.broker.time.sleep')
+def test_query_fill_details_exception(mock_sleep, paper_broker, mock_requests):
+    """체결내역 조회 중 예외 발생 시 warning 로깅 후 (0.0, 0, 0.0) 반환"""
+    mock_requests.get.side_effect = Exception("Timeout")
+
+    result = paper_broker._query_fill_details('ORD001', 'SPY', 'NASD')
+
+    assert result == (0.0, 0, 0.0)
+    paper_broker.logger.warning.assert_called()
+
+
+# ==========================================
+# _send_order_and_wait 테스트
+# ==========================================
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_filled_with_actual_price(mock_sleep, paper_broker, mock_requests):
+    """주문 전송 후 체결 완료 — 실제 체결가로 FILLED TradeExecution 반환"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {'ODNO': 'ORD123'}
+    }
+
+    # _get_pending_order_ids: 빈 집합 (이미 체결됨)
+    pending_response = MagicMock()
+    pending_response.json.return_value = {'rt_cd': '0', 'output': []}
+
+    # _query_fill_details: 실제 체결가
+    fill_response = MagicMock()
+    fill_response.json.return_value = {
+        'rt_cd': '0',
+        'output': [
+            {'odno': 'ORD123', 'ft_ccld_unpr3': '152.50', 'ft_ccld_qty': '10', 'ovrs_stck_ccld_fee': '0.75'}
+        ]
+    }
+
+    # hashkey POST → order POST 순서로 side_effect 설정
+    mock_requests.post.side_effect = [hash_response, order_response]
+    mock_requests.get.side_effect = [pending_response, fill_response]
+
+    order = Order('SPY', OrderAction.BUY, 10, 150.0)
+    result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.FILLED
+    assert result.price == 152.50
+    assert result.quantity == 10
+    assert result.fee == 0.75
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_timeout_returns_ordered(mock_sleep, paper_broker, mock_requests):
+    """체결 대기 타임아웃 시 ORDERED(미확인 체결) 반환"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {'ODNO': 'ORD456'}
+    }
+    mock_requests.post.return_value = hash_response
+
+    # _poll_order_fill을 직접 mock하여 항상 False 반환
+    with patch.object(paper_broker, '_poll_order_fill', return_value=False):
+        mock_requests.post.return_value = order_response
+        mock_requests.post.side_effect = None
+        # hash + order POST mock
+        mock_requests.post.side_effect = [hash_response, order_response]
+
+        order = Order('SPY', OrderAction.BUY, 10, 150.0)
+        result = paper_broker._send_order_and_wait(order, timeout=1)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.ORDERED
+    assert result.price == 150.0
+    paper_broker.logger.warning.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_no_odno_returns_ordered(mock_sleep, paper_broker, mock_requests):
+    """ODNO 미반환 시 ORDERED 반환 (polling 건너뜀)"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {}  # ODNO 없음
+    }
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    order = Order('SPY', OrderAction.BUY, 5, 200.0)
+    result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.ORDERED
+    assert result.quantity == 5
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_api_failure_returns_none(mock_sleep, paper_broker, mock_requests):
+    """주문 API 실패 시 None 반환"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {'rt_cd': '1', 'msg1': 'Insufficient balance'}
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    order = Order('SPY', OrderAction.BUY, 10, 150.0)
+    result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    assert result is None
+    paper_broker.logger.error.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_fill_details_fallback_to_order_price(mock_sleep, paper_broker, mock_requests):
+    """체결내역 조회 실패 시 주문가로 fallback하여 FILLED 반환"""
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+
+    order_response = MagicMock()
+    order_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {'ODNO': 'ORD789'}
+    }
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    with patch.object(paper_broker, '_poll_order_fill', return_value=True), \
+         patch.object(paper_broker, '_query_fill_details', return_value=(0.0, 0, 0.0)):
+        order = Order('IEF', OrderAction.SELL, 3, 99.50)
+        result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.FILLED
+    assert result.price == 99.50  # 주문가로 fallback
+    assert result.quantity == 3   # 주문 수량으로 fallback

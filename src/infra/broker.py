@@ -171,6 +171,7 @@ class KisBrokerBase(IBrokerAdapter):
     BUY_TR_ID: str = ""
     SELL_TR_ID: str = ""
     PENDING_TR_ID: str = ""
+    FILL_TR_ID: str = ""  # 해외주식 체결내역 조회 (inquire-ccnl)
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         self.app_key = app_key
@@ -346,24 +347,20 @@ class KisBrokerBase(IBrokerAdapter):
         sell_orders = [o for o in orders if o.action == OrderAction.SELL]
         buy_orders = [o for o in orders if o.action == OrderAction.BUY]
 
-        # === 1. 매도 실행 ===
+        # === 1. 매도 실행 (주문 + 체결 대기 통합) ===
         if sell_orders:
             self.logger.info(f"[KisBroker] Processing {len(sell_orders)} SELL orders...")
             for order in sell_orders:
-                res = self._send_order(order)
+                res = self._send_order_and_wait(order, timeout=30)
                 if res: executions.append(res)
                 time.sleep(0.2) # API 제한 고려
-            
-            # 매도 후 체결 대기 (Polling)
-            if not self._wait_for_completion(timeout=60):
-                self.logger.warning("[KisBroker] Sell orders timed out or pending.")
 
         # === 2. 잔고 갱신 및 매수 재계산 ===
         if buy_orders:
             if sell_orders:
                 time.sleep(2) # 정산 대기
 
-            # === 3. 매수 실행 ===
+            # === 3. 매수 실행 (주문 + 체결 대기 통합) ===
             for order in buy_orders:
                 # 매수 주문마다 증권사 API로 실제 가용 금액 조회
                 # (메모리 차감 방식은 지정가 미체결 시 실제 잔고와 괴리 발생 가능 - #222)
@@ -391,14 +388,10 @@ class KisBrokerBase(IBrokerAdapter):
                 if actual_qty > 0:
                     # 조정된 수량으로 새 Order 생성 (원본 불변 유지)
                     adjusted_order = Order(ticker=order.ticker, action=order.action, quantity=actual_qty, price=order.price)
-                    res = self._send_order(adjusted_order)
+                    res = self._send_order_and_wait(adjusted_order, timeout=30)
                     if res:
                         executions.append(res)
                     time.sleep(0.2)
-
-            # 매수 후 체결 대기 (매도와 동일하게 미체결 확인)
-            if not self._wait_for_completion(timeout=60):
-                self.logger.warning("[KisBroker] Buy orders timed out or pending.")
 
         return executions
 
@@ -459,6 +452,159 @@ class KisBrokerBase(IBrokerAdapter):
         except Exception as e:
             self.logger.error(f"[KisBroker] Order Error: {e}")
             return None
+
+    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> Optional[TradeExecution]:
+        """주문 전송 후 체결 대기. 체결 시 FILLED, 타임아웃 시 ORDERED(미확인 체결) 반환."""
+        tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
+        exch = self._get_exchange_code(order.ticker, api_type="order")
+        order_price = round(order.price, 2)
+
+        data = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "OVRS_EXCG_CD": exch,
+            "PDNO": order.ticker,
+            "ORD_QTY": str(order.quantity),
+            "OVRS_ORD_UNPR": str(order_price),
+            "CTAC_TLNO": "",
+            "MGCO_APTM_ODNO": "",
+            "SLL_TYPE": "00" if order.action == OrderAction.SELL else "",
+            "ORD_SVR_DVSN_CD": "0",
+            "ORD_DVSN": "00"
+        }
+
+        try:
+            headers = self._get_header(tr_id, data)
+            res = requests.post(url, headers=headers, json=data)
+            res.raise_for_status()
+            resp_data = res.json()
+
+            if resp_data['rt_cd'] != '0':
+                self.logger.error(f"[KisBroker] Order Failed: {resp_data.get('msg1')}")
+                return None
+
+            odno = resp_data.get('output', {}).get('ODNO', '')
+            self.logger.info(
+                f"[KisBroker] Order Sent: {order.action} {order.ticker} "
+                f"{order.quantity} @ {order_price} (ODNO={odno})"
+            )
+
+            # 체결 대기 및 실제 체결 정보 조회
+            if odno:
+                filled = self._poll_order_fill(odno, exch, timeout=timeout)
+                if filled:
+                    fill_price, fill_qty, fill_fee = self._query_fill_details(odno, order.ticker, exch)
+                    actual_price = fill_price if fill_price > 0 else order_price
+                    actual_qty = fill_qty if fill_qty > 0 else order.quantity
+                    self.logger.info(
+                        f"[KisBroker] Order FILLED: {order.ticker} ODNO={odno} "
+                        f"price={actual_price} qty={actual_qty} fee={fill_fee}"
+                    )
+                    return TradeExecution(
+                        ticker=order.ticker,
+                        action=order.action,
+                        quantity=actual_qty,
+                        price=actual_price,
+                        fee=fill_fee,
+                        date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        status=ExecutionStatus.FILLED
+                    )
+                else:
+                    self.logger.warning(
+                        f"[KisBroker] Order NOT confirmed within {timeout}s: "
+                        f"{order.ticker} ODNO={odno} — 미확인 체결 (ORDERED)"
+                    )
+
+            # 타임아웃 또는 ODNO 미획득 시 ORDERED 반환
+            return TradeExecution(
+                ticker=order.ticker,
+                action=order.action,
+                quantity=order.quantity,
+                price=order_price,
+                fee=0.0,
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status=ExecutionStatus.ORDERED
+            )
+
+        except Exception as e:
+            self.logger.error(f"[KisBroker] Order Error: {e}")
+            return None
+
+    def _poll_order_fill(self, odno: str, exch: str, timeout: int = 30) -> bool:
+        """미체결 목록에서 해당 ODNO가 사라질 때까지 polling. 체결 여부 반환."""
+        start = time.time()
+        while (time.time() - start) < timeout:
+            try:
+                pending_ids = self._get_pending_order_ids(exch)
+                if odno not in pending_ids:
+                    return True
+            except Exception as e:
+                self.logger.warning(f"[KisBroker] Fill poll error (ODNO={odno}): {e}")
+            time.sleep(2)
+        return False
+
+    def _get_pending_order_ids(self, exch: str) -> set:
+        """특정 거래소의 미체결 주문번호 집합 반환."""
+        tr_id = self.PENDING_TR_ID
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-nccs"
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "OVRS_EXCG_CD": exch,
+            "SORT_SQN": "DS",
+            "CTX_AREA_FK200": "",
+            "CTX_AREA_NK200": ""
+        }
+        headers = self._get_header(tr_id)
+        res = requests.get(url, headers=headers, params=params)
+        res.raise_for_status()
+        data = res.json()
+        if data['rt_cd'] == '0':
+            return {item.get('odno', '') for item in data.get('output', [])}
+        return set()
+
+    def _query_fill_details(self, odno: str, ticker: str, exch: str):
+        """
+        체결내역 조회 API(inquire-ccnl)로 실제 체결가·수량·수수료 반환.
+        조회 실패 시 (0.0, 0, 0.0) 반환 → 호출측에서 주문가로 fallback.
+        TR_ID: TTTS3035R (실전) / VTTS3035R (모의)
+        """
+        if not self.FILL_TR_ID:
+            return 0.0, 0, 0.0
+
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-ccnl"
+        today = datetime.now().strftime("%Y%m%d")
+        params = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "PDNO": ticker,
+            "ORD_STRT_DT": today,
+            "ORD_END_DT": today,
+            "SLL_BUY_DVSN_CD": "00",  # 00: 전체
+            "CCLD_NCCS_DVSN": "01",   # 01: 체결만
+            "OVRS_EXCG_CD": exch,
+            "CTX_AREA_FK200": "",
+            "CTX_AREA_NK200": ""
+        }
+        try:
+            headers = self._get_header(self.FILL_TR_ID)
+            res = requests.get(url, headers=headers, params=params)
+            res.raise_for_status()
+            data = res.json()
+            if data['rt_cd'] != '0':
+                return 0.0, 0, 0.0
+
+            for item in data.get('output', []):
+                if item.get('odno') != odno:
+                    continue
+                fill_price = float(item.get('ft_ccld_unpr3', 0) or 0)
+                fill_qty = int(item.get('ft_ccld_qty', 0) or 0)
+                fill_fee = float(item.get('ovrs_stck_ccld_fee', 0) or 0)
+                return fill_price, fill_qty, fill_fee
+        except Exception as e:
+            self.logger.warning(f"[KisBroker] Fill detail query error (ODNO={odno}): {e}")
+        return 0.0, 0, 0.0
 
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         """미체결 내역이 없을 때까지 대기"""
@@ -541,6 +687,7 @@ class KisPaperBroker(KisBrokerBase):
     BUY_TR_ID = "VTTT1002U"
     SELL_TR_ID = "VTTT1006U"
     PENDING_TR_ID = "VTTS3018R"
+    FILL_TR_ID = "VTTS3035R"  # 해외주식 체결내역 조회 (모의)
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         super().__init__(app_key, app_secret, acc_no, logger)
@@ -555,6 +702,7 @@ class KisLiveBroker(KisBrokerBase):
     BUY_TR_ID = "TTTT1002U"   # 미국 매수 (TTTS는 홍콩용)
     SELL_TR_ID = "TTTT1006U"  # 미국 매도
     PENDING_TR_ID = "TTTS3018R"
+    FILL_TR_ID = "TTTS3035R"  # 해외주식 체결내역 조회 (실전)
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         super().__init__(app_key, app_secret, acc_no, logger)
