@@ -171,7 +171,8 @@ class KisBrokerBase(IBrokerAdapter):
     BUY_TR_ID: str = ""
     SELL_TR_ID: str = ""
     PENDING_TR_ID: str = ""
-    FILL_TR_ID: str = ""  # 해외주식 체결내역 조회 (inquire-ccnl)
+    FILL_TR_ID: str = ""    # 해외주식 체결내역 조회 (inquire-ccnl)
+    CANCEL_TR_ID: str = ""  # 해외주식 주문 취소 (TTTT1004U / VTTT1004U)
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         self.app_key = app_key
@@ -360,6 +361,16 @@ class KisBrokerBase(IBrokerAdapter):
                 time.sleep(0.2) # API 제한 고려
 
         # === 2. 잔고 갱신 및 매수 재계산 ===
+        # 매도 미체결(타임아웃) 시 매수 중단 — 이중 매도 및 자금 부족 방지 (#227)
+        sell_timed_out = any(
+            e.status == ExecutionStatus.ORDERED
+            for e in executions
+            if e.action == OrderAction.SELL
+        )
+        if sell_timed_out:
+            self.logger.error("[KisBroker] 매도 미체결 주문 존재 — 매수 중단 (#227)")
+            return executions
+
         if buy_orders:
             if sell_orders:
                 time.sleep(2) # 정산 대기
@@ -518,8 +529,13 @@ class KisBrokerBase(IBrokerAdapter):
                 else:
                     self.logger.warning(
                         f"[KisBroker] Order NOT confirmed within {timeout}s: "
-                        f"{order.ticker} ODNO={odno} — 미확인 체결 (ORDERED)"
+                        f"{order.ticker} ODNO={odno} — 미체결 주문 취소 시도"
                     )
+                    cancelled = self._cancel_order(odno, exch, order.ticker, order.quantity)
+                    if not cancelled:
+                        self.logger.error(
+                            f"[KisBroker] 주문 취소 실패: {order.ticker} ODNO={odno} — 수동 확인 필요"
+                        )
 
             # 타임아웃 또는 ODNO 미획득 시 ORDERED 반환
             return TradeExecution(
@@ -611,6 +627,46 @@ class KisBrokerBase(IBrokerAdapter):
             self.logger.warning(f"[KisBroker] Fill detail query error (ODNO={odno}): {e}")
         return 0.0, 0, 0.0
 
+    def _cancel_order(self, odno: str, exch: str, ticker: str, quantity: int) -> bool:
+        """미체결 주문 취소. 성공 시 True, 실패 시 False 반환.
+        TR_ID: TTTT1004U (실전) / VTTT1004U (모의)
+        """
+        if not self.CANCEL_TR_ID:
+            self.logger.warning("[KisBroker] CANCEL_TR_ID 미설정 — 주문 취소 불가")
+            return False
+
+        url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
+        data = {
+            "CANO": self.cano,
+            "ACNT_PRDT_CD": self.acnt_prdt_cd,
+            "OVRS_EXCG_CD": exch,
+            "PDNO": ticker,
+            "ORGN_ODNO": odno,
+            "ORD_DVSN": "00",
+            "ORD_QTY": str(quantity),
+            "OVRS_ORD_UNPR": "0",
+            "RVSE_CNCL_DVSN_CD": "02",  # 02: 취소
+            "ORD_SVR_DVSN_CD": "0",
+            "CTAC_TLNO": "",
+            "MGCO_APTM_ODNO": ""
+        }
+        try:
+            headers = self._get_header(self.CANCEL_TR_ID, data)
+            res = requests.post(url, headers=headers, json=data)
+            res.raise_for_status()
+            resp_data = res.json()
+            if resp_data['rt_cd'] == '0':
+                self.logger.info(f"[KisBroker] Order Cancelled: {ticker} ODNO={odno}")
+                return True
+            else:
+                self.logger.error(
+                    f"[KisBroker] Cancel Failed: {ticker} ODNO={odno} — {resp_data.get('msg1')}"
+                )
+                return False
+        except Exception as e:
+            self.logger.error(f"[KisBroker] Cancel Error: {ticker} ODNO={odno} — {e}")
+            return False
+
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         """미체결 내역이 없을 때까지 대기"""
         start = time.time()
@@ -692,7 +748,8 @@ class KisPaperBroker(KisBrokerBase):
     BUY_TR_ID = "VTTT1002U"
     SELL_TR_ID = "VTTT1006U"
     PENDING_TR_ID = "VTTS3018R"
-    FILL_TR_ID = "VTTS3035R"  # 해외주식 체결내역 조회 (모의)
+    FILL_TR_ID = "VTTS3035R"    # 해외주식 체결내역 조회 (모의)
+    CANCEL_TR_ID = "VTTT1004U"  # 해외주식 주문 취소 (모의)
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         super().__init__(app_key, app_secret, acc_no, logger)
@@ -704,10 +761,11 @@ class KisLiveBroker(KisBrokerBase):
     BASE_URL = "https://openapi.koreainvestment.com:9443"
     PRICE_TR_ID = "HHDFS00000300"
     PORTFOLIO_TR_ID = "TTTS3012R"
-    BUY_TR_ID = "TTTT1002U"   # 미국 매수 (TTTS는 홍콩용)
-    SELL_TR_ID = "TTTT1006U"  # 미국 매도
+    BUY_TR_ID = "TTTT1002U"    # 미국 매수 (TTTS는 홍콩용)
+    SELL_TR_ID = "TTTT1006U"   # 미국 매도
     PENDING_TR_ID = "TTTS3018R"
-    FILL_TR_ID = "TTTS3035R"  # 해외주식 체결내역 조회 (실전)
+    FILL_TR_ID = "TTTS3035R"   # 해외주식 체결내역 조회 (실전)
+    CANCEL_TR_ID = "TTTT1004U" # 해외주식 주문 취소 (실전)
 
     def __init__(self, app_key: str, app_secret: str, acc_no: str, logger):
         super().__init__(app_key, app_secret, acc_no, logger)
