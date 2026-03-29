@@ -1307,9 +1307,17 @@ def test_send_order_and_wait_filled_with_actual_price(mock_sleep, paper_broker, 
         ]
     }
 
+    # 호가 조회 응답 (_fetch_asking_price가 먼저 호출됨)
+    # 스프레드 0.5% 이하: bid=150.10, ask=150.50 → spread≈0.266%
+    asking_price_response = MagicMock()
+    asking_price_response.json.return_value = {
+        'rt_cd': '0',
+        'output2': {'pbid1': '150.10', 'pask1': '150.50'}
+    }
+
     # hashkey POST → order POST 순서로 side_effect 설정
     mock_requests.post.side_effect = [hash_response, order_response]
-    mock_requests.get.side_effect = [pending_response, fill_response]
+    mock_requests.get.side_effect = [asking_price_response, pending_response, fill_response]
 
     order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = paper_broker._send_order_and_wait(order, timeout=30)
@@ -1550,3 +1558,166 @@ def test_execute_orders_sell_filled_proceeds_to_buy(mock_sleep, paper_broker, mo
     # 매도 FILLED → 매수도 정상 실행
     assert len(executions) == 2
     assert mock_send.call_count == 2
+
+
+# ==========================================
+# 호가 조회 및 스프레드 체크 테스트
+# ==========================================
+
+@patch('src.infra.broker.time.sleep')
+def test_fetch_asking_price_success(mock_sleep, paper_broker, mock_requests):
+    """호가 조회 성공 시 (bid, ask) 반환"""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {
+        'rt_cd': '0',
+        'output2': {'pbid1': '149.50', 'pask1': '150.50'}
+    }
+    mock_requests.get.return_value = asking_response
+
+    bid, ask = paper_broker._fetch_asking_price('SPY')
+
+    assert bid == 149.50
+    assert ask == 150.50
+
+
+@patch('src.infra.broker.time.sleep')
+def test_fetch_asking_price_failure(mock_sleep, paper_broker, mock_requests):
+    """호가 조회 API 실패 시 (0.0, 0.0) 반환"""
+    error_response = MagicMock()
+    error_response.json.return_value = {'rt_cd': '1', 'msg1': '조회 실패'}
+    mock_requests.get.return_value = error_response
+
+    bid, ask = paper_broker._fetch_asking_price('SPY')
+
+    assert bid == 0.0
+    assert ask == 0.0
+    paper_broker.logger.warning.assert_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_fetch_asking_price_exception(mock_sleep, paper_broker, mock_requests):
+    """호가 조회 중 예외 발생 시 (0.0, 0.0) 반환"""
+    mock_requests.get.side_effect = Exception("Network error")
+
+    bid, ask = paper_broker._fetch_asking_price('SPY')
+
+    assert bid == 0.0
+    assert ask == 0.0
+    paper_broker.logger.warning.assert_called()
+
+
+def test_check_spread_normal(paper_broker):
+    """스프레드 0.5% 이하 → True"""
+    # bid=100, ask=100.4 → spread = 0.4%
+    assert paper_broker._check_spread(100.0, 100.4) is True
+
+
+def test_check_spread_abnormal(paper_broker):
+    """스프레드 0.5% 초과 → False"""
+    # bid=100, ask=101 → spread = 0.995%
+    assert paper_broker._check_spread(100.0, 101.0) is False
+
+
+def test_check_spread_zero_bid_ask(paper_broker):
+    """bid/ask가 0이면 True (fallback 허용)"""
+    assert paper_broker._check_spread(0.0, 0.0) is True
+    assert paper_broker._check_spread(0.0, 100.0) is True
+    assert paper_broker._check_spread(100.0, 0.0) is True
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_uses_ask_for_buy(mock_sleep, paper_broker, mock_requests):
+    """매수 주문 시 ask 가격을 주문가로 사용"""
+    # 스프레드 정상: bid=150.10, ask=150.50 → spread≈0.266%
+    with patch.object(paper_broker, '_fetch_asking_price', return_value=(150.10, 150.50)):
+        hash_response = MagicMock()
+        hash_response.json.return_value = {'HASH': 'hash123'}
+        order_response = MagicMock()
+        order_response.json.return_value = {'rt_cd': '0', 'output': {}}
+        mock_requests.post.side_effect = [hash_response, order_response]
+
+        order = Order('SPY', OrderAction.BUY, 10, 149.0)
+        result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    # 주문가가 ask(150.50)로 설정되었는지 확인
+    assert result is not None
+    call_data = mock_requests.post.call_args_list[-1]
+    sent_data = call_data.kwargs.get('json') or call_data[1].get('json')
+    assert sent_data['OVRS_ORD_UNPR'] == '150.5'
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_uses_bid_for_sell(mock_sleep, paper_broker, mock_requests):
+    """매도 주문 시 bid 가격을 주문가로 사용"""
+    # 스프레드 정상: bid=150.10, ask=150.50 → spread≈0.266%
+    with patch.object(paper_broker, '_fetch_asking_price', return_value=(150.10, 150.50)):
+        hash_response = MagicMock()
+        hash_response.json.return_value = {'HASH': 'hash123'}
+        order_response = MagicMock()
+        order_response.json.return_value = {'rt_cd': '0', 'output': {}}
+        mock_requests.post.side_effect = [hash_response, order_response]
+
+        order = Order('SPY', OrderAction.SELL, 5, 151.0)
+        result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    # 주문가가 bid(150.10)로 설정되었는지 확인
+    assert result is not None
+    call_data = mock_requests.post.call_args_list[-1]
+    sent_data = call_data.kwargs.get('json') or call_data[1].get('json')
+    assert sent_data['OVRS_ORD_UNPR'] == '150.1'
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_fallback_to_last(mock_sleep, paper_broker, mock_requests):
+    """호가 조회 실패 시 last price fallback"""
+    with patch.object(paper_broker, '_fetch_asking_price', return_value=(0.0, 0.0)):
+        hash_response = MagicMock()
+        hash_response.json.return_value = {'HASH': 'hash123'}
+        order_response = MagicMock()
+        order_response.json.return_value = {'rt_cd': '0', 'output': {}}
+        mock_requests.post.side_effect = [hash_response, order_response]
+
+        order = Order('SPY', OrderAction.BUY, 10, 150.0)
+        result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    # last price(150.0) fallback
+    assert result is not None
+    call_data = mock_requests.post.call_args_list[-1]
+    sent_data = call_data.kwargs.get('json') or call_data[1].get('json')
+    assert sent_data['OVRS_ORD_UNPR'] == '150.0'
+
+
+@patch('src.infra.broker.time.sleep')
+def test_send_order_and_wait_rejected_on_wide_spread(mock_sleep, paper_broker, mock_requests):
+    """스프레드 비정상 시 REJECTED 반환"""
+    # bid=100, ask=102 → spread ≈ 1.98% > 0.5%
+    with patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 102.0)):
+        order = Order('SPY', OrderAction.BUY, 10, 150.0)
+        result = paper_broker._send_order_and_wait(order, timeout=30)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.REJECTED
+    paper_broker.logger.warning.assert_called()
+    # POST는 호출되지 않아야 함 (주문 전송 안 함)
+    mock_requests.post.assert_not_called()
+
+
+@patch('src.infra.broker.time.sleep')
+def test_execute_orders_buy_qty_uses_ask(mock_sleep, paper_broker, mock_requests):
+    """매수 수량 계산이 ask 가격 기반"""
+    buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 150.50, 0.0, '2024-01-01', ExecutionStatus.FILLED)
+
+    # 스프레드 정상: bid=150.10, ask=150.50 → spread≈0.266%
+    with patch.object(paper_broker, '_send_order_and_wait', return_value=buy_exec) as mock_send, \
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(150.10, 150.50)):
+        mock_get_pf.return_value = Portfolio(total_cash=1000.0, holdings={}, current_prices={})
+
+        orders = [Order('SPY', OrderAction.BUY, 100, 149.0)]
+        executions = paper_broker.execute_orders(orders)
+
+    assert len(executions) == 1
+    # 예산: 1000 * 0.98 = 980, estimated_price = ask(150.50)
+    # max_qty = int(980 / 150.50) = 6
+    sent_order = mock_send.call_args[0][0]
+    assert sent_order.quantity == 6
