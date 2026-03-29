@@ -34,6 +34,8 @@ class Config:
         # 1. API 설정 (인스턴스 생성 시점에 환경변수 읽기)
         # 문자열 "True"/"true"를 Python boolean True로 변환
         self.IS_LIVE_TRADING = os.getenv("IS_LIVE_TRADING", "False").lower() == "true"
+        # 시장 유형: "overseas" (해외주식, 기본) 또는 "domestic" (국내주식)
+        self.MARKET_TYPE = os.getenv("MARKET_TYPE", "overseas").lower()
         
         # 한국투자증권
         self.KIS_APP_KEY = os.getenv("KIS_APP_KEY", "")
