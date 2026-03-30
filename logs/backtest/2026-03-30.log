@@ -1,0 +1,270 @@
+2026-03-30 10:58:05,934 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:05,935 [WARNING] ⚠️ 데이터 미수신 티커 ['069500', '411060', '305080', '365780', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,021 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:06,022 [WARNING] ⚠️ 데이터 미수신 티커 ['069500', '411060', '305080', '365780', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,027 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:06,028 [WARNING] ⚠️ 데이터 미수신 티커 ['069500', '411060', '305080', '365780', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,061 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:06,061 [WARNING] ⚠️ 데이터 미수신 티커 ['069500', '411060', '305080', '365780', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,091 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:06,091 [WARNING] ⚠️ 데이터 미수신 티커 ['SHV', 'EMB', 'GLD', '069500', 'IEF', 'DBC', '411060', '305080', 'SSO', 'QLD', '365780', 'QQQ', 'TLT', 'EEM', 'SDY', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,097 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:06,097 [WARNING] ⚠️ 데이터 미수신 티커 ['069500', '411060', '305080', '365780', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,133 [INFO] --- Preparing Data (Compare Mode) ---
+2026-03-30 10:58:06,133 [WARNING] ⚠️ 데이터 미수신 티커 ['069500', '411060', '305080', '365780', '360750'] — 백테스트를 중단합니다.
+2026-03-30 10:58:06,868 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:06,868 [INFO] Mode: LIVE TRADING — 해외주식 (KisLiveBroker)
+2026-03-30 10:58:06,870 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:06,871 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:06,871 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:06,872 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:06,873 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014644911376'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:06,873 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:06,873 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:06,873 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:06,875 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:06,876 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:06,877 [INFO] No Rebalance Needed.
+2026-03-30 10:58:06,877 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:06,889 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:06,889 [INFO] Mode: LIVE TRADING — 해외주식 (KisLiveBroker)
+2026-03-30 10:58:06,891 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:06,892 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:06,892 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:06,892 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:06,893 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014644605008'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:06,893 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:06,893 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:06,893 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:06,894 [INFO] Current Portfolio: Cash=$10,000, Value=$11,010
+2026-03-30 10:58:06,895 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:06,895 [INFO] Signal Generated: Rebalance
+2026-03-30 10:58:06,895 [INFO] Executing 1 orders...
+2026-03-30 10:58:06,896 [INFO] Updated Portfolio: Cash=$10,000, Value=$11,010
+2026-03-30 10:58:06,896 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,210 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,210 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,212 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,213 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,213 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,213 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,214 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014648556944'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,214 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,215 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,215 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,216 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,216 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:23,216 [INFO] No Rebalance Needed.
+2026-03-30 10:58:23,217 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,228 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,229 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,230 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,231 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,231 [INFO] Market Data: Price=100, VIX=40.0, MDD=-30.00%
+2026-03-30 10:58:23,232 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,233 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014644605712'> → Crash (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=40.0, MDD=-30.00%)
+2026-03-30 10:58:23,233 [INFO] Regime: Crash | Target Exposure: 0.00
+2026-03-30 10:58:23,233 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,233 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,234 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,234 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:23,235 [ERROR] 🚨 CRASH Detected — 현금화 리밸런싱 실행
+MDD: -30.0% | VIX: 40.0
+SPY: $100.00
+
+📊 현재 포지션:
+  • SPY: 10주 ($1,000)
+💰 현금: $10,000
+📈 총 자산: $11,000
+2026-03-30 10:58:23,235 [INFO] Signal Generated: CRASH 현금화
+2026-03-30 10:58:23,235 [INFO] Executing 1 orders...
+2026-03-30 10:58:23,236 [INFO] Updated Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,236 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,246 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,247 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,249 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,250 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,250 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,250 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,251 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014642772688'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,251 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,251 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,251 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,252 [INFO] Current Portfolio: Cash=$10,000, Value=$11,010
+2026-03-30 10:58:23,252 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:23,252 [INFO] Signal Generated: Rebalance Needed
+2026-03-30 10:58:23,252 [INFO] Executing 1 orders...
+2026-03-30 10:58:23,253 [INFO] Updated Portfolio: Cash=$10,000, Value=$11,010
+2026-03-30 10:58:23,253 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,263 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,263 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,265 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,268 [ERROR] Critical Error:
+Traceback (most recent call last):
+  File "/home/user/StockAsset/src/main.py", line 99, in run
+    self.engine.run_one_cycle(self.data_loader, daily_dividend=daily_dividend)
+  File "/home/user/StockAsset/src/core/engine.py", line 113, in run_one_cycle
+    spy_df, vix = self.collect_data(data_provider)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/StockAsset/src/core/engine.py", line 163, in collect_data
+    spy_df = data_provider.fetch_ohlcv(["SPY"], days=400)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+Exception: API Connection Failed
+
+2026-03-30 10:58:23,278 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,278 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,280 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,281 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,282 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,282 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,283 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014649375696'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,283 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,283 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,283 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,284 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,284 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:23,284 [INFO] Signal Generated: Go Trade
+2026-03-30 10:58:23,285 [INFO] Executing 1 orders...
+2026-03-30 10:58:23,285 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,296 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,297 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,298 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,300 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,300 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,300 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,301 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014648780432'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,301 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,301 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,301 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,302 [ERROR] Critical Error:
+Traceback (most recent call last):
+  File "/home/user/StockAsset/src/main.py", line 99, in run
+    self.engine.run_one_cycle(self.data_loader, daily_dividend=daily_dividend)
+  File "/home/user/StockAsset/src/core/engine.py", line 130, in run_one_cycle
+    portfolio = self.get_portfolio()
+                ^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/StockAsset/src/core/engine.py", line 205, in get_portfolio
+    real_time_prices = self.broker.fetch_current_prices(self.all_tickers)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+Exception: Quote Error
+
+2026-03-30 10:58:23,310 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,310 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,312 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,313 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,313 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,313 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,313 [ERROR] NaN detected in: spy_volatility. Treating as CRASH.
+2026-03-30 10:58:23,314 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014642005456'> → Crash (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,314 [INFO] Regime: Crash | Target Exposure: 0.00
+2026-03-30 10:58:23,314 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,314 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,316 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,316 [ERROR] ⚠️ Data Quality Alert — 매매 중단
+날짜: 2024-01-01
+NaN 필드: spy_volatility
+데이터 품질 이상으로 매매를 중단합니다.
+2026-03-30 10:58:23,317 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,327 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,327 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,328 [INFO] Restored previous regime: Crash
+2026-03-30 10:58:23,335 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,335 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,345 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,345 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,346 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,347 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,348 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,348 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,349 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014647924048'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,349 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,349 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,349 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,350 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,350 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:23,350 [INFO] Signal Generated: Trade Done
+2026-03-30 10:58:23,350 [INFO] Executing 1 orders...
+2026-03-30 10:58:23,351 [INFO] Updated Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,351 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,352 [ERROR] Critical Error:
+Traceback (most recent call last):
+  File "/home/user/StockAsset/src/main.py", line 99, in run
+    self.engine.run_one_cycle(self.data_loader, daily_dividend=daily_dividend)
+  File "/home/user/StockAsset/src/core/engine.py", line 143, in run_one_cycle
+    self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend)
+  File "/home/user/StockAsset/src/core/engine.py", line 311, in persist
+    self.repo.save_daily_summary(market_data, signal, final_pf, regime, daily_dividend=daily_dividend)
+  File "/usr/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+PermissionError: Disk Read-only
+
+2026-03-30 10:58:23,363 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,363 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,365 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,366 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,366 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,366 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,367 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014649374480'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,367 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,367 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,367 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,369 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,369 [INFO] >>> Step 5: Monitoring (리밸런싱 인터벌 미충족, 1일 기준)
+2026-03-30 10:58:23,370 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,380 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,380 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,382 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,383 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,383 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,383 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,384 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014642511632'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,384 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,384 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,384 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,386 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,386 [INFO] >>> Step 5: Monitoring (리밸런싱 인터벌 미충족, 1일 기준)
+2026-03-30 10:58:23,388 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,397 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,397 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,399 [INFO] >>> Step 1: Data Collection
+2026-03-30 10:58:23,400 [INFO] >>> Step 2: Indicator Calculation
+2026-03-30 10:58:23,400 [INFO] Market Data: Price=100, VIX=15.0, MDD=-5.00%
+2026-03-30 10:58:23,400 [INFO] >>> Step 3: Strategy Analysis
+2026-03-30 10:58:23,402 [INFO] Regime Change: <MagicMock name='RegimeAnalyzer()._prev_regime.value' id='140014642465744'> → Bull (Price=100.00, MA180=90.00, Momentum=0.1000, VIX=15.0, MDD=-5.00%)
+2026-03-30 10:58:23,402 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-03-30 10:58:23,402 [INFO] >>> Step 4: Portfolio Status
+2026-03-30 10:58:23,402 [INFO] Fetching Real-time prices from Broker...
+2026-03-30 10:58:23,403 [INFO] Current Portfolio: Cash=$10,000, Value=$11,000
+2026-03-30 10:58:23,404 [INFO] >>> Step 5: Rebalancing
+2026-03-30 10:58:23,404 [INFO] No Rebalance Needed.
+2026-03-30 10:58:23,404 [INFO] >>> Step 6: Archiving Data
+2026-03-30 10:58:23,413 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,413 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,422 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,422 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,430 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,431 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
+2026-03-30 10:58:23,439 [INFO] === Initializing Trading Bot ===
+2026-03-30 10:58:23,439 [INFO] Mode: PAPER TRADING — 해외주식 (KisPaperBroker)
