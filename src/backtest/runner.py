@@ -12,6 +12,7 @@ from src.core.models import TradeExecution
 from src.core.engine import (
     _ENGINE_REGISTRY as ENGINE_REGISTRY,
     _ENGINE_COLORS,
+    _ENGINE_MARKET_TYPES,
 )
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
