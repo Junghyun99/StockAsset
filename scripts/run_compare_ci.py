@@ -11,7 +11,7 @@ def main() -> None:
     interval = int(os.environ.get("BACKTEST_INTERVAL", "1"))
 
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-    from src.backtest.runner import run_compare_backtest, ENGINE_REGISTRY, _ENGINE_COLORS  # noqa: PLC0415
+    from src.backtest.runner import run_compare_backtest, ENGINE_REGISTRY, _ENGINE_COLORS, _ENGINE_MARKET_TYPES  # noqa: PLC0415
 
     run_number = os.environ.get("GITHUB_RUN_NUMBER")
 
@@ -22,9 +22,12 @@ def main() -> None:
     with open(os.path.join(output_dir, "engines.json"), "w") as f:
         json.dump(engine_names, f)
 
-    # 엔진 메타 (색상 포함) 생성 — JS가 런타임에 읽어 ENGINE_COLORS 대체
+    # 엔진 메타 (색상, 시장 유형 포함) 생성 — JS가 런타임에 읽어 ENGINE_COLORS, ENGINE_MARKET_TYPES 대체
     engines_meta = {
-        name: {"color": _ENGINE_COLORS.get(name, "#6c757d")}
+        name: {
+            "color": _ENGINE_COLORS.get(name, "#6c757d"),
+            "market_type": _ENGINE_MARKET_TYPES.get(name, "overseas"),
+        }
         for name in engine_names
     }
     with open(os.path.join(output_dir, "engines_meta.json"), "w") as f:

@@ -1,7 +1,7 @@
 // docs/js/compare-charts.js
 // 멀티 엔진 비교 전용 차트
 
-import { filterByDateRange, ENGINE_COLORS } from './utils.js?v=2';
+import { filterByDateRange, ENGINE_COLORS, ENGINE_MARKET_TYPES } from './utils.js?v=2';
 
 let comparePerformanceChart = null;
 let compareStrategyChart = null;
@@ -196,7 +196,7 @@ export function renderCompareStrategyChart(enginesData) {
 }
 
 /**
- * 멀티 엔진 누적 배당금 비교 차트 (오버레이 라인)
+ * 멀티 엔진 누적 배당금 비교 차트 (오버레이 라인) - 해외 엔진(USD)만 표시
  * @param {Map<string, Object>} enginesData
  */
 export function renderCompareCumulativeDividendChart(enginesData) {
@@ -205,8 +205,11 @@ export function renderCompareCumulativeDividendChart(enginesData) {
 
     if (compareCumulativeDividendChart) compareCumulativeDividendChart.destroy();
 
-    const engineNames = [...enginesData.keys()];
+    // 해외 엔진만 필터 (국내 KRW 엔진은 단위 불일치로 제외)
+    const engineNames = [...enginesData.keys()].filter(n => ENGINE_MARKET_TYPES[n] !== 'domestic');
     const datasets = [];
+
+    if (engineNames.length === 0) return;
 
     // 전체 날짜 범위를 첫 번째 엔진 기준으로 설정
     const firstSummary = enginesData.get(engineNames[0]).summary;
@@ -273,7 +276,7 @@ export function renderCompareCumulativeDividendChart(enginesData) {
 }
 
 /**
- * 멀티 엔진 연간 배당금 비교 바 차트 (전체 기간)
+ * 멀티 엔진 연간 배당금 비교 바 차트 (전체 기간) - 해외 엔진(USD)만 표시
  * @param {Map<string, Object>} enginesData
  */
 export function renderCompareYearlyDividendChart(enginesData) {
@@ -282,7 +285,9 @@ export function renderCompareYearlyDividendChart(enginesData) {
 
     if (compareYearlyDividendChart) compareYearlyDividendChart.destroy();
 
-    const engineNames = [...enginesData.keys()];
+    // 해외 엔진만 필터 (국내 KRW 엔진은 단위 불일치로 제외)
+    const engineNames = [...enginesData.keys()].filter(n => ENGINE_MARKET_TYPES[n] !== 'domestic');
+    if (engineNames.length === 0) return;
 
     // 전체 기간의 연도 범위 수집
     const yearSet = new Set();

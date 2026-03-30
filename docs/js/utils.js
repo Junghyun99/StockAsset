@@ -231,7 +231,12 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
 export const ENGINE_COLORS = {};
 
 /**
- * engines_meta.json을 fetch하여 ENGINE_COLORS를 채운다.
+ * 엔진별 시장 유형 ('overseas' | 'domestic') 런타임 맵
+ */
+export const ENGINE_MARKET_TYPES = {};
+
+/**
+ * engines_meta.json을 fetch하여 ENGINE_COLORS, ENGINE_MARKET_TYPES를 채운다.
  * loadCompareMode() 시작 시 반드시 먼저 호출해야 한다.
  * @param {string} basePath - engines_meta.json이 있는 경로 (예: 'data/backtest/compare/')
  */
@@ -242,10 +247,19 @@ export async function loadEngineMeta(basePath) {
         const meta = await res.json();
         for (const [name, info] of Object.entries(meta)) {
             ENGINE_COLORS[name] = info.color;
+            ENGINE_MARKET_TYPES[name] = info.market_type || 'overseas';
         }
     } catch (e) {
         console.warn('engines_meta.json 로드 실패 — 폴백 색상(#6c757d) 사용');
     }
+}
+
+/**
+ * 금액 포맷팅 (KRW)
+ */
+export function formatKRW(value) {
+    if (value == null) return '-';
+    return '₩' + Math.round(value).toLocaleString('ko-KR');
 }
 
 export const SPY_COLOR = '#fd7e14';
