@@ -10,7 +10,7 @@ from src.backtest.runner import (
 
 # 모든 엔진의 티커 합집합 + SPY
 ALL_COMPARE_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
-                        "069500", "360750", "411060", "305080", "365780"]
+                        "069500.KS", "360750.KS", "411060.KS", "305080.KS", "365780.KS"]
 
 
 @pytest.fixture

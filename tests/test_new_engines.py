@@ -836,12 +836,12 @@ def test_asset5_end_to_end_nan_no_trade():
 
 def test_domestic_asset5_asset_groups_A():
     """DomesticAsset5Engine의 A그룹은 [069500, 360750]."""
-    assert DomesticAsset5Engine.ASSET_GROUPS['A'] == ['069500', '360750']
+    assert DomesticAsset5Engine.ASSET_GROUPS['A'] == ['069500.KS', '360750.KS']
 
 
 def test_domestic_asset5_asset_groups_B():
     """DomesticAsset5Engine의 B그룹은 [411060, 305080, 365780]."""
-    assert DomesticAsset5Engine.ASSET_GROUPS['B'] == ['411060', '305080', '365780']
+    assert DomesticAsset5Engine.ASSET_GROUPS['B'] == ['411060.KS', '305080.KS', '365780.KS']
 
 
 def test_domestic_asset5_no_C_group():
@@ -909,7 +909,7 @@ def test_domestic_asset5_all_tickers():
         MockAnalyzer.return_value._prev_regime = None
         engine = DomesticAsset5Engine(broker=broker, repo=repo, logger=logger)
 
-    assert set(engine.all_tickers) == {'069500', '360750', '411060', '305080', '365780'}
+    assert set(engine.all_tickers) == {'069500.KS', '360750.KS', '411060.KS', '305080.KS', '365780.KS'}
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -927,10 +927,10 @@ def _build_domestic_asset5_engine(repo_last_reb=None, notifier=None):
     repo.load_last_regime.return_value = None
     broker.get_portfolio.return_value = Portfolio(
         total_cash=5000000.0,
-        holdings={'069500': 50},
+        holdings={'069500.KS': 50},
         current_prices={
-            '069500': 35000.0, '360750': 12000.0,
-            '411060': 15000.0, '305080': 10000.0, '365780': 11000.0,
+            '069500.KS': 35000.0, '360750.KS': 12000.0,
+            '411060.KS': 15000.0, '305080.KS': 10000.0, '365780.KS': 11000.0,
         },
     )
     broker.fetch_current_prices.return_value = {}
