@@ -1,37 +1,94 @@
 [
     {
-        "id": "tx_20230102",
-        "date": "2023-01-02",
-        "portfolio_value": 9893.72396097561,
-        "total_trade_amount": 9749.16,
+        "id": "tx_20190821",
+        "date": "2019-08-21",
+        "portfolio_value": 9894.082365958251,
+        "total_trade_amount": 9716.52,
         "reason": "첫 투자: 100:0 비율로 진입",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
                 "quantity": 51,
-                "price": 191.16,
-                "fee": 9.75,
-                "date": "2023-01-02",
+                "price": 190.52,
+                "fee": 9.72,
+                "date": "2019-08-21",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20230103",
-        "date": "2023-01-03",
-        "portfolio_value": 9904.076456097562,
-        "total_trade_amount": 191.41,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
+        "id": "tx_20190910",
+        "date": "2019-09-10",
+        "portfolio_value": 9994.493139413604,
+        "total_trade_amount": 192.55,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 191.41,
+                "price": 192.55,
                 "fee": 0.19,
-                "date": "2023-01-03",
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220519",
+        "date": "2022-05-19",
+        "portfolio_value": 15360.876197257538,
+        "total_trade_amount": 292.48,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 292.48,
+                "fee": 0.29,
+                "date": "2022-05-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220520",
+        "date": "2022-05-20",
+        "portfolio_value": 15310.003927624359,
+        "total_trade_amount": 285.79,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 285.79,
+                "fee": 0.29,
+                "date": "2022-05-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220613",
+        "date": "2022-06-13",
+        "portfolio_value": 14616.932234773101,
+        "total_trade_amount": 278.16,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 278.16,
+                "fee": 0.28,
+                "date": "2022-06-13",
                 "status": "FILLED",
                 "reason": ""
             }

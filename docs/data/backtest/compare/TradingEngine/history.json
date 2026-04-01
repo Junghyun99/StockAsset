@@ -1,38 +1,38 @@
 [
     {
-        "id": "tx_20230102",
-        "date": "2023-01-02",
-        "portfolio_value": 9895.807804878048,
-        "total_trade_amount": 9558.0,
+        "id": "tx_20190821",
+        "date": "2019-08-21",
+        "portfolio_value": 9891.861667555771,
+        "total_trade_amount": 9920.79,
         "reason": "첫 투자: 50:50 비율로 진입",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 13,
-                "price": 191.16,
-                "fee": 2.49,
-                "date": "2023-01-02",
+                "quantity": 113,
+                "price": 15.68,
+                "fee": 1.77,
+                "date": "2019-08-21",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "QLD",
                 "action": "BUY",
-                "quantity": 13,
-                "price": 191.16,
-                "fee": 2.49,
-                "date": "2023-01-02",
+                "quantity": 145,
+                "price": 12.23,
+                "fee": 1.77,
+                "date": "2019-08-21",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "IEF",
                 "action": "BUY",
-                "quantity": 8,
-                "price": 191.16,
-                "fee": 1.53,
-                "date": "2023-01-02",
+                "quantity": 10,
+                "price": 114.4,
+                "fee": 1.14,
+                "date": "2019-08-21",
                 "status": "FILLED",
                 "reason": ""
             },
@@ -40,19 +40,3698 @@
                 "ticker": "GLD",
                 "action": "BUY",
                 "quantity": 8,
-                "price": 191.16,
-                "fee": 1.53,
-                "date": "2023-01-02",
+                "price": 143.18,
+                "fee": 1.15,
+                "date": "2019-08-21",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "DBC",
                 "action": "BUY",
+                "quantity": 78,
+                "price": 15.14,
+                "fee": 1.18,
+                "date": "2019-08-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 111.74,
+                "fee": 2.91,
+                "date": "2019-08-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190910",
+        "date": "2019-09-10",
+        "portfolio_value": 9971.715964613943,
+        "total_trade_amount": 1500.42,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 109.39,
+                "fee": 0.77,
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 16.26,
+                "fee": 0.18,
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 12.45,
+                "fee": 0.22,
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 113.0,
+                "fee": 0.11,
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 141.58,
+                "fee": 0.14,
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 15.43,
+                "fee": 0.08,
+                "date": "2019-09-10",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190930",
+        "date": "2019-09-30",
+        "portfolio_value": 9860.607964381314,
+        "total_trade_amount": 4084.13,
+        "reason": "비율 재조정: 상대이탈 2.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 19,
+                "price": 109.51,
+                "fee": 2.08,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 30,
+                "price": 16.22,
+                "fee": 0.49,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 41,
+                "price": 12.21,
+                "fee": 0.5,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 113.59,
+                "fee": 0.34,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 140.26,
+                "fee": 0.28,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 15.19,
+                "fee": 0.39,
+                "date": "2019-09-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20191021",
+        "date": "2019-10-21",
+        "portfolio_value": 10039.400076471024,
+        "total_trade_amount": 203.98000000000002,
+        "reason": "비율 재조정: 상대이탈 3.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 16.2,
+                "fee": 0.02,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 12.52,
+                "fee": 0.08,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 112.66,
+                "fee": 0.11,
+                "date": "2019-10-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20191223",
+        "date": "2019-12-23",
+        "portfolio_value": 10984.523716183596,
+        "total_trade_amount": 894.0500000000001,
+        "reason": "비율 재조정: 상대이탈 8.9% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
                 "quantity": 8,
-                "price": 191.16,
-                "fee": 1.53,
-                "date": "2023-01-02",
+                "price": 18.64,
+                "fee": 0.15,
+                "date": "2019-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 17,
+                "price": 14.99,
+                "fee": 0.25,
+                "date": "2019-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 111.28,
+                "fee": 0.11,
+                "date": "2019-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 141.35,
+                "fee": 0.28,
+                "date": "2019-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 16.02,
+                "fee": 0.1,
+                "date": "2019-12-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200203",
+        "date": "2020-02-03",
+        "portfolio_value": 11266.77754473093,
+        "total_trade_amount": 651.6199999999999,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 16.41,
+                "fee": 0.1,
+                "date": "2020-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 112.65,
+                "fee": 0.11,
+                "date": "2020-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 146.88,
+                "fee": 0.15,
+                "date": "2020-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 19.24,
+                "fee": 0.13,
+                "date": "2020-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 14.45,
+                "fee": 0.16,
+                "date": "2020-02-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200224",
+        "date": "2020-02-24",
+        "portfolio_value": 11282.977336564541,
+        "total_trade_amount": 3595.27,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 22,
+                "price": 18.56,
+                "fee": 0.41,
+                "date": "2020-02-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 26,
+                "price": 16.21,
+                "fee": 0.42,
+                "date": "2020-02-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 113.99,
+                "fee": 0.23,
+                "date": "2020-02-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 154.53,
+                "fee": 0.46,
+                "date": "2020-02-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 14.36,
+                "fee": 0.29,
+                "date": "2020-02-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 111.67,
+                "fee": 1.79,
+                "date": "2020-02-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200227",
+        "date": "2020-02-27",
+        "portfolio_value": 10311.269481075135,
+        "total_trade_amount": 16823.23,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 130,
+                "price": 15.77,
+                "fee": 2.05,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 149,
+                "price": 13.92,
+                "fee": 2.07,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 13,
+                "price": 114.8,
+                "fee": 1.49,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 152.46,
+                "fee": 1.37,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 106,
+                "price": 13.71,
+                "fee": 1.45,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 75,
+                "price": 111.75,
+                "fee": 8.38,
+                "date": "2020-02-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200228",
+        "date": "2020-02-28",
+        "portfolio_value": 10315.201619124298,
+        "total_trade_amount": 223.64,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 111.82,
+                "fee": 0.22,
+                "date": "2020-02-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200806",
+        "date": "2020-08-06",
+        "portfolio_value": 10134.759003134708,
+        "total_trade_amount": 20391.09,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 93,
+                "price": 109.61,
+                "fee": 10.19,
+                "date": "2020-08-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 141,
+                "price": 18.48,
+                "fee": 2.61,
+                "date": "2020-08-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 114,
+                "price": 22.84,
+                "fee": 2.6,
+                "date": "2020-08-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 124.02,
+                "fee": 1.74,
+                "date": "2020-08-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 195.83,
+                "fee": 1.57,
+                "date": "2020-08-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 125,
+                "price": 13.48,
+                "fee": 1.69,
+                "date": "2020-08-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200826",
+        "date": "2020-08-26",
+        "portfolio_value": 10580.563039719715,
+        "total_trade_amount": 687.56,
+        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 19.56,
+                "fee": 0.16,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 25.24,
+                "fee": 0.28,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 185.19,
+                "fee": 0.19,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 13.65,
+                "fee": 0.07,
+                "date": "2020-08-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200915",
+        "date": "2020-09-15",
+        "portfolio_value": 10085.45541893858,
+        "total_trade_amount": 5719.360000000001,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 39,
+                "price": 18.66,
+                "fee": 0.73,
+                "date": "2020-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 26,
+                "price": 22.87,
+                "fee": 0.59,
+                "date": "2020-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 120.62,
+                "fee": 0.48,
+                "date": "2020-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 181.62,
+                "fee": 0.54,
+                "date": "2020-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 36,
+                "price": 12.85,
+                "fee": 0.46,
+                "date": "2020-09-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 111.81,
+                "fee": 2.91,
+                "date": "2020-09-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20201005",
+        "date": "2020-10-05",
+        "portfolio_value": 10071.047462739316,
+        "total_trade_amount": 559.05,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 18.71,
+                "fee": 0.06,
+                "date": "2020-10-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 23.01,
+                "fee": 0.07,
+                "date": "2020-10-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 119.71,
+                "fee": 0.12,
+                "date": "2020-10-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 12.94,
+                "fee": 0.09,
+                "date": "2020-10-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 111.8,
+                "fee": 0.22,
+                "date": "2020-10-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20201026",
+        "date": "2020-10-26",
+        "portfolio_value": 10013.86871468935,
+        "total_trade_amount": 3440.3500000000004,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 16,
+                "price": 109.57,
+                "fee": 1.75,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 19.01,
+                "fee": 0.49,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 21,
+                "price": 23.41,
+                "fee": 0.49,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 121.91,
+                "fee": 0.24,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 180.34,
+                "fee": 0.18,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 21,
+                "price": 13.2,
+                "fee": 0.28,
+                "date": "2020-10-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20201116",
+        "date": "2020-11-16",
+        "portfolio_value": 10478.677039352187,
+        "total_trade_amount": 4032.9700000000003,
+        "reason": "비율 재조정: 상대이탈 9.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 34,
+                "price": 21.16,
+                "fee": 0.72,
+                "date": "2020-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 25,
+                "price": 24.87,
+                "fee": 0.62,
+                "date": "2020-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 118.69,
+                "fee": 0.24,
+                "date": "2020-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 175.38,
+                "fee": 0.18,
+                "date": "2020-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 13.34,
+                "fee": 0.27,
+                "date": "2020-11-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 111.79,
+                "fee": 2.01,
+                "date": "2020-11-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20201207",
+        "date": "2020-12-07",
+        "portfolio_value": 10673.960736772404,
+        "total_trade_amount": 6767.38,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 30,
+                "price": 109.41,
+                "fee": 3.28,
+                "date": "2020-12-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 45,
+                "price": 22.35,
+                "fee": 1.01,
+                "date": "2020-12-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 32,
+                "price": 27.85,
+                "fee": 0.89,
+                "date": "2020-12-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 120.89,
+                "fee": 0.6,
+                "date": "2020-12-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 176.64,
+                "fee": 0.53,
+                "date": "2020-12-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 32,
+                "price": 14.18,
+                "fee": 0.45,
+                "date": "2020-12-07",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20201228",
+        "date": "2020-12-28",
+        "portfolio_value": 10906.50146485424,
+        "total_trade_amount": 749.37,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 22.41,
+                "fee": 0.18,
+                "date": "2020-12-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 28.33,
+                "fee": 0.2,
+                "date": "2020-12-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 121.01,
+                "fee": 0.12,
+                "date": "2020-12-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 177.47,
+                "fee": 0.18,
+                "date": "2020-12-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 14.66,
+                "fee": 0.07,
+                "date": "2020-12-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210208",
+        "date": "2021-02-08",
+        "portfolio_value": 11630.745505236779,
+        "total_trade_amount": 1983.4,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 24.56,
+                "fee": 0.2,
+                "date": "2021-02-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 32.02,
+                "fee": 0.29,
+                "date": "2021-02-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 116.7,
+                "fee": 0.12,
+                "date": "2021-02-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 169.8,
+                "fee": 0.17,
+                "date": "2021-02-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 15.96,
+                "fee": 0.32,
+                "date": "2021-02-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 111.63,
+                "fee": 0.89,
+                "date": "2021-02-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210301",
+        "date": "2021-03-01",
+        "portfolio_value": 11355.191345295087,
+        "total_trade_amount": 969.7299999999999,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 16.42,
+                "fee": 0.05,
+                "date": "2021-03-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 109.41,
+                "fee": 0.44,
+                "date": "2021-03-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 24.88,
+                "fee": 0.07,
+                "date": "2021-03-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 30.63,
+                "fee": 0.25,
+                "date": "2021-03-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 163.15,
+                "fee": 0.16,
+                "date": "2021-03-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210322",
+        "date": "2021-03-22",
+        "portfolio_value": 11280.375828789081,
+        "total_trade_amount": 3494.85,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 24.88,
+                "fee": 0.5,
+                "date": "2021-03-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 12,
+                "price": 28.98,
+                "fee": 0.35,
+                "date": "2021-03-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 112.27,
+                "fee": 0.22,
+                "date": "2021-03-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 161.37,
+                "fee": 0.32,
+                "date": "2021-03-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 19,
+                "price": 16.63,
+                "fee": 0.32,
+                "date": "2021-03-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 111.64,
+                "fee": 1.79,
+                "date": "2021-03-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210412",
+        "date": "2021-04-12",
+        "portfolio_value": 11731.603967400322,
+        "total_trade_amount": 4546.48,
+        "reason": "비율 재조정: 상대이탈 13.2% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 109.41,
+                "fee": 2.19,
+                "date": "2021-04-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 27.84,
+                "fee": 0.31,
+                "date": "2021-04-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 32.92,
+                "fee": 0.26,
+                "date": "2021-04-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 114.68,
+                "fee": 0.57,
+                "date": "2021-04-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 163.9,
+                "fee": 0.66,
+                "date": "2021-04-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 33,
+                "price": 16.96,
+                "fee": 0.56,
+                "date": "2021-04-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20211018",
+        "date": "2021-10-18",
+        "portfolio_value": 13457.781840815354,
+        "total_trade_amount": 1705.43,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 32.17,
+                "fee": 0.16,
+                "date": "2021-10-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 39.02,
+                "fee": 0.27,
+                "date": "2021-10-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 23,
+                "price": 21.33,
+                "fee": 0.49,
+                "date": "2021-10-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 111.55,
+                "fee": 0.78,
+                "date": "2021-10-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20211108",
+        "date": "2021-11-08",
+        "portfolio_value": 14273.481862997589,
+        "total_trade_amount": 1887.1,
+        "reason": "비율 재조정: 상대이탈 10.1% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 35.33,
+                "fee": 0.04,
+                "date": "2021-11-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 44.45,
+                "fee": 0.18,
+                "date": "2021-11-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 109.34,
+                "fee": 0.77,
+                "date": "2021-11-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 116.36,
+                "fee": 0.35,
+                "date": "2021-11-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 172.15,
+                "fee": 0.17,
+                "date": "2021-11-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 21.52,
+                "fee": 0.39,
+                "date": "2021-11-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20211220",
+        "date": "2021-12-20",
+        "portfolio_value": 13503.697767671358,
+        "total_trade_amount": 5742.09,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 22,
+                "price": 33.32,
+                "fee": 0.73,
+                "date": "2021-12-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 15,
+                "price": 40.44,
+                "fee": 0.61,
+                "date": "2021-12-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 114.75,
+                "fee": 0.57,
+                "date": "2021-12-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 165.42,
+                "fee": 0.5,
+                "date": "2021-12-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 22,
+                "price": 19.69,
+                "fee": 0.43,
+                "date": "2021-12-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 26,
+                "price": 111.51,
+                "fee": 2.9,
+                "date": "2021-12-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220110",
+        "date": "2022-01-10",
+        "portfolio_value": 13625.96136583706,
+        "total_trade_amount": 5349.089999999999,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 24,
+                "price": 109.3,
+                "fee": 2.62,
+                "date": "2022-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 35.5,
+                "fee": 0.64,
+                "date": "2022-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 19,
+                "price": 41.05,
+                "fee": 0.78,
+                "date": "2022-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 113.84,
+                "fee": 0.46,
+                "date": "2022-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 169.94,
+                "fee": 0.51,
+                "date": "2022-01-10",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 21.36,
+                "fee": 0.34,
+                "date": "2022-01-10",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220131",
+        "date": "2022-01-31",
+        "portfolio_value": 13038.506842696017,
+        "total_trade_amount": 15243.990000000002,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 58,
+                "price": 32.39,
+                "fee": 1.88,
+                "date": "2022-01-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 49,
+                "price": 36.49,
+                "fee": 1.79,
+                "date": "2022-01-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 111.44,
+                "fee": 1.23,
+                "date": "2022-01-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 166.41,
+                "fee": 1.33,
+                "date": "2022-01-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 65,
+                "price": 22.2,
+                "fee": 1.44,
+                "date": "2022-01-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 68,
+                "price": 111.43,
+                "fee": 7.58,
+                "date": "2022-01-31",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220221",
+        "date": "2022-02-21",
+        "portfolio_value": 12801.645377687379,
+        "total_trade_amount": 5249.969999999999,
+        "reason": "비율 재조정: 상대이탈 9.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 24,
+                "price": 109.2,
+                "fee": 2.62,
+                "date": "2022-02-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 25,
+                "price": 30.67,
+                "fee": 0.77,
+                "date": "2022-02-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 25,
+                "price": 32.66,
+                "fee": 0.82,
+                "date": "2022-02-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 112.33,
+                "fee": 0.34,
+                "date": "2022-02-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 178.89,
+                "fee": 0.36,
+                "date": "2022-02-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 23.41,
+                "fee": 0.35,
+                "date": "2022-02-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220223",
+        "date": "2022-02-23",
+        "portfolio_value": 12432.063352258569,
+        "total_trade_amount": 14516.33,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 63,
+                "price": 28.37,
+                "fee": 1.79,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 59,
+                "price": 29.77,
+                "fee": 1.76,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 109.52,
+                "fee": 1.2,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 176.51,
+                "fee": 1.24,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 55,
+                "price": 23.49,
+                "fee": 1.29,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 65,
+                "price": 111.39,
+                "fee": 7.24,
+                "date": "2022-02-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220224",
+        "date": "2022-02-24",
+        "portfolio_value": 12430.84905934849,
+        "total_trade_amount": 111.39,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 111.39,
+                "fee": 0.11,
+                "date": "2022-02-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220406",
+        "date": "2022-04-06",
+        "portfolio_value": 12260.474999840013,
+        "total_trade_amount": 14550.089999999998,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 67,
+                "price": 109.08,
+                "fee": 7.31,
+                "date": "2022-04-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 58,
+                "price": 32.35,
+                "fee": 1.88,
+                "date": "2022-04-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 54,
+                "price": 34.49,
+                "fee": 1.86,
+                "date": "2022-04-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 105.99,
+                "fee": 1.17,
+                "date": "2022-04-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 181.46,
+                "fee": 1.09,
+                "date": "2022-04-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 47,
+                "price": 26.56,
+                "fee": 1.25,
+                "date": "2022-04-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220426",
+        "date": "2022-04-26",
+        "portfolio_value": 11524.27024580761,
+        "total_trade_amount": 12965.2,
+        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 58,
+                "price": 27.43,
+                "fee": 1.59,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 54,
+                "price": 27.06,
+                "fee": 1.46,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 103.05,
+                "fee": 1.13,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 175.55,
+                "fee": 1.05,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 47,
+                "price": 27.05,
+                "fee": 1.27,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 58,
+                "price": 111.29,
+                "fee": 6.45,
+                "date": "2022-04-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220427",
+        "date": "2022-04-27",
+        "portfolio_value": 11524.086378045311,
+        "total_trade_amount": 111.3,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 111.3,
+                "fee": 0.11,
+                "date": "2022-04-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220816",
+        "date": "2022-08-16",
+        "portfolio_value": 11439.911410576706,
+        "total_trade_amount": 9049.67,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 42,
+                "price": 108.95,
+                "fee": 4.58,
+                "date": "2022-08-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 39,
+                "price": 29.18,
+                "fee": 1.14,
+                "date": "2022-08-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 40,
+                "price": 29.03,
+                "fee": 1.16,
+                "date": "2022-08-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 104.91,
+                "fee": 0.73,
+                "date": "2022-08-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 167.07,
+                "fee": 0.67,
+                "date": "2022-08-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 30,
+                "price": 25.73,
+                "fee": 0.77,
+                "date": "2022-08-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220905",
+        "date": "2022-09-05",
+        "portfolio_value": 10945.286205987206,
+        "total_trade_amount": 704.0100000000001,
+        "reason": "비율 재조정: 상대이탈 6.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 25.09,
+                "fee": 0.05,
+                "date": "2022-09-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 108.87,
+                "fee": 0.33,
+                "date": "2022-09-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 24.19,
+                "fee": 0.15,
+                "date": "2022-09-05",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 22.76,
+                "fee": 0.18,
+                "date": "2022-09-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220921",
+        "date": "2022-09-21",
+        "portfolio_value": 10644.175422810727,
+        "total_trade_amount": 8067.43,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 45,
+                "price": 22.02,
+                "fee": 0.99,
+                "date": "2022-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 48,
+                "price": 20.49,
+                "fee": 0.98,
+                "date": "2022-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 97.2,
+                "fee": 0.68,
+                "date": "2022-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 154.23,
+                "fee": 0.62,
+                "date": "2022-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 28,
+                "price": 24.53,
+                "fee": 0.69,
+                "date": "2022-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 37,
+                "price": 111.05,
+                "fee": 4.11,
+                "date": "2022-09-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221101",
+        "date": "2022-11-01",
+        "portfolio_value": 10667.255463234082,
+        "total_trade_amount": 110.86,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 110.86,
+                "fee": 0.11,
+                "date": "2022-11-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230130",
+        "date": "2023-01-30",
+        "portfolio_value": 10681.134403408223,
+        "total_trade_amount": 8552.539999999999,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 39,
+                "price": 109.17,
+                "fee": 4.26,
+                "date": "2023-01-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 44,
+                "price": 24.47,
+                "fee": 1.08,
+                "date": "2023-01-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 52,
+                "price": 20.81,
+                "fee": 1.08,
+                "date": "2023-01-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 99.7,
+                "fee": 0.7,
+                "date": "2023-01-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 180.55,
+                "fee": 0.72,
+                "date": "2023-01-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 29,
+                "price": 24.69,
+                "fee": 0.72,
+                "date": "2023-01-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230220",
+        "date": "2023-02-20",
+        "portfolio_value": 10691.317889239655,
+        "total_trade_amount": 4095.6100000000006,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 20,
+                "price": 109.03,
+                "fee": 2.18,
+                "date": "2023-02-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 23,
+                "price": 25.17,
+                "fee": 0.58,
+                "date": "2023-02-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 24,
+                "price": 22.24,
+                "fee": 0.53,
+                "date": "2023-02-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 97.37,
+                "fee": 0.29,
+                "date": "2023-02-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 172.97,
+                "fee": 0.17,
+                "date": "2023-02-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 24.09,
+                "fee": 0.34,
+                "date": "2023-02-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230313",
+        "date": "2023-03-13",
+        "portfolio_value": 10396.988347668266,
+        "total_trade_amount": 3997.34,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 19,
+                "price": 21.94,
+                "fee": 0.42,
+                "date": "2023-03-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 24,
+                "price": 20.19,
+                "fee": 0.48,
+                "date": "2023-03-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 97.52,
+                "fee": 0.39,
+                "date": "2023-03-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 176.08,
+                "fee": 0.35,
+                "date": "2023-03-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 15,
+                "price": 23.28,
+                "fee": 0.35,
+                "date": "2023-03-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 111.36,
+                "fee": 2.0,
+                "date": "2023-03-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230403",
+        "date": "2023-04-03",
+        "portfolio_value": 10733.31270286461,
+        "total_trade_amount": 8362.630000000001,
+        "reason": "비율 재조정: 상대이탈 15.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 38,
+                "price": 109.0,
+                "fee": 4.14,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 38,
+                "price": 25.54,
+                "fee": 0.97,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 37,
+                "price": 24.91,
+                "fee": 0.92,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 100.38,
+                "fee": 0.8,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 186.39,
+                "fee": 0.75,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 32,
+                "price": 24.37,
+                "fee": 0.78,
+                "date": "2023-04-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230424",
+        "date": "2023-04-24",
+        "portfolio_value": 10625.747813808843,
+        "total_trade_amount": 4073.63,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 18,
+                "price": 109.28,
+                "fee": 1.97,
+                "date": "2023-04-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 21,
+                "price": 25.65,
+                "fee": 0.54,
+                "date": "2023-04-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 25,
+                "price": 24.14,
+                "fee": 0.6,
+                "date": "2023-04-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 100.04,
+                "fee": 0.3,
+                "date": "2023-04-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 186.66,
+                "fee": 0.37,
+                "date": "2023-04-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 24.25,
+                "fee": 0.29,
+                "date": "2023-04-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230515",
+        "date": "2023-05-15",
+        "portfolio_value": 10737.578355231724,
+        "total_trade_amount": 490.96000000000004,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 25.05,
+                "fee": 0.03,
+                "date": "2023-05-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 25.19,
+                "fee": 0.23,
+                "date": "2023-05-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 100.24,
+                "fee": 0.1,
+                "date": "2023-05-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 23.16,
+                "fee": 0.14,
+                "date": "2023-05-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230626",
+        "date": "2023-06-26",
+        "portfolio_value": 11365.872191372777,
+        "total_trade_amount": 782.45,
+        "reason": "비율 재조정: 상대이탈 8.5% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 27.31,
+                "fee": 0.08,
+                "date": "2023-06-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 29.93,
+                "fee": 0.33,
+                "date": "2023-06-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 98.31,
+                "fee": 0.1,
+                "date": "2023-06-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 180.3,
+                "fee": 0.18,
+                "date": "2023-06-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 23.17,
+                "fee": 0.09,
+                "date": "2023-06-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231030",
+        "date": "2023-10-30",
+        "portfolio_value": 10830.969162257596,
+        "total_trade_amount": 12905.61,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 61,
+                "price": 24.8,
+                "fee": 1.51,
+                "date": "2023-10-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 57,
+                "price": 27.65,
+                "fee": 1.58,
+                "date": "2023-10-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 88.88,
+                "fee": 0.98,
+                "date": "2023-10-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 183.25,
+                "fee": 1.1,
+                "date": "2023-10-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 52,
+                "price": 24.35,
+                "fee": 1.27,
+                "date": "2023-10-30",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 58,
+                "price": 111.61,
+                "fee": 6.47,
+                "date": "2023-10-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231120",
+        "date": "2023-11-20",
+        "portfolio_value": 11170.85727037838,
+        "total_trade_amount": 12759.93,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 58,
+                "price": 109.29,
+                "fee": 6.34,
+                "date": "2023-11-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 59,
+                "price": 30.07,
+                "fee": 1.77,
+                "date": "2023-11-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 50,
+                "price": 35.13,
+                "fee": 1.76,
+                "date": "2023-11-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 93.59,
+                "fee": 0.94,
+                "date": "2023-11-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 185.2,
+                "fee": 0.93,
+                "date": "2023-11-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 42,
+                "price": 24.49,
+                "fee": 1.03,
+                "date": "2023-11-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231211",
+        "date": "2023-12-11",
+        "portfolio_value": 11244.002661012859,
+        "total_trade_amount": 1073.2399999999998,
+        "reason": "비율 재조정: 상대이탈 10.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 10,
+                "price": 30.36,
+                "fee": 0.3,
+                "date": "2023-12-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 35.12,
+                "fee": 0.28,
+                "date": "2023-12-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 94.9,
+                "fee": 0.09,
+                "date": "2023-12-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 185.43,
+                "fee": 0.19,
+                "date": "2023-12-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 23.15,
+                "fee": 0.21,
+                "date": "2023-12-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240212",
+        "date": "2024-02-12",
+        "portfolio_value": 12351.954202673627,
+        "total_trade_amount": 1099.02,
+        "reason": "비율 재조정: 상대이탈 9.4% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 35.42,
+                "fee": 0.18,
+                "date": "2024-02-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 7,
+                "price": 42.07,
+                "fee": 0.29,
+                "date": "2024-02-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 95.53,
+                "fee": 0.19,
+                "date": "2024-02-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 188.98,
+                "fee": 0.19,
+                "date": "2024-02-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 22.49,
+                "fee": 0.25,
+                "date": "2024-02-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240415",
+        "date": "2024-04-15",
+        "portfolio_value": 12719.55835574606,
+        "total_trade_amount": 833.8900000000001,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 35.55,
+                "fee": 0.04,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 218.74,
+                "fee": 0.44,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 41.47,
+                "fee": 0.08,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 92.64,
+                "fee": 0.28,
+                "date": "2024-04-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240708",
+        "date": "2024-07-08",
+        "portfolio_value": 14283.504325411968,
+        "total_trade_amount": 1039.27,
+        "reason": "비율 재조정: 상대이탈 8.9% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 42.52,
+                "fee": 0.09,
+                "date": "2024-07-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 8,
+                "price": 53.19,
+                "fee": 0.43,
+                "date": "2024-07-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 95.13,
+                "fee": 0.1,
+                "date": "2024-07-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 220.37,
+                "fee": 0.22,
+                "date": "2024-07-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 23.69,
+                "fee": 0.21,
+                "date": "2024-07-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240819",
+        "date": "2024-08-19",
+        "portfolio_value": 13995.310281327344,
+        "total_trade_amount": 8589.04,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 28,
+                "price": 42.64,
+                "fee": 1.19,
+                "date": "2024-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 18,
+                "price": 48.95,
+                "fee": 0.88,
+                "date": "2024-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 96.23,
+                "fee": 0.87,
+                "date": "2024-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 229.29,
+                "fee": 0.69,
+                "date": "2024-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 28,
+                "price": 21.87,
+                "fee": 0.61,
+                "date": "2024-08-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 39,
+                "price": 111.48,
+                "fee": 4.35,
+                "date": "2024-08-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240909",
+        "date": "2024-09-09",
+        "portfolio_value": 13491.67597743637,
+        "total_trade_amount": 8548.33,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 39,
+                "price": 109.16,
+                "fee": 4.26,
+                "date": "2024-09-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 24,
+                "price": 41.26,
+                "fee": 0.99,
+                "date": "2024-09-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 25,
+                "price": 44.23,
+                "fee": 1.11,
+                "date": "2024-09-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 99.48,
+                "fee": 0.7,
+                "date": "2024-09-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 233.92,
+                "fee": 0.7,
+                "date": "2024-09-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 37,
+                "price": 21.54,
+                "fee": 0.8,
+                "date": "2024-09-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241223",
+        "date": "2024-12-23",
+        "portfolio_value": 15046.289198654194,
+        "total_trade_amount": 799.36,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 56.17,
+                "fee": 0.11,
+                "date": "2024-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 238.55,
+                "fee": 0.24,
+                "date": "2024-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 48.22,
+                "fee": 0.24,
+                "date": "2024-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 93.12,
+                "fee": 0.19,
+                "date": "2024-12-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 21.13,
+                "fee": 0.02,
+                "date": "2024-12-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250113",
+        "date": "2025-01-13",
+        "portfolio_value": 14733.13110709997,
+        "total_trade_amount": 921.73,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 44.97,
+                "fee": 0.13,
+                "date": "2025-01-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 52.26,
+                "fee": 0.05,
+                "date": "2025-01-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 90.26,
+                "fee": 0.09,
+                "date": "2025-01-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 22.1,
+                "fee": 0.2,
+                "date": "2025-01-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 111.35,
+                "fee": 0.45,
+                "date": "2025-01-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250203",
+        "date": "2025-02-03",
+        "portfolio_value": 15233.832302292538,
+        "total_trade_amount": 953.39,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 4,
+                "price": 109.02,
+                "fee": 0.44,
+                "date": "2025-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 48.26,
+                "fee": 0.14,
+                "date": "2025-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 55.67,
+                "fee": 0.17,
+                "date": "2025-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 93.72,
+                "fee": 0.09,
+                "date": "2025-02-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 22.36,
+                "fee": 0.11,
+                "date": "2025-02-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250317",
+        "date": "2025-03-17",
+        "portfolio_value": 14227.60393050682,
+        "total_trade_amount": 17049.82,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 51,
+                "price": 42.11,
+                "fee": 2.15,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 43,
+                "price": 46.72,
+                "fee": 2.01,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 15,
+                "price": 93.61,
+                "fee": 1.4,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 6,
+                "price": 273.96,
+                "fee": 1.64,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 63,
+                "price": 21.9,
+                "fee": 1.38,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 76,
+                "price": 111.39,
+                "fee": 8.47,
+                "date": "2025-03-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250403",
+        "date": "2025-04-03",
+        "portfolio_value": 13829.912194796067,
+        "total_trade_amount": 10550.529999999999,
+        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 33,
+                "price": 37.77,
+                "fee": 1.25,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 30,
+                "price": 40.49,
+                "fee": 1.21,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "SELL",
+                "quantity": 10,
+                "price": 95.33,
+                "fee": 0.95,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 283.56,
+                "fee": 0.85,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "SELL",
+                "quantity": 44,
+                "price": 21.52,
+                "fee": 0.95,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 48,
+                "price": 111.22,
+                "fee": 5.34,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250404",
+        "date": "2025-04-04",
+        "portfolio_value": 13834.898655489273,
+        "total_trade_amount": 111.27,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 111.27,
+                "fee": 0.11,
+                "date": "2025-04-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250514",
+        "date": "2025-05-14",
+        "portfolio_value": 13678.753487683523,
+        "total_trade_amount": 18988.36,
+        "reason": "첫 투자: 50:50 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 87,
+                "price": 109.12,
+                "fee": 9.49,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 54,
+                "price": 44.86,
+                "fee": 2.42,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 45,
+                "price": 52.99,
+                "fee": 2.38,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 94.26,
+                "fee": 1.6,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 296.09,
+                "fee": 1.48,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 74,
+                "price": 21.69,
+                "fee": 1.61,
+                "date": "2025-05-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250603",
+        "date": "2025-06-03",
+        "portfolio_value": 13843.130971617926,
+        "total_trade_amount": 6112.849999999999,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 29,
+                "price": 108.98,
+                "fee": 3.16,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 46.0,
+                "fee": 0.83,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 54.56,
+                "fee": 0.82,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 94.79,
+                "fee": 0.47,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 312.0,
+                "fee": 0.31,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 24,
+                "price": 21.67,
+                "fee": 0.52,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250623",
+        "date": "2025-06-23",
+        "portfolio_value": 14049.378791291045,
+        "total_trade_amount": 2050.77,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 109.24,
+                "fee": 0.98,
+                "date": "2025-06-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 46.71,
+                "fee": 0.28,
+                "date": "2025-06-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 55.34,
+                "fee": 0.33,
+                "date": "2025-06-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 95.88,
+                "fee": 0.1,
+                "date": "2025-06-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "GLD",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 314.19,
+                "fee": 0.31,
+                "date": "2025-06-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 22.62,
+                "fee": 0.05,
+                "date": "2025-06-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250714",
+        "date": "2025-07-14",
+        "portfolio_value": 14612.911557149198,
+        "total_trade_amount": 935.1999999999999,
+        "reason": "비율 재조정: 상대이탈 8.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 49.32,
+                "fee": 0.25,
+                "date": "2025-07-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 59.06,
+                "fee": 0.3,
+                "date": "2025-07-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 95.22,
+                "fee": 0.19,
+                "date": "2025-07-14",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 22.54,
+                "fee": 0.2,
+                "date": "2025-07-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251027",
+        "date": "2025-10-27",
+        "portfolio_value": 16756.501536728552,
+        "total_trade_amount": 1080.67,
+        "reason": "비율 재조정: 상대이탈 8.3% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 58.4,
+                "fee": 0.12,
+                "date": "2025-10-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QLD",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 73.82,
+                "fee": 0.37,
+                "date": "2025-10-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "IEF",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 98.46,
+                "fee": 0.3,
+                "date": "2025-10-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "DBC",
+                "action": "BUY",
+                "quantity": 13,
+                "price": 23.03,
+                "fee": 0.3,
+                "date": "2025-10-27",
                 "status": "FILLED",
                 "reason": ""
             }
