@@ -19,6 +19,9 @@ from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
 from src.backtest.components import BacktestDataLoader, BacktestBroker
 
+# 국내(domestic) 엔진 백테스트 시 USD → KRW 환산에 사용하는 고정 환율
+# 백테스트 기간(2019~2025) 평균 환율 근사치. 실시간 환율 사용 시 백테스트 재현성 저하.
+KRW_PER_USD = 1300.0
 
 @dataclass
 class BacktestResult:
@@ -182,8 +185,12 @@ def run_compare_backtest(
         if eng_path.exists():
             shutil.rmtree(eng_path)
 
+        # domestic 엔진은 KRW 단위로 초기 자본 환산 (USD → KRW)
+        market_type = _ENGINE_MARKET_TYPES.get(name, "overseas")
+        eff_cash = initial_cash * KRW_PER_USD if market_type == "domestic" else initial_cash
+
         loader = BacktestDataLoader(full_df, full_vix)
-        broker = BacktestBroker(initial_cash, logger=logger)
+        broker = BacktestBroker(eff_cash, logger=logger)
         _cfg = Config()
         repo = JsonRepository(
             eng_output,
@@ -209,6 +216,7 @@ def run_compare_backtest(
             "executions": [],
             "reason_counter": {},
             "dividend_income": 0.0,
+            "effective_cash": eff_cash,
         }
 
     # 5. 시뮬레이션 루프
@@ -267,13 +275,20 @@ def run_compare_backtest(
     engine_results: Dict[str, BacktestResult] = {}
 
     for name, ctx in engines.items():
+        eff_cash = ctx["effective_cash"]
         summary_data = ctx["repo"]._load_json(ctx["repo"].summary_file, default=[])
-        metrics = _calculate_metrics(summary_data, initial_cash, sim_days)
+        metrics = _calculate_metrics(summary_data, eff_cash, sim_days)
         if metrics is None:
             logger.warning(f"[{name}] No trading data available.")
             continue
 
         res_df, final_value, cagr, mdd, sharpe_ratio, regime_returns = metrics
+
+        # domestic 엔진은 KRW → USD로 환산하여 비교 차트에서 동일 스케일 사용
+        market_type = _ENGINE_MARKET_TYPES.get(name, "overseas")
+        if market_type == "domestic":
+            res_df['total_value'] = res_df['total_value'] / KRW_PER_USD
+            final_value = final_value / KRW_PER_USD
 
         logger.info(f"[{name}] Final: ${final_value:,.0f} | CAGR: {cagr:.2%} | MDD: {mdd:.2%} | Sharpe: {sharpe_ratio:.2f}")
 
@@ -296,7 +311,10 @@ def run_compare_backtest(
             chart_path=None,
             trade_executions=ctx["executions"],
             trade_reason_summary=ctx["reason_counter"] if ctx["reason_counter"] else None,
-            total_dividend_income=ctx["dividend_income"],
+            total_dividend_income=(
+                ctx["dividend_income"] / KRW_PER_USD if market_type == "domestic"
+                else ctx["dividend_income"]
+            ),
         )
 
     # SpyEngine 결과를 벤치마크로 설정
