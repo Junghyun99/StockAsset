@@ -50,6 +50,15 @@ pip install -r requirements.txt
 - `--cov-report=term-missing` 결과에서 커버리지가 낮은 파일을 식별합니다
 - 누락된 라인 번호를 확인하고 어떤 테스트를 추가하면 좋을지 제안합니다
 
+## 관련 스킬 (Related Skills)
+
+**단계: 테스트 실행**
+
+이 스킬은 테스트를 실행하고 결과를 분석합니다. 검증 체인에서의 위치:
+- **superpowers:test-driven-development** - 구현 중 TDD 사이클 (선행)
+- **superpowers:systematic-debugging** - 테스트 실패 시 근본 원인 조사 (후행)
+- **superpowers:verification-before-completion** - 작업 완료 전 최종 검증 (후행)
+
 ## 주의사항
 - `_live.py` 접미사 파일은 실제 API를 호출하므로, 명시적 요청이 없으면 실행하지 않습니다
 - 외부 API 호출은 반드시 mock 처리되어 있어야 합니다

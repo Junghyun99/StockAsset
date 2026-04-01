@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session
+description: Use when executing implementation plans with independent tasks in the current session, including parallel dispatch for truly independent problems
 ---
 
 # Subagent-Driven Development
@@ -24,8 +24,12 @@ digraph when_to_use {
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
     "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
+    "Stay in this session?" -> "Tasks touch different files?\nNo shared state?" [label="yes"];
     "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "Tasks touch different files?\nNo shared state?" -> "Parallel Dispatch Mode" [label="yes - all independent"];
+    "Tasks touch different files?\nNo shared state?" -> "Sequential execution (default)" [label="no - some overlap"];
+    "Parallel Dispatch Mode" [shape=box];
+    "Sequential execution (default)" [shape=box];
 }
 ```
 
@@ -81,6 +85,65 @@ digraph process {
     "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
+
+## Parallel Dispatch Mode
+
+When tasks are **truly independent** (different files, different subsystems, no shared state), you can dispatch multiple implementation subagents concurrently instead of sequentially.
+
+### When to Use Parallel Dispatch
+
+**Use when:**
+- 3+ tasks/failures with different root causes
+- Each task touches different files/subsystems
+- No shared state between tasks
+- Each problem can be understood without context from others
+
+**Don't use when:**
+- Tasks might edit the same files
+- Fixing one task might affect another
+- Need to understand full system state first
+- Tasks have sequential dependencies
+
+### The Pattern
+
+**1. Identify Independent Domains**
+
+Group tasks by what they touch:
+- Task A: Module X tests/implementation
+- Task B: Module Y tests/implementation
+- Task C: Module Z tests/implementation
+
+**2. Create Focused Agent Tasks**
+
+Each agent gets:
+- **Specific scope:** One task/subsystem
+- **Clear goal:** What to implement/fix
+- **Constraints:** Don't change other code
+- **Expected output:** Summary of changes
+
+**3. Dispatch in Parallel**
+
+```
+Agent 1 → Task A (Module X)
+Agent 2 → Task B (Module Y)
+Agent 3 → Task C (Module Z)
+// All three run concurrently
+```
+
+**4. Review and Integrate**
+
+When agents return:
+- Read each summary
+- Verify fixes don't conflict
+- Run full test suite
+- Integrate all changes
+
+### Common Mistakes
+
+- **Too broad:** "Fix everything" → agent gets lost. Be specific per agent.
+- **No context:** Paste error messages and relevant file paths.
+- **No constraints:** Agent might refactor unrelated code. Scope it.
+- **Vague output:** Require "summary of root cause and changes."
 
 ## Prompt Templates
 
@@ -202,7 +265,7 @@ Done!
 - Start implementation on main/master branch without explicit user consent
 - Skip reviews (spec compliance OR code quality)
 - Proceed with unfixed issues
-- Dispatch multiple implementation subagents in parallel (conflicts)
+- Dispatch multiple implementation subagents in parallel **UNLESS** tasks are truly independent (different files, no shared state) — see Parallel Dispatch Mode above
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)

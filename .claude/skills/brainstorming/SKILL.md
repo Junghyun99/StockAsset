@@ -30,6 +30,8 @@ You MUST create a task for each of these items and complete them in order:
 5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit
 6. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
+**Note:** TDD (superpowers:test-driven-development) starts after design approval. During brainstorming, exploration and prototyping are encouraged. Once you transition to implementation via writing-plans, TDD applies strictly.
+
 ## Process Flow
 
 ```dot

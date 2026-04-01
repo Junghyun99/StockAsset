@@ -137,3 +137,13 @@ From 24 failure memories:
 Run the command. Read the output. THEN claim the result.
 
 This is non-negotiable.
+
+## Integration
+
+**Phase: Final gate before completion claims**
+
+This skill is the last checkpoint in the verification chain:
+1. **superpowers:test-driven-development** - TDD during implementation (RED-GREEN-REFACTOR)
+2. **superpowers:test** - Running the full test suite
+3. **superpowers:systematic-debugging** - Root cause investigation if issues found
+4. **This skill** - Final evidence-based verification before any completion claim

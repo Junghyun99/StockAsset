@@ -72,12 +72,39 @@ These thoughts mean STOP—you're rationalizing:
 | "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
 | "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
 
-## Skill Priority
+## Skill Priority and Decision Tree
+
+### General Rule
 
 When multiple skills could apply, use this order:
 
-1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
-2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+1. **Meta skills first** (brainstorming, using-superpowers) — determine approach
+2. **Process skills second** (TDD, debugging, verification) — determine HOW
+3. **Execution skills third** (subagent-driven-development, executing-plans) — do the work
+4. **Domain skills last** (backtest, korean-trading-api) — domain-specific
+
+### Common Decision Points
+
+**"Execute this plan":**
+- Same session? → superpowers:subagent-driven-development
+- Separate/parallel session? → superpowers:executing-plans
+- Tasks truly independent (different files, no shared state)? → subagent-driven-development Parallel Dispatch Mode
+
+**"Review this code":**
+- Small change, quick check? → superpowers:requesting-code-review (빠른 자체 리뷰 mode)
+- Before merge or major feature? → superpowers:requesting-code-review (full subagent review)
+- Received feedback from someone? → superpowers:receiving-code-review
+
+**"Tests are failing":**
+- During TDD RED phase? → Expected, continue with superpowers:test-driven-development
+- Unexpected failure? → superpowers:systematic-debugging first
+- Running suite for coverage? → superpowers:test
+- About to claim "done"? → superpowers:verification-before-completion
+
+**"Build a new feature":**
+- Haven't explored requirements? → superpowers:brainstorming first
+- Have design, need plan? → superpowers:writing-plans
+- Have plan, need execution? → subagent-driven-development or executing-plans
 
 "Let's build X" → brainstorming first, then implementation skills.
 "Fix this bug" → debugging first, then domain-specific skills.
