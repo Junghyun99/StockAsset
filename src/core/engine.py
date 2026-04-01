@@ -522,8 +522,8 @@ class DomesticAsset5Engine(FullExposureEngine):
     """
 
     ASSET_GROUPS: dict = {
-        'A': ['069500.KS', '360750.KS'],
-        'B': ['411060.KS', '305080.KS', '365780.KS'],
+        'A': ['069500.KS', '143850.KS'],
+        'B': ['132030.KS', '305080.KS', '148070.KS'],
     }
     REBALANCE_RATIO_A: float = 0.4
 
