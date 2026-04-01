@@ -1,28 +1,1075 @@
 [
     {
-        "id": "tx_20230102",
-        "date": "2023-01-02",
-        "portfolio_value": 9893.723960975609,
-        "total_trade_amount": 9749.16,
+        "id": "tx_20190821",
+        "date": "2019-08-21",
+        "portfolio_value": 9893.494101738892,
+        "total_trade_amount": 9770.220000000001,
         "reason": "첫 투자: 30:70 비율로 진입",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
                 "quantity": 15,
-                "price": 191.16,
-                "fee": 2.87,
-                "date": "2023-01-02",
+                "price": 190.52,
+                "fee": 2.86,
+                "date": "2019-08-21",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SDY",
                 "action": "BUY",
-                "quantity": 36,
-                "price": 191.16,
-                "fee": 6.88,
-                "date": "2023-01-02",
+                "quantity": 69,
+                "price": 100.18,
+                "fee": 6.91,
+                "date": "2019-08-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20190911",
+        "date": "2019-09-11",
+        "portfolio_value": 10260.945180185547,
+        "total_trade_amount": 194.35,
+        "reason": "비율 재조정: 상대이탈 4.2% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 194.35,
+                "fee": 0.19,
+                "date": "2019-09-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200113",
+        "date": "2020-01-13",
+        "portfolio_value": 11071.973564232407,
+        "total_trade_amount": 543.76,
+        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 218.74,
+                "fee": 0.22,
+                "date": "2020-01-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 108.34,
+                "fee": 0.33,
+                "date": "2020-01-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200311",
+        "date": "2020-03-11",
+        "portfolio_value": 9293.309940382309,
+        "total_trade_amount": 282.12,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 193.27,
+                "fee": 0.19,
+                "date": "2020-03-11",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 88.85,
+                "fee": 0.09,
+                "date": "2020-03-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200323",
+        "date": "2020-03-23",
+        "portfolio_value": 7556.879558152236,
+        "total_trade_amount": 444.52,
+        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 168.76,
+                "fee": 0.17,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 68.94,
+                "fee": 0.28,
+                "date": "2020-03-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200327",
+        "date": "2020-03-27",
+        "portfolio_value": 8538.186685621336,
+        "total_trade_amount": 77.72,
+        "reason": "비율 재조정: 상대이탈 5.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 77.72,
+                "fee": 0.08,
+                "date": "2020-03-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200409",
+        "date": "2020-04-09",
+        "portfolio_value": 9392.417255512772,
+        "total_trade_amount": 289.13,
+        "reason": "비율 재조정: 상대이탈 5.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 86.26,
+                "fee": 0.09,
+                "date": "2020-04-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 202.87,
+                "fee": 0.2,
+                "date": "2020-04-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200415",
+        "date": "2020-04-15",
+        "portfolio_value": 9251.002411988296,
+        "total_trade_amount": 376.42,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 207.34,
+                "fee": 0.21,
+                "date": "2020-04-15",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 84.54,
+                "fee": 0.17,
+                "date": "2020-04-15",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20200624",
+        "date": "2020-06-24",
+        "portfolio_value": 10142.581315413132,
+        "total_trade_amount": 420.65,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 241.27,
+                "fee": 0.24,
+                "date": "2020-06-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 89.69,
+                "fee": 0.18,
+                "date": "2020-06-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20210917",
+        "date": "2021-09-17",
+        "portfolio_value": 14349.151880243835,
+        "total_trade_amount": 970.4399999999998,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 370.09,
+                "fee": 0.37,
+                "date": "2021-09-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 120.07,
+                "fee": 0.6,
+                "date": "2021-09-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220107",
+        "date": "2022-01-07",
+        "portfolio_value": 15498.377896590271,
+        "total_trade_amount": 513.1,
+        "reason": "비율 재조정: 상대이탈 8.1% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 129.44,
+                "fee": 0.13,
+                "date": "2022-01-07",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 383.66,
+                "fee": 0.38,
+                "date": "2022-01-07",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220125",
+        "date": "2022-01-25",
+        "portfolio_value": 14623.784183438567,
+        "total_trade_amount": 248.04,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 124.02,
+                "fee": 0.25,
+                "date": "2022-01-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220304",
+        "date": "2022-03-04",
+        "portfolio_value": 14613.252164813232,
+        "total_trade_amount": 465.77,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 125.1,
+                "fee": 0.13,
+                "date": "2022-03-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 340.67,
+                "fee": 0.34,
+                "date": "2022-03-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220322",
+        "date": "2022-03-22",
+        "portfolio_value": 14993.671402974547,
+        "total_trade_amount": 610.25,
+        "reason": "비율 재조정: 상대이탈 4.4% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 353.39,
+                "fee": 0.35,
+                "date": "2022-03-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 128.43,
+                "fee": 0.26,
+                "date": "2022-03-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220408",
+        "date": "2022-04-08",
+        "portfolio_value": 15124.843161052093,
+        "total_trade_amount": 128.62,
+        "reason": "비율 재조정: 상대이탈 5.9% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 128.62,
+                "fee": 0.13,
+                "date": "2022-04-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220411",
+        "date": "2022-04-11",
+        "portfolio_value": 14937.730754837494,
+        "total_trade_amount": 344.3,
+        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 344.3,
+                "fee": 0.34,
+                "date": "2022-04-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220506",
+        "date": "2022-05-06",
+        "portfolio_value": 14231.246462462157,
+        "total_trade_amount": 248.04,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 124.02,
+                "fee": 0.25,
+                "date": "2022-05-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220509",
+        "date": "2022-05-09",
+        "portfolio_value": 13976.090988515014,
+        "total_trade_amount": 422.97,
+        "reason": "비율 재조정: 상대이탈 5.8% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 122.85,
+                "fee": 0.12,
+                "date": "2022-05-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 300.12,
+                "fee": 0.3,
+                "date": "2022-05-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220804",
+        "date": "2022-08-04",
+        "portfolio_value": 14554.49083586273,
+        "total_trade_amount": 575.36,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 321.16,
+                "fee": 0.32,
+                "date": "2022-08-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 127.1,
+                "fee": 0.25,
+                "date": "2022-08-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220822",
+        "date": "2022-08-22",
+        "portfolio_value": 14624.95984087616,
+        "total_trade_amount": 127.09,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 127.09,
+                "fee": 0.13,
+                "date": "2022-08-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20220829",
+        "date": "2022-08-29",
+        "portfolio_value": 14302.659006950682,
+        "total_trade_amount": 307.45,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 307.45,
+                "fee": 0.31,
+                "date": "2022-08-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221101",
+        "date": "2022-11-01",
+        "portfolio_value": 13716.753103695144,
+        "total_trade_amount": 121.67,
+        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 121.67,
+                "fee": 0.12,
+                "date": "2022-11-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20221102",
+        "date": "2022-11-02",
+        "portfolio_value": 13384.704816795576,
+        "total_trade_amount": 387.53,
+        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 119.19,
+                "fee": 0.12,
+                "date": "2022-11-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 268.34,
+                "fee": 0.27,
+                "date": "2022-11-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230202",
+        "date": "2023-02-02",
+        "portfolio_value": 15055.153021749496,
+        "total_trade_amount": 575.6,
+        "reason": "비율 재조정: 상대이탈 4.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 308.6,
+                "fee": 0.31,
+                "date": "2023-02-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 133.5,
+                "fee": 0.27,
+                "date": "2023-02-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230323",
+        "date": "2023-03-23",
+        "portfolio_value": 13942.455309881287,
+        "total_trade_amount": 663.41,
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 306.65,
+                "fee": 0.31,
+                "date": "2023-03-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 118.92,
+                "fee": 0.36,
+                "date": "2023-03-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230412",
+        "date": "2023-04-12",
+        "portfolio_value": 14456.188331136169,
+        "total_trade_amount": 122.27,
+        "reason": "비율 재조정: 상대이탈 4.4% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 122.27,
+                "fee": 0.12,
+                "date": "2023-04-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230413",
+        "date": "2023-04-13",
+        "portfolio_value": 14585.541500869827,
+        "total_trade_amount": 125.37,
+        "reason": "비율 재조정: 상대이탈 2.6% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 125.37,
+                "fee": 0.13,
+                "date": "2023-04-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230420",
+        "date": "2023-04-20",
+        "portfolio_value": 14570.384009733505,
+        "total_trade_amount": 123.18,
+        "reason": "비율 재조정: 상대이탈 4.3% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 123.18,
+                "fee": 0.12,
+                "date": "2023-04-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230426",
+        "date": "2023-04-26",
+        "portfolio_value": 14305.162544184417,
+        "total_trade_amount": 123.09,
+        "reason": "비율 재조정: 상대이탈 3.0% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 123.09,
+                "fee": 0.12,
+                "date": "2023-04-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230525",
+        "date": "2023-05-25",
+        "portfolio_value": 14361.094013754653,
+        "total_trade_amount": 694.55,
+        "reason": "비율 재조정: 상대이탈 4.3% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 336.32,
+                "fee": 0.34,
+                "date": "2023-05-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 119.41,
+                "fee": 0.36,
+                "date": "2023-05-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231004",
+        "date": "2023-10-04",
+        "portfolio_value": 14320.38426497589,
+        "total_trade_amount": 699.3199999999999,
+        "reason": "비율 재조정: 상대이탈 3.2% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 356.15,
+                "fee": 0.36,
+                "date": "2023-10-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 114.39,
+                "fee": 0.34,
+                "date": "2023-10-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231012",
+        "date": "2023-10-12",
+        "portfolio_value": 14456.63407944229,
+        "total_trade_amount": 114.69,
+        "reason": "비율 재조정: 상대이탈 3.5% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 114.69,
+                "fee": 0.11,
+                "date": "2023-10-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231013",
+        "date": "2023-10-13",
+        "portfolio_value": 14419.36420080368,
+        "total_trade_amount": 112.58,
+        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 112.58,
+                "fee": 0.11,
+                "date": "2023-10-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231025",
+        "date": "2023-10-25",
+        "portfolio_value": 14052.286742600249,
+        "total_trade_amount": 353.84,
+        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 353.84,
+                "fee": 0.35,
+                "date": "2023-10-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231108",
+        "date": "2023-11-08",
+        "portfolio_value": 14563.650393282012,
+        "total_trade_amount": 484.59999999999997,
+        "reason": "비율 재조정: 상대이탈 2.7% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 369.21,
+                "fee": 0.37,
+                "date": "2023-11-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 115.39,
+                "fee": 0.12,
+                "date": "2023-11-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240703",
+        "date": "2024-07-03",
+        "portfolio_value": 17181.918553045805,
+        "total_trade_amount": 1252.0300000000002,
+        "reason": "비율 재조정: 상대이탈 8.1% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 486.13,
+                "fee": 0.49,
+                "date": "2024-07-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 127.65,
+                "fee": 0.77,
+                "date": "2024-07-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240717",
+        "date": "2024-07-17",
+        "portfolio_value": 17759.2790227977,
+        "total_trade_amount": 750.97,
+        "reason": "비율 재조정: 상대이탈 8.3% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 132.19,
+                "fee": 0.26,
+                "date": "2024-07-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 486.59,
+                "fee": 0.49,
+                "date": "2024-07-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250404",
+        "date": "2025-04-04",
+        "portfolio_value": 16665.722728275832,
+        "total_trade_amount": 124.62,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 124.62,
+                "fee": 0.12,
+                "date": "2025-04-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250513",
+        "date": "2025-05-13",
+        "portfolio_value": 18449.982045291214,
+        "total_trade_amount": 1052.95,
+        "reason": "비율 재조정: 상대이탈 4.9% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 510.43,
+                "fee": 0.51,
+                "date": "2025-05-13",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 135.63,
+                "fee": 0.54,
+                "date": "2025-05-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250516",
+        "date": "2025-05-16",
+        "portfolio_value": 18741.91944611473,
+        "total_trade_amount": 135.36,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 135.36,
+                "fee": 0.14,
+                "date": "2025-05-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250527",
+        "date": "2025-05-27",
+        "portfolio_value": 18593.131437016982,
+        "total_trade_amount": 136.56,
+        "reason": "비율 재조정: 상대이탈 3.8% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 136.56,
+                "fee": 0.14,
+                "date": "2025-05-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251029",
+        "date": "2025-10-29",
+        "portfolio_value": 20091.40355262489,
+        "total_trade_amount": 1460.35,
+        "reason": "비율 재조정: 상대이탈 8.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "QQQ",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 629.41,
+                "fee": 0.63,
+                "date": "2025-10-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 138.49,
+                "fee": 0.83,
+                "date": "2025-10-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251118",
+        "date": "2025-11-18",
+        "portfolio_value": 19756.705522342298,
+        "total_trade_amount": 271.96,
+        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 2,
+                "price": 135.98,
+                "fee": 0.27,
+                "date": "2025-11-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251217",
+        "date": "2025-12-17",
+        "portfolio_value": 20189.440241331406,
+        "total_trade_amount": 746.39,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SDY",
+                "action": "SELL",
+                "quantity": 1,
+                "price": 139.98,
+                "fee": 0.14,
+                "date": "2025-12-17",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "QQQ",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 606.41,
+                "fee": 0.61,
+                "date": "2025-12-17",
                 "status": "FILLED",
                 "reason": ""
             }

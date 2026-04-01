@@ -1,55 +1,55 @@
 {
-    "last_updated": "2023-01-05",
-    "last_rebalancing_date": "2023-01-05",
+    "last_updated": "2025-12-30",
+    "last_rebalancing_date": "2025-12-30",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 15.0,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.19739402765997863,
-            "spy_price": 190.0,
-            "spy_ma180": 168.1707317073171,
-            "spy_volatility": 0.00016701957528333187
+            "vix": 14.329999923706055,
+            "spy_mdd": -0.004881362573296912,
+            "spy_momentum": 0.07984201946135888,
+            "spy_price": 687.010009765625,
+            "spy_ma180": 637.5027228461372,
+            "spy_volatility": 0.08132782725116933
         }
     },
     "portfolio": {
-        "total_value": 12908473.874536585,
-        "cash_balance": 47373.87453658553,
+        "total_value": 22605299.23395,
+        "cash_balance": 299709.23394999973,
         "holdings": [
             {
                 "ticker": "069500.KS",
-                "qty": 13737,
-                "price": 190.0,
-                "value": 2610030.0
+                "qty": 83,
+                "price": 60895.0,
+                "value": 5054285.0
             },
             {
                 "ticker": "143850.KS",
-                "qty": 13737,
-                "price": 190.0,
-                "value": 2610030.0
+                "qty": 62,
+                "price": 71235.0,
+                "value": 4416570.0
             },
             {
                 "ticker": "132030.KS",
-                "qty": 13737,
-                "price": 190.0,
-                "value": 2610030.0
+                "qty": 175,
+                "price": 25235.0,
+                "value": 4416125.0
             },
             {
                 "ticker": "305080.KS",
-                "qty": 13737,
-                "price": 190.0,
-                "value": 2610030.0
+                "qty": 333,
+                "price": 13150.0,
+                "value": 4378950.0
             },
             {
                 "ticker": "148070.KS",
-                "qty": 12742,
-                "price": 190.0,
-                "value": 2420980.0
+                "qty": 37,
+                "price": 109180.0,
+                "value": 4039660.0
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2023-01-02"
+    "backtest_start_date": "2019-01-01"
 }
