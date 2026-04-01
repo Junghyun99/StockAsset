@@ -25,6 +25,7 @@ Write the test first. Watch it fail. Write minimal code to pass.
 - Throwaway prototypes
 - Generated code
 - Configuration files
+- **Brainstorming/exploration phase** (superpowers:brainstorming) — exploration is acceptable BEFORE design approval. Once design is approved and implementation starts, TDD applies strictly.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
@@ -360,6 +361,15 @@ When adding mocks or test utilities, read @testing-anti-patterns.md to avoid com
 - Testing mock behavior instead of real behavior
 - Adding test-only methods to production classes
 - Mocking without understanding dependencies
+
+## Integration
+
+**Phase: During implementation**
+
+This skill is active while writing code. After implementation, the verification chain continues:
+- **superpowers:test** - Run the full test suite to verify nothing regressed
+- **superpowers:systematic-debugging** - If tests fail unexpectedly, investigate root cause
+- **superpowers:verification-before-completion** - Before claiming work is done, run final verification
 
 ## Final Rule
 

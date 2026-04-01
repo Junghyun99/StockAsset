@@ -82,3 +82,11 @@ After all tasks complete and verified:
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
+
+**During execution:**
+- **superpowers:test-driven-development** - Follow TDD for each task implementation
+- **superpowers:requesting-code-review** - Review after each batch
+- **superpowers:verification-before-completion** - Before claiming batch/plan complete
+
+**Alternative execution model:**
+- **superpowers:subagent-driven-development** - For same-session execution with fresh subagent per task
