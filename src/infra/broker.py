@@ -97,14 +97,14 @@ class MockBroker(IBrokerAdapter):
     def _process_order_internal(self, order: Order) -> TradeExecution:
         """단일 주문 처리 및 Mock 잔고 갱신 헬퍼"""
         # 슬리피지 시뮬레이션
-        slippage = 1.01 if order.action == OrderAction.BUY else 0.99
+        slippage = 1.001 if order.action == OrderAction.BUY else 0.999
         exec_price = order.price * slippage
 
         # 잔고 반영 및 실제 체결 수량 결정 (수수료는 actual_qty 확정 후 단일 계산)
         if order.action == OrderAction.BUY:
             actual_qty = order.quantity
             amount = exec_price * actual_qty
-            fee = amount * 0.001
+            fee = amount * 0.0025
             self.cash -= (amount + fee)
             self.holdings[order.ticker] = self.holdings.get(order.ticker, 0) + actual_qty
         elif order.action == OrderAction.SELL:
@@ -115,7 +115,7 @@ class MockBroker(IBrokerAdapter):
                     f"[QTY ADJUSTED] {order.ticker} SELL: 요청 {order.quantity}주 → 실제 체결 {actual_qty}주 (보유량 부족)"
                 )
             amount = exec_price * actual_qty
-            fee = amount * 0.001
+            fee = amount * 0.0025
             self.cash += (amount - fee)
             self.holdings[order.ticker] = current_qty - actual_qty
 
