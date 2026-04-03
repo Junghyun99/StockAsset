@@ -90,6 +90,71 @@ def broker():
 
 
 # ============================================================
+# Phase 0: 유틸리티 / 헤더 (Read-only, API 호출 최소화)
+# ============================================================
+
+class TestPhase0Utilities:
+    """Phase 0: 순수 로직 및 헤더 유틸리티 테스트"""
+
+    def test_check_spread_normal(self, broker):
+        """정상 스프레드(0.5% 이하) → True"""
+        assert broker._check_spread(99900.0, 100000.0) is True
+        print("  ✓ 정상 스프레드 → True")
+
+    def test_check_spread_zero_bid(self, broker):
+        """bid=0 → True (fallback 허용)"""
+        assert broker._check_spread(0.0, 100000.0) is True
+        print("  ✓ bid=0 → True (fallback)")
+
+    def test_check_spread_zero_ask(self, broker):
+        """ask=0 → True (fallback 허용)"""
+        assert broker._check_spread(100000.0, 0.0) is True
+        print("  ✓ ask=0 → True (fallback)")
+
+    def test_check_spread_wide(self, broker):
+        """비정상 넓은 스프레드(0.5% 초과) → False"""
+        # bid=100, ask=200 → spread ≈ 66.7%
+        assert broker._check_spread(100.0, 200.0) is False
+        print("  ✓ 비정상 스프레드 → False")
+
+    def test_get_header_structure(self, broker):
+        """GET 헤더에 필수 키가 포함되어 있는지 확인"""
+        tr_id = "FHKST01010100"
+        headers = broker._get_header(tr_id)
+        assert "authorization" in headers
+        assert headers["authorization"].startswith("Bearer ")
+        assert headers["appkey"] == broker.app_key
+        assert headers["tr_id"] == tr_id
+        assert "hashkey" not in headers  # GET 요청에는 hashkey 없음
+        print("  ✓ GET 헤더 구조 확인 완료")
+
+    def test_get_header_with_hashkey(self, broker):
+        """POST 헤더(data 포함) → hashkey가 포함되는지 확인"""
+        data = {"CANO": broker.cano, "ACNT_PRDT_CD": broker.acnt_prdt_cd}
+        headers = broker._get_header("TTTC0012U", data=data)
+        assert "hashkey" in headers
+        assert isinstance(headers["hashkey"], str)
+        assert len(headers["hashkey"]) > 0
+        print(f"  ✓ HashKey 포함 확인 (length={len(headers['hashkey'])})")
+
+    def test_get_hashkey_returns_string(self, broker):
+        """_get_hashkey() 가 문자열을 반환하는지 확인"""
+        data = {"CANO": broker.cano, "ACNT_PRDT_CD": broker.acnt_prdt_cd}
+        hashkey = broker._get_hashkey(data)
+        assert hashkey is not None
+        assert isinstance(hashkey, str)
+        assert len(hashkey) > 0
+        print(f"  ✓ HashKey: {hashkey[:20]}...")
+
+    def test_ensure_token_no_refresh_when_valid(self, broker):
+        """토큰이 유효한 동안 _ensure_token() 호출 시 토큰이 유지되는지 확인"""
+        original_token = broker.access_token
+        broker._ensure_token()
+        assert broker.access_token == original_token
+        print("  ✓ 유효 토큰 유지 확인 (갱신 없음)")
+
+
+# ============================================================
 # Phase 1: 인증 (Read-only)
 # ============================================================
 
@@ -181,6 +246,33 @@ class TestPhase3AccountQuery:
         ids = broker._get_pending_order_ids()
         assert isinstance(ids, set)
         print(f"  ✓ 미체결 주문 ID: {ids if ids else '없음'}")
+
+    def test_query_fill_details_unknown_odno(self, broker):
+        """존재하지 않는 ODNO로 체결내역 조회 → (0.0, 0, 0.0) 반환"""
+        fill_price, fill_qty, fill_fee = broker._query_fill_details("0000000000", "005930")
+        assert fill_price == 0.0
+        assert fill_qty == 0
+        assert fill_fee == 0.0
+        print("  ✓ 미존재 ODNO 체결내역 조회 → (0.0, 0, 0.0)")
+
+    def test_poll_order_fill_nonexistent_odno(self, broker):
+        """미체결 목록에 없는 ODNO → True 즉시 반환"""
+        result = broker._poll_order_fill("0000000000", timeout=10)
+        assert result is True
+        print("  ✓ 미존재 ODNO polling → True (즉시 반환)")
+
+    def test_cancel_order_invalid_odno(self, broker):
+        """잘못된 ODNO 취소 시도 → False 반환 (안전 처리)"""
+        result = broker._cancel_order("0000000000", "005930", 1)
+        assert result is False
+        print("  ✓ 잘못된 ODNO 취소 → False")
+
+    def test_execute_orders_empty(self, broker):
+        """execute_orders에 빈 리스트 전달 → 빈 리스트 반환"""
+        result = broker.execute_orders([])
+        assert isinstance(result, list)
+        assert len(result) == 0
+        print("  ✓ 빈 주문 목록 → 빈 결과")
 
 
 # ============================================================
@@ -284,3 +376,53 @@ class TestPhase4OrderExecution:
         held = pf.holdings.get(TEST_TICKER, 0)
         # 원래 보유분이 있었을 수 있으므로, 적어도 매수 전보다 줄었는지 확인
         print(f"  ✓ 매도 후 {TEST_TICKER}: {held}주 보유")
+
+    def test_execute_orders_buy_then_sell(self, broker):
+        """execute_orders()로 매수 후 매도 — 통합 플로우 검증
+
+        ⚠️ 실제 자금으로 1주를 매수/매도합니다.
+        """
+        prices = broker.fetch_current_prices([TEST_TICKER])
+        current_price = prices[TEST_TICKER]
+        assert current_price > 0, "현재가 조회 실패"
+
+        pf = broker.get_portfolio()
+        assert pf.total_cash >= current_price, (
+            f"예수금({pf.total_cash:,.0f}원) 부족 — "
+            f"{TEST_TICKER} 1주 가격: {current_price:,.0f}원"
+        )
+
+        buy_order = Order(
+            ticker=TEST_TICKER,
+            action=OrderAction.BUY,
+            quantity=ORDER_QTY,
+            price=current_price,
+        )
+        buy_results = broker.execute_orders([buy_order])
+        assert len(buy_results) > 0, "execute_orders 매수 결과 없음"
+        buy_exec = buy_results[0]
+        assert isinstance(buy_exec, TradeExecution)
+        assert buy_exec.status in (ExecutionStatus.FILLED, ExecutionStatus.ORDERED)
+        print(
+            f"  ✓ execute_orders 매수: {buy_exec.ticker} {buy_exec.quantity}주 "
+            f"@ {buy_exec.price:,.0f}원 (status={buy_exec.status})"
+        )
+
+        if buy_exec.status != ExecutionStatus.FILLED:
+            pytest.skip("매수 미체결 — 매도 테스트 skip")
+
+        sell_order = Order(
+            ticker=TEST_TICKER,
+            action=OrderAction.SELL,
+            quantity=ORDER_QTY,
+            price=current_price,
+        )
+        sell_results = broker.execute_orders([sell_order])
+        assert len(sell_results) > 0, "execute_orders 매도 결과 없음"
+        sell_exec = sell_results[0]
+        assert isinstance(sell_exec, TradeExecution)
+        assert sell_exec.status in (ExecutionStatus.FILLED, ExecutionStatus.ORDERED)
+        print(
+            f"  ✓ execute_orders 매도: {sell_exec.ticker} {sell_exec.quantity}주 "
+            f"@ {sell_exec.price:,.0f}원 (status={sell_exec.status})"
+        )
