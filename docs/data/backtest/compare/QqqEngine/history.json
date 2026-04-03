@@ -1,75 +1,37 @@
 [
     {
-        "id": "tx_20190821",
-        "date": "2019-08-21",
-        "portfolio_value": 9966.305493802796,
-        "total_trade_amount": 9629.82,
+        "id": "tx_20230102",
+        "date": "2023-01-02",
+        "portfolio_value": 9966.191478048782,
+        "total_trade_amount": 9662.460000000001,
         "reason": "첫 투자: 100:0 비율로 진입",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
                 "quantity": 51,
-                "price": 188.82,
-                "fee": 24.07,
-                "date": "2019-08-21",
+                "price": 189.46,
+                "fee": 24.16,
+                "date": "2023-01-02",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20190822",
-        "date": "2019-08-22",
-        "portfolio_value": 9934.536922609903,
-        "total_trade_amount": 188.21,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 2.5%",
+        "id": "tx_20230103",
+        "date": "2023-01-03",
+        "portfolio_value": 9977.966735975611,
+        "total_trade_amount": 189.7,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "QQQ",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 188.21,
+                "price": 189.7,
                 "fee": 0.47,
-                "date": "2019-08-22",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20200312",
-        "date": "2020-03-12",
-        "portfolio_value": 9421.300017975656,
-        "total_trade_amount": 177.5,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 177.5,
-                "fee": 0.44,
-                "date": "2020-03-12",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20221219",
-        "date": "2022-12-19",
-        "portfolio_value": 14593.684830417062,
-        "total_trade_amount": 270.02,
-        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "QQQ",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 270.02,
-                "fee": 0.68,
-                "date": "2022-12-19",
+                "date": "2023-01-03",
                 "status": "FILLED",
                 "reason": ""
             }
