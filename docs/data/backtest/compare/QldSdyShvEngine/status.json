@@ -1,43 +1,43 @@
 {
-    "last_updated": "2025-12-30",
-    "last_rebalancing_date": "2025-12-30",
+    "last_updated": "2023-01-05",
+    "last_rebalancing_date": "2023-01-05",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 0.9,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 14.329999923706055,
-            "spy_mdd": -0.004881362573296912,
-            "spy_momentum": 0.07984201946135888,
-            "spy_price": 687.010009765625,
-            "spy_ma180": 637.5027228461372,
-            "spy_volatility": 0.08132782725116933
+            "vix": 15.0,
+            "spy_mdd": 0.0,
+            "spy_momentum": 0.19739402765997863,
+            "spy_price": 190.0,
+            "spy_ma180": 168.1707317073171,
+            "spy_volatility": 0.00016701957528333187
         }
     },
     "portfolio": {
-        "total_value": 13424.875428079573,
-        "cash_balance": 222.75565421482605,
+        "total_value": 10003.577346341466,
+        "cash_balance": 123.57734634146664,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 52,
-                "price": 71.61000061035156,
-                "value": 3723.7200317382812
+                "qty": 14,
+                "price": 190.0,
+                "value": 2660.0
             },
             {
                 "ticker": "SDY",
-                "qty": 59,
-                "price": 140.1199951171875,
-                "value": 8267.079711914062
+                "qty": 33,
+                "price": 190.0,
+                "value": 6270.0
             },
             {
                 "ticker": "SHV",
-                "qty": 11,
-                "price": 110.12000274658203,
-                "value": 1211.3200302124023
+                "qty": 5,
+                "price": 190.0,
+                "value": 950.0
             }
         ]
     },
     "initial_cash": 10000.0,
-    "backtest_start_date": "2019-01-01"
+    "backtest_start_date": "2023-01-02"
 }
