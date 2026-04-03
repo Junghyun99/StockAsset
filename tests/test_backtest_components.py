@@ -106,9 +106,9 @@ def test_broker_price_injection():
     order = Order('SPY', OrderAction.BUY, 10, 150.0) # 주문서엔 150이라 적혀있어도
     executions = broker.execute_orders([order])
     
-    # 4. 체결 가격 검증 (MockBroker 로직상 슬리피지 1% 적용됨 -> 202.0)
+    # 4. 체결 가격 검증 (MockBroker 로직상 슬리피지 0.1% 적용됨 -> 200.2)
     exec_price = executions[0].price
-    assert exec_price == pytest.approx(202.0) 
+    assert exec_price == pytest.approx(200.2)
     
     # 잔고 차감 확인: 10000 - (202 * 10 + 수수료)
     assert broker.get_portfolio().total_cash < 8000.0

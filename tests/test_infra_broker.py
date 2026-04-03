@@ -11,43 +11,43 @@ def test_mock_broker_initialization():
     assert pf.holdings['SPY'] == 10
 
 def test_mock_broker_buy_execution():
-    # 2. 매수 주문 실행 (슬리피지 1%, 수수료 0.1% 반영)
+    # 2. 매수 주문 실행 (슬리피지 0.1%, 수수료 0.25% 반영)
     broker = MockBroker(initial_cash=1000.0)
-    
+
     # 100원짜리 5주 매수
     orders = [Order(ticker='SPY', action=OrderAction.BUY, quantity=5, price=100.0)]
     broker.execute_orders(orders)
-    
+
     pf = broker.get_portfolio()
-    
+
     # 예상 비용 계산:
-    # 체결가: 100 * 1.01 = 101.0
-    # 금액: 101 * 5 = 505.0
-    # 수수료: 505 * 0.001 = 0.505
-    # 총비용: 505.505
-    # 잔고: 1000 - 505.505 = 494.495
-    
-    assert pf.total_cash == pytest.approx(494.495)
+    # 체결가: 100 * 1.001 = 100.1
+    # 금액: 100.1 * 5 = 500.5
+    # 수수료: 500.5 * 0.0025 = 1.25125
+    # 총비용: 501.75125
+    # 잔고: 1000 - 501.75125 = 498.24875
+
+    assert pf.total_cash == pytest.approx(498.24875)
     # 보유량 증가: 0 -> 5
     assert pf.holdings['SPY'] == 5
 
 def test_mock_broker_sell_execution():
-    # 3. 매도 주문 실행 (슬리피지 -1%, 수수료 0.1% 반영)
+    # 3. 매도 주문 실행 (슬리피지 -0.1%, 수수료 0.25% 반영)
     broker = MockBroker(initial_cash=0.0, holdings={'SPY': 10})
-    
+
     # 100원짜리 3주 매도
     orders = [Order(ticker='SPY', action=OrderAction.SELL, quantity=3, price=100.0)]
     broker.execute_orders(orders)
-    
+
     pf = broker.get_portfolio()
-    
+
     # 예상 수익 계산:
-    # 체결가: 100 * 0.99 = 99.0
-    # 금액: 99 * 3 = 297.0
-    # 수수료: 297 * 0.001 = 0.297
-    # 입금액: 297 - 0.297 = 296.703
-    
-    assert pf.total_cash == pytest.approx(296.703)
+    # 체결가: 100 * 0.999 = 99.9
+    # 금액: 99.9 * 3 = 299.7
+    # 수수료: 299.7 * 0.0025 = 0.74925
+    # 입금액: 299.7 - 0.74925 = 298.95075
+
+    assert pf.total_cash == pytest.approx(298.95075)
     # 보유량 감소: 10 - 3 = 7
     assert pf.holdings['SPY'] == 7
 
@@ -63,11 +63,11 @@ def test_mock_broker_mixed_orders():
     
     pf = broker.get_portfolio()
     
-    # 비용(NEW): (100*1.01*2) + 수수료(0.1%) = 202 + 0.202 = 202.202
-    # 수익(OLD): (10*0.99*5) - 수수료(0.1%) = 49.5 - 0.0495 = 49.4505
-    # 최종: 1000 - 202.202 + 49.4505 = 847.2485
-    
-    assert pf.total_cash == pytest.approx(847.2485)
+    # 비용(NEW): (100*1.001*2) + 수수료(0.25%) = 200.2 + 0.5005 = 200.7005
+    # 수익(OLD): (10*0.999*5) - 수수료(0.25%) = 49.95 - 0.124875 = 49.825125
+    # 최종: 1000 - 200.7005 + 49.825125 = 849.124625
+
+    assert pf.total_cash == pytest.approx(849.124625)
     assert pf.holdings['NEW'] == 2
     assert pf.holdings['OLD'] == 5
 
@@ -89,11 +89,11 @@ def test_mock_broker_sell_more_than_owned():
     assert pf.holdings['SPY'] == 0
 
     # 현금은 실제 체결 수량(5주)만큼만 지급되어야 함
-    # 체결가: 100 * 0.99 = 99.0
-    # 금액: 99.0 * 5 = 495.0
-    # 수수료: 495.0 * 0.001 = 0.495
-    # 입금액: 495.0 - 0.495 = 494.505
-    assert pf.total_cash == pytest.approx(494.505)
+    # 체결가: 100 * 0.999 = 99.9
+    # 금액: 99.9 * 5 = 499.5
+    # 수수료: 499.5 * 0.0025 = 1.24875
+    # 입금액: 499.5 - 1.24875 = 498.25125
+    assert pf.total_cash == pytest.approx(498.25125)
 
 
 def test_mock_broker_sell_more_than_owned_execution_qty():
@@ -121,8 +121,8 @@ def test_mock_broker_insufficient_funds():
     # 100원짜리 10주 매수 시도 (총 1000원 필요) -> 현금 100원밖에 없음
     # Broker 내부 로직: 
     # Budget = 100 * 0.98 = 98.0
-    # Price = 100 * 1.01 = 101.0
-    # Max Qty = int(98 / 101) = 0
+    # Price = 100 * 1.001 = 100.1
+    # Max Qty = int(98 / 100.1) = 0
     
     orders = [Order('SPY', OrderAction.BUY, 10, 100.0)] 
     executions = broker.execute_orders(orders)
