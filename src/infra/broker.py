@@ -949,8 +949,14 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 self.logger.warning(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
                 return Portfolio(total_cash=0.0, holdings={}, current_prices={})
 
-            # 예수금 (dnca_tot_amt: 예수금총액)
-            total_cash = float(data.get('output2', [{}])[0].get('dnca_tot_amt', 0) or 0)
+            # 예수금: output2가 빈 리스트일 때 IndexError 방지 후 꺼냄
+            output2_list = data.get('output2', [])
+            summary = output2_list[0] if output2_list else {}
+            # dnca_tot_amt(예수금총액) + cma_evlu_amt(CMA평가금액) 합산
+            # CMA 운용 계좌는 dnca_tot_amt=0, cma_evlu_amt에 금액이 잡힘
+            dnca = float(summary.get('dnca_tot_amt', 0) or 0)
+            cma  = float(summary.get('cma_evlu_amt', 0) or 0)
+            total_cash = dnca + cma
 
             # 보유 종목
             for item in data.get('output1', []):
