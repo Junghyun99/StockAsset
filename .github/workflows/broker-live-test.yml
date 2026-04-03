@@ -1,0 +1,51 @@
+name: KIS Domestic Broker Live Test
+
+# 수동 실행만 가능 (절대 push/PR에서 자동 실행되지 않음)
+on:
+  workflow_dispatch:
+    inputs:
+      test_level:
+        description: '테스트 수준: readonly(조회만) / full(매수/매도 포함)'
+        required: true
+        default: 'readonly'
+        type: choice
+        options:
+          - readonly
+          - full
+      test_ticker:
+        description: '주문 테스트 종목코드 (full 모드에서만 사용)'
+        required: false
+        default: '069500'
+
+jobs:
+  broker-live-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run broker live tests
+      env:
+        KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}
+        KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
+        KIS_ACC_NO: ${{ secrets.KIS_ACC_NO }}
+        RUN_ORDER_TESTS: ${{ inputs.test_level == 'full' && 'true' || 'false' }}
+        TEST_TICKER: ${{ inputs.test_ticker }}
+      run: |
+        echo "=== KIS Domestic Broker Live Test ==="
+        echo "Test level: ${{ inputs.test_level }}"
+        echo "Order tests: $RUN_ORDER_TESTS"
+        echo "Test ticker: $TEST_TICKER"
+        echo "======================================"
+        pytest tests/test_infra_broker_kis_domestic_live.py -v -s
