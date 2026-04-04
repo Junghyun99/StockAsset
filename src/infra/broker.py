@@ -979,7 +979,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             "ACNT_PRDT_CD": self.acnt_prdt_cd,
             "AFHR_FLPR_YN": "N",          # 시간외단일가 여부
             "OFL_YN": "",                  # 오프라인 여부
-            "INQR_DVSN": "02",            # 조회구분 (02: 종목별)
+            "INQR_DVSN": "01",            # 조회구분 (01: 대출일별 — output2 항상 반환)
             "UNPR_DVSN": "01",            # 단가구분
             "FUND_STTL_ICLD_YN": "N",     # 펀드결제분 포함 여부
             "FNCG_AMT_AUTO_RDPT_YN": "N", # 융자금액 자동상환 여부
