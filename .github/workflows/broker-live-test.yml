@@ -35,6 +35,18 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Get KST date for cache key
+      id: kst-date
+      run: echo "date=$(date -u -d '+9 hours' '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+    - name: Restore KIS token cache
+      uses: actions/cache@v4
+      with:
+        path: .kis_token_cache.json
+        key: kis-token-${{ steps.kst-date.outputs.date }}
+        restore-keys: |
+          kis-token-
+
     - name: Run broker live tests
       env:
         KIS_APP_KEY: ${{ secrets.KIS_APP_KEY }}

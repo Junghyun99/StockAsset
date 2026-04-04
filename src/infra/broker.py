@@ -3,6 +3,8 @@ from typing import List, Dict, Optional
 from src.core.interfaces import IBrokerAdapter, ILogger
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
 from src.config import TICKER_EXCHANGE_MAP, EXCHANGE_CODE_SHORT_TO_FULL
+import json
+import os
 import time
 import requests
 from datetime import datetime, timedelta
@@ -161,6 +163,13 @@ class MockBroker(IBrokerAdapter):
         # 실제 구현 시: KIS API 잔고 조회 후 self.cash 업데이트
 
 
+# KIS 토큰 캐시 파일 — src/infra/broker.py 기준 3단계 위 = 프로젝트 루트
+KIS_TOKEN_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    ".kis_token_cache.json"
+)
+
+
 class KisBrokerCommon(IBrokerAdapter):
     """한국투자증권 REST API 공통 베이스 클래스.
     인증, 헤더, 해시키, 주문 흐름(매도우선) 등 시장 무관 로직을 담당한다.
@@ -195,7 +204,14 @@ class KisBrokerCommon(IBrokerAdapter):
         self.access_token = self._auth()
 
     def _auth(self) -> str:
-        """접근 토큰 발급 및 만료 시각 저장"""
+        """접근 토큰 발급 및 만료 시각 저장. 유효한 캐시가 있으면 API 호출 생략."""
+        cached = self._load_token_from_cache()
+        if cached is not None:
+            self.logger.info("[KisBroker] 캐시에서 토큰 로드 (API 호출 생략)")
+            self.token_expires_at = datetime.fromisoformat(cached["expires_at"])
+            return cached["access_token"]
+
+        self.logger.info("[KisBroker] 새 토큰 발급 중...")
         url = f"{self.base_url}/oauth2/tokenP"
         payload = {
             "grant_type": "client_credentials",
@@ -210,10 +226,48 @@ class KisBrokerCommon(IBrokerAdapter):
                 raise Exception(f"Auth Failed: {data}")
             expires_in = int(data.get('expires_in', 86400))
             self.token_expires_at = datetime.now() + timedelta(seconds=expires_in)
-            return data['access_token']
+            token = data['access_token']
+            self._save_token_to_cache(token, self.token_expires_at)
+            return token
         except Exception as e:
             self.logger.error(f"[KisBroker] Auth Error: {e}")
             raise e
+
+    def _load_token_from_cache(self) -> Optional[dict]:
+        """캐시 파일에서 app_key에 해당하는 유효한 토큰을 반환. 없거나 만료면 None."""
+        try:
+            if not os.path.exists(KIS_TOKEN_CACHE_PATH):
+                return None
+            with open(KIS_TOKEN_CACHE_PATH, "r", encoding="utf-8") as f:
+                cache = json.load(f)
+            entry = cache.get(self.app_key)
+            if entry is None:
+                return None
+            expires_at = datetime.fromisoformat(entry["expires_at"])
+            if datetime.now() >= expires_at - timedelta(seconds=60):
+                self.logger.info("[KisBroker] 캐시 토큰 만료됨, 재발급 필요")
+                return None
+            return entry
+        except Exception as e:
+            self.logger.warning(f"[KisBroker] 토큰 캐시 로드 실패 (무시): {e}")
+            return None
+
+    def _save_token_to_cache(self, token: str, expires_at: datetime) -> None:
+        """발급된 토큰을 캐시 파일에 저장. 다른 app_key 엔트리는 보존."""
+        try:
+            cache = {}
+            if os.path.exists(KIS_TOKEN_CACHE_PATH):
+                with open(KIS_TOKEN_CACHE_PATH, "r", encoding="utf-8") as f:
+                    cache = json.load(f)
+            cache[self.app_key] = {
+                "access_token": token,
+                "expires_at": expires_at.isoformat()
+            }
+            with open(KIS_TOKEN_CACHE_PATH, "w", encoding="utf-8") as f:
+                json.dump(cache, f, ensure_ascii=False, indent=2)
+            self.logger.info(f"[KisBroker] 토큰 캐시 저장: {KIS_TOKEN_CACHE_PATH}")
+        except Exception as e:
+            self.logger.warning(f"[KisBroker] 토큰 캐시 저장 실패 (무시): {e}")
 
     def _ensure_token(self) -> None:
         """토큰 만료 60초 전이면 자동 재발급"""
