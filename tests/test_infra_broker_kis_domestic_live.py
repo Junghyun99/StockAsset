@@ -10,12 +10,14 @@ KIS 서버에 연결할 수 없으면 전체 skip된다.
 """
 
 import os
+import json
 import socket
+import time as time_mod
 import pytest
 from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock
 
-from src.infra.broker import KisDomesticLiveBroker
+from src.infra.broker import KisDomesticLiveBroker, KIS_TOKEN_CACHE_PATH
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
 
 
@@ -146,6 +148,21 @@ class TestPhase0Utilities:
         assert len(hashkey) > 0
         print(f"  ✓ HashKey: {hashkey[:20]}...")
 
+    def test_check_spread_bid_equals_ask(self, broker):
+        """bid == ask (spread=0%) → True"""
+        assert broker._check_spread(50000.0, 50000.0) is True
+        print("  ✓ bid == ask (spread=0%) → True")
+
+    def test_check_spread_boundary(self, broker):
+        """스프레드 0.5% 경계값 테스트"""
+        # bid=99750, ask=100250 → mid=100000, spread=500/100000*100=0.5% → True (경계 포함)
+        assert broker._check_spread(99750.0, 100250.0) is True
+        print("  ✓ spread=0.5% (정확히 경계) → True")
+
+        # bid=99740, ask=100260 → mid=100000, spread=520/100000*100=0.52% → False (경계 초과)
+        assert broker._check_spread(99740.0, 100260.0) is False
+        print("  ✓ spread=0.52% (경계 초과) → False")
+
     def test_ensure_token_no_refresh_when_valid(self, broker):
         """토큰이 유효한 동안 _ensure_token() 호출 시 토큰이 유지되는지 확인"""
         original_token = broker.access_token
@@ -173,6 +190,26 @@ class TestPhase1Auth:
         assert broker.token_expires_at is not None
         assert broker.token_expires_at > datetime.now()
         print(f"  ✓ Token expires at: {broker.token_expires_at}")
+
+    def test_token_cache_file_exists(self, broker):
+        """브로커 초기화 후 토큰 캐시 파일이 존재하고 올바른 구조인지 확인"""
+        assert os.path.exists(KIS_TOKEN_CACHE_PATH), f"캐시 파일 없음: {KIS_TOKEN_CACHE_PATH}"
+        with open(KIS_TOKEN_CACHE_PATH, "r", encoding="utf-8") as f:
+            cache = json.load(f)
+        assert broker.app_key in cache, f"캐시에 app_key({broker.app_key}) 미존재"
+        entry = cache[broker.app_key]
+        assert "access_token" in entry
+        assert "expires_at" in entry
+        print(f"  ✓ 토큰 캐시 파일 존재 확인: {KIS_TOKEN_CACHE_PATH}")
+
+    def test_load_token_from_cache_returns_valid_entry(self, broker):
+        """_load_token_from_cache() → 유효한 토큰 dict 반환 확인"""
+        result = broker._load_token_from_cache()
+        assert result is not None, "캐시 로드 결과가 None"
+        assert result["access_token"] == broker.access_token
+        expires_at = datetime.fromisoformat(result["expires_at"])
+        assert expires_at > datetime.now(), f"캐시 토큰이 이미 만료: {expires_at}"
+        print(f"  ✓ 캐시 토큰 로드 확인 (token length={len(result['access_token'])}, expires_at={expires_at})")
 
 
 # ============================================================
@@ -204,6 +241,26 @@ class TestPhase2PriceQuery:
         assert TEST_TICKER in prices
         assert prices[TEST_TICKER] > 0
         print(f"  ✓ {TEST_TICKER} 현재가: {prices[TEST_TICKER]:,.0f}원")
+
+    def test_fetch_current_prices_invalid_ticker(self, broker):
+        """존재하지 않는 종목 조회 → 0.0 반환"""
+        prices = broker.fetch_current_prices(["999999"])
+        assert "999999" in prices, "잘못된 종목 키가 결과에 없음"
+        assert prices["999999"] == 0.0, f"잘못된 종목 가격이 0.0이 아님: {prices['999999']}"
+        print("  ✓ 존재하지 않는 종목 → 0.0원")
+
+    def test_fetch_current_prices_empty_list(self, broker):
+        """빈 종목 리스트 → 빈 dict 반환"""
+        prices = broker.fetch_current_prices([])
+        assert isinstance(prices, dict)
+        assert len(prices) == 0
+        print("  ✓ 빈 종목 리스트 → 빈 dict")
+
+    def test_fetch_asking_price_invalid_ticker(self, broker):
+        """존재하지 않는 종목 호가 조회 → (0.0, 0.0) 반환"""
+        bid, ask = broker._fetch_asking_price("999999")
+        assert bid == 0.0 and ask == 0.0, f"잘못된 종목 호가가 (0.0, 0.0)이 아님: ({bid}, {ask})"
+        print("  ✓ 존재하지 않는 종목 호가 → (0.0, 0.0)")
 
     def test_fetch_asking_price(self, broker):
         """KODEX 200(069500) 호가(bid/ask) 조회"""
@@ -266,6 +323,36 @@ class TestPhase3AccountQuery:
         result = broker._cancel_order("0000000000", "005930", 1)
         assert result is False
         print("  ✓ 잘못된 ODNO 취소 → False")
+
+    def test_wait_for_completion_no_pending(self, broker):
+        """미체결 주문이 없을 때 _wait_for_completion → True 즉시 반환"""
+        start = time_mod.time()
+        result = broker._wait_for_completion(timeout=10)
+        elapsed = time_mod.time() - start
+        assert result is True, "_wait_for_completion이 False 반환 (미체결 존재?)"
+        assert elapsed < 5, f"소요시간 {elapsed:.1f}s — 즉시 반환되지 않음"
+        print(f"  ✓ 미체결 없음 → True 즉시 반환 (elapsed={elapsed:.1f}s)")
+
+    def test_get_portfolio_holdings_prices_consistency(self, broker):
+        """포트폴리오 보유종목과 현재가 일관성 검증"""
+        pf = broker.get_portfolio()
+        for ticker, qty in pf.holdings.items():
+            assert ticker in pf.current_prices, (
+                f"보유종목 {ticker}({qty}주)의 현재가가 current_prices에 없음"
+            )
+            assert pf.current_prices[ticker] > 0, (
+                f"보유종목 {ticker}의 현재가가 0 이하: {pf.current_prices[ticker]}"
+            )
+        print(f"  ✓ 포트폴리오 일관성 검증 완료 (보유 {len(pf.holdings)}종목 모두 현재가 존재)")
+
+    def test_get_pending_order_ids_element_types(self, broker):
+        """미체결 주문 ID 집합의 원소 타입 검증"""
+        ids = broker._get_pending_order_ids()
+        assert isinstance(ids, set)
+        for odno in ids:
+            assert isinstance(odno, str), f"ODNO가 str이 아님: {type(odno)}"
+            assert len(odno) > 0, "빈 문자열 ODNO 존재"
+        print(f"  ✓ 미체결 주문 ID 타입 확인 (all str, {len(ids)}건)")
 
     def test_execute_orders_empty(self, broker):
         """execute_orders에 빈 리스트 전달 → 빈 리스트 반환"""
@@ -426,3 +513,71 @@ class TestPhase4OrderExecution:
             f"  ✓ execute_orders 매도: {sell_exec.ticker} {sell_exec.quantity}주 "
             f"@ {sell_exec.price:,.0f}원 (status={sell_exec.status})"
         )
+
+    def test_execute_orders_sell_and_buy_together(self, broker):
+        """execute_orders()에 매도+매수 동시 전달 — sell-first 패턴 검증
+
+        ⚠️ 실제 자금으로 1주를 매수/매도합니다.
+        순서: (setup) 1주 매수 → execute_orders([sell, buy]) → (cleanup) 1주 매도
+        """
+        prices = broker.fetch_current_prices([TEST_TICKER])
+        current_price = prices[TEST_TICKER]
+        assert current_price > 0, "현재가 조회 실패"
+
+        # Setup: 1주 매수
+        pf = broker.get_portfolio()
+        assert pf.total_cash >= current_price * 2, (
+            f"예수금({pf.total_cash:,.0f}원) 부족 — "
+            f"매수+재매수 위해 {current_price * 2:,.0f}원 필요"
+        )
+
+        setup_order = Order(
+            ticker=TEST_TICKER, action=OrderAction.BUY,
+            quantity=ORDER_QTY, price=current_price,
+        )
+        setup_result = broker._send_order_and_wait(setup_order, timeout=30)
+        assert setup_result is not None and setup_result.status == ExecutionStatus.FILLED, (
+            "setup 매수 미체결 — sell+buy 동시 테스트 불가"
+        )
+        print(f"  ✓ Setup 매수 완료: {TEST_TICKER} 1주 @ {setup_result.price:,.0f}원")
+
+        # Test: 매도 + 매수 동시 전달
+        sell_order = Order(
+            ticker=TEST_TICKER, action=OrderAction.SELL,
+            quantity=ORDER_QTY, price=current_price,
+        )
+        buy_order = Order(
+            ticker=TEST_TICKER, action=OrderAction.BUY,
+            quantity=ORDER_QTY, price=current_price,
+        )
+        results = broker.execute_orders([sell_order, buy_order])
+
+        assert len(results) >= 1, "execute_orders 결과 없음"
+        for exec_result in results:
+            assert isinstance(exec_result, TradeExecution)
+            assert exec_result.status in (ExecutionStatus.FILLED, ExecutionStatus.ORDERED)
+        print(f"  ✓ sell+buy 동시 주문 결과: {len(results)}건")
+        for r in results:
+            print(f"    - {r.action} {r.ticker} {r.quantity}주 @ {r.price:,.0f}원 ({r.status})")
+
+        # Cleanup: 재매수된 1주 매도
+        has_buy_fill = any(
+            r.action == OrderAction.BUY and r.status == ExecutionStatus.FILLED
+            for r in results
+        )
+        if has_buy_fill:
+            cleanup_order = Order(
+                ticker=TEST_TICKER, action=OrderAction.SELL,
+                quantity=ORDER_QTY, price=current_price,
+            )
+            cleanup = broker._send_order_and_wait(cleanup_order, timeout=30)
+            if cleanup:
+                print(f"  ✓ Cleanup 매도: {cleanup.status}")
+
+    def test_wait_for_completion_during_market_hours(self, broker):
+        """장중 _wait_for_completion 실제 API 호출 → True 확인"""
+        start = time_mod.time()
+        result = broker._wait_for_completion(timeout=10)
+        elapsed = time_mod.time() - start
+        assert result is True, "_wait_for_completion이 False — 미체결 주문 존재 가능"
+        print(f"  ✓ 장중 _wait_for_completion → True (elapsed={elapsed:.1f}s)")
