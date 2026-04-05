@@ -11,6 +11,7 @@ KIS 서버에 연결할 수 없으면 전체 skip된다.
 
 import os
 import socket
+import logging
 import pytest
 from datetime import datetime, timezone, timedelta
 from unittest.mock import MagicMock
@@ -81,11 +82,18 @@ skip_market_closed = pytest.mark.skipif(
 @pytest.fixture(scope="module")
 def broker():
     """KisDomesticLiveBroker 인스턴스 (모듈 전체에서 재사용, 토큰 1회 발급)"""
+    # 디버그 로그가 테스트 출력에 표시되도록 실제 로거 사용
+    logger = logging.getLogger("kis_live_test")
+    logger.setLevel(logging.DEBUG)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        handler.setLevel(logging.DEBUG)
+        logger.addHandler(handler)
     return KisDomesticLiveBroker(
         app_key=os.getenv("KIS_APP_KEY"),
         app_secret=os.getenv("KIS_APP_SECRET"),
         acc_no=os.getenv("KIS_ACC_NO"),
-        logger=MagicMock(),
+        logger=logger,
     )
 
 
