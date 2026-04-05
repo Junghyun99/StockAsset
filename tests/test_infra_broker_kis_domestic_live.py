@@ -426,6 +426,29 @@ class TestPhase4OrderExecution:
         assert pf.holdings[TEST_TICKER] >= ORDER_QTY
         print(f"  ✓ 포트폴리오 확인: {TEST_TICKER} {pf.holdings[TEST_TICKER]}주 보유")
 
+    def test_query_fill_details_after_buy(self, broker):
+        """매수 체결 후 실제 ODNO로 _query_fill_details 조회 → 실체결 데이터 확인"""
+        buy = TestPhase4OrderExecution.buy_execution
+        if buy is None or buy.status != ExecutionStatus.FILLED:
+            pytest.skip("매수가 체결되지 않아 체결내역 조회 skip")
+
+        # reason 필드에서 ODNO 추출 (형식: "ODNO=1234567890")
+        assert buy.reason.startswith("ODNO="), (
+            f"reason 필드에 ODNO가 없음: '{buy.reason}'"
+        )
+        odno = buy.reason.split("=", 1)[1]
+        assert len(odno) > 0, "ODNO가 빈 문자열"
+
+        fill_price, fill_qty, fill_fee = broker._query_fill_details(odno, TEST_TICKER)
+        assert fill_price > 0, f"체결가가 0: {fill_price}"
+        assert fill_qty > 0, f"체결수량이 0: {fill_qty}"
+        assert fill_qty == ORDER_QTY, f"체결수량 불일치: {fill_qty} != {ORDER_QTY}"
+        assert fill_fee >= 0, f"수수료가 음수: {fill_fee}"
+        print(
+            f"  ✓ 체결내역 조회 (ODNO={odno}): "
+            f"체결가={fill_price:,.0f}원, 수량={fill_qty}주, 수수료={fill_fee:,.0f}원"
+        )
+
     def test_sell_order(self, broker):
         """보유 1주 매도 주문 → TradeExecution 반환 확인"""
         buy = TestPhase4OrderExecution.buy_execution

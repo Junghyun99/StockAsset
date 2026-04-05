@@ -660,7 +660,8 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                         price=actual_price,
                         fee=fill_fee,
                         date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        status=ExecutionStatus.FILLED
+                        status=ExecutionStatus.FILLED,
+                        reason=f"ODNO={odno}"
                     )
                 else:
                     self.logger.warning(
@@ -681,7 +682,8 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                 price=order_price,
                 fee=0.0,
                 date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                status=ExecutionStatus.ORDERED
+                status=ExecutionStatus.ORDERED,
+                reason=f"ODNO={odno}" if odno else ""
             )
 
         except Exception as e:
@@ -1101,7 +1103,8 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                         price=actual_price,
                         fee=fill_fee,
                         date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        status=ExecutionStatus.FILLED
+                        status=ExecutionStatus.FILLED,
+                        reason=f"ODNO={odno}"
                     )
                 else:
                     self.logger.warning(
@@ -1122,7 +1125,8 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 price=float(order_price),
                 fee=0.0,
                 date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                status=ExecutionStatus.ORDERED
+                status=ExecutionStatus.ORDERED,
+                reason=f"ODNO={odno}" if odno else ""
             )
 
         except Exception as e:
