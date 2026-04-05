@@ -1003,24 +1003,14 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 self.logger.warning(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
                 return Portfolio(total_cash=0.0, holdings={}, current_prices={})
 
-            # [DEBUG] 원본 응답 구조 로깅
-            output2_list = data.get('output2', [])
-            self.logger.info(f"[KisDomestic][DEBUG] output2 type={type(output2_list).__name__} len={len(output2_list) if isinstance(output2_list, list) else 'N/A'}")
-            if output2_list:
-                summary_raw = output2_list[0] if isinstance(output2_list, list) else output2_list
-                self.logger.info(f"[KisDomestic][DEBUG] output2[0] keys={list(summary_raw.keys())}")
-                self.logger.info(f"[KisDomestic][DEBUG] dnca_tot_amt={summary_raw.get('dnca_tot_amt')} cma_evlu_amt={summary_raw.get('cma_evlu_amt')} nxdy_excc_amt={summary_raw.get('nxdy_excc_amt')} prvs_rcdl_excc_amt={summary_raw.get('prvs_rcdl_excc_amt')} tot_evlu_amt={summary_raw.get('tot_evlu_amt')}")
-            else:
-                self.logger.warning(f"[KisDomestic][DEBUG] output2 is empty! rt_cd={data.get('rt_cd')} msg1={data.get('msg1')} INQR_DVSN={params['INQR_DVSN']}")
-
             # 예수금: output2가 빈 리스트일 때 IndexError 방지 후 꺼냄
-            summary = (output2_list[0] if isinstance(output2_list, list) else output2_list) if output2_list else {}
+            output2_list = data.get('output2', [])
+            summary = output2_list[0] if output2_list else {}
             # dnca_tot_amt(예수금총액) + cma_evlu_amt(CMA평가금액) 합산
             # CMA 운용 계좌는 dnca_tot_amt=0, cma_evlu_amt에 금액이 잡힘
             dnca = float(summary.get('dnca_tot_amt', 0) or 0)
             cma  = float(summary.get('cma_evlu_amt', 0) or 0)
             total_cash = dnca + cma
-            self.logger.info(f"[KisDomestic][DEBUG] total_cash={total_cash} (dnca={dnca}, cma={cma})")
 
             # 보유 종목
             for item in data.get('output1', []):
