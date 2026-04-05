@@ -35,15 +35,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Get KST date for cache key
-      id: kst-date
-      run: echo "date=$(date -u -d '+9 hours' '+%Y-%m-%d')" >> $GITHUB_OUTPUT
-
     - name: Restore KIS token cache
-      uses: actions/cache@v4
+      id: token-cache-restore
+      uses: actions/cache/restore@v4
       with:
         path: .kis_token_cache.json
-        key: kis-token-${{ steps.kst-date.outputs.date }}
+        key: kis-token-${{ github.run_id }}
         restore-keys: |
           kis-token-
 
@@ -61,3 +58,10 @@ jobs:
         echo "Test ticker: $TEST_TICKER"
         echo "======================================"
         pytest tests/test_infra_broker_kis_domestic_live.py -v -s
+
+    - name: Save KIS token cache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: .kis_token_cache.json
+        key: kis-token-${{ github.run_id }}
