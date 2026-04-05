@@ -10,6 +10,14 @@ from src.core.models import Order, Portfolio, OrderAction, ExecutionStatus, Trad
 # KisPaperBroker / KisLiveBroker 테스트 (외부 API는 모두 Mock)
 # ==========================================
 
+@pytest.fixture(autouse=True)
+def mock_token_cache():
+    """토큰 캐시 파일 I/O를 Mock하여 테스트 간 캐시 간섭 방지"""
+    with patch('src.infra.broker.KisBrokerCommon._load_token_from_cache', return_value=None), \
+         patch('src.infra.broker.KisBrokerCommon._save_token_to_cache'):
+        yield
+
+
 @pytest.fixture
 def mock_requests():
     """requests 모듈 전체를 Mock"""
@@ -964,7 +972,7 @@ def test_ensure_token_refreshes_when_expired(paper_broker, mock_requests):
     paper_broker._ensure_token()
 
     assert paper_broker.access_token == 'new_token'
-    paper_broker.logger.info.assert_called_with("[KisBroker] Access Token 갱신 중...")
+    paper_broker.logger.info.assert_any_call("[KisBroker] Access Token 갱신 중...")
 
 
 def test_ensure_token_refreshes_within_60s_buffer(paper_broker, mock_requests):
