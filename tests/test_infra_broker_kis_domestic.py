@@ -1,7 +1,7 @@
 # tests/test_infra_broker_kis_domestic.py
 import pytest
 from unittest.mock import patch, MagicMock
-from src.infra.broker import KisDomesticPaperBroker, KisDomesticLiveBroker
+from src.infra.broker import KisDomesticPaperBroker, KisDomesticLiveBroker, KisDomesticBrokerBase
 from src.core.models import Order, Portfolio, OrderAction, ExecutionStatus
 
 
@@ -155,8 +155,8 @@ def test_domestic_get_portfolio_success(domestic_paper_broker, mock_requests):
     pf = domestic_paper_broker.get_portfolio()
 
     assert pf.total_cash == 5000000.0
-    assert pf.holdings == {'005930': 10, '000660': 5}
-    assert pf.current_prices == {'005930': 72000.0, '000660': 185000.0}
+    assert pf.holdings == {'005930.KS': 10, '000660.KS': 5}
+    assert pf.current_prices == {'005930.KS': 72000.0, '000660.KS': 185000.0}
     # URL에 domestic-stock 포함 확인
     call_args = mock_requests.get.call_args
     assert '/uapi/domestic-stock/v1/trading/inquire-balance' in call_args[0][0]
@@ -190,8 +190,8 @@ def test_domestic_get_portfolio_zero_qty_excluded(domestic_paper_broker, mock_re
     mock_requests.get.return_value = portfolio_response
 
     pf = domestic_paper_broker.get_portfolio()
-    assert '005930' in pf.holdings
-    assert '000660' not in pf.holdings
+    assert '005930.KS' in pf.holdings
+    assert '000660.KS' not in pf.holdings
 
 
 # --- _fetch_asking_price 테스트 ---
@@ -584,3 +584,120 @@ def test_domestic_order_rejected_on_bad_spread(domestic_paper_broker, mock_reque
 
     assert result is not None
     assert result.status == ExecutionStatus.REJECTED
+
+
+# ==========================================
+# 티커 포맷 변환 테스트 (.KS ↔ 6자리 코드)
+# ==========================================
+
+class TestTickerConversion:
+    """_to_kis_code / _to_yf_ticker 단위 테스트"""
+
+    def test_to_kis_code_strips_ks_suffix(self):
+        assert KisDomesticBrokerBase._to_kis_code("069500.KS") == "069500"
+
+    def test_to_kis_code_passthrough_without_suffix(self):
+        assert KisDomesticBrokerBase._to_kis_code("069500") == "069500"
+
+    def test_to_kis_code_passthrough_us_ticker(self):
+        assert KisDomesticBrokerBase._to_kis_code("SPY") == "SPY"
+
+    def test_to_yf_ticker_adds_ks_suffix(self):
+        assert KisDomesticBrokerBase._to_yf_ticker("069500") == "069500.KS"
+
+    def test_to_yf_ticker_idempotent(self):
+        assert KisDomesticBrokerBase._to_yf_ticker("069500.KS") == "069500.KS"
+
+
+def test_fetch_current_prices_strips_ks_for_api(domestic_paper_broker, mock_requests):
+    """.KS 티커로 조회 시 API에는 6자리 코드 전송, 결과 키는 .KS 유지"""
+    price_response = MagicMock()
+    price_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {'stck_prpr': '13500'}
+    }
+    mock_requests.get.return_value = price_response
+
+    prices = domestic_paper_broker.fetch_current_prices(['069500.KS'])
+
+    assert '069500.KS' in prices
+    assert prices['069500.KS'] == 13500.0
+    call_args = mock_requests.get.call_args
+    assert call_args[1]['params']['FID_INPUT_ISCD'] == '069500'
+
+
+def test_get_portfolio_returns_ks_keys(domestic_paper_broker, mock_requests):
+    """get_portfolio 반환 시 holdings/prices 키에 .KS 접미사 포함"""
+    portfolio_response = MagicMock()
+    portfolio_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [
+            {'pdno': '069500', 'hldg_qty': '100', 'prpr': '13500'},
+        ],
+        'output2': [{'dnca_tot_amt': '2000000'}]
+    }
+    mock_requests.get.return_value = portfolio_response
+
+    pf = domestic_paper_broker.get_portfolio()
+
+    assert '069500.KS' in pf.holdings
+    assert pf.holdings['069500.KS'] == 100
+    assert pf.current_prices['069500.KS'] == 13500.0
+
+
+def test_send_order_strips_ks_for_pdno(domestic_paper_broker, mock_requests):
+    """.KS 티커 주문 시 PDNO에 6자리 코드 전송"""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': {'bidp1': '71900', 'askp1': '72000'}  # 0.14% 스프레드
+    }
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+    order_response = MagicMock()
+    order_response.json.return_value = {
+        'rt_cd': '0',
+        'output': {'ODNO': 'KS001'}
+    }
+    pending_response = MagicMock()
+    pending_response.json.return_value = {'rt_cd': '0', 'output': []}
+    fill_response = MagicMock()
+    fill_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [{
+            'odno': 'KS001', 'avg_prvs': '72000',
+            'tot_ccld_qty': '10', 'tot_ccld_amt': '720000'
+        }]
+    }
+
+    mock_requests.get.side_effect = [asking_response, pending_response, fill_response]
+    mock_requests.post.side_effect = [hash_response, order_response]
+
+    order = Order('069500.KS', OrderAction.BUY, 10, 72000.0)
+    result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
+
+    # PDNO에 .KS 없이 전송되었는지 확인
+    order_call = mock_requests.post.call_args_list[1]
+    order_data = order_call[1]['json']
+    assert order_data['PDNO'] == '069500'
+
+    # 결과 ticker는 .KS 포맷 유지
+    assert result is not None
+    assert result.ticker == '069500.KS'
+
+
+def test_fetch_asking_price_strips_ks_for_api(domestic_paper_broker, mock_requests):
+    """.KS 티커 호가 조회 시 API에는 6자리 코드 전송"""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': {'bidp1': '13400', 'askp1': '13500'}
+    }
+    mock_requests.get.return_value = asking_response
+
+    bid, ask = domestic_paper_broker._fetch_asking_price('069500.KS')
+
+    assert bid == 13400.0
+    assert ask == 13500.0
+    call_args = mock_requests.get.call_args
+    assert call_args[1]['params']['FID_INPUT_ISCD'] == '069500'

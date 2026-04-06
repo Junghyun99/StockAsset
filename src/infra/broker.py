@@ -942,6 +942,16 @@ class KisDomesticBrokerBase(KisBrokerCommon):
     """
     ASKING_PRICE_TR_ID: str = "FHKST01010200"  # 국내주식 호가 조회 (실전/모의 동일)
 
+    @staticmethod
+    def _to_kis_code(ticker: str) -> str:
+        """yfinance 티커 → KIS 종목코드. '069500.KS' → '069500'"""
+        return ticker.removesuffix(".KS")
+
+    @staticmethod
+    def _to_yf_ticker(code: str) -> str:
+        """KIS 종목코드 → yfinance 티커. '069500' → '069500.KS'"""
+        return code if code.endswith(".KS") else code + ".KS"
+
     def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]:
         """국내주식 현재가 조회"""
         prices = {}
@@ -950,7 +960,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
         for ticker in tickers:
             params = {
                 "FID_COND_MRKT_DIV_CODE": "J",  # J: 주식/ETF
-                "FID_INPUT_ISCD": ticker          # 종목코드 (6자리)
+                "FID_INPUT_ISCD": self._to_kis_code(ticker)  # 종목코드 (6자리)
             }
             headers = self._get_header(tr_id)
             try:
@@ -1018,7 +1028,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             for item in data.get('output1', []):
                 qty = int(item.get('hldg_qty', 0) or 0)
                 if qty > 0:
-                    ticker = item['pdno']           # 종목코드
+                    ticker = self._to_yf_ticker(item['pdno'])  # 종목코드 → .KS 포맷
                     all_holdings[ticker] = qty
                     all_prices[ticker] = float(item.get('prpr', 0) or 0)  # 현재가
 
@@ -1063,7 +1073,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
         data = {
             "CANO": self.cano,
             "ACNT_PRDT_CD": self.acnt_prdt_cd,
-            "PDNO": order.ticker,              # 종목코드 (6자리)
+            "PDNO": self._to_kis_code(order.ticker),  # 종목코드 (6자리)
             "ORD_DVSN": "00",                  # 00: 지정가
             "ORD_QTY": str(order.quantity),
             "ORD_UNPR": str(order_price),      # KRW 정수
@@ -1192,7 +1202,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             "INQR_END_DT": today,
             "SLL_BUY_DVSN_CD": "00",      # 00: 전체
             "INQR_DVSN": "00",
-            "PDNO": ticker,
+            "PDNO": self._to_kis_code(ticker),
             "CCLD_DVSN": "01",             # 01: 체결만
             "ORD_GNO_BRNO": "",
             "ODNO": odno,
@@ -1261,7 +1271,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
         url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn"
         params = {
             "FID_COND_MRKT_DIV_CODE": "J",
-            "FID_INPUT_ISCD": ticker
+            "FID_INPUT_ISCD": self._to_kis_code(ticker)
         }
         headers = self._get_header(self.ASKING_PRICE_TR_ID)
         try:
