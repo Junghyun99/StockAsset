@@ -970,11 +970,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 data = res.json()
 
                 if data['rt_cd'] == '0':
-                    output = data['output']
-                    price = float(output.get('stck_prpr', 0) or 0)
-                    # 장 종료 후 stck_prpr이 0이면 종가(stck_clpr)로 fallback
-                    if price == 0.0:
-                        price = float(output.get('stck_clpr', 0) or 0)
+                    price = float(data['output']['stck_prpr'])
                     prices[ticker] = price
                 else:
                     self.logger.warning(f"[KisDomestic] Price fetch failed for {ticker}: {data.get('msg1')}")
@@ -1173,16 +1169,12 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             "INQR_DVSN_2": "0"
         }
         headers = self._get_header(tr_id)
-        try:
-            res = requests.get(url, headers=headers, params=params)
-            res.raise_for_status()
-            data = res.json()
-            if data['rt_cd'] == '0':
-                return {item.get('odno', '') for item in data.get('output', [])}
-            return set()
-        except requests.exceptions.HTTPError as e:
-            self.logger.warning(f"[KisDomestic] 미체결 조회 HTTP 에러 (장외시간 가능): {e}")
-            return set()
+        res = requests.get(url, headers=headers, params=params)
+        res.raise_for_status()
+        data = res.json()
+        if data['rt_cd'] == '0':
+            return {item.get('odno', '') for item in data.get('output', [])}
+        return set()
 
     def _get_pending_orders_count(self) -> int:
         """국내주식 미체결 건수 조회."""
@@ -1296,13 +1288,6 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             # 국내주식 호가: askp1(매도1호가), bidp1(매수1호가)
             bid = float(output1.get('bidp1', 0) or 0)
             ask = float(output1.get('askp1', 0) or 0)
-            # 장 종료 후 호가가 0이면 현재가로 fallback
-            if bid == 0.0 and ask == 0.0:
-                prices = self.fetch_current_prices([ticker])
-                fallback_price = prices.get(ticker, 0.0)
-                if fallback_price > 0:
-                    bid = fallback_price
-                    ask = fallback_price
             return (bid, ask)
 
         except Exception as e:
