@@ -55,10 +55,10 @@ def _make_engine(
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value

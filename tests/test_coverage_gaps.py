@@ -192,10 +192,10 @@ class TestTradingBotEdgeCases:
              patch('src.main.JsonRepository') as MockRepo, \
              patch('src.main.SlackNotifier') as MockNotifier, \
              patch('src.main.KisLiveBroker') as MockKisBroker, \
-             patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-             patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-             patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-             patch('src.core.engine.Rebalancer') as MockRebalancer, \
+             patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+             patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+             patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+             patch('src.core.engine.base.Rebalancer') as MockRebalancer, \
              patch.dict('os.environ', {'IS_LIVE_TRADING': 'true'}):
 
             loader = MockLoader.return_value
@@ -225,7 +225,7 @@ class TestTradingBotEdgeCases:
                 'rebalancer': rebalancer
             }
 
-    @patch('src.core.engine.time.sleep')
+    @patch('src.core.engine.base.time.sleep')
     def test_bot_live_trading_mode_init(self, mock_sleep, mock_deps_live):
         """실전 모드에서 KisLiveBroker가 초기화되는지 확인 (lines 38-40)"""
         from src.main import TradingBot
@@ -245,7 +245,7 @@ class TestTradingBotEdgeCases:
         # KisLiveBroker가 사용되었는지 확인
         mock_deps_live['repo'].save_daily_summary.assert_called()
 
-    @patch('src.core.engine.time.sleep')
+    @patch('src.core.engine.base.time.sleep')
     def test_bot_live_trading_with_execution(self, mock_sleep, mock_deps_live):
         """실전 모드에서 매매 실행 후 sleep(3) 호출 확인 (line 104)"""
         from src.main import TradingBot

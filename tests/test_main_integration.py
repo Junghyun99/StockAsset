@@ -13,10 +13,10 @@ def mock_dependencies():
          patch('src.main.JsonRepository') as MockRepo, \
          patch('src.main.SlackNotifier') as MockNotifier, \
          patch('src.main.KisPaperBroker') as MockBrokerCls, \
-         patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+         patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         # 인스턴스 Mock 생성
         loader = MockLoader.return_value

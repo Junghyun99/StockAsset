@@ -57,10 +57,10 @@ def _build_spy_engine(repo_last_reb=None):
     )
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
@@ -141,9 +141,9 @@ def test_spy_engine_registry_class_is_spy_engine():
 def test_spy_engine_rebalancer_groups():
     """rebalancer가 SpyEngine.ASSET_GROUPS로 자동 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = SpyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == SpyEngine.ASSET_GROUPS
 
@@ -151,9 +151,9 @@ def test_spy_engine_rebalancer_groups():
 def test_spy_engine_rebalancer_ratio_a():
     """rebalancer ratio_a=0.999로 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = SpyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.999
 
@@ -161,9 +161,9 @@ def test_spy_engine_rebalancer_ratio_a():
 def test_spy_engine_rebalancer_ratio_b():
     """ratio_b = 1 - 0.999 = 0.001."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = SpyEngine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.001) < 1e-9
 
