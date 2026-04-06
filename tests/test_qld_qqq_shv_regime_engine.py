@@ -67,10 +67,10 @@ def _build_regime_engine(repo_last_reb=None, notifier=None):
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
@@ -171,9 +171,9 @@ def test_regime_engine_crash_has_highest_leverage():
 def test_regime_engine_rebalancer_has_regime_map():
     """Rebalancer에 regime_ratio_a_map이 전달된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldQqqShvRegimeEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer._regime_ratio_a_map is not None
     assert engine.rebalancer._regime_ratio_a_map == QldQqqShvRegimeEngine.REGIME_RATIO_A_MAP
@@ -182,9 +182,9 @@ def test_regime_engine_rebalancer_has_regime_map():
 def test_regime_engine_rebalancer_groups():
     """Rebalancer가 3-자산 그룹으로 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldQqqShvRegimeEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == QldQqqShvRegimeEngine.ASSET_GROUPS
 
@@ -385,8 +385,8 @@ def test_existing_engine_rebalancer_no_regime_map():
     """기존 엔진의 Rebalancer에는 regime_ratio_a_map이 None이다."""
     from src.core.engine import QldSHVEngine
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer._regime_ratio_a_map is None

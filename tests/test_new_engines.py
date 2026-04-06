@@ -54,10 +54,10 @@ def _build_qld_shv_engine(repo_last_reb=None, notifier=None):
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
@@ -97,10 +97,10 @@ def _build_qld_schd_engine(repo_last_reb=None, notifier=None):
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
@@ -164,9 +164,9 @@ def test_qld_shv_no_C_group():
 def test_qld_shv_default_rebalancer_groups():
     """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == QldSHVEngine.ASSET_GROUPS
 
@@ -174,9 +174,9 @@ def test_qld_shv_default_rebalancer_groups():
 def test_qld_shv_default_rebalancer_ratio_a():
     """rebalancer ratio_a는 Rebalancer 기본값(0.5)."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == Rebalancer.DEFAULT_RATIO_A
 
@@ -290,9 +290,9 @@ def test_qld_schd_rebalance_ratio_a_class_constant():
 def test_qld_schd_default_rebalancer_groups():
     """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == QldSdyEngine.ASSET_GROUPS
 
@@ -300,9 +300,9 @@ def test_qld_schd_default_rebalancer_groups():
 def test_qld_schd_default_rebalancer_ratio_a():
     """rebalancer ratio_a=0.3으로 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.3
 
@@ -310,9 +310,9 @@ def test_qld_schd_default_rebalancer_ratio_a():
 def test_qld_schd_default_rebalancer_ratio_b():
     """ratio_b = 1 - ratio_a = 0.7."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.7) < 1e-9
 
@@ -428,9 +428,9 @@ def test_qld_schd_end_to_end_nan_no_trade():
 def test_engines_ratio_a_differs():
     """QldSHVEngine(0.5) vs QldSdyEngine(0.3) ratio_a 차이."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         shv_engine = QldSHVEngine(broker=broker, repo=repo, logger=logger)
         schd_engine = QldSdyEngine(broker=broker, repo=repo, logger=logger)
     assert shv_engine.rebalancer.ratio_a == 0.5
@@ -484,10 +484,10 @@ def _build_qqq_schd_engine(repo_last_reb=None, notifier=None):
     broker.get_portfolio.return_value = _make_portfolio()
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
@@ -518,9 +518,9 @@ def _build_qqq_schd_engine(repo_last_reb=None, notifier=None):
 def test_qqq_schd_default_rebalancer_groups():
     """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QqqSdyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == QqqSdyEngine.ASSET_GROUPS
 
@@ -528,9 +528,9 @@ def test_qqq_schd_default_rebalancer_groups():
 def test_qqq_schd_default_rebalancer_ratio_a():
     """rebalancer ratio_a=0.3으로 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QqqSdyEngine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.3
 
@@ -538,9 +538,9 @@ def test_qqq_schd_default_rebalancer_ratio_a():
 def test_qqq_schd_default_rebalancer_ratio_b():
     """ratio_b = 1 - ratio_a = 0.7."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = QqqSdyEngine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.7) < 1e-9
 
@@ -660,9 +660,9 @@ def test_asset5_rebalance_ratio_a_class_constant():
 def test_asset5_default_rebalancer_groups():
     """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == Asset5Engine.ASSET_GROUPS
 
@@ -670,9 +670,9 @@ def test_asset5_default_rebalancer_groups():
 def test_asset5_default_rebalancer_ratio_a():
     """rebalancer ratio_a=0.4으로 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.4
 
@@ -680,9 +680,9 @@ def test_asset5_default_rebalancer_ratio_a():
 def test_asset5_default_rebalancer_ratio_b():
     """ratio_b = 1 - ratio_a = 0.6."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.6) < 1e-9
 
@@ -701,10 +701,10 @@ def test_asset5_all_tickers():
     )
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter'), \
-         patch('src.core.engine.Rebalancer'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter'), \
+         patch('src.core.engine.base.Rebalancer'):
         MockAnalyzer.return_value._prev_regime = None
         engine = Asset5Engine(broker=broker, repo=repo, logger=logger)
 
@@ -731,10 +731,10 @@ def _build_asset5_engine(repo_last_reb=None, notifier=None):
     )
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
@@ -861,9 +861,9 @@ def test_domestic_asset5_rebalance_ratio_a_class_constant():
 def test_domestic_asset5_default_rebalancer_groups():
     """rebalancer가 클래스 ASSET_GROUPS로 자동 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = DomesticAsset5Engine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.groups == DomesticAsset5Engine.ASSET_GROUPS
 
@@ -871,9 +871,9 @@ def test_domestic_asset5_default_rebalancer_groups():
 def test_domestic_asset5_default_rebalancer_ratio_a():
     """rebalancer ratio_a=0.4으로 생성된다."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = DomesticAsset5Engine(broker=broker, repo=repo, logger=logger)
     assert engine.rebalancer.ratio_a == 0.4
 
@@ -881,9 +881,9 @@ def test_domestic_asset5_default_rebalancer_ratio_a():
 def test_domestic_asset5_default_rebalancer_ratio_b():
     """ratio_b = 1 - ratio_a = 0.6."""
     broker, repo, logger = _make_base_deps()
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer'), \
-         patch('src.core.engine.VolatilityTargeter'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer'), \
+         patch('src.core.engine.base.VolatilityTargeter'):
         engine = DomesticAsset5Engine(broker=broker, repo=repo, logger=logger)
     assert abs(engine.rebalancer.ratio_b - 0.6) < 1e-9
 
@@ -902,10 +902,10 @@ def test_domestic_asset5_all_tickers():
     )
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator'), \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter'), \
-         patch('src.core.engine.Rebalancer'):
+    with patch('src.core.engine.base.IndicatorCalculator'), \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter'), \
+         patch('src.core.engine.base.Rebalancer'):
         MockAnalyzer.return_value._prev_regime = None
         engine = DomesticAsset5Engine(broker=broker, repo=repo, logger=logger)
 
@@ -935,10 +935,10 @@ def _build_domestic_asset5_engine(repo_last_reb=None, notifier=None):
     )
     broker.fetch_current_prices.return_value = {}
 
-    with patch('src.core.engine.IndicatorCalculator') as MockCalc, \
-         patch('src.core.engine.RegimeAnalyzer') as MockAnalyzer, \
-         patch('src.core.engine.VolatilityTargeter') as MockTargeter, \
-         patch('src.core.engine.Rebalancer') as MockRebalancer:
+    with patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
+         patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
+         patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
+         patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
         calculator = MockCalc.return_value
         analyzer = MockAnalyzer.return_value
