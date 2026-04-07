@@ -9,7 +9,12 @@ from src.strategy_config import StrategyConfig
 from src.core.engine import TradingEngine
 from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
-from src.infra.broker import KisPaperBroker, KisLiveBroker, KisDomesticPaperBroker, KisDomesticLiveBroker
+from src.infra.broker import (
+    KisOverseasPaperBroker,
+    KisOverseasLiveBroker,
+    KisDomesticPaperBroker,
+    KisDomesticLiveBroker,
+)
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
 
@@ -54,16 +59,16 @@ class TradingBot:
                 )
         else:
             if self.config.IS_LIVE_TRADING:
-                self.logger.info("Mode: LIVE TRADING — 해외주식 (KisLiveBroker)")
-                self.broker = KisLiveBroker(
+                self.logger.info("Mode: LIVE TRADING — 해외주식 (KisOverseasLiveBroker)")
+                self.broker = KisOverseasLiveBroker(
                     self.config.KIS_APP_KEY,
                     self.config.KIS_APP_SECRET,
                     self.config.KIS_ACC_NO,
                     self.logger,
                 )
             else:
-                self.logger.info("Mode: PAPER TRADING — 해외주식 (KisPaperBroker)")
-                self.broker = KisPaperBroker(
+                self.logger.info("Mode: PAPER TRADING — 해외주식 (KisOverseasPaperBroker)")
+                self.broker = KisOverseasPaperBroker(
                     self.config.KIS_APP_KEY,
                     self.config.KIS_APP_SECRET,
                     self.config.KIS_ACC_NO,

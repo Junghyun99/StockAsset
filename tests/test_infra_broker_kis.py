@@ -2,12 +2,12 @@
 import pytest
 import logging
 from unittest.mock import patch, MagicMock
-from src.infra.broker import KisPaperBroker, KisLiveBroker, MockBroker
+from src.infra.broker import KisOverseasPaperBroker, KisOverseasLiveBroker, MockBroker
 from src.core.models import Order, Portfolio, OrderAction, ExecutionStatus, TradeExecution
 
 
 # ==========================================
-# KisPaperBroker / KisLiveBroker 테스트 (외부 API는 모두 Mock)
+# KisOverseasPaperBroker / KisOverseasLiveBroker 테스트 (외부 API는 모두 Mock)
 # ==========================================
 
 @pytest.fixture(autouse=True)
@@ -32,12 +32,12 @@ def mock_logger():
 
 @pytest.fixture
 def paper_broker(mock_requests, mock_logger):
-    """KisPaperBroker 인스턴스 (인증 Mock 포함)"""
+    """KisOverseasPaperBroker 인스턴스 (인증 Mock 포함)"""
     auth_response = MagicMock()
     auth_response.json.return_value = {'access_token': 'test_token_123'}
     mock_requests.post.return_value = auth_response
 
-    broker = KisPaperBroker(
+    broker = KisOverseasPaperBroker(
         app_key='test_key',
         app_secret='test_secret',
         acc_no='1234567890',
@@ -51,12 +51,12 @@ def paper_broker(mock_requests, mock_logger):
 
 @pytest.fixture
 def live_broker(mock_requests, mock_logger):
-    """KisLiveBroker 인스턴스 (인증 Mock 포함)"""
+    """KisOverseasLiveBroker 인스턴스 (인증 Mock 포함)"""
     auth_response = MagicMock()
     auth_response.json.return_value = {'access_token': 'real_token_456'}
     mock_requests.post.return_value = auth_response
 
-    broker = KisLiveBroker(
+    broker = KisOverseasLiveBroker(
         app_key='real_key',
         app_secret='real_secret',
         acc_no='9876543210',
@@ -75,7 +75,7 @@ def test_kis_paper_broker_init(mock_requests, mock_logger):
     auth_response.json.return_value = {'access_token': 'token123'}
     mock_requests.post.return_value = auth_response
 
-    broker = KisPaperBroker('key', 'secret', '1234567890', mock_logger)
+    broker = KisOverseasPaperBroker('key', 'secret', '1234567890', mock_logger)
 
     assert broker.base_url == "https://openapivts.koreainvestment.com:29443"
     assert broker.PRICE_TR_ID == "HHDFS00000300"
@@ -91,7 +91,7 @@ def test_kis_live_broker_init(mock_requests, mock_logger):
     auth_response.json.return_value = {'access_token': 'real_token'}
     mock_requests.post.return_value = auth_response
 
-    broker = KisLiveBroker('key', 'secret', '1234567890', mock_logger)
+    broker = KisOverseasLiveBroker('key', 'secret', '1234567890', mock_logger)
 
     assert broker.base_url == "https://openapi.koreainvestment.com:9443"
     assert broker.PRICE_TR_ID == "HHDFS00000300"
@@ -108,7 +108,7 @@ def test_paper_broker_auth_failure(mock_requests, mock_logger):
     mock_requests.post.return_value = auth_response
 
     with pytest.raises(Exception, match="Auth Failed"):
-        KisPaperBroker('bad_key', 'bad_secret', '1234567890', mock_logger)
+        KisOverseasPaperBroker('bad_key', 'bad_secret', '1234567890', mock_logger)
 
 
 def test_paper_broker_auth_network_error(mock_requests, mock_logger):
@@ -116,7 +116,7 @@ def test_paper_broker_auth_network_error(mock_requests, mock_logger):
     mock_requests.post.side_effect = Exception("Network Error")
 
     with pytest.raises(Exception, match="Network Error"):
-        KisPaperBroker('key', 'secret', '1234567890', mock_logger)
+        KisOverseasPaperBroker('key', 'secret', '1234567890', mock_logger)
 
 
 # --- _get_header / _get_hashkey 테스트 ---
@@ -940,7 +940,7 @@ def test_auth_stores_token_expires_at(mock_requests, mock_logger):
     auth_response.json.return_value = {'access_token': 'tok', 'expires_in': 3600}
     mock_requests.post.return_value = auth_response
 
-    broker = KisPaperBroker('k', 's', '1234567890', mock_logger)
+    broker = KisOverseasPaperBroker('k', 's', '1234567890', mock_logger)
 
     assert broker.token_expires_at is not None
     # 약 3600초 후 만료 (오차 5초 허용)
@@ -954,7 +954,7 @@ def test_auth_uses_default_expires_in_when_missing(mock_requests, mock_logger):
     auth_response.json.return_value = {'access_token': 'tok'}
     mock_requests.post.return_value = auth_response
 
-    broker = KisPaperBroker('k', 's', '1234567890', mock_logger)
+    broker = KisOverseasPaperBroker('k', 's', '1234567890', mock_logger)
 
     expected = datetime.now() + timedelta(seconds=86400)
     assert abs((broker.token_expires_at - expected).total_seconds()) < 5
@@ -1021,7 +1021,7 @@ def test_auth_raise_for_status_on_http_error(mock_requests, mock_logger):
     mock_requests.post.return_value = auth_response
 
     with pytest.raises(Exception, match="500 Server Error"):
-        KisPaperBroker('key', 'secret', '1234567890', mock_logger)
+        KisOverseasPaperBroker('key', 'secret', '1234567890', mock_logger)
 
 
 def test_get_hashkey_raise_for_status_on_http_error(paper_broker, mock_requests):
