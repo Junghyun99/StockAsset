@@ -2,14 +2,30 @@ import pytest
 from datetime import date, timedelta
 from unittest.mock import MagicMock, patch
 from src.main import TradingBot
+from src.account_config import AccountConfig
 from src.core.models import MarketData, MarketRegime, TradeSignal, Order, Portfolio
+
+
+def _fake_accounts():
+    return [AccountConfig(
+        id="test_acc",
+        market_type="overseas",
+        is_live=False,
+        engine_name="SpyEngine",
+        app_key="k",
+        app_secret="s",
+        acc_no="1234567890",
+    )]
+
 
 # ==========================================
 # Mock 객체들을 미리 준비하는 Fixture
 # ==========================================
 @pytest.fixture
 def mock_dependencies():
-    with patch('src.main.YFinanceLoader') as MockLoader, \
+    with patch('src.main.load_accounts', return_value=_fake_accounts()), \
+         patch('src.main._resolve_engine_class') as MockResolve, \
+         patch('src.main.YFinanceLoader') as MockLoader, \
          patch('src.main.JsonRepository') as MockRepo, \
          patch('src.main.SlackNotifier') as MockNotifier, \
          patch('src.main.KisOverseasPaperBroker') as MockBrokerCls, \
@@ -17,6 +33,9 @@ def mock_dependencies():
          patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
          patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
          patch('src.core.engine.base.Rebalancer') as MockRebalancer:
+
+        from src.core.engine import TradingEngine as _TE
+        MockResolve.return_value = _TE
 
         # 인스턴스 Mock 생성
         loader = MockLoader.return_value

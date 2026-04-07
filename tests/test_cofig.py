@@ -12,24 +12,14 @@ def test_asset_groups_integrity():
     assert 'SSO' in strategy.ASSET_GROUPS['A']
 
 @patch.dict(os.environ, {
-    "IS_LIVE_TRADING": "True",
-    "KIS_APP_KEY": "test_key",
-    "SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/test"
+    "SLACK_WEBHOOK_URL": "https://hooks.slack.com/services/test",
+    "ACCOUNTS_CONFIG_PATH": "custom_accounts.yaml",
 })
 def test_env_variable_loading():
-    """[설정] 환경변수 로드 확인"""
-    # Config 클래스는 import 시점에 로드되므로, 
-    # 테스트 안에서 인스턴스화하여 값 확인
+    """[설정] 환경변수 로드 확인 (멀티 계좌 전환 후)"""
     config = Config()
-    
-    # 모의 환경이므로 직접 클래스 변수에 접근하거나
-    # Config 구현 방식에 따라 os.getenv 재확인
-    assert os.getenv("IS_LIVE_TRADING") == "True"
-    
-    # 실제 Config 클래스 속성과 매핑되는지 확인 (구현 방식에 따라 다름)
-    assert config.IS_LIVE_TRADING is True
     assert config.SLACK_WEBHOOK_URL == "https://hooks.slack.com/services/test"
-    assert config.KIS_APP_KEY == "test_key"
+    assert config.ACCOUNTS_CONFIG_PATH == "custom_accounts.yaml"
 
 def test_default_env_values():
     with patch.dict(os.environ, {}, clear=True):

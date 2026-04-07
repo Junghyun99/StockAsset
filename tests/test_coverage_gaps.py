@@ -188,15 +188,22 @@ class TestTradingBotEdgeCases:
     @pytest.fixture
     def mock_deps_live(self):
         """실전 모드 Mock 의존성"""
-        with patch('src.main.YFinanceLoader') as MockLoader, \
+        from src.account_config import AccountConfig
+        from src.core.engine import TradingEngine as _TE
+        live_acc = [AccountConfig(
+            id="live_acc", market_type="overseas", is_live=True,
+            engine_name="SpyEngine", app_key="k", app_secret="s", acc_no="1234567890",
+        )]
+        with patch('src.main.load_accounts', return_value=live_acc), \
+             patch('src.main._resolve_engine_class', return_value=_TE), \
+             patch('src.main.YFinanceLoader') as MockLoader, \
              patch('src.main.JsonRepository') as MockRepo, \
              patch('src.main.SlackNotifier') as MockNotifier, \
              patch('src.main.KisOverseasLiveBroker') as MockKisBroker, \
              patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
              patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
              patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
-             patch('src.core.engine.base.Rebalancer') as MockRebalancer, \
-             patch.dict('os.environ', {'IS_LIVE_TRADING': 'true'}):
+             patch('src.core.engine.base.Rebalancer') as MockRebalancer:
 
             loader = MockLoader.return_value
             repo = MockRepo.return_value
