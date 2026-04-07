@@ -1,0 +1,35 @@
+# 멀티 계좌 설정 템플릿
+#
+# 1. 이 파일을 `accounts.yaml`로 복사합니다.
+# 2. 각 계좌의 id / market_type / is_live / engine / kis_env_prefix를 지정합니다.
+# 3. 시크릿은 .env 파일에 `{PREFIX}_KIS_APP_KEY`, `{PREFIX}_KIS_APP_SECRET`,
+#    `{PREFIX}_KIS_ACC_NO` 형식으로 저장합니다 (prefix는 아래 kis_env_prefix와 동일).
+#
+# engine 값은 src/core/engine 디렉토리에 @register_engine 으로 등록된 이름을 사용합니다.
+# 예: QldSHVEngine, QldSdyEngine, QqqSdyEngine, SpyEngine, QqqEngine, Asset5Engine,
+#     DomesticAsset5Engine, QldSdyShvEngine, QldQqqShvRegimeEngine
+
+accounts:
+  - id: my_pension
+    market_type: overseas      # overseas | domestic
+    is_live: true              # true: 실전, false: 모의
+    engine: QldSdyShvEngine
+    kis_env_prefix: MY_PENSION
+
+  - id: my_isa
+    market_type: overseas
+    is_live: true
+    engine: Asset5Engine
+    kis_env_prefix: MY_ISA
+
+  - id: spouse_pension
+    market_type: overseas
+    is_live: true
+    engine: QldSdyShvEngine
+    kis_env_prefix: SPOUSE_PENSION
+
+  - id: spouse_isa
+    market_type: domestic
+    is_live: true
+    engine: DomesticAsset5Engine
+    kis_env_prefix: SPOUSE_ISA
