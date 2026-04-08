@@ -10,8 +10,14 @@ import {
     computeReturns,
     computeDrawdown,
     computeTradeStats,
-    computeAdvancedMetrics
-} from './utils.js?v=2';
+    computeAdvancedMetrics,
+    computeRollingReturn,
+    computeCurrentDrawdownDays,
+    computeCurrentRegimeStreak,
+    computeFailedExecutions,
+    inferNextRebalanceDate,
+    getStatusFreshness
+} from './utils.js?v=3';
 
 /**
  * 상단 내비게이션 바의 모드 버튼 및 상태 배지 업데이트
@@ -415,4 +421,196 @@ function renderPagination(totalPages) {
             }
         });
     });
+}
+
+// ============================================================
+// 대시보드 확장: 신규 UI 렌더 함수들
+// ============================================================
+
+/**
+ * Performance 탭 - 롤링 수익률 카드 4개
+ */
+export function renderRollingReturnCards(summaryData) {
+    const configs = [
+        { id: 'rolling-1m', days: 21 },
+        { id: 'rolling-3m', days: 63 },
+        { id: 'rolling-6m', days: 126 },
+        { id: 'rolling-1y', days: 252 },
+    ];
+    configs.forEach(cfg => {
+        const el = document.getElementById(cfg.id);
+        if (!el) return;
+        const val = computeRollingReturn(summaryData, cfg.days);
+        if (val == null) {
+            el.innerText = 'N/A';
+            el.className = 'fw-bold mb-0 text-muted';
+        } else {
+            el.innerText = formatPercent(val);
+            el.className = 'fw-bold mb-0 ' + (val >= 0 ? 'text-success' : 'text-danger');
+        }
+    });
+}
+
+/**
+ * Performance 탭 - 현재 드로다운 카드 (깊이 + 진행일수)
+ */
+export function renderCurrentDrawdownCard(summaryData) {
+    const dd = computeCurrentDrawdownDays(summaryData);
+    const valueEl = document.getElementById('current-dd-value');
+    const daysEl = document.getElementById('current-dd-days');
+    if (valueEl) {
+        valueEl.innerText = dd.depthPct.toFixed(2) + '%';
+        valueEl.className = 'fw-bold mb-0 ' + (dd.depthPct < -0.5 ? 'text-danger' : 'text-success');
+    }
+    if (daysEl) {
+        daysEl.innerText = dd.days === 0 ? '신고점' : `${dd.days}일 진행`;
+    }
+}
+
+/**
+ * Performance 탭 - Calmar 비율 카드
+ */
+export function renderCalmarCard(summaryData) {
+    const el = document.getElementById('calmar-value');
+    if (!el) return;
+    const metrics = computeAdvancedMetrics(summaryData);
+    const calmar = metrics.portfolio.calmar;
+    el.innerText = isFinite(calmar) ? calmar.toFixed(2) : 'N/A';
+    el.className = 'fw-bold mb-0 ' + (calmar >= 1 ? 'text-success' : (calmar < 0 ? 'text-danger' : 'text-dark'));
+}
+
+/**
+ * Trades 탭 - 수수료 영향도 카드 (누적 수수료 / 현재 자산)
+ */
+export function renderFeeImpactCard(historyData, summaryData) {
+    const el = document.getElementById('fee-impact-pct');
+    if (!el) return;
+    const stats = computeTradeStats(historyData);
+    const currentValue = summaryData && summaryData.length > 0
+        ? summaryData[summaryData.length - 1].total_value
+        : 0;
+    if (currentValue <= 0) {
+        el.innerText = '-';
+        return;
+    }
+    const impact = (stats.totalFees / currentValue) * 100;
+    el.innerText = impact.toFixed(3) + '%';
+    el.className = 'fw-bold mb-0 ' + (impact < 0.5 ? 'text-success' : (impact < 2 ? 'text-warning' : 'text-danger'));
+}
+
+/**
+ * 네브바 데이터 신선도 배지 렌더링
+ */
+export function renderStatusFreshnessBadge(statusData) {
+    const badge = document.getElementById('freshness-badge');
+    if (!badge || !statusData) return;
+    const freshness = getStatusFreshness(statusData.last_updated);
+    badge.className = 'badge me-3 ' + freshness.colorClass;
+    badge.innerHTML = `<i class="fas fa-sync-alt me-1"></i>${freshness.label}`;
+    badge.classList.remove('d-none');
+}
+
+/**
+ * Overview 탭 - 미체결/실패 주문 상단 알림
+ */
+export function renderFailedOrderAlert(historyData) {
+    const alert = document.getElementById('failed-order-alert');
+    const text = document.getElementById('failed-order-alert-text');
+    if (!alert || !text) return;
+    const failed = computeFailedExecutions(historyData);
+    if (failed.length === 0) {
+        alert.classList.add('d-none');
+        return;
+    }
+    alert.classList.remove('d-none');
+    const recent = failed.slice(-3).reverse();
+    const summary = recent.map(f => `${f.date} ${f.ticker} ${f.action} [${f.status}]`).join(', ');
+    text.innerHTML = ` ${failed.length}건 감지 — 최근: ${summary}`;
+}
+
+/**
+ * Operations 탭 - 모든 카드/테이블 통합 렌더링
+ */
+export function renderOperationsPanel(statusData, historyData, summaryData) {
+    // [1] 마지막 실행 시각 카드
+    const lastRunLabel = document.getElementById('ops-last-run-label');
+    const lastRunTime = document.getElementById('ops-last-run-time');
+    if (lastRunLabel && lastRunTime) {
+        const freshness = getStatusFreshness(statusData.last_updated);
+        lastRunLabel.innerText = freshness.label;
+        lastRunLabel.className = 'fw-bold mb-0 ' + (
+            freshness.colorClass.includes('success') ? 'text-success' :
+            freshness.colorClass.includes('danger') ? 'text-danger' :
+            freshness.colorClass.includes('warning') ? 'text-warning' : 'text-dark'
+        );
+        lastRunTime.innerText = statusData.last_updated || '-';
+    }
+
+    // [2] 다음 리밸런싱 추정 카드
+    const nextDateEl = document.getElementById('ops-next-rebal-date');
+    const nextHintEl = document.getElementById('ops-next-rebal-hint');
+    if (nextDateEl && nextHintEl) {
+        const inferred = inferNextRebalanceDate(historyData);
+        if (inferred.confidence === 'insufficient') {
+            nextDateEl.innerText = '데이터 부족';
+            nextDateEl.className = 'fw-bold mb-0 text-muted';
+            nextHintEl.innerText = '거래 기록 3건 이상 필요';
+        } else {
+            nextDateEl.innerText = inferred.estimatedDate;
+            nextDateEl.className = 'fw-bold mb-0 text-primary';
+            nextHintEl.innerText = `최근 평균 ${inferred.intervalDays}일 주기 (${inferred.confidence})`;
+        }
+    }
+
+    // [3] 현재 국면 유지 기간 카드
+    const regimeDays = document.getElementById('ops-regime-days');
+    const regimeName = document.getElementById('ops-regime-name');
+    const regimeStart = document.getElementById('ops-regime-start');
+    if (regimeDays && regimeName && regimeStart) {
+        const streak = computeCurrentRegimeStreak(summaryData);
+        regimeDays.innerText = streak.days;
+        regimeName.innerText = streak.regime.replace('_', ' ');
+        regimeStart.innerText = streak.startDate;
+    }
+
+    // [4] 미체결/실패 주문 카운트 카드
+    const failedCountEl = document.getElementById('ops-failed-count');
+    const failedTableBody = document.getElementById('ops-failed-table-body');
+    if (failedCountEl && failedTableBody) {
+        const failed = computeFailedExecutions(historyData);
+        failedCountEl.innerText = failed.length;
+        failedCountEl.className = 'fw-bold mb-0 ' + (failed.length === 0 ? 'text-success' : 'text-danger');
+
+        if (failed.length === 0) {
+            failedTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-success py-4"><i class="fas fa-check-circle me-1"></i>모든 주문이 정상 체결되었습니다</td></tr>';
+        } else {
+            failedTableBody.innerHTML = failed.slice().reverse().map(f => `
+                <tr>
+                    <td class="ps-3 small text-muted">${f.date}</td>
+                    <td class="fw-bold">${f.ticker}</td>
+                    <td><span class="badge ${f.action === 'BUY' ? 'bg-success' : 'bg-danger'}">${f.action}</span></td>
+                    <td class="text-end">${f.quantity}</td>
+                    <td><span class="badge bg-warning text-dark">${f.status}</span></td>
+                    <td class="pe-3 small">${f.reason || '-'}</td>
+                </tr>
+            `).join('');
+        }
+    }
+
+    // [5] 봇 상태 요약 (우측 카드)
+    const freshness = getStatusFreshness(statusData.last_updated);
+    const freshnessLabelEl = document.getElementById('ops-freshness-label');
+    if (freshnessLabelEl) {
+        freshnessLabelEl.className = 'badge ' + freshness.colorClass;
+        freshnessLabelEl.innerText = freshness.label;
+    }
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = text;
+    };
+    setText('ops-last-updated-raw', statusData.last_updated || '-');
+    setText('ops-current-regime', (statusData.strategy && statusData.strategy.regime || '-').replace('_', ' '));
+    setText('ops-target-exposure', statusData.strategy ? (statusData.strategy.target_exposure * 100).toFixed(0) + '%' : '-');
+    setText('ops-trigger-reason', (statusData.strategy && statusData.strategy.trigger_reason) || '-');
+    setText('ops-total-trades', (historyData || []).length + '건');
 }

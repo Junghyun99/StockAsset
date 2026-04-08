@@ -280,3 +280,330 @@ export function formatPercent(value) {
     const sign = value >= 0 ? '+' : '';
     return sign + value.toFixed(2) + '%';
 }
+
+// ============================================================
+// 파생 계산 함수들 (대시보드 확장용, 순수 함수)
+// 모두 기존 summary/status/history JSON에서 파생 가능
+// ============================================================
+
+/**
+ * 일일 수익률 배열 (total_value[i] / total_value[i-1] - 1)
+ * @param {Array} summaryData
+ * @returns {number[]} 길이 n-1 배열
+ */
+export function computeDailyReturns(summaryData) {
+    if (!summaryData || summaryData.length < 2) return [];
+    const result = [];
+    for (let i = 1; i < summaryData.length; i++) {
+        const prev = summaryData[i - 1].total_value;
+        const curr = summaryData[i].total_value;
+        result.push(prev > 0 ? curr / prev - 1 : 0);
+    }
+    return result;
+}
+
+/**
+ * 월별 수익률 복리 집계
+ * @param {Array} summaryData
+ * @returns {Array<{year:number, month:number, return:number}>}
+ */
+export function computeMonthlyReturns(summaryData) {
+    if (!summaryData || summaryData.length < 2) return [];
+
+    // { 'YYYY-MM': [dailyReturn, ...] }
+    const bucket = {};
+    for (let i = 1; i < summaryData.length; i++) {
+        const prev = summaryData[i - 1].total_value;
+        const curr = summaryData[i].total_value;
+        const r = prev > 0 ? curr / prev - 1 : 0;
+        const ym = summaryData[i].date.slice(0, 7); // YYYY-MM
+        if (!bucket[ym]) bucket[ym] = [];
+        bucket[ym].push(r);
+    }
+
+    return Object.keys(bucket).sort().map(ym => {
+        const compounded = bucket[ym].reduce((acc, r) => acc * (1 + r), 1) - 1;
+        const [y, m] = ym.split('-');
+        return { year: parseInt(y, 10), month: parseInt(m, 10), return: compounded };
+    });
+}
+
+/**
+ * 누적 손익 (달러 금액)
+ * @param {Array} summaryData
+ * @param {number|null} initialCash - 없으면 summaryData[0].total_value 폴백
+ * @returns {Array<{date:string, pnl:number}>}
+ */
+export function computeCumulativePnl(summaryData, initialCash = null) {
+    if (!summaryData || summaryData.length === 0) return [];
+    const base = initialCash != null ? initialCash : summaryData[0].total_value;
+    return summaryData.map(d => ({ date: d.date, pnl: d.total_value - base }));
+}
+
+/**
+ * SPY 대비 초과수익률(Alpha) 누적 라인
+ * 각 시점의 (port_norm - spy_norm) * 100 (%). 첫날 = 0.
+ * @param {Array} summaryData
+ * @returns {Array<{date:string, alpha:number}>}
+ */
+export function computeAlphaSeries(summaryData) {
+    if (!summaryData || summaryData.length === 0) return [];
+    const basePort = summaryData[0].total_value;
+    const baseSpy = summaryData[0].spy_price;
+    if (!basePort || !baseSpy) return [];
+    return summaryData.map(d => {
+        const portNorm = d.total_value / basePort;
+        const spyNorm = d.spy_price / baseSpy;
+        return { date: d.date, alpha: (portNorm - spyNorm) * 100 };
+    });
+}
+
+/**
+ * 롤링 수익률: 마지막 시점 기준 N 거래일 전 대비 수익률 (%)
+ * @param {Array} summaryData
+ * @param {number} days - 1M≈21, 3M≈63, 6M≈126, 1Y≈252
+ * @returns {number|null}
+ */
+export function computeRollingReturn(summaryData, days) {
+    if (!summaryData || summaryData.length < days + 1) return null;
+    const last = summaryData[summaryData.length - 1].total_value;
+    const past = summaryData[summaryData.length - 1 - days].total_value;
+    if (!past) return null;
+    return (last / past - 1) * 100;
+}
+
+/**
+ * 현재 드로다운 진행일 및 깊이
+ * 마지막 peak 이후 경과한 거래일 수와 peak 대비 현재값의 낙폭(%)
+ * @param {Array} summaryData
+ * @returns {{days:number, depthPct:number, peakDate:string, peakValue:number}}
+ */
+export function computeCurrentDrawdownDays(summaryData) {
+    if (!summaryData || summaryData.length === 0) {
+        return { days: 0, depthPct: 0, peakDate: '-', peakValue: 0 };
+    }
+    let peak = -Infinity;
+    let peakIdx = 0;
+    summaryData.forEach((d, i) => {
+        if (d.total_value > peak) {
+            peak = d.total_value;
+            peakIdx = i;
+        }
+    });
+    const last = summaryData[summaryData.length - 1];
+    const days = summaryData.length - 1 - peakIdx;
+    const depthPct = peak > 0 ? (last.total_value / peak - 1) * 100 : 0;
+    return {
+        days,
+        depthPct,
+        peakDate: summaryData[peakIdx].date,
+        peakValue: peak
+    };
+}
+
+/**
+ * 국면별 체류 일수 분포
+ * @param {Array} summaryData
+ * @returns {Object<string, number>}
+ */
+export function computeRegimeDistribution(summaryData) {
+    const dist = {};
+    if (!summaryData) return dist;
+    summaryData.forEach(d => {
+        const key = d.regime || 'Unknown';
+        dist[key] = (dist[key] || 0) + 1;
+    });
+    return dist;
+}
+
+/**
+ * 현재 국면이 얼마나 유지되었는지 (마지막부터 역방향 스캔)
+ * @param {Array} summaryData
+ * @returns {{regime:string, days:number, startDate:string}}
+ */
+export function computeCurrentRegimeStreak(summaryData) {
+    if (!summaryData || summaryData.length === 0) {
+        return { regime: '-', days: 0, startDate: '-' };
+    }
+    const current = summaryData[summaryData.length - 1].regime;
+    let startIdx = summaryData.length - 1;
+    for (let i = summaryData.length - 1; i >= 0; i--) {
+        if (summaryData[i].regime === current) {
+            startIdx = i;
+        } else {
+            break;
+        }
+    }
+    return {
+        regime: current,
+        days: summaryData.length - startIdx,
+        startDate: summaryData[startIdx].date
+    };
+}
+
+/**
+ * 거래 사유별 분포 (정규화 후 카운트)
+ * "Regime Change: Bull -> Bear (...)" 같은 긴 문자열에서 괄호/콜론 앞부분만 사용
+ * @param {Array} historyData
+ * @returns {Object<string, number>}
+ */
+export function computeTradeReasonDistribution(historyData) {
+    const dist = {};
+    if (!historyData) return dist;
+    historyData.forEach(tx => {
+        let reason = tx.reason || 'Unknown';
+        // 첫 콜론/괄호 앞부분만 그룹 키로 사용
+        const cutColon = reason.indexOf(':');
+        const cutParen = reason.indexOf('(');
+        let cut = -1;
+        if (cutColon >= 0) cut = cutColon;
+        if (cutParen >= 0 && (cut < 0 || cutParen < cut)) cut = cutParen;
+        const key = (cut > 0 ? reason.slice(0, cut) : reason).trim();
+        dist[key] = (dist[key] || 0) + 1;
+    });
+    return dist;
+}
+
+/**
+ * 월별 거래 빈도 (YYYY-MM별 건수)
+ * @param {Array} historyData
+ * @returns {Array<{month:string, count:number}>}
+ */
+export function computeMonthlyTradeFrequency(historyData) {
+    const bucket = {};
+    if (!historyData) return [];
+    historyData.forEach(tx => {
+        const ym = (tx.date || '').slice(0, 7);
+        if (!ym) return;
+        bucket[ym] = (bucket[ym] || 0) + 1;
+    });
+    return Object.keys(bucket).sort().map(m => ({ month: m, count: bucket[m] }));
+}
+
+/**
+ * 티커별 거래 기여 집계
+ * @param {Array} historyData
+ * @returns {Array<{ticker:string, trades:number, totalVolume:number, totalFees:number}>}
+ */
+export function computeTickerContribution(historyData) {
+    const agg = {};
+    if (!historyData) return [];
+    historyData.forEach(tx => {
+        (tx.executions || []).forEach(ex => {
+            const t = ex.ticker;
+            if (!agg[t]) agg[t] = { ticker: t, trades: 0, totalVolume: 0, totalFees: 0 };
+            agg[t].trades += 1;
+            agg[t].totalVolume += (ex.quantity || 0) * (ex.price || 0);
+            agg[t].totalFees += ex.fee || 0;
+        });
+    });
+    return Object.values(agg).sort((a, b) => b.totalVolume - a.totalVolume);
+}
+
+/**
+ * 실패/미체결 주문 추출
+ * @param {Array} historyData
+ * @returns {Array<{date:string, ticker:string, action:string, quantity:number, status:string, reason:string}>}
+ */
+export function computeFailedExecutions(historyData) {
+    const result = [];
+    if (!historyData) return result;
+    historyData.forEach(tx => {
+        (tx.executions || []).forEach(ex => {
+            if (ex.status && ex.status !== 'FILLED') {
+                result.push({
+                    date: (tx.date || '').split(' ')[0],
+                    ticker: ex.ticker,
+                    action: ex.action,
+                    quantity: ex.quantity,
+                    status: ex.status,
+                    reason: tx.reason
+                });
+            }
+        });
+    });
+    return result;
+}
+
+/**
+ * 다음 리밸런싱 일자 추정 (최근 5건 거래 간격의 중앙값 기반)
+ * @param {Array} historyData
+ * @returns {{estimatedDate:string|null, intervalDays:number|null, confidence:string}}
+ */
+export function inferNextRebalanceDate(historyData) {
+    if (!historyData || historyData.length < 3) {
+        return { estimatedDate: null, intervalDays: null, confidence: 'insufficient' };
+    }
+    // 최근 5건 거래 날짜 수집 (오름차순)
+    const recent = historyData.slice(-6);
+    const dates = recent.map(tx => new Date((tx.date || '').split(' ')[0]));
+    const intervals = [];
+    for (let i = 1; i < dates.length; i++) {
+        const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
+        if (diff > 0) intervals.push(diff);
+    }
+    if (intervals.length === 0) {
+        return { estimatedDate: null, intervalDays: null, confidence: 'insufficient' };
+    }
+    // 중앙값
+    intervals.sort((a, b) => a - b);
+    const mid = Math.floor(intervals.length / 2);
+    const medianDays = intervals.length % 2 === 0
+        ? Math.round((intervals[mid - 1] + intervals[mid]) / 2)
+        : Math.round(intervals[mid]);
+
+    const lastDate = dates[dates.length - 1];
+    const next = new Date(lastDate);
+    next.setDate(next.getDate() + medianDays);
+    const yyyy = next.getFullYear();
+    const mm = String(next.getMonth() + 1).padStart(2, '0');
+    const dd = String(next.getDate()).padStart(2, '0');
+
+    return {
+        estimatedDate: `${yyyy}-${mm}-${dd}`,
+        intervalDays: medianDays,
+        confidence: historyData.length >= 5 ? 'high' : 'medium'
+    };
+}
+
+/**
+ * 상태 JSON의 last_updated 신선도 라벨
+ * @param {string} lastUpdatedISO - "YYYY-MM-DD HH:MM:SS"
+ * @param {Date} now - 테스트용 주입 가능
+ * @returns {{label:string, colorClass:string, ageHours:number}}
+ */
+export function getStatusFreshness(lastUpdatedISO, now = new Date()) {
+    if (!lastUpdatedISO) {
+        return { label: '데이터 없음', colorClass: 'bg-secondary', ageHours: Infinity };
+    }
+    // "YYYY-MM-DD HH:MM:SS"를 ISO로 변환
+    const iso = lastUpdatedISO.includes('T') ? lastUpdatedISO : lastUpdatedISO.replace(' ', 'T');
+    const ts = new Date(iso);
+    if (isNaN(ts.getTime())) {
+        return { label: '형식 오류', colorClass: 'bg-secondary', ageHours: Infinity };
+    }
+    const ageMs = now - ts;
+    const ageHours = ageMs / (1000 * 60 * 60);
+
+    let label, colorClass;
+    if (ageHours < 0) {
+        label = '미래 시각';
+        colorClass = 'bg-warning text-dark';
+    } else if (ageHours < 1) {
+        label = '방금 전';
+        colorClass = 'bg-success';
+    } else if (ageHours < 24) {
+        label = `${Math.floor(ageHours)}시간 전`;
+        colorClass = 'bg-success';
+    } else if (ageHours < 48) {
+        label = '어제';
+        colorClass = 'bg-info text-dark';
+    } else if (ageHours < 24 * 7) {
+        label = `${Math.floor(ageHours / 24)}일 전`;
+        colorClass = 'bg-warning text-dark';
+    } else {
+        label = '오래됨';
+        colorClass = 'bg-danger';
+    }
+    return { label, colorClass, ageHours };
+}
