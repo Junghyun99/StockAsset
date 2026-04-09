@@ -5,6 +5,7 @@ import numpy as np
 from unittest.mock import patch, MagicMock
 from src.backtest.runner import (
     run_compare_backtest, CompareBacktestResult, BacktestResult, ENGINE_REGISTRY,
+    _ENGINE_BACKTEST,
 )
 
 
@@ -45,7 +46,7 @@ def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, m
 
     assert result is not None
     assert isinstance(result, CompareBacktestResult)
-    expected_names = {name for name, _ in ENGINE_REGISTRY}
+    expected_names = {name for name, _ in ENGINE_REGISTRY if _ENGINE_BACKTEST.get(name, True)}
     assert set(result.engine_results.keys()) == expected_names
 
 
@@ -154,8 +155,10 @@ def test_stale_status_json_does_not_block_rebalancing(mock_savefig, mock_downloa
 
     output_dir = str(tmp_path / "compare")
 
-    # 엔진별 디렉토리에 stale status.json 미리 생성
+    # 엔진별 디렉토리에 stale status.json 미리 생성 (backtest 대상 엔진만)
     for name, _ in ENGINE_REGISTRY:
+        if not _ENGINE_BACKTEST.get(name, True):
+            continue
         eng_dir = os.path.join(output_dir, name)
         os.makedirs(eng_dir, exist_ok=True)
         stale_status = {

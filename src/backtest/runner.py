@@ -13,6 +13,7 @@ from src.core.engine import (
     _ENGINE_REGISTRY as ENGINE_REGISTRY,
     _ENGINE_COLORS,
     _ENGINE_MARKET_TYPES,
+    _ENGINE_BACKTEST,
 )
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
@@ -154,9 +155,11 @@ def run_compare_backtest(
     strategy = StrategyConfig(trading_interval_days=execution_interval)
     logger = TradeLogger(log_dir="logs/backtest", run_number=run_number)
 
-    # 1. 전체 엔진의 티커 합집합 수집
+    # 1. 전체 엔진의 티커 합집합 수집 (backtest=False 엔진 제외)
     all_tickers: set = set()
-    for _, eng_cls in ENGINE_REGISTRY:
+    for name, eng_cls in ENGINE_REGISTRY:
+        if not _ENGINE_BACKTEST.get(name, True):
+            continue
         groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
         for group_tickers in groups.values():
             all_tickers.update(group_tickers)
@@ -174,9 +177,11 @@ def run_compare_backtest(
     trading_days = full_df.index
     sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
 
-    # 4. 엔진별 독립 컴포넌트 생성
+    # 4. 엔진별 독립 컴포넌트 생성 (backtest=False 엔진 제외)
     engines: Dict[str, dict] = {}
     for name, eng_cls in ENGINE_REGISTRY:
+        if not _ENGINE_BACKTEST.get(name, True):
+            continue
         eff_groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
         eff_ratio = getattr(eng_cls, 'REBALANCE_RATIO_A', 0.5)
 

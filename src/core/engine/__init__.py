@@ -12,6 +12,7 @@ from src.core.engine.registry import (
     _ENGINE_REGISTRY,
     _ENGINE_COLORS,
     _ENGINE_MARKET_TYPES,
+    _ENGINE_BACKTEST,
     register_engine,
 )
 from src.core.engine.base import TradingEngine, FullExposureEngine
@@ -30,6 +31,7 @@ __all__ = [
     "_ENGINE_REGISTRY",
     "_ENGINE_COLORS",
     "_ENGINE_MARKET_TYPES",
+    "_ENGINE_BACKTEST",
     "register_engine",
     "TradingEngine",
     "FullExposureEngine",
