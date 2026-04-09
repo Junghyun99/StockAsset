@@ -1,7 +1,18 @@
 // docs/js/charts.js
 // Chart.js 차트 생성 및 관리
 
-import { filterByDateRange, getAssetGroup, formatCurrency } from './utils.js?v=2';
+import {
+    filterByDateRange,
+    getAssetGroup,
+    formatCurrency,
+    computeMonthlyReturns,
+    computeCumulativePnl,
+    computeAlphaSeries,
+    computeRegimeDistribution,
+    computeTradeReasonDistribution,
+    computeMonthlyTradeFrequency,
+    computeTickerContribution
+} from './utils.js?v=3';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
 let stratChart = null;
@@ -9,6 +20,17 @@ let groupBarChartInstance = null;
 let unifiedChart = null;
 let cumulativeDividendChart = null;
 let yearlyDividendChart = null;
+
+// 신규 차트 인스턴스
+let cumulativePnlChart = null;
+let alphaLineChart = null;
+let monthlyHeatmapChart = null;
+let tradeReasonPieChart = null;
+let monthlyFrequencyChart = null;
+let tickerContributionChart = null;
+let currentAllocationDoughnut = null;
+let historicalAllocationChart = null;
+let regimeDistributionDoughnut = null;
 
 /**
  * Strategy Analysis 차트 렌더링 (투자 비중 + 모멘텀 듀얼 축)
@@ -185,7 +207,12 @@ export function renderGroupBarChart(statusData, groupConfig) {
  * 모든 차트 리사이즈 (탭 전환 시 사용)
  */
 export function resizeAllCharts() {
-    [stratChart, groupBarChartInstance, unifiedChart, cumulativeDividendChart, yearlyDividendChart].forEach(chart => {
+    [
+        stratChart, groupBarChartInstance, unifiedChart, cumulativeDividendChart, yearlyDividendChart,
+        cumulativePnlChart, alphaLineChart, monthlyHeatmapChart, tradeReasonPieChart,
+        monthlyFrequencyChart, tickerContributionChart, currentAllocationDoughnut,
+        historicalAllocationChart, regimeDistributionDoughnut
+    ].forEach(chart => {
         if (chart) chart.resize();
     });
 }
@@ -516,4 +543,642 @@ export function renderUnifiedChart(summaryData) {
 export function updatePerformanceChartRange(summaryData, range) {
     const filtered = filterByDateRange(summaryData, range);
     renderUnifiedChart(filtered);
+    // 신규: 누적 P&L / Alpha / 월별 히트맵도 기간에 맞춰 함께 갱신
+    renderCumulativePnlChart(filtered);
+    renderAlphaLineChart(filtered);
+    renderMonthlyHeatmap(filtered);
+}
+
+// ============================================================
+// 신규 차트 함수들 (대시보드 확장)
+// ============================================================
+
+/**
+ * 누적 손익 ($) 라인 차트 — 0 기준선 포함
+ */
+export function renderCumulativePnlChart(summaryData) {
+    const canvas = document.getElementById('cumulativePnlChart');
+    if (!canvas) return;
+    if (cumulativePnlChart) cumulativePnlChart.destroy();
+    if (!summaryData || summaryData.length === 0) return;
+
+    const pnlSeries = computeCumulativePnl(summaryData);
+    const labels = pnlSeries.map(p => p.date);
+    const values = pnlSeries.map(p => p.pnl);
+
+    cumulativePnlChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: '누적 손익 ($)',
+                data: values,
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.12)',
+                fill: true,
+                tension: 0.15,
+                pointRadius: 0,
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+                y: {
+                    title: { display: true, text: '누적 손익 ($)' },
+                    ticks: {
+                        callback: v => (v >= 0 ? '+$' : '-$') + Math.abs(Math.round(v)).toLocaleString()
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                annotation: {
+                    annotations: {
+                        zeroLine: {
+                            type: 'line',
+                            yMin: 0, yMax: 0,
+                            borderColor: 'rgba(108, 117, 125, 0.6)',
+                            borderWidth: 1,
+                            borderDash: [4, 4]
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const v = ctx.parsed.y;
+                            const sign = v >= 0 ? '+' : '-';
+                            return `누적 손익: ${sign}$${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * SPY 대비 누적 초과수익률(Alpha) 라인 — 양수=초록, 음수=빨강 영역
+ */
+export function renderAlphaLineChart(summaryData) {
+    const canvas = document.getElementById('alphaLineChart');
+    if (!canvas) return;
+    if (alphaLineChart) alphaLineChart.destroy();
+    if (!summaryData || summaryData.length === 0) return;
+
+    const series = computeAlphaSeries(summaryData);
+    const labels = series.map(p => p.date);
+    const values = series.map(p => p.alpha);
+
+    alphaLineChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Alpha vs SPY (%)',
+                data: values,
+                borderColor: ctx => {
+                    const val = ctx.raw;
+                    return val >= 0 ? '#198754' : '#dc3545';
+                },
+                segment: {
+                    borderColor: ctx => (ctx.p1.parsed.y >= 0 ? '#198754' : '#dc3545'),
+                    backgroundColor: ctx => (ctx.p1.parsed.y >= 0 ? 'rgba(25, 135, 84, 0.15)' : 'rgba(220, 53, 69, 0.15)'),
+                },
+                fill: { target: 'origin', above: 'rgba(25, 135, 84, 0.12)', below: 'rgba(220, 53, 69, 0.12)' },
+                pointRadius: 0,
+                borderWidth: 2,
+                tension: 0.15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+                y: {
+                    title: { display: true, text: 'Alpha (%)' },
+                    ticks: { callback: v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%' }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                annotation: {
+                    annotations: {
+                        zeroLine: {
+                            type: 'line',
+                            yMin: 0, yMax: 0,
+                            borderColor: 'rgba(108, 117, 125, 0.6)',
+                            borderWidth: 1,
+                            borderDash: [4, 4]
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const v = ctx.parsed.y;
+                            return `Alpha: ${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 월별 수익률 히트맵 (chartjs-chart-matrix 플러그인)
+ * matrix 플러그인이 없으면 HTML 테이블 폴백으로 대체
+ */
+export function renderMonthlyHeatmap(summaryData) {
+    const canvas = document.getElementById('monthlyHeatmap');
+    const container = document.getElementById('monthly-heatmap-container');
+    if (!canvas || !container) return;
+    if (monthlyHeatmapChart) { monthlyHeatmapChart.destroy(); monthlyHeatmapChart = null; }
+    if (!summaryData || summaryData.length < 2) return;
+
+    const monthly = computeMonthlyReturns(summaryData);
+    if (monthly.length === 0) return;
+
+    // matrix 컨트롤러 사용 가능 여부 체크
+    const hasMatrix = typeof Chart !== 'undefined' &&
+        Chart.registry && Chart.registry.controllers &&
+        Chart.registry.controllers.get && Chart.registry.controllers.get('matrix');
+
+    if (!hasMatrix) {
+        // 폴백: HTML 테이블 렌더링
+        renderMonthlyHeatmapTable(container, monthly);
+        return;
+    }
+
+    // 캔버스 복원 (이전 폴백 테이블을 지우고 canvas 재사용)
+    if (!document.getElementById('monthlyHeatmap')) {
+        container.innerHTML = '<canvas id="monthlyHeatmap"></canvas>';
+    }
+    const ctx = document.getElementById('monthlyHeatmap');
+
+    const years = Array.from(new Set(monthly.map(m => m.year))).sort();
+    const data = monthly.map(m => ({ x: m.month, y: m.year, v: m.return * 100 }));
+    const maxAbs = Math.max(...data.map(d => Math.abs(d.v)), 0.01);
+
+    monthlyHeatmapChart = new Chart(ctx, {
+        type: 'matrix',
+        data: {
+            datasets: [{
+                label: '월별 수익률 (%)',
+                data: data,
+                backgroundColor: c => {
+                    const v = c.raw && c.raw.v;
+                    if (v == null) return 'rgba(200,200,200,0.2)';
+                    const ratio = Math.min(Math.abs(v) / maxAbs, 1);
+                    if (v >= 0) return `rgba(25, 135, 84, ${0.15 + 0.7 * ratio})`;
+                    return `rgba(220, 53, 69, ${0.15 + 0.7 * ratio})`;
+                },
+                borderColor: 'rgba(255,255,255,0.5)',
+                borderWidth: 1,
+                width: ctxArg => {
+                    const area = ctxArg.chart.chartArea;
+                    return area ? (area.right - area.left) / 12 - 2 : 20;
+                },
+                height: ctxArg => {
+                    const area = ctxArg.chart.chartArea;
+                    return area ? (area.bottom - area.top) / years.length - 2 : 20;
+                }
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'linear',
+                    min: 0.5, max: 12.5,
+                    ticks: {
+                        stepSize: 1,
+                        callback: v => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][v - 1] || ''
+                    },
+                    grid: { display: false }
+                },
+                y: {
+                    type: 'linear',
+                    reverse: true,
+                    min: Math.min(...years) - 0.5,
+                    max: Math.max(...years) + 0.5,
+                    ticks: { stepSize: 1, callback: v => Number.isInteger(v) ? v : '' },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: items => {
+                            const r = items[0].raw;
+                            const monthName = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][r.x - 1];
+                            return `${r.y} ${monthName}`;
+                        },
+                        label: item => {
+                            const v = item.raw.v;
+                            return `수익률: ${v >= 0 ? '+' : ''}${v.toFixed(2)}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * matrix 플러그인 폴백: HTML 테이블로 월별 수익률 렌더링
+ */
+function renderMonthlyHeatmapTable(container, monthly) {
+    const years = Array.from(new Set(monthly.map(m => m.year))).sort();
+    const maxAbs = Math.max(...monthly.map(m => Math.abs(m.return * 100)), 0.01);
+    const lookup = {};
+    monthly.forEach(m => { lookup[`${m.year}-${m.month}`] = m.return * 100; });
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    let html = '<table class="table table-bordered table-sm mb-0 text-center small"><thead class="table-light"><tr><th></th>';
+    monthNames.forEach(m => html += `<th>${m}</th>`);
+    html += '</tr></thead><tbody>';
+
+    years.forEach(y => {
+        html += `<tr><th class="table-light">${y}</th>`;
+        for (let m = 1; m <= 12; m++) {
+            const v = lookup[`${y}-${m}`];
+            if (v == null) {
+                html += '<td class="text-muted">-</td>';
+            } else {
+                const ratio = Math.min(Math.abs(v) / maxAbs, 1);
+                const bg = v >= 0
+                    ? `rgba(25, 135, 84, ${0.15 + 0.7 * ratio})`
+                    : `rgba(220, 53, 69, ${0.15 + 0.7 * ratio})`;
+                const sign = v >= 0 ? '+' : '';
+                html += `<td style="background-color:${bg}">${sign}${v.toFixed(1)}%</td>`;
+            }
+        }
+        html += '</tr>';
+    });
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+/**
+ * 거래 사유 분포 파이 차트
+ */
+export function renderTradeReasonPie(historyData) {
+    const canvas = document.getElementById('tradeReasonPie');
+    if (!canvas) return;
+    if (tradeReasonPieChart) tradeReasonPieChart.destroy();
+
+    const dist = computeTradeReasonDistribution(historyData);
+    const labels = Object.keys(dist);
+    const values = Object.values(dist);
+
+    if (labels.length === 0) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#6c757d';
+        ctx.font = '14px sans-serif';
+        ctx.fillText('거래 내역이 없습니다', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    const palette = ['#0d6efd', '#198754', '#ffc107', '#dc3545', '#6f42c1', '#20c997', '#fd7e14', '#6c757d'];
+
+    tradeReasonPieChart = new Chart(canvas, {
+        type: 'pie',
+        data: {
+            labels,
+            datasets: [{
+                data: values,
+                backgroundColor: labels.map((_, i) => palette[i % palette.length]),
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const total = values.reduce((s, v) => s + v, 0);
+                            const pct = total > 0 ? (ctx.parsed / total * 100).toFixed(1) : '0';
+                            return `${ctx.label}: ${ctx.parsed}건 (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 월별 거래 빈도 바 차트
+ */
+export function renderMonthlyTradeFrequencyChart(historyData) {
+    const canvas = document.getElementById('monthlyFrequencyChart');
+    if (!canvas) return;
+    if (monthlyFrequencyChart) monthlyFrequencyChart.destroy();
+
+    const data = computeMonthlyTradeFrequency(historyData);
+    const labels = data.map(d => d.month);
+    const values = data.map(d => d.count);
+
+    monthlyFrequencyChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '거래 건수',
+                data: values,
+                backgroundColor: 'rgba(13, 110, 253, 0.65)',
+                borderColor: '#0d6efd',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    title: { display: true, text: '거래 건수' }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.parsed.y}건`
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 티커별 거래 기여 가로 바 차트
+ */
+export function renderTickerContributionChart(historyData) {
+    const canvas = document.getElementById('tickerContributionChart');
+    if (!canvas) return;
+    if (tickerContributionChart) tickerContributionChart.destroy();
+
+    const data = computeTickerContribution(historyData);
+    if (data.length === 0) return;
+
+    const labels = data.map(d => d.ticker);
+    const volumes = data.map(d => d.totalVolume);
+
+    tickerContributionChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: '거래 금액 ($)',
+                data: volumes,
+                backgroundColor: 'rgba(25, 135, 84, 0.65)',
+                borderColor: '#198754',
+                borderWidth: 1,
+                borderRadius: 4
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: { display: true, text: '거래 금액 ($)' },
+                    ticks: { callback: v => '$' + Math.round(v).toLocaleString() }
+                },
+                y: { grid: { display: false } }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const d = data[ctx.dataIndex];
+                            return [
+                                `금액: ${formatCurrency(d.totalVolume)}`,
+                                `거래 건수: ${d.trades}건`,
+                                `수수료: ${formatCurrency(d.totalFees)}`
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 현재 자산 배분 도넛 (그룹 합산 + Cash)
+ */
+export function renderCurrentAllocationDoughnut(statusData, groupConfig) {
+    const canvas = document.getElementById('currentAllocationDoughnut');
+    if (!canvas) return;
+    if (currentAllocationDoughnut) currentAllocationDoughnut.destroy();
+    if (!statusData || !statusData.portfolio) return;
+
+    const holdings = statusData.portfolio.holdings || [];
+    const cash = statusData.portfolio.cash_balance || 0;
+
+    // 그룹별 합산
+    const groupValues = {};
+    const groupColors = {};
+    holdings.forEach(h => {
+        if (h.value <= 0) return;
+        const g = getAssetGroup(h.ticker, groupConfig);
+        groupValues[g.label] = (groupValues[g.label] || 0) + h.value;
+        groupColors[g.label] = g.color;
+    });
+
+    if (cash > 0) {
+        groupValues['Cash'] = (groupValues['Cash'] || 0) + cash;
+        groupColors['Cash'] = '#6c757d';
+    }
+
+    const labels = Object.keys(groupValues);
+    const values = Object.values(groupValues);
+    const colors = labels.map(l => groupColors[l] || '#adb5bd');
+
+    currentAllocationDoughnut = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const total = values.reduce((s, v) => s + v, 0);
+                            const pct = total > 0 ? (ctx.parsed / total * 100).toFixed(1) : '0';
+                            return `${ctx.label}: ${formatCurrency(ctx.parsed)} (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 국면 분포 도넛
+ */
+export function renderRegimeDistributionDoughnut(summaryData) {
+    const canvas = document.getElementById('regimeDistributionDoughnut');
+    if (!canvas) return;
+    if (regimeDistributionDoughnut) regimeDistributionDoughnut.destroy();
+    if (!summaryData || summaryData.length === 0) return;
+
+    const dist = computeRegimeDistribution(summaryData);
+    const labels = Object.keys(dist);
+    const values = Object.values(dist);
+    const total = values.reduce((s, v) => s + v, 0);
+
+    const regimeColors = {
+        'Bull': '#198754',
+        'Sideways': '#ffc107',
+        'Bear_Weak': '#dc3545',
+        'Bear_Strong': 'rgba(220, 53, 69, 0.85)',
+        'Crash': '#212529',
+        'Unknown': '#6c757d'
+    };
+    const colors = labels.map(l => regimeColors[l] || '#adb5bd');
+
+    regimeDistributionDoughnut = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: labels.map(l => l.replace('_', ' ')),
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const pct = total > 0 ? (ctx.parsed / total * 100).toFixed(1) : '0';
+                            return `${ctx.label}: ${ctx.parsed}일 (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 자산군 비중 변화 추이 (Stacked Area)
+ * group_a/b/c의 절대 금액을 시간축으로 쌓음
+ */
+export function renderHistoricalAllocationChart(summaryData) {
+    const canvas = document.getElementById('historicalAllocationChart');
+    if (!canvas) return;
+    if (historicalAllocationChart) historicalAllocationChart.destroy();
+    if (!summaryData || summaryData.length === 0) return;
+
+    const labels = summaryData.map(d => d.date);
+    const groupA = summaryData.map(d => d.group_a || 0);
+    const groupB = summaryData.map(d => d.group_b || 0);
+    const groupC = summaryData.map(d => d.group_c || 0);
+
+    historicalAllocationChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Group C (Cash/SHV)',
+                    data: groupC,
+                    backgroundColor: 'rgba(25, 135, 84, 0.5)',
+                    borderColor: 'transparent',
+                    fill: true,
+                    pointRadius: 0,
+                    stack: 'alloc',
+                    order: 3
+                },
+                {
+                    label: 'Group B (Safety)',
+                    data: groupB,
+                    backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                    borderColor: 'transparent',
+                    fill: true,
+                    pointRadius: 0,
+                    stack: 'alloc',
+                    order: 2
+                },
+                {
+                    label: 'Group A (Growth)',
+                    data: groupA,
+                    backgroundColor: 'rgba(13, 110, 253, 0.5)',
+                    borderColor: 'transparent',
+                    fill: true,
+                    pointRadius: 0,
+                    stack: 'alloc',
+                    order: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+                y: {
+                    stacked: true,
+                    title: { display: true, text: 'Asset Value ($)' },
+                    ticks: { callback: v => '$' + v.toLocaleString() }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15 } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const total = summaryData[ctx.dataIndex].total_value || 0;
+                            const pct = total > 0 ? (ctx.parsed.y / total * 100).toFixed(1) : '0';
+                            return `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)} (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 }

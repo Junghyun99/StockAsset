@@ -8,8 +8,17 @@ import {
     resizeAllCharts,
     updatePerformanceChartRange,
     renderCumulativeDividendChart,
-    renderYearlyDividendChart
-} from './charts.js?v=2';
+    renderYearlyDividendChart,
+    renderCumulativePnlChart,
+    renderAlphaLineChart,
+    renderMonthlyHeatmap,
+    renderTradeReasonPie,
+    renderMonthlyTradeFrequencyChart,
+    renderTickerContributionChart,
+    renderCurrentAllocationDoughnut,
+    renderRegimeDistributionDoughnut,
+    renderHistoricalAllocationChart
+} from './charts.js?v=3';
 
 import {
     updateModeUI,
@@ -20,10 +29,17 @@ import {
     updateDecisionLogic,
     renderPerformanceSummaryCards,
     renderTradeSummaryStats,
-    renderTradeHistory
-} from './ui.js?v=2';
+    renderTradeHistory,
+    renderRollingReturnCards,
+    renderCurrentDrawdownCard,
+    renderCalmarCard,
+    renderFeeImpactCard,
+    renderStatusFreshnessBadge,
+    renderFailedOrderAlert,
+    renderOperationsPanel
+} from './ui.js?v=3';
 
-import { loadEngineMeta } from './utils.js?v=2';
+import { loadEngineMeta } from './utils.js?v=3';
 
 import {
     renderCompareOverview,
@@ -84,6 +100,11 @@ async function loadLiveMode() {
     const historyData = await historyRes.json();
     const groupConfig = groupConfigRes.ok ? await groupConfigRes.json() : null;
 
+    // 개발 중 디버깅 편의용 — DevTools 콘솔에서 파생 함수 검증 가능
+    window.__summary = summaryData;
+    window.__status = statusData;
+    window.__history = historyData;
+
     // === Overview 탭 렌더링 ===
     renderStatusBanner(statusData);
     updateSummaryCards(statusData, summaryData);
@@ -91,15 +112,25 @@ async function loadLiveMode() {
     renderHoldingsTable(statusData, groupConfig);
     renderTodayActivity(historyData, statusData);
     updateDecisionLogic(summaryData[summaryData.length - 1]);
+    renderFailedOrderAlert(historyData);
+    renderStatusFreshnessBadge(statusData);
 
-    // === Performance / Trades 탭 (lazy) ===
+    // === Performance / Allocation / Trades / Operations 탭 (lazy) ===
     let perfRendered = false;
+    let allocationRendered = false;
     let tradesRendered = false;
+    let opsRendered = false;
 
     function renderPerformanceTab() {
         if (perfRendered) return;
         renderPerformanceSummaryCards(summaryData);
+        renderRollingReturnCards(summaryData);
+        renderCurrentDrawdownCard(summaryData);
+        renderCalmarCard(summaryData);
         renderUnifiedChart(summaryData);
+        renderCumulativePnlChart(summaryData);
+        renderAlphaLineChart(summaryData);
+        renderMonthlyHeatmap(summaryData);
         renderStrategyChart(summaryData);
         renderCumulativeDividendChart(summaryData);
         renderYearlyDividendChart(summaryData);
@@ -107,14 +138,38 @@ async function loadLiveMode() {
         perfRendered = true;
     }
 
+    function renderAllocationTab() {
+        if (allocationRendered) return;
+        renderCurrentAllocationDoughnut(statusData, groupConfig);
+        renderRegimeDistributionDoughnut(summaryData);
+        renderHistoricalAllocationChart(summaryData);
+        allocationRendered = true;
+    }
+
     function renderTradesTab() {
         if (tradesRendered) return;
         renderTradeSummaryStats(historyData);
+        renderFeeImpactCard(historyData, summaryData);
+        renderTradeReasonPie(historyData);
+        renderMonthlyTradeFrequencyChart(historyData);
+        renderTickerContributionChart(historyData);
         renderTradeHistory(historyData);
         tradesRendered = true;
     }
 
-    setupTabEvents(renderPerformanceTab, renderTradesTab, resizeAllCharts);
+    function renderOperationsTab() {
+        if (opsRendered) return;
+        renderOperationsPanel(statusData, historyData, summaryData);
+        opsRendered = true;
+    }
+
+    setupTabEvents({
+        performance: renderPerformanceTab,
+        allocation: renderAllocationTab,
+        trades: renderTradesTab,
+        operations: renderOperationsTab,
+        onResize: resizeAllCharts
+    });
 
     // 마지막 업데이트 시간 표시
     document.getElementById('last-updated').innerText = `Last Update: ${statusData.last_updated || 'Unknown'}`;
@@ -157,6 +212,9 @@ async function loadCompareMode() {
     // 3. Overview 탭 렌더링
     renderCompareOverview(enginesData);
 
+    // 컴페어 모드에서는 Allocation/Operations 탭 비활성화 (Live 전용)
+    disableLiveOnlyTabs();
+
     // 4. Performance / Trades 탭 (lazy)
     let perfRendered = false;
     let tradesRendered = false;
@@ -178,7 +236,11 @@ async function loadCompareMode() {
         tradesRendered = true;
     }
 
-    setupTabEvents(renderPerformanceTab, renderTradesTab, resizeCompareCharts);
+    setupTabEvents({
+        performance: renderPerformanceTab,
+        trades: renderTradesTab,
+        onResize: resizeCompareCharts
+    });
 
     // 마지막 업데이트 시간
     const firstEngine = enginesData.values().next().value;
@@ -261,19 +323,31 @@ function setupComparePerformanceHTML() {
 
 /**
  * 탭 전환 이벤트 설정 (공통)
+ * @param {Object} handlers - { performance, allocation, trades, operations, onResize }
+ *   각 탭 핸들러는 선택적 (미지정 시 해당 탭에 no-op).
  */
-function setupTabEvents(onPerformance, onTrades, onResize) {
+function setupTabEvents(handlers) {
+    const { performance: onPerformance, allocation: onAllocation,
+            trades: onTrades, operations: onOperations, onResize } = handlers;
+
+    const dispatch = (target) => {
+        if (target === '#performance' && onPerformance) {
+            onPerformance();
+            if (onResize) setTimeout(() => onResize(), 50);
+        } else if (target === '#allocation' && onAllocation) {
+            onAllocation();
+            if (onResize) setTimeout(() => onResize(), 50);
+        } else if (target === '#trades' && onTrades) {
+            onTrades();
+        } else if (target === '#operations' && onOperations) {
+            onOperations();
+        }
+    };
+
     document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', (e) => {
             const target = e.target.getAttribute('data-bs-target');
-
-            if (target === '#performance') {
-                onPerformance();
-                setTimeout(() => onResize(), 50);
-            } else if (target === '#trades') {
-                onTrades();
-            }
-
+            dispatch(target);
             const tabName = target.replace('#', '');
             history.replaceState(null, '', '#' + tabName);
         });
@@ -281,13 +355,33 @@ function setupTabEvents(onPerformance, onTrades, onResize) {
 
     // 현재 해시에 따라 해당 탭 활성화
     const currentHash = window.location.hash.replace('#', '') || 'overview';
-    if (currentHash === 'performance') {
-        activateTab('performance-tab');
-        onPerformance();
-    } else if (currentHash === 'trades') {
-        activateTab('trades-tab');
-        onTrades();
+    const hashToTabId = {
+        'performance': 'performance-tab',
+        'allocation': 'allocation-tab',
+        'trades': 'trades-tab',
+        'operations': 'operations-tab',
+    };
+    if (hashToTabId[currentHash]) {
+        activateTab(hashToTabId[currentHash]);
+        dispatch('#' + currentHash);
     }
+}
+
+/**
+ * Compare 모드: Live 전용 탭 비활성화
+ */
+function disableLiveOnlyTabs() {
+    ['allocation-tab', 'operations-tab'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.classList.add('disabled');
+            btn.setAttribute('aria-disabled', 'true');
+            btn.setAttribute('tabindex', '-1');
+            btn.title = 'Live 모드 전용';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.45';
+        }
+    });
 }
 
 /**
@@ -299,7 +393,9 @@ function setupTabRouting() {
         const tabMap = {
             'overview': 'overview-tab',
             'performance': 'performance-tab',
-            'trades': 'trades-tab'
+            'allocation': 'allocation-tab',
+            'trades': 'trades-tab',
+            'operations': 'operations-tab'
         };
         if (tabMap[hash]) {
             activateTab(tabMap[hash]);
