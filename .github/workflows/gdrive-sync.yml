@@ -14,12 +14,12 @@ jobs:
 
     - name: 코드를 ZIP 파일로 압축하기
       # 파일명 자체를 업로드할 이름으로 지정하여 압축합니다.
-      run: zip -r my-repo-latest-backup.zip . -x "*.git/*"
+      run: zip -r repo-StockAsset-latest-backup.zip . -x "*.git/*"
 
     - name: 구글 드라이브에 업로드하기 (OAuth 방식)
       uses: logickoder/google-drive-upload@main
       with:
-        filename: my-repo-latest-backup.zip
+        filename: repo-StockAsset-latest-backup.zip
         folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
         clientId: ${{ secrets.GDRIVE_CLIENT_ID }}
         clientSecret: ${{ secrets.GDRIVE_CLIENT_SECRET }}
