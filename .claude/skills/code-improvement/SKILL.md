@@ -81,6 +81,8 @@ gh api repos/{owner}/{repo}/issues?state=open\&per_page=20
 
 ### 3단계: 이슈 분석 및 영향 범위 파악
 
+Read 도구를 사용하여 프로젝트의 CLAUDE.md를 읽고 아키텍처 규칙, 네이밍 컨벤션, 프로젝트 구조, 테스트 명령어를 파악합니다.
+
 선택된 이슈의 본문을 상세히 분석합니다:
 - 이슈에 언급된 파일 경로, 함수명, 클래스명을 추출
 - Grep/Glob으로 관련 코드 위치를 탐색
@@ -97,8 +99,8 @@ gh api repos/{owner}/{repo}/issues?state=open\&per_page=20
 ### 수정 대상 파일
 | # | 파일 | 변경 내용 |
 |---|------|----------|
-| 1 | src/core/analyzer.py | 경계값 처리 추가 |
-| 2 | tests/test_core_logic.py | 테스트 케이스 추가 |
+| 1 | src/core/some_module.py | 경계값 처리 추가 |
+| 2 | tests/test_some_module.py | 테스트 케이스 추가 |
 
 ### 수정 방향
 - {구체적인 수정 방향 설명}
@@ -115,8 +117,8 @@ gh api repos/{owner}/{repo}/issues?state=open\&per_page=20
 
 #### 수정 원칙
 - **최소 변경 원칙**: 이슈 해결에 필요한 최소한의 변경만 수행
-- **아키텍처 준수**: Clean Architecture 규칙 (core → infra 의존 방향) 유지
-- **네이밍 규칙**: PascalCase(클래스), snake_case(함수/변수), UPPER_SNAKE_CASE(상수)
+- **아키텍처 준수**: 프로젝트의 CLAUDE.md에 정의된 아키텍처 규칙 준수
+- **네이밍 규칙**: 프로젝트의 CLAUDE.md에 정의된 네이밍 컨벤션 준수
 - **기존 패턴 유지**: 프로젝트의 기존 코드 스타일과 패턴을 따름
 - **.env 파일 수정 금지**: 환경변수 파일은 절대 수정하지 않음
 
@@ -127,13 +129,11 @@ gh api repos/{owner}/{repo}/issues?state=open\&per_page=20
 
 ### 6단계: 테스트 실행 및 검증
 
-```bash
-pytest --cov=src --cov-report=term-missing --cov-fail-under=80 tests/
-```
+프로젝트의 CLAUDE.md에 정의된 테스트 명령어를 실행합니다. 테스트 명령어가 정의되어 있지 않으면 `pytest tests/`를 사용합니다.
 
 - 기존 테스트가 모두 통과하는지 확인
 - 새로 작성한 테스트가 통과하는지 확인
-- 커버리지 80% 이상 유지 확인
+- CLAUDE.md에 커버리지 요구사항이 정의되어 있으면 해당 기준 충족 확인
 - 테스트 실패 시 코드를 수정하고 다시 실행
 
 ### 7단계: 결과 보고
@@ -151,8 +151,8 @@ pytest --cov=src --cov-report=term-missing --cov-fail-under=80 tests/
 
 | # | 파일 | 변경 내용 |
 |---|------|----------|
-| 1 | src/core/analyzer.py | 경계값 처리 추가 |
-| 2 | tests/test_core_logic.py | 테스트 케이스 3개 추가 |
+| 1 | src/core/some_module.py | 경계값 처리 추가 |
+| 2 | tests/test_some_module.py | 테스트 케이스 3개 추가 |
 
 ### 테스트 결과
 - 전체 테스트: N개 통과

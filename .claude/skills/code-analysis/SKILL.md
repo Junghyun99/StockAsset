@@ -10,7 +10,7 @@ allowed-tools:
   - Read
   - Grep
   - Glob
-argument-hint: <분석 대상 경로> (예: src/core/, src/infra/broker.py)
+argument-hint: <분석 대상 경로> (예: src/, src/core/logic/, tests/)
 ---
 
 # 코드 분석 및 GitHub 이슈 등록
@@ -27,6 +27,8 @@ argument-hint: <분석 대상 경로> (예: src/core/, src/infra/broker.py)
 
 ### 2단계: 코드 분석
 
+먼저 Read 도구를 사용하여 프로젝트의 CLAUDE.md를 읽고 아키텍처 규칙, 네이밍 컨벤션, 프로젝트 구조를 파악합니다.
+
 아래 관점에서 문제점을 식별합니다. 억지로 문제를 찾지말고 문제가 없다면 없다고 출력하고 진행을 종료합니다.:
 
 #### 2-1. 버그 및 로직 오류
@@ -36,7 +38,7 @@ argument-hint: <분석 대상 경로> (예: src/core/, src/infra/broker.py)
 - 잘못된 조건문, off-by-one 에러
 
 #### 2-2. 설계 및 아키텍처
-- Clean Architecture 위반 (core → infra 의존)
+- 프로젝트의 CLAUDE.md에 정의된 아키텍처 규칙 위반 (예: 의존 방향 규칙, 계층 분리)
 - 인터페이스 미구현 또는 불완전한 구현
 - 과도한 결합 (tight coupling)
 - 단일 책임 원칙(SRP) 위반
@@ -142,8 +144,8 @@ _이 이슈는 코드 분석 스킬에 의해 자동 생성되었습니다._
 
 | # | 심각도 | 카테고리 | 파일 | 제목 |
 |---|--------|---------|------|------|
-| 1 | Critical | Bug | src/core/analyzer.py | ... |
-| 2 | Warning | Design | src/infra/broker.py | ... |
+| 1 | Critical | Bug | src/core/some_module.py | ... |
+| 2 | Warning | Design | src/infra/some_adapter.py | ... |
 
 ### 등록된 이슈
 
