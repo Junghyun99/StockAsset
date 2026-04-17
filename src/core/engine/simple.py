@@ -127,3 +127,19 @@ class DomesticAsset5Engine(FullExposureEngine):
         'B': ['132030.KS', '305080.KS', '148070.KS'],
     }
     REBALANCE_RATIO_A: float = 0.4
+
+@register_engine(color="#bdbd42", market_type="domestic",backtest=False)
+class DomesticAsset5RealEngine(FullExposureEngine):
+    """국내 자산5분법 — KODEX200/TIGER MSCI Korea(A그룹) + ACE 미국S&P500/TIGER 미국채10년/ACE 미국30년국채(B그룹) Full Exposure 전략 엔진.
+
+    - 자산군 A: [069500(KODEX 200), 360750(TIGER MSCI Korea TR)]
+    - 자산군 B: [411060(ACE 미국S&P500), 305080(TIGER 미국채10년선물), 365780(ACE 미국30년국채)]
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - A:B 비율 = 0.4:0.6 (안전자산 비중 강조)
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['226490.KS', '133690.KS'],
+        'B': ['365780.KS', '305080.KS', '411060.KS'],
+    }
+    REBALANCE_RATIO_A: float = 0.4
