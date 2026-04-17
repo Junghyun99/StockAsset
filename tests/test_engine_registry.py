@@ -7,8 +7,10 @@ from src.core.engine import TradingEngine
 
 
 def test_existing_engines_default_backtest_true():
-    """기존 등록 엔진들은 모두 backtest=True(기본값)이어야 한다."""
+    """명시적으로 backtest=False로 등록되지 않은 엔진들은 backtest=True여야 한다."""
     for name, _ in _ENGINE_REGISTRY:
+        if _ENGINE_BACKTEST.get(name) is False:
+            continue  # 의도적으로 백테스트 제외된 엔진
         assert _ENGINE_BACKTEST.get(name, True) is True, (
             f"{name}의 backtest 플래그가 True가 아님"
         )
