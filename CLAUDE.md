@@ -65,17 +65,19 @@ accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
 - `kis_env_prefix` - 환경변수 prefix (예: "ACC1" → `ACC1_KIS_APP_KEY`)
 
 ## CI/CD
-GitHub Actions 워크플로우 5개:
+GitHub Actions 워크플로우 6개:
 - `python-test.yml` - main 브랜치 Push/PR 시 단위 테스트 (80% 커버리지 필수)
 - `broker-live-test.yml` - 수동 실행: KIS 브로커 라이브 API 테스트
 - `download-data.yml` - 수동 실행: 백테스트용 시장 데이터 다운로드
 - `gdrive-sync.yml` - main Push 또는 수동: Google Drive 백업
 - `run-compare-backtest.yml` - 수동 실행: 전략 엔진 비교 백테스트
+- `live-trading-domestic.yml` - 평일 KST 10:00 스케줄 + 수동 실행: 국내 계정 라이브 실거래. 한국 공휴일 자동 스킵, 실행 후 docs/data/**/*.json 자동 커밋
 
 테스트 시 `test_infra_broker_kis_domestic_live.py`는 CI에서 제외됨.
 
 ## 주의사항
-- .env 파일과 accounts.yaml은 절대 커밋하지 않을 것 (accounts.yaml.example 참고)
+- .env 파일은 절대 커밋하지 않을 것
+- accounts.yaml에는 민감 정보를 넣지 말 것 (KIS 키/계좌번호는 GitHub Secrets의 `{PREFIX}_KIS_*` 환경변수로만 주입)
 - 실거래 여부는 accounts.yaml의 `is_live` 필드로 계정별 설정
 - 매도 주문을 먼저 실행한 후 매수 진행 (자금 부족 방지)
 - YFinance API 실패 시 VIX 기본값 20.0 적용
