@@ -1,0 +1,31 @@
+[
+    {
+        "id": "tx_20230102",
+        "date": "2023-01-02",
+        "portfolio_value": 9966.191478048782,
+        "total_trade_amount": 9662.460000000001,
+        "reason": "첫 투자: 30:70 비율로 진입",
+        "executions": [
+            {
+                "ticker": "QLD",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 189.46,
+                "fee": 7.1,
+                "date": "2023-01-02",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SDY",
+                "action": "BUY",
+                "quantity": 36,
+                "price": 189.46,
+                "fee": 17.05,
+                "date": "2023-01-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    }
+]

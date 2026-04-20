@@ -1,0 +1,31 @@
+{
+    "last_updated": "2023-01-05",
+    "last_rebalancing_date": "2023-01-05",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 1.0,
+        "trigger_reason": "비율 재조정 필요하나 주문 단위 미달 (상대이탈: 100.0%)",
+        "market_score": {
+            "vix": 15.0,
+            "spy_mdd": 0.0,
+            "spy_momentum": 0.19739402765997863,
+            "spy_price": 190.0,
+            "spy_ma180": 168.1707317073171,
+            "spy_volatility": 0.00016701957528333187
+        }
+    },
+    "portfolio": {
+        "total_value": 10003.332589634148,
+        "cash_balance": 123.3325896341488,
+        "holdings": [
+            {
+                "ticker": "SPY",
+                "qty": 52,
+                "price": 190.0,
+                "value": 9880.0
+            }
+        ]
+    },
+    "initial_cash": 10000.0,
+    "backtest_start_date": "2023-01-02"
+}

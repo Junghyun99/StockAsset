@@ -39,12 +39,24 @@ import {
     renderOperationsPanel
 } from './ui.js?v=3';
 
-import { loadEngineMeta } from './utils.js?v=3';
+import { loadEngineMeta, loadAccountsMeta } from './utils.js?v=4';
 
 import {
     renderCompareOverview,
     renderCompareTradesTab,
 } from './compare-ui.js?v=2';
+
+import {
+    renderAccountOverview,
+    renderAccountTradesTab,
+} from './account-compare-ui.js?v=1';
+
+import {
+    renderAccountPerformanceChart,
+    renderAccountStrategyChart,
+    updateAccountChartRange,
+    resizeAccountCharts,
+} from './account-compare-charts.js?v=1';
 
 import {
     renderComparePerformanceChart,
@@ -83,29 +95,94 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 /**
- * Live 모드 데이터 로딩 및 렌더링 (기존 로직)
+ * Live 모드 데이터 로딩 및 렌더링.
+ * accounts.json 유무에 따라 단일 계좌(기존 UI) / 다중 계좌(비교 UI)로 분기.
  */
 async function loadLiveMode() {
-    const dataPath = 'data/';
+    const basePath = 'data/';
     const cacheBust = `v=${Date.now()}`;
-    const [summaryRes, statusRes, historyRes, groupConfigRes] = await Promise.all([
-        fetch(`${dataPath}summary.json?${cacheBust}`),
-        fetch(`${dataPath}status.json?${cacheBust}`),
-        fetch(`${dataPath}history.json?${cacheBust}`),
-        fetch(`${dataPath}asset_groups.json?${cacheBust}`)
-    ]);
 
-    const summaryData = await summaryRes.json();
-    const statusData = await statusRes.json();
-    const historyData = await historyRes.json();
-    const groupConfig = groupConfigRes.ok ? await groupConfigRes.json() : null;
+    // 계좌 메타(색상·시장유형) 로드
+    await loadAccountsMeta(basePath);
 
-    // 개발 중 디버깅 편의용 — DevTools 콘솔에서 파생 함수 검증 가능
+    // accounts.json 로드 시도
+    const accountsRes = await fetch(`${basePath}accounts.json?${cacheBust}`);
+
+    if (!accountsRes.ok) {
+        // Fallback: accounts.json 없으면 레거시 단일 계좌 모드 (data/ 직하위)
+        return _loadLegacySingleAccount(basePath, cacheBust);
+    }
+
+    const accountIds = await accountsRes.json();
+    if (!accountIds || accountIds.length === 0) {
+        return _loadLegacySingleAccount(basePath, cacheBust);
+    }
+
+    // 각 계좌별 데이터 병렬 로드
+    const accountsData = new Map();
+    await Promise.all(accountIds.map(async (id) => {
+        const path = `${basePath}${id}/`;
+        const [summaryRes, statusRes, historyRes, groupRes] = await Promise.all([
+            fetch(`${path}summary.json?${cacheBust}`),
+            fetch(`${path}status.json?${cacheBust}`),
+            fetch(`${path}history.json?${cacheBust}`),
+            fetch(`${path}asset_groups.json?${cacheBust}`),
+        ]);
+        accountsData.set(id, {
+            summary:    summaryRes.ok ? await summaryRes.json().catch(() => [])    : [],
+            status:     statusRes.ok  ? await statusRes.json().catch(() => ({}))   : {},
+            history:    historyRes.ok ? await historyRes.json().catch(() => [])    : [],
+            groupConfig: groupRes.ok  ? await groupRes.json().catch(() => null)    : null,
+        });
+    }));
+
+    if (accountIds.length === 1) {
+        // 단일 계좌: 기존 UI (경로만 계좌 서브디렉토리로 수정)
+        const data = accountsData.get(accountIds[0]);
+        _renderSingleAccount(data);
+    } else {
+        // 다중 계좌: 비교 UI
+        renderAccountOverview(accountsData);
+        disableLiveOnlyTabs();
+
+        let perfRendered = false;
+        let tradesRendered = false;
+
+        function renderPerformanceTab() {
+            if (perfRendered) return;
+            setupAccountPerformanceHTML();
+            renderAccountPerformanceChart(accountsData);
+            renderAccountStrategyChart(accountsData);
+            setupAccountTimeRangeSelector(accountsData);
+            perfRendered = true;
+        }
+
+        function renderTradesTab() {
+            if (tradesRendered) return;
+            renderAccountTradesTab(accountsData);
+            tradesRendered = true;
+        }
+
+        setupTabEvents({
+            performance: renderPerformanceTab,
+            trades: renderTradesTab,
+            onResize: resizeAccountCharts,
+        });
+
+        const firstData = accountsData.values().next().value;
+        document.getElementById('last-updated').innerText =
+            `Last Update: ${firstData.status?.last_updated || 'Unknown'}`;
+    }
+}
+
+/**
+ * 단일 계좌 UI 렌더링 (기존 loadLiveMode 로직)
+ */
+function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, groupConfig }) {
     window.__summary = summaryData;
     window.__status = statusData;
     window.__history = historyData;
 
-    // === Overview 탭 렌더링 ===
     renderStatusBanner(statusData);
     updateSummaryCards(statusData, summaryData);
     renderGroupBarChart(statusData, groupConfig);
@@ -115,7 +192,6 @@ async function loadLiveMode() {
     renderFailedOrderAlert(historyData);
     renderStatusFreshnessBadge(statusData);
 
-    // === Performance / Allocation / Trades / Operations 탭 (lazy) ===
     let perfRendered = false;
     let allocationRendered = false;
     let tradesRendered = false;
@@ -168,11 +244,28 @@ async function loadLiveMode() {
         allocation: renderAllocationTab,
         trades: renderTradesTab,
         operations: renderOperationsTab,
-        onResize: resizeAllCharts
+        onResize: resizeAllCharts,
     });
 
-    // 마지막 업데이트 시간 표시
     document.getElementById('last-updated').innerText = `Last Update: ${statusData.last_updated || 'Unknown'}`;
+}
+
+/**
+ * Fallback: accounts.json 없을 때 레거시 data/ 직하위 경로에서 로드
+ */
+async function _loadLegacySingleAccount(basePath, cacheBust) {
+    const [summaryRes, statusRes, historyRes, groupConfigRes] = await Promise.all([
+        fetch(`${basePath}summary.json?${cacheBust}`),
+        fetch(`${basePath}status.json?${cacheBust}`),
+        fetch(`${basePath}history.json?${cacheBust}`),
+        fetch(`${basePath}asset_groups.json?${cacheBust}`),
+    ]);
+    _renderSingleAccount({
+        summary: await summaryRes.json(),
+        status:  await statusRes.json(),
+        history: await historyRes.json(),
+        groupConfig: groupConfigRes.ok ? await groupConfigRes.json() : null,
+    });
 }
 
 /**
@@ -426,6 +519,66 @@ function setupTimeRangeSelector(summaryData) {
             selector.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             updatePerformanceChartRange(summaryData, btn.getAttribute('data-range'));
+        });
+    });
+}
+
+/**
+ * 계좌 비교 모드 Performance 탭 HTML 구조 삽입
+ */
+function setupAccountPerformanceHTML() {
+    const perfTab = document.getElementById('performance');
+    if (!perfTab) return;
+
+    perfTab.innerHTML = `
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-start flex-wrap">
+                <div>
+                    <h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Account Performance Comparison</h5>
+                    <div class="mt-2 small d-flex gap-2 flex-wrap">
+                        <span class="badge border text-dark" style="background-color: rgba(25,135,84,0.15);">Bull</span>
+                        <span class="badge border text-dark" style="background-color: rgba(255,193,7,0.15);">Sideways</span>
+                        <span class="badge border text-dark" style="background-color: rgba(220,53,69,0.1);">Bear Weak</span>
+                        <span class="badge border text-dark" style="background-color: rgba(220,53,69,0.2);">Bear Strong</span>
+                        <span class="badge border text-white" style="background-color: rgba(33,37,41,0.4);">Crash</span>
+                    </div>
+                </div>
+                <div class="btn-group btn-group-sm mt-2 mt-md-0" id="time-range-selector" role="group">
+                    <button type="button" class="btn btn-outline-secondary" data-range="1M">1M</button>
+                    <button type="button" class="btn btn-outline-secondary" data-range="3M">3M</button>
+                    <button type="button" class="btn btn-outline-secondary" data-range="6M">6M</button>
+                    <button type="button" class="btn btn-outline-secondary" data-range="1Y">1Y</button>
+                    <button type="button" class="btn btn-outline-secondary active" data-range="ALL">ALL</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="height: 500px;"><canvas id="accountPerformanceChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Exposure Strategy Comparison</h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px;"><canvas id="accountStrategyChart"></canvas></div>
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * 계좌 비교 모드용 기간 선택 버튼 이벤트
+ */
+function setupAccountTimeRangeSelector(accountsData) {
+    const selector = document.getElementById('time-range-selector');
+    if (!selector) return;
+
+    selector.querySelectorAll('button[data-range]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            selector.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            updateAccountChartRange(accountsData, btn.getAttribute('data-range'));
         });
     });
 }

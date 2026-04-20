@@ -2,6 +2,7 @@
 import sys
 import traceback
 import os
+import json
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from typing import List, Tuple
@@ -10,7 +11,7 @@ from src.config import Config
 from src.strategy_config import StrategyConfig
 from src.account_config import AccountConfig, load_accounts
 from src.core.engine import TradingEngine  # noqa: F401  (테스트 호환)
-from src.core.engine.registry import _ENGINE_REGISTRY
+from src.core.engine.registry import _ENGINE_REGISTRY, _ENGINE_COLORS, _ENGINE_MARKET_TYPES
 from src.utils.logger import TradeLogger
 from src.infra.data import YFinanceLoader
 from src.infra.broker import (
@@ -98,6 +99,29 @@ class TradingBot:
 
         if not self.runners:
             raise ValueError("등록된 계좌가 없습니다. accounts.yaml을 확인하세요.")
+
+        self._save_accounts_meta()
+
+    def _save_accounts_meta(self):
+        """docs/data/accounts.json + accounts_meta.json 생성 (프론트엔드 계좌 목록용)."""
+        base = self.config.DATA_PATH
+        os.makedirs(base, exist_ok=True)
+
+        accounts_list = [r.account.id for r in self.runners]
+        accounts_meta = {
+            r.account.id: {
+                "market_type": r.account.market_type,
+                "engine_name": r.account.engine_name,
+                "color": _ENGINE_COLORS.get(r.account.engine_name, "#6c757d"),
+                "is_live": r.account.is_live,
+            }
+            for r in self.runners
+        }
+
+        with open(os.path.join(base, "accounts.json"), "w", encoding="utf-8") as f:
+            json.dump(accounts_list, f, indent=2)
+        with open(os.path.join(base, "accounts_meta.json"), "w", encoding="utf-8") as f:
+            json.dump(accounts_meta, f, indent=2, ensure_ascii=False)
 
     # --- 하위 호환: 기존 테스트/코드가 bot.engine / bot.broker / bot.repo 접근 ---
     @property
