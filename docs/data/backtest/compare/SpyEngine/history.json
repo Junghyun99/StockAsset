@@ -1,0 +1,40 @@
+[
+    {
+        "id": "tx_20230102",
+        "date": "2023-01-02",
+        "portfolio_value": 9966.191478048782,
+        "total_trade_amount": 9662.460000000001,
+        "reason": "첫 투자: 100:0 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 51,
+                "price": 189.46,
+                "fee": 24.16,
+                "date": "2023-01-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230103",
+        "date": "2023-01-03",
+        "portfolio_value": 9977.966735975611,
+        "total_trade_amount": 189.7,
+        "reason": "비율 재조정: 상대이탈 100.0% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 189.7,
+                "fee": 0.47,
+                "date": "2023-01-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    }
+]
