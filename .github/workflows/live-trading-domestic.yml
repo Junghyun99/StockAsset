@@ -2,7 +2,7 @@ name: Live Trading - Domestic (KST 10:00)
 
 on:
   schedule:
-    - cron: '0 1 * * 1-5'   # UTC 01:00 = KST 10:00, 월~금
+    - cron: '5 1 * * 1-5'   # UTC 01:05 = KST 10:05, 월~금
   workflow_dispatch:
     inputs:
       skip_holiday_check:
