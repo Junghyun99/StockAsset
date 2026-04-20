@@ -11,6 +11,7 @@ from src.core.models import (
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
 from src.core.engine.registry import register_engine
+from src.config import ticker_display
 
 
 @register_engine(color="#1f77b4")
@@ -222,11 +223,12 @@ class TradingEngine:
             self._notify_alert(msg)
 
         elif zero_price_tickers:
-            signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(zero_price_tickers)}")
+            display_names = [ticker_display(t) for t in zero_price_tickers]
+            signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(display_names)}")
             msg = (
                 f"⚠️ Price Data Alert — 매매 중단\n"
                 f"날짜: {market_data.date}\n"
-                f"가격 조회 실패 종목: {', '.join(zero_price_tickers)}\n"
+                f"가격 조회 실패 종목: {', '.join(display_names)}\n"
                 f"보유 종목 가격 이상으로 리밸런싱을 중단합니다.\n"
                 f"total_value 왜곡으로 인한 비정상 주문 방지."
             )
@@ -323,7 +325,7 @@ class TradingEngine:
             if qty > 0:
                 price = portfolio.current_prices.get(ticker, 0)
                 value = qty * price
-                holdings_lines.append(f"  • {ticker}: {qty}주 (${value:,.0f})")
+                holdings_lines.append(f"  • {ticker_display(ticker)}: {qty}주 (${value:,.0f})")
         if not holdings_lines:
             holdings_lines.append("  • (보유 종목 없음)")
         holdings_info = "\n".join(holdings_lines)
