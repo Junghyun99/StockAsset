@@ -129,10 +129,10 @@ async function loadLiveMode() {
             fetch(`${path}asset_groups.json?${cacheBust}`),
         ]);
         accountsData.set(id, {
-            summary: summaryRes.ok ? await summaryRes.json() : [],
-            status:  statusRes.ok  ? await statusRes.json()  : {},
-            history: historyRes.ok ? await historyRes.json() : [],
-            groupConfig: groupRes.ok ? await groupRes.json() : null,
+            summary:    summaryRes.ok ? await summaryRes.json().catch(() => [])    : [],
+            status:     statusRes.ok  ? await statusRes.json().catch(() => ({}))   : {},
+            history:    historyRes.ok ? await historyRes.json().catch(() => [])    : [],
+            groupConfig: groupRes.ok  ? await groupRes.json().catch(() => null)    : null,
         });
     }));
 

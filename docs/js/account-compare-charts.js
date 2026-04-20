@@ -47,9 +47,13 @@ export function renderAccountPerformanceChart(accountsData, filteredSummaries) {
         if (!summary || summary.length === 0) continue;
 
         const initialValue = summary[0].total_value || 1;
+        const summaryMap = new Map(summary.map(d => [d.date, d]));
         datasets.push({
             label: id,
-            data: summary.map(d => (d.total_value / initialValue) * 100),
+            data: labels.map(l => {
+                const d = summaryMap.get(l);
+                return d ? (d.total_value / initialValue) * 100 : null;
+            }),
             borderColor: ACCOUNT_COLORS[id] || '#6c757d',
             borderWidth: 2,
             pointRadius: 0,
@@ -136,9 +140,10 @@ export function renderAccountStrategyChart(accountsData) {
     for (const id of accountIds) {
         const summary = accountsData.get(id).summary;
         if (!summary) continue;
+        const summaryMap = new Map(summary.map(d => [d.date, d]));
         datasets.push({
             label: `${id} Exposure`,
-            data: summary.map(d => (d.target_exposure ?? 0) * 100),
+            data: labels.map(l => (summaryMap.get(l)?.target_exposure ?? 0) * 100),
             borderColor: ACCOUNT_COLORS[id] || '#6c757d',
             borderWidth: 1.5,
             pointRadius: 0,

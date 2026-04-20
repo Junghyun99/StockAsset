@@ -334,7 +334,7 @@ function renderAccountTradeHistory(historyData, page, isDomestic) {
         `).join('');
 
         let fee = tx.total_fee;
-        if (fee === undefined) {
+        if (fee == null) {
             fee = (tx.executions || []).reduce((s, ex) => s + (ex.fee || 0), 0);
         }
 
