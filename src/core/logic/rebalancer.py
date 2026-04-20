@@ -2,6 +2,7 @@ import math
 from typing import Dict, List, Optional, Tuple
 from src.core.models import MarketRegime, Portfolio, TradeSignal, Order, OrderAction
 from src.core.interfaces import ILogger
+from src.config import ticker_display
 
 
 class Rebalancer:
@@ -186,7 +187,7 @@ class Rebalancer:
             price = pf.current_prices.get(ticker, 0)
             if price <= 0:
                 if self._logger:
-                    self._logger.warning(f"종목 {ticker}의 가격이 유효하지 않습니다 (price={price}). 주문 생성을 건너뜁니다.")
+                    self._logger.warning(f"종목 {ticker_display(ticker)}의 가격이 유효하지 않습니다 (price={price}). 주문 생성을 건너뜁니다.")
                 continue
 
             current_qty = pf.holdings.get(ticker, 0)
@@ -213,7 +214,7 @@ class Rebalancer:
 
             if self._logger:
                 self._logger.info(
-                    f"  {ticker}: 보유 {current_qty}주 ${current_val:,.2f} → 목표 ${per_stock_target:,.2f} "
+                    f"  {ticker_display(ticker)}: 보유 {current_qty}주 ${current_val:,.2f} → 목표 ${per_stock_target:,.2f} "
                     f"| diff={diff_val:+,.2f} {order_desc}"
                 )
 
@@ -228,7 +229,7 @@ class Rebalancer:
             return
         for t, q in portfolio.holdings.items():
             if q > 0 and t not in portfolio.current_prices:
-                self._logger.warning(f"보유 종목 {t}의 가격 정보가 누락되어 평가액이 0으로 계산됩니다.")
+                self._logger.warning(f"보유 종목 {ticker_display(t)}의 가격 정보가 누락되어 평가액이 0으로 계산됩니다.")
 
     def _log_header(self, regime: MarketRegime, target_exposure: float,
                     portfolio: Portfolio, eff_a: float) -> None:

@@ -7,6 +7,7 @@ from dataclasses import asdict
 from datetime import datetime
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
 from src.core.interfaces import IRepository
+from src.config import TICKER_ALIASES
 
 class JsonRepository(IRepository):
     _GROUP_META = {
@@ -40,6 +41,7 @@ class JsonRepository(IRepository):
     def save_asset_groups_config(self):
         """asset_groups 설정을 JSON으로 저장하여 프론트엔드에서 동적으로 매핑할 수 있도록 함"""
         config = {}
+        all_tickers = []
         for group, tickers in self.asset_groups.items():
             meta = self._GROUP_META.get(group, {'label': group, 'color': '#adb5bd'})
             config[group] = {
@@ -47,6 +49,11 @@ class JsonRepository(IRepository):
                 'label': meta['label'],
                 'color': meta['color'],
             }
+            all_tickers.extend(tickers)
+        # 이 계정에서 사용 중인 티커만 추려서 alias 맵 추가
+        aliases = {t: TICKER_ALIASES[t] for t in all_tickers if t in TICKER_ALIASES}
+        if aliases:
+            config['aliases'] = aliases
         self._save_json(os.path.join(self.root, "asset_groups.json"), config)
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,

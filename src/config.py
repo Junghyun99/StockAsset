@@ -4,6 +4,27 @@ from dotenv import load_dotenv
 # .env 파일 로드
 load_dotenv()
 
+# 티커 → 표시명(alias) 매핑. 국내 종목처럼 티커가 숫자 코드인 경우 등록해 두면
+# 로그·대시보드에서 alias가 우선 표시된다. 미등록 티커는 티커 그대로 표시된다.
+TICKER_ALIASES: dict[str, str] = {
+    # 국내 ETF (yfinance 티커 기준)
+    '069500.KS': 'KODEX 200',
+    '143850.KS': 'TIGER 미국나스닥100',
+    '132030.KS': 'KODEX 골드선물(H)',
+    '305080.KS': 'TIGER 미국채10년선물',
+    '148070.KS': 'KOSEF 국고채10년',
+    '226490.KS': 'KODEX 코스피',
+    '133690.KS': 'TIGER 미국S&P500',
+    '365780.KS': 'ACE 미국30년국채액티브',
+    '411060.KS': 'ACE 미국S&P500',
+}
+
+
+def ticker_display(ticker: str) -> str:
+    """티커의 표시명을 반환한다. alias가 없으면 티커를 그대로 반환."""
+    return TICKER_ALIASES.get(ticker, ticker)
+
+
 # 티커별 거래소 단축 코드 (현재가 조회 API용)
 # 새 티커 추가 시 이 딕셔너리만 수정하면 됩니다.
 TICKER_EXCHANGE_MAP: dict[str, str] = {
