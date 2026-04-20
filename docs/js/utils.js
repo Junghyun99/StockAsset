@@ -255,6 +255,35 @@ export async function loadEngineMeta(basePath) {
 }
 
 /**
+ * 계좌별 고유 색상 팔레트 (런타임에 loadAccountsMeta()로 채워짐)
+ */
+export const ACCOUNT_COLORS = {};
+
+/**
+ * 계좌별 시장 유형 ('overseas' | 'domestic') 런타임 맵
+ */
+export const ACCOUNT_MARKET_TYPES = {};
+
+/**
+ * accounts_meta.json을 fetch하여 ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES를 채운다.
+ * loadLiveMode() 시작 시 먼저 호출된다.
+ * @param {string} basePath - accounts_meta.json이 있는 경로 (예: 'data/')
+ */
+export async function loadAccountsMeta(basePath) {
+    try {
+        const res = await fetch(`${basePath}accounts_meta.json?v=${Date.now()}`);
+        if (!res.ok) return;
+        const meta = await res.json();
+        for (const [id, info] of Object.entries(meta)) {
+            ACCOUNT_COLORS[id] = info.color;
+            ACCOUNT_MARKET_TYPES[id] = info.market_type || 'overseas';
+        }
+    } catch (e) {
+        console.warn('accounts_meta.json 로드 실패 — 폴백 색상(#6c757d) 사용');
+    }
+}
+
+/**
  * 금액 포맷팅 (KRW)
  */
 export function formatKRW(value) {
