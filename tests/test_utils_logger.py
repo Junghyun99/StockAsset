@@ -14,12 +14,16 @@ def reset_logger():
     """
     yield
 
-    # Teardown: SolidQuant.* 로거 핸들러 제거
+    # Teardown: SolidQuant 부모 및 SolidQuant.* 자식 로거 핸들러 모두 제거
     for name, obj in list(logging.Logger.manager.loggerDict.items()):
         if name.startswith("SolidQuant") and isinstance(obj, logging.Logger):
             for h in obj.handlers[:]:
                 h.close()
             obj.handlers.clear()
+    parent = logging.getLogger("SolidQuant")
+    for h in parent.handlers[:]:
+        h.close()
+    parent.handlers.clear()
 
 def test_logger_file_creation(tmp_path, reset_logger):
     """[기본] 로그 파일 생성 및 내용 기록 확인"""
@@ -86,9 +90,10 @@ def test_prevent_duplicate_handlers(tmp_path, capsys, reset_logger):
     # 3. 로그 남기기
     logger1.info("Duplicate Check")
 
-    # 4. 검증: 동일 파일 경로면 동일 로거 객체를 공유 (핸들러 2개: FileHandler + StreamHandler)
+    # 4. 검증: 동일 파일 경로면 동일 로거 객체를 공유 (리프: FileHandler 1개, 부모: StreamHandler 1개)
     assert logger1.logger is logger2.logger
-    assert len(logger1.logger.handlers) == 2
+    assert len(logger1.logger.handlers) == 1  # FileHandler만
+    assert len(logging.getLogger("SolidQuant").handlers) == 1  # StreamHandler만
 
     # 5. 검증: 파일에 로그가 한 번만 찍혀야 함
     with open(log_dir / os.listdir(log_dir)[0], 'r') as f:

@@ -32,9 +32,12 @@ class TradeLogger(ILogger):
             fh.setFormatter(_KSTFormatter('%(asctime)s [%(levelname)s] %(message)s'))
             self.logger.addHandler(fh)
 
+        # 콘솔 핸들러는 부모 로거에 단 하나만 유지 (여러 파일 로거 생성 시 중복 방지)
+        parent = logging.getLogger("SolidQuant")
+        if not parent.handlers:
             ch = logging.StreamHandler()
             ch.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
-            self.logger.addHandler(ch)
+            parent.addHandler(ch)
 
     def info(self, msg: Any):
         self.logger.info(f"{msg}")
