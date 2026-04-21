@@ -99,7 +99,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
 
             output2_list = data.get('output2', [])
             summary = output2_list[0] if output2_list else {}
-            total_cash = float(summary.get('dnca_tot_amt', 0) or 0)
+            total_cash = float(summary.get('prvs_rcdl_excc_amt', 0) or 0)
 
             for item in data.get('output1', []):
                 qty = int(item.get('hldg_qty', 0) or 0)
