@@ -2,7 +2,7 @@ import os
 import logging
 import re
 import pytest
-from src.utils.logger import TradeLogger
+from src.utils.logger import TradeLogger, KST
 from datetime import datetime
 from unittest.mock import patch
 
@@ -12,14 +12,14 @@ def reset_logger():
     각 테스트 실행 전후로 로거 상태를 초기화하는 픽스처.
     logging 모듈은 싱글톤이라 상태가 유지되므로 필수적임.
     """
-    # Setup: 기존 핸들러 제거
-    logger = logging.getLogger("SolidQuant")
-    logger.handlers = []
-    
     yield
-    
-    # Teardown: 테스트 후 핸들러 제거
-    logger.handlers = []
+
+    # Teardown: SolidQuant.* 로거 핸들러 제거
+    for name, obj in list(logging.Logger.manager.loggerDict.items()):
+        if name.startswith("SolidQuant") and isinstance(obj, logging.Logger):
+            for h in obj.handlers[:]:
+                h.close()
+            obj.handlers.clear()
 
 def test_logger_file_creation(tmp_path, reset_logger):
     """[기본] 로그 파일 생성 및 내용 기록 확인"""
@@ -76,29 +76,27 @@ def test_logger_console_output(tmp_path, capsys, reset_logger):
 def test_prevent_duplicate_handlers(tmp_path, capsys, reset_logger):
     """[예외/구조] Logger를 여러 번 인스턴스화해도 핸들러가 중복되지 않는지 확인"""
     log_dir = tmp_path / "logs"
-    
+
     # 1. 첫 번째 초기화
     logger1 = TradeLogger(log_dir=str(log_dir))
-    
-    # 2. 두 번째 초기화 (실수로 또 생성하거나 다른 모듈에서 생성 시)
+
+    # 2. 두 번째 초기화 (같은 log_dir, 같은 날짜 → 동일한 파일 경로)
     logger2 = TradeLogger(log_dir=str(log_dir))
-    
+
     # 3. 로그 남기기
     logger1.info("Duplicate Check")
-    
-    # 4. 검증: 핸들러 개수가 늘어나지 않아야 함 (FileHandler 1개 + StreamHandler 1개 = 총 2개)
-    raw_logger = logging.getLogger("SolidQuant")
-    assert len(raw_logger.handlers) == 2
-    
+
+    # 4. 검증: 동일 파일 경로면 동일 로거 객체를 공유 (핸들러 2개: FileHandler + StreamHandler)
+    assert logger1.logger is logger2.logger
+    assert len(logger1.logger.handlers) == 2
+
     # 5. 검증: 파일에 로그가 한 번만 찍혀야 함
     with open(log_dir / os.listdir(log_dir)[0], 'r') as f:
         content = f.read()
-        # "Duplicate Check" 문자가 파일 내에 딱 1번만 등장해야 함
         assert content.count("Duplicate Check") == 1
-        
+
     # 6. 검증: 콘솔에도 한 번만 찍혀야 함
     captured = capsys.readouterr()
-    # 문자열 count로 확인 (이스케이프 문자 등이 있을 수 있어 단순 포함 여부보다 count가 정확)
     assert captured.err.count("Duplicate Check") == 1
 
 
@@ -133,8 +131,8 @@ def test_logger_filename_date_format(tmp_path, reset_logger):
     files = os.listdir(log_dir)
     filename = files[0]
     
-    # 오늘 날짜 구하기
-    expected_date = datetime.now().strftime("%Y-%m-%d")
+    # 오늘 날짜 구하기 (KST 기준)
+    expected_date = datetime.now(KST).strftime("%Y-%m-%d")
     expected_filename = f"{expected_date}.log"
     
     assert filename == expected_filename
@@ -161,7 +159,9 @@ def test_logger_append_mode(tmp_path, reset_logger):
     logger1.info("First execution log")
     
     # 로거 핸들러 강제 초기화 (프로그램 재시작 시뮬레이션)
-    logging.getLogger("SolidQuant").handlers = []
+    for h in logger1.logger.handlers[:]:
+        h.close()
+    logger1.logger.handlers.clear()
     
     # 2. 두 번째 실행 (오후 1시 가정)
     logger2 = TradeLogger(log_dir=str(log_dir))
