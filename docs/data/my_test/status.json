@@ -1,10 +1,10 @@
 {
-    "last_updated": "2026-04-21 04:03:31",
+    "last_updated": "2026-04-21 05:00:11",
     "last_rebalancing_date": "2026-04-20",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "비율 유지, exposure 조정으로 주문 발생",
+        "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
             "vix": 18.8700008392334,
             "spy_mdd": -0.0019996675529057577,
@@ -15,20 +15,20 @@
         }
     },
     "portfolio": {
-        "total_value": 8024678.0,
-        "cash_balance": 4133893.0,
+        "total_value": 4143548.0,
+        "cash_balance": 251383.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 173890.0,
-                "value": 695560.0
+                "price": 173905.0,
+                "value": 695620.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 12,
-                "price": 65720.0,
-                "value": 788640.0
+                "price": 65760.0,
+                "value": 789120.0
             },
             {
                 "ticker": "305080.KS",
@@ -39,14 +39,14 @@
             {
                 "ticker": "365780.KS",
                 "qty": 9,
-                "price": 85375.0,
-                "value": 768375.0
+                "price": 85555.0,
+                "value": 769995.0
             },
             {
                 "ticker": "411060.KS",
                 "qty": 26,
-                "price": 31640.0,
-                "value": 822640.0
+                "price": 31610.0,
+                "value": 821860.0
             }
         ]
     }
