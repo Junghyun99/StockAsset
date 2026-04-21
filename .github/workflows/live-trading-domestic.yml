@@ -2,7 +2,7 @@ name: Live Trading - Domestic (KST 10:00)
 
 on:
   schedule:
-    - cron: '5 1 * * 1-5'   # UTC 01:05 = KST 10:05, 월~금
+    - cron: '10 1 * * 1-5'   # UTC 01:10 = KST 10:10, 월~금
   workflow_dispatch:
     inputs:
       skip_holiday_check:
@@ -26,6 +26,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Show runner time (timezone debug)
+      run: |
+        echo "Runner UTC : $(date -u '+%Y-%m-%d %H:%M:%S %Z')"
+        echo "KST equiv  : $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M:%S %Z')"
+
     - name: Set up Python 3.10
       uses: actions/setup-python@v5
       with:
@@ -42,10 +47,10 @@ jobs:
       if: ${{ inputs.skip_holiday_check != true }}
       run: |
         python - <<'PY'
-        import os, datetime, holidays
+        import os, datetime, zoneinfo, holidays
         kr = holidays.country_holidays('KR')
-        # GitHub runner는 UTC → KST(UTC+9)로 변환하여 오늘 날짜 판정
-        today_kst = (datetime.datetime.utcnow() + datetime.timedelta(hours=9)).date()
+        kst_tz = zoneinfo.ZoneInfo('Asia/Seoul')
+        today_kst = datetime.datetime.now(datetime.timezone.utc).astimezone(kst_tz).date()
         is_holiday = today_kst in kr
         name = kr.get(today_kst, "")
         print(f"KST today={today_kst}, holiday={is_holiday}, name={name}")
