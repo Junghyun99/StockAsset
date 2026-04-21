@@ -148,7 +148,7 @@ def test_domestic_get_portfolio_success(domestic_paper_broker, mock_requests):
             {'pdno': '005930', 'hldg_qty': '10', 'prpr': '72000'},
             {'pdno': '000660', 'hldg_qty': '5', 'prpr': '185000'},
         ],
-        'output2': [{'dnca_tot_amt': '5000000'}]
+        'output2': [{'prvs_rcdl_excc_amt': '5000000'}]
     }
     mock_requests.get.return_value = portfolio_response
 
@@ -185,7 +185,7 @@ def test_domestic_get_portfolio_zero_qty_excluded(domestic_paper_broker, mock_re
             {'pdno': '005930', 'hldg_qty': '10', 'prpr': '72000'},
             {'pdno': '000660', 'hldg_qty': '0', 'prpr': '185000'},
         ],
-        'output2': [{'dnca_tot_amt': '3000000'}]
+        'output2': [{'prvs_rcdl_excc_amt': '3000000'}]
     }
     mock_requests.get.return_value = portfolio_response
 
@@ -504,7 +504,7 @@ def test_domestic_execute_orders_sell_then_buy(domestic_paper_broker, mock_reque
     portfolio_response.json.return_value = {
         'rt_cd': '0',
         'output1': [],
-        'output2': [{'dnca_tot_amt': '1000000'}]
+        'output2': [{'prvs_rcdl_excc_amt': '1000000'}]
     }
     # 체결내역 (매수)
     buy_fill_response = MagicMock()
@@ -634,7 +634,7 @@ def test_get_portfolio_returns_ks_keys(domestic_paper_broker, mock_requests):
         'output1': [
             {'pdno': '069500', 'hldg_qty': '100', 'prpr': '13500'},
         ],
-        'output2': [{'dnca_tot_amt': '2000000'}]
+        'output2': [{'prvs_rcdl_excc_amt': '2000000'}]
     }
     mock_requests.get.return_value = portfolio_response
 
