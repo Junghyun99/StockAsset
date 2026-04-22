@@ -1,0 +1,56 @@
+2026-04-22 22:24:23,703 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-04-22 22:24:23,704 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-04-22 22:24:23,704 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-04-22 22:24:23,704 [INFO] [KisBroker] 캐시 토큰 만료됨, 재발급 필요
+2026-04-22 22:24:23,704 [INFO] [KisBroker] 새 토큰 발급 중...
+2026-04-22 22:24:24,490 [INFO] [KisBroker] 토큰 캐시 저장: /home/runner/work/StockAsset/StockAsset/.kis_token_cache.json
+2026-04-22 22:24:24,491 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-04-22 22:24:24,493 [INFO] Restored previous regime: Bull
+2026-04-22 22:24:25,814 [INFO] >>> Step 1: Data Collection
+2026-04-22 22:24:25,815 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-04-22 22:24:26,133 [INFO] [Data] 🔍 Fetching VIX data from Yahoo Finance...
+2026-04-22 22:24:26,323 [INFO] [Data] ✅ VIX successfully fetched: 19.16
+2026-04-22 22:24:26,323 [INFO] >>> Step 2: Indicator Calculation
+2026-04-22 22:24:26,326 [INFO] Market Data: Price=704.0800170898438, VIX=19.15999984741211, MDD=-0.85%
+2026-04-22 22:24:26,326 [INFO] >>> Step 3: Strategy Analysis
+2026-04-22 22:24:26,326 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-04-22 22:24:26,326 [INFO] >>> Step 4: Portfolio Status
+2026-04-22 22:24:27,225 [INFO] Fetching Real-time prices from Broker...
+2026-04-22 22:24:30,643 [INFO] Current Portfolio: Cash=$251,383, Value=$4,149,493
+2026-04-22 22:24:30,644 [INFO] >>> Step 5: Rebalancing
+2026-04-22 22:24:30,644 [INFO] ════════════════════════════════════════════════
+2026-04-22 22:24:30,644 [INFO]  Rebalancer.generate_signal 시작
+2026-04-22 22:24:30,644 [INFO] ════════════════════════════════════════════════
+2026-04-22 22:24:30,644 [INFO] [입력] Regime=Bull | TargetExposure=1.00 | TotalValue=$4,149,493.00 | Cash=$251,383.00
+2026-04-22 22:24:30,644 [INFO] [포트폴리오 현황]
+2026-04-22 22:24:30,644 [INFO]   A그룹(성장): $1,493,680.00 ( 36.0%)
+2026-04-22 22:24:30,644 [INFO]   B그룹(안전): $2,404,430.00 ( 57.9%)
+2026-04-22 22:24:30,645 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-04-22 22:24:30,645 [INFO]   현금(예수금): $ 251,383.00 (  6.1%)
+2026-04-22 22:24:30,645 [INFO] [비중 판정] ratio_A=0.383  ratio_B=0.617
+2026-04-22 22:24:30,645 [INFO]   A 상대이탈: 4.2% | B 상대이탈: 2.8% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-04-22 22:24:30,645 [INFO] [목표 금액]
+2026-04-22 22:24:30,645 [INFO]   A그룹: 현재 $1,493,680.00 → 목표 $1,590,005.08  (exposure 1.00 × ratio 0.38)
+2026-04-22 22:24:30,645 [INFO]   B그룹: 현재 $2,404,430.00 → 목표 $2,559,487.92  (exposure 1.00 × ratio 0.62)
+2026-04-22 22:24:30,645 [INFO]   C그룹: 현재 $      0.00 → 목표 $      0.00  (잔여)
+2026-04-22 22:24:30,645 [INFO] [A그룹(성장) 종목별]
+2026-04-22 22:24:30,645 [INFO]   KODEX 코스피: 보유 12주 $795,600.00 → 목표 $795,002.54 | diff=-597.46 → SELL 1주 @$66300.00
+2026-04-22 22:24:30,645 [INFO]   TIGER 미국나스닥100: 보유 4주 $698,080.00 → 목표 $795,002.54 | diff=+96,922.54 → 주문 없음 (수량 미달)
+2026-04-22 22:24:30,645 [INFO] [B그룹(안전) 종목별]
+2026-04-22 22:24:30,645 [INFO]   ACE 국고채10년: 보유 9주 $767,295.00 → 목표 $853,162.64 | diff=+85,867.64 → BUY 1주 @$85255.00
+2026-04-22 22:24:30,645 [INFO]   TIGER 미국채10년선물: 보유 61주 $817,095.00 → 목표 $853,162.64 | diff=+36,067.64 → BUY 2주 @$13395.00
+2026-04-22 22:24:30,645 [INFO]   ACE KRX금현물: 보유 26주 $820,040.00 → 목표 $853,162.64 | diff=+33,122.64 → BUY 1주 @$31540.00
+2026-04-22 22:24:30,645 [INFO] [최종 주문] SELL 1건 + BUY 3건 (총 주문금액: $209,885.00 / 자산대비 5.1%)
+2026-04-22 22:24:30,646 [INFO] [결정 사유] 비율 유지, exposure 조정으로 주문 발생
+2026-04-22 22:24:30,646 [INFO] ════════════════════════════════════════════════
+2026-04-22 22:24:30,646 [INFO] Signal Generated: 비율 유지, exposure 조정으로 주문 발생
+2026-04-22 22:24:30,646 [INFO] Executing 4 orders...
+2026-04-22 22:24:30,646 [INFO] [KisBroker] Processing 1 SELL orders...
+2026-04-22 22:24:32,538 [ERROR] [KisDomestic] Order Failed: 장운영일자가 주문일과 상이합니다
+2026-04-22 22:24:35,542 [INFO] [KisBroker] Available Cash for BUY: 251,383
+2026-04-22 22:24:38,063 [ERROR] [KisDomestic] Order Failed: 장운영일자가 주문일과 상이합니다
+2026-04-22 22:24:39,081 [INFO] [KisBroker] Available Cash for BUY: 251,383
+2026-04-22 22:24:41,631 [ERROR] [KisDomestic] Order Failed: 장운영일자가 주문일과 상이합니다
+2026-04-22 22:24:42,631 [INFO] [KisBroker] Available Cash for BUY: 251,383
+2026-04-22 22:24:45,202 [ERROR] [KisDomestic] Order Failed: 장운영일자가 주문일과 상이합니다
+2026-04-22 22:24:45,542 [INFO] >>> Step 6: Archiving Data
