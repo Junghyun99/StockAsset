@@ -58,7 +58,9 @@ class Config:
         
         # 3. 데이터 경로
         self.DATA_PATH = "docs/data"
-        self.LOG_PATH = "logs"
+        # GitHub Actions 실행 로그만 저장소에 커밋하기 위해 경로를 분리한다.
+        # (.gitignore는 !logs/ci/**/*.log 만 허용)
+        self.LOG_PATH = "logs/ci" if os.getenv("GITHUB_ACTIONS") == "true" else "logs/local"
 
         # 4. 저장소 크기 제한
         self.MAX_SUMMARY_RECORDS = 200000  # summary.json 최대 레코드 수
