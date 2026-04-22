@@ -138,7 +138,7 @@ def test_fetch_vix_multiindex_structure(mock_yf_download, mock_logger):
     # 2. 검증
     assert vix == 25.5
     # 성공 로그가 찍혔는지 확인
-    mock_logger.info.assert_any_call("[Data] 🔍 Fetching VIX data from Yahoo Finance...")
+    mock_logger.info.assert_any_call("[Data] VIX fetched: 25.50")
 
 def test_fetch_vix_return_type_float(mock_yf_download, mock_logger):
     """

@@ -1259,7 +1259,7 @@ def test_create_group_orders_no_log_without_logger(create_portfolio):
 
 
 def test_generate_signal_logs_entry_context(create_portfolio):
-    """generate_signal은 시작 시 구분선, regime, exposure, total_value를 로깅해야 한다."""
+    """generate_signal은 시작 시 regime, exposure, total_value를 로깅해야 한다."""
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF']}, logger=mock_logger)
     pf = create_portfolio(
@@ -1270,8 +1270,8 @@ def test_generate_signal_logs_entry_context(create_portfolio):
     rebalancer.generate_signal(pf, target_exposure=0.8, regime=MarketRegime.BULL)
 
     info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
-    # 구분선 출력 확인
-    assert any('═' in msg or '====' in msg for msg in info_calls)
+    # 입력 컨텍스트 헤더 출력 확인
+    assert any('[입력]' in msg for msg in info_calls)
     # regime 로깅
     assert any('Bull' in msg or 'Regime' in msg for msg in info_calls)
     # exposure 로깅
@@ -1368,7 +1368,7 @@ def test_generate_signal_no_log_without_logger(create_portfolio):
 
 
 def test_generate_signal_logs_crash_rebalancing(create_portfolio):
-    """CRASH 시에도 구분선, 입력 정보, 주문 결과가 로깅되어야 한다."""
+    """CRASH 시에도 입력 정보, 주문 결과가 로깅되어야 한다."""
     mock_logger = MagicMock()
     rebalancer = Rebalancer({'A': ['SPY'], 'B': ['IEF'], 'C': ['SHV']}, logger=mock_logger)
     pf = create_portfolio(holdings={'SPY': 10}, prices={'SPY': 100.0, 'IEF': 100.0, 'SHV': 100.0})
@@ -1376,8 +1376,8 @@ def test_generate_signal_logs_crash_rebalancing(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=0.0, regime=MarketRegime.CRASH)
 
     info_calls = [call.args[0] for call in mock_logger.info.call_args_list]
-    # 구분선과 입력 정보가 로깅되어야 함
-    assert any('Rebalancer' in msg or '═' in msg for msg in info_calls)
+    # 입력 정보가 로깅되어야 함
+    assert any('[입력]' in msg for msg in info_calls)
     # CRASH에서도 주문이 생성됨 (exposure=0 → 매도)
     assert signal.has_orders is True
 
