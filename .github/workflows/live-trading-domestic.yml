@@ -103,7 +103,7 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: "chore(live): update domestic trading data [skip ci]"
-        file_pattern: "docs/data/*.json docs/data/**/*.json logs/*.log"
+        file_pattern: "docs/data/*.json docs/data/**/*.json logs/ci/*.log"
         commit_user_name: "github-actions[bot]"
         commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
 

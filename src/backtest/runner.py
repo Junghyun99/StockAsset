@@ -1,4 +1,5 @@
 # src/backtest/runner.py
+import os
 import shutil
 import numpy as np
 import pandas as pd
@@ -153,7 +154,9 @@ def run_compare_backtest(
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
 
     strategy = StrategyConfig(trading_interval_days=execution_interval)
-    logger = TradeLogger(log_dir="logs/backtest", run_number=run_number)
+    # CI에서 실행된 백테스트 로그만 커밋한다. (.gitignore는 !logs/backtest/ci/**/*.log 만 허용)
+    _log_subdir = "ci" if os.getenv("GITHUB_ACTIONS") == "true" else "local"
+    logger = TradeLogger(log_dir=f"logs/backtest/{_log_subdir}", run_number=run_number)
 
     # 1. 전체 엔진의 티커 합집합 수집 (backtest=False 엔진 제외)
     all_tickers: set = set()

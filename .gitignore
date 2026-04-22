@@ -57,7 +57,9 @@ cover/
 
 # Django stuff:
 *.log
-!logs/**/*.log
+# GitHub Actions 실행 로그만 커밋한다 (로컬 실행 로그는 커밋되지 않음)
+!logs/ci/**/*.log
+!logs/backtest/ci/**/*.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
