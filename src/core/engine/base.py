@@ -267,11 +267,12 @@ class TradingEngine:
 
                 total = len(signal.orders)
                 filled = sum(1 for e in executions if e.status == ExecutionStatus.FILLED)
+                partial = sum(1 for e in executions if e.status == ExecutionStatus.PARTIAL)
                 ordered = sum(1 for e in executions if e.status == ExecutionStatus.ORDERED)
                 rejected = sum(1 for e in executions if e.status == ExecutionStatus.REJECTED)
                 failed = total - len(executions)
                 self.logger.info(
-                    f"Order Summary: total={total} filled={filled} "
+                    f"Order Summary: total={total} filled={filled} partial={partial} "
                     f"ordered={ordered} rejected={rejected} failed={failed}"
                 )
 
