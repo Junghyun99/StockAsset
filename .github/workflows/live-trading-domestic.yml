@@ -83,7 +83,7 @@ jobs:
         MY_TEST_KIS_APP_SECRET: ${{ secrets.MY_TEST_KIS_APP_SECRET }}
         MY_TEST_KIS_ACC_NO: ${{ secrets.MY_TEST_KIS_ACC_NO }}
         # 공용
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_LIVE }}
         PYTHONUNBUFFERED: "1"
         # 향후 계정 추가 시:
         # {NEW_PREFIX}_KIS_APP_KEY: ${{ secrets.{NEW_PREFIX}_KIS_APP_KEY }}
