@@ -110,7 +110,7 @@ jobs:
     - name: Notify Slack on failure
       if: ${{ failure() && steps.holiday.outputs.is_holiday != 'true' }}
       env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_LIVE }}
       run: |
         if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
           echo "SLACK_WEBHOOK_URL not set, skipping Slack notification"
