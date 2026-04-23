@@ -27,23 +27,21 @@ class YFinanceLoader(IDataProvider):
             
             return df
         except Exception as e:
-            self.logger.error(f"[Data] ❌ Error fetching OHLCV: {e}")
+            self.logger.error(f"[Data] Error fetching OHLCV: {e}")
             raise e
 
     def fetch_vix(self) -> float:
         """
         VIX 지수 조회 (안전장치 포함)
         """
-        self.logger.info("[Data] 🔍 Fetching VIX data from Yahoo Finance...")
-
         try:
             vix_df = yf.download("^VIX", period="5d", auto_adjust=False, progress=False)
 
             # 1. 데이터가 비어있는 경우
             if vix_df is None or vix_df.empty:
-                self.logger.warning("[Data] ⚠️ VIX DataFrame is empty! Returning safety default: 20.0")
+                self.logger.warning("[Data] VIX DataFrame is empty — fallback to 20.0")
                 return 20.0
-            
+
             # 2. 값 추출 (MultiIndex 대응)
             if isinstance(vix_df.columns, pd.MultiIndex):
                 close_series = vix_df.xs('Close', axis=1, level=0)
@@ -53,14 +51,14 @@ class YFinanceLoader(IDataProvider):
                     val = close_series.iloc[-1]
             else:
                 val = vix_df['Close'].iloc[-1]
-                
+
             vix_value = float(val)
-            self.logger.info(f"[Data] ✅ VIX successfully fetched: {vix_value:.2f}")
+            self.logger.info(f"[Data] VIX fetched: {vix_value:.2f}")
             return vix_value
 
         except Exception as e:
             # 3. 에러 발생 시
-            self.logger.error(f"[Data] ❌ Error fetching VIX: {e}. Returning safety default: 20.0")
+            self.logger.error(f"[Data] Error fetching VIX: {e} — fallback to 20.0")
             return 20.0
 
     def fetch_daily_dividends(self, tickers: List[str]) -> Dict[str, float]:
@@ -86,5 +84,5 @@ class YFinanceLoader(IDataProvider):
             row = divs.loc[today_ts]
             return {t: float(v) for t, v in row.items() if float(v) > 0}
         except Exception as e:
-            self.logger.error(f"[Data] ❌ Error fetching dividends: {e}. Returning empty.")
+            self.logger.error(f"[Data] Error fetching dividends: {e} — returning empty")
             return {}

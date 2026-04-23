@@ -159,7 +159,10 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             resp_data = res.json()
 
             if resp_data['rt_cd'] != '0':
-                self.logger.error(f"[KisDomestic] Order Failed: {resp_data.get('msg1')}")
+                self.logger.error(
+                    f"[KisDomestic] Order Failed: {order.action} {order.ticker} "
+                    f"qty={order.quantity} @ {order_price} — {resp_data.get('msg1')}"
+                )
                 return None
 
             odno = resp_data.get('output', {}).get('ODNO', '')

@@ -6,7 +6,8 @@ import pandas as pd
 
 from src.core.interfaces import IDataProvider, IBrokerAdapter, IRepository, ILogger, INotifier
 from src.core.models import (
-    MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, DayResult
+    MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, DayResult,
+    ExecutionStatus,
 )
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
@@ -99,8 +100,8 @@ class TradingEngine:
         self.logger.info(">>> Step 2: Indicator Calculation")
         market_data = self.calculate_indicators(spy_df, vix)
         self.logger.info(
-            f"Market Data: Price={market_data.spy_price}, "
-            f"VIX={market_data.vix}, MDD={market_data.spy_mdd:.2%}"
+            f"Market Data: Price={market_data.spy_price:.2f}, "
+            f"VIX={market_data.vix:.2f}, MDD={market_data.spy_mdd:.2%}"
         )
 
         # Step 3: 국면 분석
@@ -124,6 +125,10 @@ class TradingEngine:
         # Step 6: 저장
         self.logger.info(">>> Step 6: Archiving Data")
         self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend)
+        self.logger.info(
+            f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
+            f"orders={len(signal.orders)} executions={len(executions)}"
+        )
 
         return DayResult(
             market_data=market_data,
@@ -257,9 +262,19 @@ class TradingEngine:
                 self._notify_alert(crash_msg)
 
             if signal.has_orders:
-                self.logger.info(f"Signal Generated: {signal.reason}")
-                self.logger.info(f"Executing {len(signal.orders)} orders...")
+                self.logger.info(f"Executing {len(signal.orders)} orders ({signal.reason})")
                 executions = self.broker.execute_orders(signal.orders)
+
+                total = len(signal.orders)
+                filled = sum(1 for e in executions if e.status == ExecutionStatus.FILLED)
+                partial = sum(1 for e in executions if e.status == ExecutionStatus.PARTIAL)
+                ordered = sum(1 for e in executions if e.status == ExecutionStatus.ORDERED)
+                rejected = sum(1 for e in executions if e.status == ExecutionStatus.REJECTED)
+                failed = total - len(executions)
+                self.logger.info(
+                    f"Order Summary: total={total} filled={filled} partial={partial} "
+                    f"ordered={ordered} rejected={rejected} failed={failed}"
+                )
 
                 if executions:
                     self._notify_message(f"✅ Orders Executed. Count: {len(executions)}")

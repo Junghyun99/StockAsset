@@ -235,9 +235,6 @@ class Rebalancer:
                     portfolio: Portfolio, eff_a: float) -> None:
         if not self._logger:
             return
-        self._logger.info("═" * 48)
-        self._logger.info(" Rebalancer.generate_signal 시작")
-        self._logger.info("═" * 48)
         self._logger.info(
             f"[입력] Regime={regime.value} | TargetExposure={target_exposure:.2f} "
             f"| TotalValue=${portfolio.total_value:,.2f} | Cash=${portfolio.total_cash:,.2f}"
@@ -306,4 +303,3 @@ class Rebalancer:
         else:
             self._logger.info("[최종 주문] 주문 없음")
         self._logger.info(f"[결정 사유] {reason}")
-        self._logger.info("═" * 48)

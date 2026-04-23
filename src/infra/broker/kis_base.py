@@ -52,7 +52,6 @@ class KisBrokerCommon(IBrokerAdapter):
             self.token_expires_at = datetime.fromisoformat(cached["expires_at"])
             return cached["access_token"]
 
-        self.logger.info("[KisBroker] 새 토큰 발급 중...")
         url = f"{self.base_url}/oauth2/tokenP"
         payload = {
             "grant_type": "client_credentials",
@@ -69,6 +68,9 @@ class KisBrokerCommon(IBrokerAdapter):
             self.token_expires_at = datetime.now() + timedelta(seconds=expires_in)
             token = data['access_token']
             self._save_token_to_cache(token, self.token_expires_at)
+            self.logger.info(
+                f"[KisBroker] 새 토큰 발급 완료 (expires_at={self.token_expires_at:%Y-%m-%d %H:%M:%S})"
+            )
             return token
         except Exception as e:
             self.logger.error(f"[KisBroker] Auth Error: {e}")
@@ -152,11 +154,15 @@ class KisBrokerCommon(IBrokerAdapter):
                 time.sleep(2)  # 정산 대기
 
             # === 3. 매수 실행 (주문 + 체결 대기 통합) ===
+            prev_cash: Optional[float] = None
             for order in buy_orders:
                 # 매수 주문마다 증권사 API로 실제 가용 금액 조회
                 pf = self.get_portfolio()
                 current_cash = pf.total_cash
-                self.logger.info(f"[KisBroker] Available Cash for BUY: {current_cash:,.0f}")
+                # 현금 변동이 있을 때만 로깅(동일 값 반복 노이즈 방지)
+                if prev_cash is None or current_cash != prev_cash:
+                    self.logger.info(f"[KisBroker] Available Cash for BUY: {current_cash:,.0f}")
+                    prev_cash = current_cash
 
                 # 안전 마진 (98%)
                 SAFE_MARGIN = 0.98

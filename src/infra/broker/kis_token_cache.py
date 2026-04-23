@@ -24,7 +24,7 @@ def load_token_from_cache(app_key: str, logger) -> Optional[dict]:
             return None
         expires_at = datetime.fromisoformat(entry["expires_at"])
         if datetime.now() >= expires_at - timedelta(seconds=60):
-            logger.info("[KisBroker] 캐시 토큰 만료됨, 재발급 필요")
+            logger.debug("[KisBroker] 캐시 토큰 만료됨, 재발급 필요")
             return None
         return entry
     except Exception as e:
@@ -45,6 +45,6 @@ def save_token_to_cache(app_key: str, token: str, expires_at: datetime, logger) 
         }
         with open(KIS_TOKEN_CACHE_PATH, "w", encoding="utf-8") as f:
             json.dump(cache, f, ensure_ascii=False, indent=2)
-        logger.info(f"[KisBroker] 토큰 캐시 저장: {KIS_TOKEN_CACHE_PATH}")
+        logger.debug(f"[KisBroker] 토큰 캐시 저장: {KIS_TOKEN_CACHE_PATH}")
     except Exception as e:
         logger.warning(f"[KisBroker] 토큰 캐시 저장 실패 (무시): {e}")
