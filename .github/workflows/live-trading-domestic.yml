@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       skip_holiday_check:
-        description: '한국 공휴일 체크를 건너뛰고 강제 실행 (수동 디버그용)'
+        description: '한국 공휴일 체크를 건너뛰고 강제 실행(수동 디버그용)'
         required: false
         default: false
         type: boolean
