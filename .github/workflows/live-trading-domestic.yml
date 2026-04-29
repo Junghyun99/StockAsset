@@ -44,7 +44,7 @@ jobs:
 
     - name: Check Korean holiday
       id: holiday
-      if: ${{ inputs.skip_holiday_check != true }}
+      if: ${{ github.event_name == 'schedule' || inputs.skip_holiday_check != true }}
       run: |
         python - <<'PY'
         import os, datetime, zoneinfo, holidays
