@@ -1,46 +1,46 @@
 {
-    "last_updated": "2026-04-29 04:37:15",
-    "last_rebalancing_date": "2026-04-28",
+    "last_updated": "2026-04-30 04:40:04",
+    "last_rebalancing_date": "2026-04-29",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 17.829999923706055,
-            "spy_mdd": -0.00486594872814618,
-            "spy_momentum": 0.1263530981843687,
-            "spy_price": 711.6900024414062,
-            "spy_ma180": 673.8686655680339,
-            "spy_volatility": 0.14552515444216135
+            "vix": 18.809999465942383,
+            "spy_mdd": -0.00501973783310127,
+            "spy_momentum": 0.12418820642788904,
+            "spy_price": 711.5800170898438,
+            "spy_ma180": 674.2889990912544,
+            "spy_volatility": 0.14347377556315555
         }
     },
     "portfolio": {
-        "total_value": 4144368.0,
+        "total_value": 4135563.0,
         "cash_balance": 251383.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 177590.0,
-                "value": 710360.0
+                "price": 178410.0,
+                "value": 713640.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 12,
-                "price": 68680.0,
-                "value": 824160.0
+                "price": 67920.0,
+                "value": 815040.0
             },
             {
                 "ticker": "305080.KS",
                 "qty": 61,
-                "price": 13340.0,
-                "value": 813740.0
+                "price": 13360.0,
+                "value": 814960.0
             },
             {
                 "ticker": "365780.KS",
                 "qty": 9,
-                "price": 84305.0,
-                "value": 758745.0
+                "price": 83840.0,
+                "value": 754560.0
             },
             {
                 "ticker": "411060.KS",
