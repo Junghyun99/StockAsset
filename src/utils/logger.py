@@ -22,7 +22,7 @@ class TradeLogger(ILogger):
         suffix = f"_run{run_number}" if run_number else ""
         self.log_file = os.path.join(log_dir, f"{datetime.now(KST).strftime('%Y-%m-%d')}{suffix}.log")
 
-        # 파일별로 독립된 로거 사용 (글로벌 싱글톤 충돌 방지)
+        # 파일별로 독립된 로거 사용 (글로벌 싱글턴 충돌 방지)
         logger_name = f"SolidQuant.{os.path.abspath(self.log_file)}"
         self.logger = logging.getLogger(logger_name)
         self.logger.setLevel(logging.INFO)
@@ -38,6 +38,9 @@ class TradeLogger(ILogger):
             ch = logging.StreamHandler()
             ch.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
             parent.addHandler(ch)
+
+    def debug(self, msg: Any):
+        self.logger.debug(f"{msg}")
 
     def info(self, msg: Any):
         self.logger.info(f"{msg}")
