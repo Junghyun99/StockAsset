@@ -39,8 +39,8 @@ class TradeLogger(ILogger):
             ch.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
             parent.addHandler(ch)
 
-    def debug(self, msg: Any):
-        self.logger.debug(f"{msg}")
+    def debug(self, msg: str) -> None:
+        self.logger.debug(msg)
 
     def info(self, msg: Any):
         self.logger.info(f"{msg}")
