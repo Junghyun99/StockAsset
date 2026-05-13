@@ -1,46 +1,46 @@
 {
-    "last_updated": "2026-05-12 04:46:48",
-    "last_rebalancing_date": "2026-05-11",
+    "last_updated": "2026-05-13 04:57:00",
+    "last_rebalancing_date": "2026-05-12",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 18.3799991607666,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.13621311690622961,
-            "spy_price": 739.2999877929688,
-            "spy_ma180": 678.1261105007595,
-            "spy_volatility": 0.10201623229972516
+            "vix": 17.989999771118164,
+            "spy_mdd": -0.0015149399914519408,
+            "spy_momentum": 0.1366975868157756,
+            "spy_price": 738.1799926757812,
+            "spy_ma180": 678.6420549180773,
+            "spy_volatility": 0.1015264460737143
         }
     },
     "portfolio": {
-        "total_value": 4338414.0,
+        "total_value": 4367084.0,
         "cash_balance": 193009.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 191895.0,
-                "value": 767580.0
+                "price": 193300.0,
+                "value": 773200.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 11,
-                "price": 78280.0,
-                "value": 861080.0
+                "price": 80190.0,
+                "value": 882090.0
             },
             {
                 "ticker": "305080.KS",
                 "qty": 63,
-                "price": 13350.0,
-                "value": 841050.0
+                "price": 13430.0,
+                "value": 846090.0
             },
             {
                 "ticker": "365780.KS",
                 "qty": 10,
-                "price": 83370.0,
-                "value": 833700.0
+                "price": 83070.0,
+                "value": 830700.0
             },
             {
                 "ticker": "411060.KS",
