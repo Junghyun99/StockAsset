@@ -1,52 +1,52 @@
 {
-    "last_updated": "2026-05-13 04:57:00",
-    "last_rebalancing_date": "2026-05-12",
+    "last_updated": "2026-05-14 04:55:42",
+    "last_rebalancing_date": "2026-05-13",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 17.989999771118164,
-            "spy_mdd": -0.0015149399914519408,
-            "spy_momentum": 0.1366975868157756,
-            "spy_price": 738.1799926757812,
-            "spy_ma180": 678.6420549180773,
-            "spy_volatility": 0.1015264460737143
+            "vix": 17.8700008392334,
+            "spy_mdd": 0.0,
+            "spy_momentum": 0.1331544832229537,
+            "spy_price": 742.3099975585938,
+            "spy_ma180": 679.196721733941,
+            "spy_volatility": 0.096891954759677
         }
     },
     "portfolio": {
-        "total_value": 4367084.0,
+        "total_value": 4380619.0,
         "cash_balance": 193009.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 193300.0,
-                "value": 773200.0
+                "price": 194770.0,
+                "value": 779080.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 11,
-                "price": 80190.0,
-                "value": 882090.0
+                "price": 81215.0,
+                "value": 893365.0
             },
             {
                 "ticker": "305080.KS",
                 "qty": 63,
-                "price": 13430.0,
-                "value": 846090.0
+                "price": 13405.0,
+                "value": 844515.0
             },
             {
                 "ticker": "365780.KS",
                 "qty": 10,
-                "price": 83070.0,
-                "value": 830700.0
+                "price": 82960.0,
+                "value": 829600.0
             },
             {
                 "ticker": "411060.KS",
                 "qty": 27,
-                "price": 31185.0,
-                "value": 841995.0
+                "price": 31150.0,
+                "value": 841050.0
             }
         ]
     }
