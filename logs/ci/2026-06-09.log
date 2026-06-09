@@ -1,0 +1,47 @@
+2026-06-09 14:15:22,776 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-06-09 14:15:22,777 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-06-09 14:15:22,777 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-06-09 14:15:22,777 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-06-09 14:15:22,777 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-06-09 14:15:22,778 [INFO] Restored previous regime: Bull
+2026-06-09 14:15:23,588 [ERROR] [KisDomestic] Error getting portfolio: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:24,110 [INFO] >>> Step 1: Data Collection
+2026-06-09 14:15:24,111 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-06-09 14:15:24,400 [INFO] [Data] VIX fetched: 18.92
+2026-06-09 14:15:24,400 [INFO] >>> Step 2: Indicator Calculation
+2026-06-09 14:15:24,402 [INFO] Market Data: Price=739.22, VIX=18.92, MDD=-2.68%
+2026-06-09 14:15:24,403 [INFO] >>> Step 3: Strategy Analysis
+2026-06-09 14:15:24,403 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-06-09 14:15:24,403 [INFO] >>> Step 4: Portfolio Status
+2026-06-09 14:15:25,212 [ERROR] [KisDomestic] Error getting portfolio: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:25,212 [INFO] Fetching Real-time prices from Broker...
+2026-06-09 14:15:26,005 [ERROR] [KisDomestic] Price fetch error 226490.KS: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:26,723 [ERROR] [KisDomestic] Price fetch error 133690.KS: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:27,438 [ERROR] [KisDomestic] Price fetch error 365780.KS: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:28,132 [ERROR] [KisDomestic] Price fetch error 305080.KS: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:28,860 [ERROR] [KisDomestic] Price fetch error 411060.KS: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-06-09 14:15:28,860 [INFO] Current Portfolio: Cash=$0, Value=$0
+2026-06-09 14:15:28,860 [INFO] >>> Step 5: Rebalancing
+2026-06-09 14:15:28,860 [INFO] [입력] Regime=Bull | TargetExposure=1.00 | TotalValue=$0.00 | Cash=$0.00
+2026-06-09 14:15:28,860 [INFO] [포트폴리오 현황]
+2026-06-09 14:15:28,860 [INFO]   A그룹(성장): $        0.00 (  0.0%)
+2026-06-09 14:15:28,860 [INFO]   B그룹(안전): $        0.00 (  0.0%)
+2026-06-09 14:15:28,860 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-06-09 14:15:28,861 [INFO]   현금(예수금): $       0.00 (  0.0%)
+2026-06-09 14:15:28,861 [INFO] [비중 판정] 첫 투자 → 40:60 초기 비율 적용
+2026-06-09 14:15:28,861 [INFO] [목표 금액]
+2026-06-09 14:15:28,861 [INFO]   A그룹: 현재 $      0.00 → 목표 $      0.00  (exposure 1.00 × ratio 0.40)
+2026-06-09 14:15:28,861 [INFO]   B그룹: 현재 $      0.00 → 목표 $      0.00  (exposure 1.00 × ratio 0.60)
+2026-06-09 14:15:28,861 [INFO]   C그룹: 현재 $      0.00 → 목표 $      0.00  (잔여)
+2026-06-09 14:15:28,861 [INFO] [A그룹(성장) 종목별]
+2026-06-09 14:15:28,861 [WARNING] 종목 KODEX 코스피의 가격이 유효하지 않습니다 (price=0). 주문 생성을 건너뜁니다.
+2026-06-09 14:15:28,861 [WARNING] 종목 TIGER 미국나스닥100의 가격이 유효하지 않습니다 (price=0). 주문 생성을 건너뜁니다.
+2026-06-09 14:15:28,861 [INFO] [B그룹(안전) 종목별]
+2026-06-09 14:15:28,861 [WARNING] 종목 ACE 국고채10년의 가격이 유효하지 않습니다 (price=0). 주문 생성을 건너뜁니다.
+2026-06-09 14:15:28,861 [WARNING] 종목 TIGER 미국채10년선물의 가격이 유효하지 않습니다 (price=0). 주문 생성을 건너뜁니다.
+2026-06-09 14:15:28,861 [WARNING] 종목 ACE KRX금현물의 가격이 유효하지 않습니다 (price=0). 주문 생성을 건너뜁니다.
+2026-06-09 14:15:28,861 [INFO] [최종 주문] 주문 없음
+2026-06-09 14:15:28,861 [INFO] [결정 사유] 첫 투자: 주문 단위 미달로 진입 불가
+2026-06-09 14:15:28,861 [INFO] No Rebalance Needed.
+2026-06-09 14:15:28,949 [INFO] >>> Step 6: Archiving Data
+2026-06-09 14:15:28,952 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
