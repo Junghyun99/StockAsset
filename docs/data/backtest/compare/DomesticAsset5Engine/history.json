@@ -57,5 +57,83 @@
                 "reason": ""
             }
         ]
+    },
+    {
+        "id": "tx_20230103",
+        "date": "2023-01-03",
+        "portfolio_value": 12971237.97121159,
+        "total_trade_amount": 66205.29999999999,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "069500.KS",
+                "action": "BUY",
+                "quantity": 71,
+                "price": 189.7,
+                "fee": 33.67,
+                "date": "2023-01-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "143850.KS",
+                "action": "BUY",
+                "quantity": 71,
+                "price": 189.7,
+                "fee": 33.67,
+                "date": "2023-01-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "148070.KS",
+                "action": "BUY",
+                "quantity": 207,
+                "price": 189.7,
+                "fee": 98.17,
+                "date": "2023-01-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230104",
+        "date": "2023-01-04",
+        "portfolio_value": 12987926.422511589,
+        "total_trade_amount": 1139.6999999999998,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "069500.KS",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 189.95,
+                "fee": 0.47,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "143850.KS",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 189.95,
+                "fee": 0.47,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "148070.KS",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 189.95,
+                "fee": 1.9,
+                "date": "2023-01-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
     }
 ]
