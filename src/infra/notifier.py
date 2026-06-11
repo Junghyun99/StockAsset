@@ -61,15 +61,22 @@ class SlackNotifier(INotifier):
         if self.bot_token and self.channel_id:
             try:
                 parent_ts = self._send_via_api(self.channel_id, summary)
-                if parent_ts and detail:
-                    # 상세 로그를 스레드 댓글로 첨부
-                    self._send_via_api(
-                        self.channel_id, f"```\n{detail}\n```", thread_ts=parent_ts
-                    )
-                return
             except Exception as e:
                 self.logger.error(f"[Slack API Error] Failed: {e}")
-                # 실패 시 웹후크로 폴백 (요약만 전송)
+                # 부모 메시지 전송 자체가 실패한 경우에만 웹후크로 폴백 (요약만 전송)
+            else:
+                # 부모 메시지는 이미 전송 완료. 스레드 댓글 실패는 폴백하지 않는다
+                # (폴백 시 동일 요약이 채널에 중복 전송되는 것을 방지).
+                if parent_ts and detail:
+                    try:
+                        self._send_via_api(
+                            self.channel_id, f"```\n{detail}\n```", thread_ts=parent_ts
+                        )
+                    except Exception as thread_err:
+                        self.logger.error(
+                            f"[Slack API Thread Error] Failed to send thread: {thread_err}"
+                        )
+                return
 
         # 2. 웹후크 폴백 — 요약만 전송 (상세 로그 생략)
         self._send_via_webhook({"text": summary})

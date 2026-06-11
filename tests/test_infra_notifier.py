@@ -173,6 +173,35 @@ def test_slack_api_failure_falls_back_to_webhook(mock_requests_post, mock_logger
     mock_logger.error.assert_called()
 
 
+def test_slack_thread_failure_does_not_fallback(mock_requests_post, mock_logger):
+    """[버그방지] 부모 메시지 성공 후 스레드 댓글 실패 시 웹후크로 폴백하지 않는다.
+
+    폴백하면 동일 요약이 채널에 중복 전송되므로, 스레드 실패는 에러 로깅만 한다.
+    """
+    parent_resp = MagicMock()
+    parent_resp.json.return_value = {"ok": True, "ts": "111.222"}  # 부모 성공
+    thread_resp = MagicMock()
+    thread_resp.json.return_value = {"ok": False, "error": "thread_broken"}  # 댓글 실패
+    mock_requests_post.side_effect = [parent_resp, thread_resp]
+
+    notifier = SlackNotifier(
+        webhook_url="https://hooks.slack.com/test",
+        logger=mock_logger,
+        bot_token="xoxb-token",
+        channel_id="C123",
+    )
+    notifier.send_message("Summary", detail="detail body")
+
+    # 부모(API) + 스레드(API) = 2회. 웹후크(3번째 호출)는 발생하지 않아야 한다.
+    assert mock_requests_post.call_count == 2
+    for call in mock_requests_post.call_args_list:
+        assert call.args[0] == "https://slack.com/api/chat.postMessage"
+    # 스레드 실패는 에러 로깅으로만 남는다
+    assert any(
+        "Thread" in str(c.args[0]) for c in mock_logger.error.call_args_list
+    )
+
+
 def test_slack_webhook_fallback_summary_only(mock_requests_post, mock_logger):
     """Bot Token이 없으면 detail이 있어도 웹후크로 요약만 전송한다 (detail 생략)."""
     mock_requests_post.return_value.status_code = 200

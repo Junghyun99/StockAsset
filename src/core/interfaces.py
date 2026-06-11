@@ -48,6 +48,21 @@ class ILogger(ABC):
     @abstractmethod
     def error(self, msg: str) -> None: ...
 
+    # ── 슬랙 댓글용 로그 캡처 (선택적 기능, 기본 no-op) ──────────────
+    # 엔진은 이 계약에만 의존한다. 캡처를 지원하지 않는 로거가 주입되어도
+    # 기본 구현이 안전하게 degrade하여 AttributeError 없이 동작한다.
+    def set_ticker_context(self, ticker: Optional[str]) -> None:
+        """이후 캡처되는 로그의 소유 종목을 태깅한다 (기본 no-op)."""
+        return None
+
+    def get_captured_logs(self, ticker: Optional[str] = None) -> List[str]:
+        """캡처된 로그 메시지 목록을 반환한다 (기본: 빈 리스트)."""
+        return []
+
+    def clear_captured_logs(self) -> None:
+        """캡처 버퍼를 비운다 (기본 no-op)."""
+        return None
+
 class INotifier(ABC):
     @abstractmethod
     def send_message(self, message: str, detail: Optional[str] = None) -> None: ...
