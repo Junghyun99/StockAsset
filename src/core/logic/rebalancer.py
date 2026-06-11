@@ -85,8 +85,21 @@ class Rebalancer:
             orders, portfolio, needs_rebalance, is_first
         )
 
+        # 리밸런싱 불필요 & 주문 없음 → 현금 소진 매수 시도
+        is_cash_deployment = False
+        if not needs_rebalance and not is_first and not sorted_orders:
+            raw_buy_orders = [o for o in orders if o.action == OrderAction.BUY]
+            if raw_buy_orders and portfolio.total_cash > 0:
+                cash_orders = self._create_cash_deployment_orders(raw_buy_orders, portfolio.total_cash)
+                if cash_orders:
+                    sorted_orders = cash_orders
+                    sell_cnt = 0
+                    buy_cnt = len(cash_orders)
+                    is_cash_deployment = True
+
         reason = self._build_reason(is_first, needs_rebalance, sorted_orders,
-                                    rel_dev_a, rel_dev_b, threshold, ratio_str)
+                                    rel_dev_a, rel_dev_b, threshold, ratio_str,
+                                    is_cash_deployment=is_cash_deployment)
 
         self._log_summary(sorted_orders, sell_cnt, buy_cnt, portfolio, reason)
 
@@ -157,8 +170,29 @@ class Rebalancer:
 
         return sorted_orders, len(sell_orders), len(buy_orders)
 
+    def _create_cash_deployment_orders(
+        self,
+        buy_orders: List[Order],
+        available_cash: float,
+    ) -> List[Order]:
+        """리밸런싱 불필요 시 남은 현금으로 BUY 주문 생성. 현금 부족 시 부분 매수."""
+        result = []
+        remaining = available_cash
+        for order in buy_orders:
+            if remaining <= 0:
+                break
+            if order.price <= 0:
+                continue
+            max_qty = int(remaining / order.price)
+            actual_qty = min(order.quantity, max_qty)
+            if actual_qty > 0:
+                result.append(Order(order.ticker, OrderAction.BUY, actual_qty, order.price))
+                remaining -= actual_qty * order.price
+        return result
+
     def _build_reason(self, is_first: bool, needs_rebalance: bool, sorted_orders: List[Order],
-                      rel_dev_a: float, rel_dev_b: float, threshold: float, ratio_str: str) -> str:
+                      rel_dev_a: float, rel_dev_b: float, threshold: float, ratio_str: str,
+                      is_cash_deployment: bool = False) -> str:
         if is_first and sorted_orders:
             return f"첫 투자: {ratio_str} 비율로 진입"
         if is_first and not sorted_orders:
@@ -170,6 +204,8 @@ class Rebalancer:
             max_dev = max(rel_dev_a, rel_dev_b)
             return f"비율 재조정 필요하나 주문 단위 미달 (상대이탈: {max_dev:.1%})"
         if not needs_rebalance and sorted_orders:
+            if is_cash_deployment:
+                return "비율 유지, 현금 소진 매수"
             return "비율 유지, exposure 조정으로 주문 발생"
         return "비율 유지, 추가 주문 없음"
 

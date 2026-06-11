@@ -1109,17 +1109,20 @@ def test_rebalancer_custom_ratio_reason_string(create_portfolio):
 
 def test_rebalancer_filters_micro_orders_on_small_cash(create_portfolio):
     """
-    [미세 주문 필터링 테스트]
+    [현금 소진 매수 테스트 - 미세 주문 필터 후 현금 소진]
     비율 유지(needs_rebalance=False) 상태에서 소액 현금 유입 시
-    총 주문 금액이 min_order_pct 미만이면 주문이 필터링되어야 한다.
+    총 주문 금액이 min_order_pct 미만이어서 필터링되더라도,
+    현금 소진 매수 로직으로 BUY 주문이 생성되어야 한다.
     """
     groups = {'A': ['SPY'], 'B': ['IEF']}
     rebalancer = Rebalancer(groups)  # min_order_pct=0.05 (5%)
 
     # 상황: SPY 50만(500@1000), IEF 50만(500@1000), 소액 현금 1만원
     # total = 1,010,000. ratio_a=0.5, ratio_b=0.5 → needs_rebalance=False
-    # target_val_a = 505,000 → diff = 5,000 → floor(5000/1000)=5주 매수
-    # 총 주문 금액 = 10,000 < 1,010,000 * 0.05 = 50,500 → 필터링
+    # target_val_a = 505,000 → diff = 5,000 → 5주 BUY
+    # target_val_b = 505,000 → diff = 5,000 → 5주 BUY
+    # 총 주문 금액 = 10,000 < 50,500(5%) → 필터링
+    # 현금 10,000원: SPY 5주(5,000) + IEF 5주(5,000) → 현금 소진 매수
     pf = create_portfolio(
         cash=10000,
         holdings={'SPY': 500, 'IEF': 500},
@@ -1128,8 +1131,12 @@ def test_rebalancer_filters_micro_orders_on_small_cash(create_portfolio):
 
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
 
-    assert signal.has_orders is False
-    assert "추가 주문 없음" in signal.reason
+    assert signal.has_orders is True
+    assert "현금 소진 매수" in signal.reason
+    buy_orders = [o for o in signal.orders if o.action == OrderAction.BUY]
+    assert len(buy_orders) == 2
+    total_cost = sum(o.quantity * o.price for o in buy_orders)
+    assert total_cost <= 10000
 
 
 def test_rebalancer_allows_large_exposure_orders(create_portfolio):
@@ -1468,3 +1475,142 @@ def test_rebalancer_crash_threshold_triggers_rebalance(create_portfolio):
     signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.CRASH)
     assert signal.has_orders is True
     assert "비율 재조정" in signal.reason
+
+
+# ==========================================
+# 현금 소진 매수 테스트 (Cash Deployment)
+# ==========================================
+
+def test_cash_deployment_full_buy(create_portfolio):
+    """
+    [현금 소진 매수 - 전액 매수 가능]
+    needs_rebalance=False & 주문 필터 제거 후 현금이 모든 BUY 주문을 충당하면
+    전체 BUY 주문이 실행되어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # SPY 500@1000=50만, IEF 500@1000=50만, 현금 30,000
+    # total=1,030,000, needs_rebalance=False (비율 유지)
+    # target_val_a=515,000 → diff=15,000 → 15주 BUY
+    # target_val_b=515,000 → diff=15,000 → 15주 BUY
+    # 총 주문 30,000 < 1,030,000*0.05=51,500 → 필터 제거
+    # 현금 30,000: SPY 15주(15,000) + IEF 15주(15,000) = 전액 소진 가능
+    pf = create_portfolio(
+        cash=30000,
+        holdings={'SPY': 500, 'IEF': 500},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    assert signal.has_orders is True
+    assert "현금 소진 매수" in signal.reason
+    sell_orders = [o for o in signal.orders if o.action == OrderAction.SELL]
+    buy_orders = [o for o in signal.orders if o.action == OrderAction.BUY]
+    assert len(sell_orders) == 0
+    assert len(buy_orders) == 2
+    total_cost = sum(o.quantity * o.price for o in buy_orders)
+    assert total_cost <= 30000
+
+
+def test_cash_deployment_respects_original_order_quantity(create_portfolio):
+    """
+    [현금 소진 매수 - 원래 주문 수량 상한 준수]
+    현금이 원래 주문 수량보다 더 살 수 있어도
+    원래 계산된 BUY 주문 수량을 초과해서 매수하지 않아야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # SPY 500@1000, IEF 500@1000, 현금 3,000
+    # total=1,003,000, needs_rebalance=False
+    # diff_a = 1,500 → qty=1, diff_b = 1,500 → qty=1
+    # 총 주문 2,000 < 1,003,000*0.05=50,150 → 필터 제거
+    # 현금 3,000: SPY max_qty=3이지만 order.qty=1 → min(1,3)=1주
+    # 잔여 2,000: IEF max_qty=2이지만 order.qty=1 → min(1,2)=1주
+    pf = create_portfolio(
+        cash=3000,
+        holdings={'SPY': 500, 'IEF': 500},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+
+    assert signal.has_orders is True
+    assert "현금 소진 매수" in signal.reason
+    spy_order = next((o for o in signal.orders if o.ticker == 'SPY'), None)
+    ief_order = next((o for o in signal.orders if o.ticker == 'IEF'), None)
+    assert spy_order is not None and spy_order.quantity == 1
+    assert ief_order is not None and ief_order.quantity == 1
+    # 현금보다 적게 소진 (order.quantity 상한 때문에 1,000씩만 소진)
+    total_cost = sum(o.quantity * o.price for o in signal.orders)
+    assert total_cost == 2000
+
+
+def test_cash_deployment_skipped_no_cash(create_portfolio):
+    """
+    [현금 소진 매수 - 현금 0원 시 미적용]
+    needs_rebalance=False이고 현금이 없으면 현금 소진 매수를 시도하지 않아야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # 완벽한 비율 유지, 현금 0 → BUY 주문 자체가 없음
+    pf = create_portfolio(
+        cash=0,
+        holdings={'SPY': 10, 'IEF': 10},
+        prices={'SPY': 100000, 'IEF': 100000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    assert signal.has_orders is False
+    assert "추가 주문 없음" in signal.reason
+    assert "현금 소진 매수" not in signal.reason
+
+
+def test_cash_deployment_skipped_when_rebalance_needed(create_portfolio):
+    """
+    [현금 소진 매수 - 리밸런싱 필요 시 미적용]
+    needs_rebalance=True이면 기존 리밸런싱 로직을 사용하고
+    현금 소진 매수 로직은 적용하지 않아야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    # SIDEWAYS threshold=2.5%, rel_dev ≈ 10% → needs_rebalance=True
+    pf = create_portfolio(
+        holdings={'SPY': 550, 'IEF': 450},
+        prices={'SPY': 1000, 'IEF': 1000}
+    )
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.SIDEWAYS)
+
+    assert "비율 재조정" in signal.reason
+    assert "현금 소진 매수" not in signal.reason
+
+
+def test_create_cash_deployment_orders_unit(create_portfolio):
+    """
+    [_create_cash_deployment_orders 단위 테스트]
+    available_cash를 초과하는 주문은 생성하지 않고,
+    price <= 0인 주문은 건너뛰어야 한다.
+    """
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups)
+
+    buy_orders = [
+        Order('INVALID', OrderAction.BUY, 5, 0.0),   # price=0 → 건너뜀
+        Order('SPY', OrderAction.BUY, 10, 100.0),     # 1,000원
+        Order('IEF', OrderAction.BUY, 10, 100.0),     # 1,000원
+    ]
+
+    # 현금 1,500원: INVALID 건너뜀, SPY 10주(1,000) 매수 → 잔여 500 → IEF max_qty=5주
+    result = rebalancer._create_cash_deployment_orders(buy_orders, available_cash=1500.0)
+
+    total_cost = sum(o.quantity * o.price for o in result)
+    assert total_cost <= 1500.0
+    assert len(result) == 2
+    assert result[0].ticker == 'SPY' and result[0].quantity == 10
+    assert result[1].ticker == 'IEF' and result[1].quantity == 5
