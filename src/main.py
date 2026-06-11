@@ -61,7 +61,12 @@ class TradingBot:
         self.logger.info("=== Initializing Trading Bot (multi-account) ===")
 
         self.data_loader = YFinanceLoader(self.logger)
-        self.notifier = SlackNotifier(self.config.SLACK_WEBHOOK_URL, self.logger)
+        self.notifier = SlackNotifier(
+            self.config.SLACK_WEBHOOK_URL,
+            self.logger,
+            bot_token=self.config.SLACK_BOT_TOKEN,
+            channel_id=self.config.SLACK_CHANNEL_ID,
+        )
 
         # 2. accounts.yaml 로드
         accounts = load_accounts(self.config.ACCOUNTS_CONFIG_PATH)

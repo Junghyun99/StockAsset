@@ -55,6 +55,10 @@ class Config:
         # self.TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
         # self.TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
         self.SLACK_WEBHOOK_URL = os.getenv("SLACK_WEBHOOK_URL", "")
+        # Bot Token + Channel ID가 있으면 슬랙 스레드 댓글(상세 로그)을 지원한다.
+        # 없으면 Webhook으로 요약만 전송한다 (폴백).
+        self.SLACK_BOT_TOKEN = os.getenv("SLACK_BOT_TOKEN", "")
+        self.SLACK_CHANNEL_ID = os.getenv("SLACK_CHANNEL_ID", "")
         
         # 3. 데이터 경로
         self.DATA_PATH = "docs/data"
