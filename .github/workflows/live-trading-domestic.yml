@@ -84,6 +84,9 @@ jobs:
         MY_TEST_KIS_ACC_NO: ${{ secrets.MY_TEST_KIS_ACC_NO }}
         # 공용
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_LIVE }}
+        # Slack Bot Token(스레드 댓글로 상세 로그 전송). 없으면 위 웹후크로 요약만 전송.
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
         PYTHONUNBUFFERED: "1"
         # 향후 계정 추가 시:
         # {NEW_PREFIX}_KIS_APP_KEY: ${{ secrets.{NEW_PREFIX}_KIS_APP_KEY }}
