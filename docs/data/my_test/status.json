@@ -1,34 +1,34 @@
 {
-    "last_updated": "2026-06-11 06:03:00",
-    "last_rebalancing_date": "2026-06-10",
+    "last_updated": "2026-06-11 22:50:40",
+    "last_rebalancing_date": "2026-06-11",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 19.8700008392334,
-            "spy_mdd": -0.029648379101463705,
-            "spy_momentum": 0.10784128214792879,
-            "spy_price": 737.0499877929688,
-            "spy_ma180": 689.0652767605252,
-            "spy_volatility": 0.1251483735722272
+            "vix": 19.440000534057617,
+            "spy_mdd": -0.02871361079069603,
+            "spy_momentum": 0.10225500399334378,
+            "spy_price": 737.760009765625,
+            "spy_ma180": 689.4148878309462,
+            "spy_volatility": 0.14969454336659804
         }
     },
     "portfolio": {
-        "total_value": 4276666.0,
+        "total_value": 4278761.0,
         "cash_balance": 193811.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 194210.0,
-                "value": 776840.0
+                "price": 194530.0,
+                "value": 778120.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 11,
-                "price": 79325.0,
-                "value": 872575.0
+                "price": 79890.0,
+                "value": 878790.0
             },
             {
                 "ticker": "305080.KS",
@@ -39,14 +39,14 @@
             {
                 "ticker": "365780.KS",
                 "qty": 10,
-                "price": 82100.0,
-                "value": 821000.0
+                "price": 81965.0,
+                "value": 819650.0
             },
             {
                 "ticker": "411060.KS",
                 "qty": 27,
-                "price": 27800.0,
-                "value": 750600.0
+                "price": 27650.0,
+                "value": 746550.0
             }
         ]
     }
