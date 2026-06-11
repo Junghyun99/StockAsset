@@ -92,6 +92,10 @@ class TradingEngine:
         Returns:
             DayResult: 사이클 실행 결과 (regime, signal, executions, portfolio 등)
         """
+        # 슬랙 댓글용 로그 캡처 버퍼를 사이클 단위로 초기화한다.
+        # (멀티 계정 공유 로거에서 이전 계정 로그 혼입 방지 + 백테스트 메모리 바운드)
+        self.logger.clear_captured_logs()
+
         # Step 1: 데이터 수집
         self.logger.info(">>> Step 1: Data Collection")
         spy_df, vix = self.collect_data(data_provider)
@@ -225,7 +229,7 @@ class TradingEngine:
                 f"데이터 품질 이상으로 매매를 중단합니다."
             )
             self.logger.error(msg)
-            self._notify_alert(msg)
+            self._notify_alert(msg, detail=self._cycle_detail())
 
         elif zero_price_tickers:
             display_names = [ticker_display(t) for t in zero_price_tickers]
@@ -238,7 +242,7 @@ class TradingEngine:
                 f"total_value 왜곡으로 인한 비정상 주문 방지."
             )
             self.logger.error(msg)
-            self._notify_alert(msg)
+            self._notify_alert(msg, detail=self._cycle_detail())
 
         elif not self._is_due(sim_date) and regime != MarketRegime.CRASH:
             signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
@@ -247,7 +251,8 @@ class TradingEngine:
                 f"(리밸런싱 인터벌 미충족, {self.trading_interval_days}일 기준)"
             )
             self._notify_message(
-                f"모니터링 완료. {regime.value} | ${portfolio.total_value:,.0f}"
+                f"모니터링 완료. {regime.value} | ${portfolio.total_value:,.0f}",
+                detail=self._cycle_detail(),
             )
 
         else:
@@ -259,7 +264,7 @@ class TradingEngine:
             if regime == MarketRegime.CRASH:
                 crash_msg = self._build_crash_alert(market_data, portfolio)
                 self.logger.error(crash_msg)
-                self._notify_alert(crash_msg)
+                self._notify_alert(crash_msg, detail=self._cycle_detail())
 
             if signal.has_orders:
                 self.logger.info(f"Executing {len(signal.orders)} orders ({signal.reason})")
@@ -277,7 +282,10 @@ class TradingEngine:
                 )
 
                 if executions:
-                    self._notify_message(f"✅ Orders Executed. Count: {len(executions)}")
+                    self._notify_message(
+                        f"✅ Orders Executed. Count: {len(executions)}",
+                        detail=self._cycle_detail(),
+                    )
                     if self.is_live_trading:
                         time.sleep(3)
                     final_pf = self.broker.get_portfolio()
@@ -286,10 +294,16 @@ class TradingEngine:
                         f"Value=${final_pf.total_value:,.0f}"
                     )
                 else:
-                    self._notify_alert("⚠️ Orders sent but NO execution result returned.")
+                    self._notify_alert(
+                        "⚠️ Orders sent but NO execution result returned.",
+                        detail=self._cycle_detail(),
+                    )
             else:
                 self.logger.info("No Rebalance Needed.")
-                self._notify_message(f"Bot Finished. Hold. ({regime.value})")
+                self._notify_message(
+                    f"Bot Finished. Hold. ({regime.value})",
+                    detail=self._cycle_detail(),
+                )
 
         return signal, executions, final_pf, is_rebalancing
 
@@ -355,13 +369,17 @@ class TradingEngine:
             f"📈 총 자산: ${portfolio.total_value:,.0f}"
         )
 
-    def _notify_message(self, msg: str) -> None:
-        if self.notifier:
-            self.notifier.send_message(msg)
+    def _cycle_detail(self) -> str:
+        """이번 사이클에 캡처된 전체 로그를 슬랙 댓글용 detail 문자열로 반환한다."""
+        return "\n".join(self.logger.get_captured_logs())
 
-    def _notify_alert(self, msg: str) -> None:
+    def _notify_message(self, msg: str, detail: Optional[str] = None) -> None:
         if self.notifier:
-            self.notifier.send_alert(msg)
+            self.notifier.send_message(msg, detail=detail)
+
+    def _notify_alert(self, msg: str, detail: Optional[str] = None) -> None:
+        if self.notifier:
+            self.notifier.send_alert(msg, detail=detail)
 
 
 @register_engine(color="#2ca02c")

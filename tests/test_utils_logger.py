@@ -359,3 +359,51 @@ def test_logger_stress_write(tmp_path, reset_logger):
     # 첫 줄과 마지막 줄 검증
     assert "Log line 0" in lines[0]
     assert f"Log line {count-1}" in lines[-1]
+
+
+# ── 슬랙 댓글용 로그 캡처 버퍼 ──────────────────────────────────────
+
+def test_logger_captures_logs(tmp_path, reset_logger):
+    """[캡처] info/warning/error 로그가 캡처 버퍼에 쌓이는지 확인 (debug 제외)"""
+    logger = TradeLogger(log_dir=str(tmp_path / "logs"))
+
+    logger.info("info msg")
+    logger.warning("warn msg")
+    logger.error("err msg")
+    logger.debug("debug msg")  # 캡처 제외 대상
+
+    captured = logger.get_captured_logs()
+    assert "info msg" in captured
+    assert "warn msg" in captured
+    assert "err msg" in captured
+    assert "debug msg" not in captured
+
+
+def test_logger_clear_captured_logs(tmp_path, reset_logger):
+    """[캡처] clear_captured_logs로 버퍼가 비워지는지 확인"""
+    logger = TradeLogger(log_dir=str(tmp_path / "logs"))
+
+    logger.info("before clear")
+    assert logger.get_captured_logs()
+
+    logger.clear_captured_logs()
+    assert logger.get_captured_logs() == []
+
+
+def test_logger_ticker_context_filter(tmp_path, reset_logger):
+    """[캡처] set_ticker_context로 태깅하고 종목별 필터링이 동작하는지 확인"""
+    logger = TradeLogger(log_dir=str(tmp_path / "logs"))
+
+    logger.set_ticker_context(None)
+    logger.info("common log")
+    logger.set_ticker_context("SPY")
+    logger.info("spy log")
+
+    # 전체 조회: 둘 다 포함
+    all_logs = logger.get_captured_logs()
+    assert "common log" in all_logs
+    assert "spy log" in all_logs
+
+    # 종목 필터: 해당 종목 로그만
+    spy_logs = logger.get_captured_logs("SPY")
+    assert spy_logs == ["spy log"]

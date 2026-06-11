@@ -2,7 +2,7 @@
 import logging
 import os
 from datetime import datetime, timezone, timedelta
-from typing import Any
+from typing import Any, Dict, List, Optional
 from src.core.interfaces import ILogger
 
 KST = timezone(timedelta(hours=9))
@@ -39,14 +39,45 @@ class TradeLogger(ILogger):
             ch.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
             parent.addHandler(ch)
 
+        # 슬랙 댓글용 로그 캡처 버퍼. 사이클 시작 시 clear되어 한 사이클 분량만 유지한다.
+        self.captured_logs: List[Dict[str, Any]] = []
+        self.current_ticker: Optional[str] = None
+
+    def set_ticker_context(self, ticker: Optional[str]) -> None:
+        """이후 캡처되는 로그의 소유 종목을 태깅한다 (ticker=None은 공통 영역)."""
+        self.current_ticker = ticker
+
+    def get_captured_logs(self, ticker: Optional[str] = None) -> List[str]:
+        """캡처된 로그 메시지 목록을 반환한다.
+
+        ticker 지정 시 해당 종목 로그만, None이면 전체 로그를 반환한다.
+        """
+        if ticker:
+            return [item["msg"] for item in self.captured_logs if item["ticker"] == ticker]
+        return [item["msg"] for item in self.captured_logs]
+
+    def clear_captured_logs(self) -> None:
+        self.captured_logs = []
+
+    def _capture(self, level: str, msg: Any) -> None:
+        self.captured_logs.append({
+            "ticker": self.current_ticker,
+            "level": level,
+            "msg": f"{msg}",
+        })
+
     def debug(self, msg: str) -> None:
         self.logger.debug(msg)
+        # Debug 로그는 양이 많아 캡처 대상에서 제외
 
     def info(self, msg: Any):
         self.logger.info(f"{msg}")
+        self._capture("INFO", msg)
 
     def warning(self, msg: Any):
         self.logger.warning(f"{msg}")
+        self._capture("WARNING", msg)
 
     def error(self, msg: Any):
         self.logger.error(f"{msg}")
+        self._capture("ERROR", msg)
