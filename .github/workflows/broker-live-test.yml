@@ -70,10 +70,11 @@ jobs:
         KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
         KIS_ACC_NO: ${{ secrets.KIS_ACC_NO }}
         RUN_ORDER_TESTS: ${{ inputs.test_level == 'full' && 'true' || 'false' }}
+        TEST_LEVEL: ${{ inputs.test_level }}
         TEST_TICKER: ${{ inputs.test_ticker }}
       run: |
         echo "=== KIS Domestic Broker Live Test ==="
-        echo "Test level: ${{ inputs.test_level }}"
+        echo "Test level: $TEST_LEVEL"
         echo "Order tests: $RUN_ORDER_TESTS"
         echo "Test ticker: $TEST_TICKER"
         echo "======================================"
