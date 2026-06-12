@@ -32,17 +32,16 @@ jobs:
             'token_type': 'Bearer',
             'refresh_token': os.environ['GDRIVE_REFRESH_TOKEN'],
             'expiry': '0001-01-01T00:00:00Z'
-        })
-        config = '[gdrive]\ntype = drive\nclient_id = {}\nclient_secret = {}\ntoken = {}\n'.format(
+        }, separators=(',', ':'))
+        config = '[gdrive]\ntype = drive\nclient_id = {}\nclient_secret = {}\ntoken = {}\nroot_folder_id = {}\n'.format(
             os.environ['GDRIVE_CLIENT_ID'],
             os.environ['GDRIVE_CLIENT_SECRET'],
-            token
+            token,
+            os.environ['GDRIVE_FOLDER_ID']
         )
         os.makedirs(os.path.expanduser('~/.config/rclone'), exist_ok=True)
         with open(os.path.expanduser('~/.config/rclone/rclone.conf'), 'w') as f:
             f.write(config)
         print('rclone 설정 완료')
         "
-        rclone copy repo-StockAsset-latest-backup.zip gdrive: \
-          --drive-root-folder-id "$GDRIVE_FOLDER_ID" \
-          --verbose
+        rclone copy repo-StockAsset-latest-backup.zip gdrive: --verbose
