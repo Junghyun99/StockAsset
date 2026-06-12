@@ -15,8 +15,8 @@ jobs:
     - name: 코드를 ZIP 파일로 압축하기
       run: zip -r repo-StockAsset-latest-backup.zip . -x "*.git/*"
 
-    - name: rclone 설치
-      run: sudo apt-get install -y rclone
+    - name: Google Drive API 클라이언트 설치
+      run: pip install -q google-auth google-auth-httplib2 google-api-python-client
 
     - name: 구글 드라이브에 업로드하기 (OAuth 방식)
       env:
@@ -25,23 +25,37 @@ jobs:
         GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
         GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       run: |
-        python3 -c "
-        import json, os
-        token = json.dumps({
-            'access_token': '',
-            'token_type': 'Bearer',
-            'refresh_token': os.environ['GDRIVE_REFRESH_TOKEN'],
-            'expiry': '0001-01-01T00:00:00Z'
-        }, separators=(',', ':'))
-        config = '[gdrive]\ntype = drive\nclient_id = {}\nclient_secret = {}\ntoken = {}\nroot_folder_id = {}\n'.format(
-            os.environ['GDRIVE_CLIENT_ID'],
-            os.environ['GDRIVE_CLIENT_SECRET'],
-            token,
-            os.environ['GDRIVE_FOLDER_ID']
+        python3 << 'PYTHON'
+        import os
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaFileUpload
+
+        creds = Credentials(
+            token=None,
+            refresh_token=os.environ['GDRIVE_REFRESH_TOKEN'],
+            token_uri='https://oauth2.googleapis.com/token',
+            client_id=os.environ['GDRIVE_CLIENT_ID'],
+            client_secret=os.environ['GDRIVE_CLIENT_SECRET']
         )
-        os.makedirs(os.path.expanduser('~/.config/rclone'), exist_ok=True)
-        with open(os.path.expanduser('~/.config/rclone/rclone.conf'), 'w') as f:
-            f.write(config)
-        print('rclone 설정 완료')
-        "
-        rclone copy repo-StockAsset-latest-backup.zip gdrive: --verbose
+
+        service = build('drive', 'v3', credentials=creds)
+        folder_id = os.environ['GDRIVE_FOLDER_ID']
+        filename = 'repo-StockAsset-latest-backup.zip'
+
+        results = service.files().list(
+            q=f"name='{filename}' and '{folder_id}' in parents and trashed=false",
+            fields='files(id, name)'
+        ).execute()
+
+        existing = results.get('files', [])
+        media = MediaFileUpload(filename, mimetype='application/zip', resumable=True)
+
+        if existing:
+            service.files().update(fileId=existing[0]['id'], media_body=media).execute()
+            print(f'파일 업데이트 완료: {filename}')
+        else:
+            metadata = {'name': filename, 'parents': [folder_id]}
+            service.files().create(body=metadata, media_body=media, fields='id').execute()
+            print(f'파일 생성 완료: {filename}')
+        PYTHON
