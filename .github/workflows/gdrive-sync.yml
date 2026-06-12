@@ -17,7 +17,7 @@ jobs:
       run: zip -r repo-StockAsset-latest-backup.zip . -x "*.git/*"
 
     - name: 구글 드라이브에 업로드하기 (OAuth 방식)
-      uses: logickoder/google-drive-upload@main
+      uses: logickoder/google-drive-upload@80e9dbe39d1136b6b0758781de3797364dc7135b # 1.0.1
       with:
         filename: repo-StockAsset-latest-backup.zip
         folderId: ${{ secrets.GDRIVE_FOLDER_ID }}

@@ -39,10 +39,30 @@ jobs:
       id: token-cache-restore
       uses: actions/cache/restore@v4
       with:
-        path: .kis_token_cache.json
+        # 캐시에는 암호문(.enc)만 저장한다. 평문 토큰을 캐시에 두면
+        # 다른 브랜치/포크 PR이 접두사로 복원해 탈취할 수 있다.
+        path: .kis_token_cache.enc
         key: kis-token-${{ github.run_id }}
         restore-keys: |
           kis-token-
+
+    - name: Decrypt KIS token cache
+      if: ${{ hashFiles('.kis_token_cache.enc') != '' }}
+      env:
+        KIS_TOKEN_CACHE_KEY: ${{ secrets.KIS_TOKEN_CACHE_KEY }}
+      run: |
+        if [ -z "${KIS_TOKEN_CACHE_KEY:-}" ]; then
+          echo "::warning::KIS_TOKEN_CACHE_KEY 미설정 - 캐시 복호화를 건너뜁니다(새 토큰 발급)."
+          exit 0
+        fi
+        if openssl enc -d -aes-256-cbc -pbkdf2 -salt \
+             -in .kis_token_cache.enc -out .kis_token_cache.json \
+             -pass env:KIS_TOKEN_CACHE_KEY; then
+          echo "토큰 캐시 복호화 성공 - 유효기간 내 기존 토큰을 재사용합니다."
+        else
+          echo "::warning::토큰 캐시 복호화 실패 - 손상/위조 캐시 제거 후 새 토큰을 발급합니다."
+          rm -f .kis_token_cache.json
+        fi
 
     - name: Run broker live tests
       env:
@@ -50,18 +70,32 @@ jobs:
         KIS_APP_SECRET: ${{ secrets.KIS_APP_SECRET }}
         KIS_ACC_NO: ${{ secrets.KIS_ACC_NO }}
         RUN_ORDER_TESTS: ${{ inputs.test_level == 'full' && 'true' || 'false' }}
+        TEST_LEVEL: ${{ inputs.test_level }}
         TEST_TICKER: ${{ inputs.test_ticker }}
       run: |
         echo "=== KIS Domestic Broker Live Test ==="
-        echo "Test level: ${{ inputs.test_level }}"
+        echo "Test level: $TEST_LEVEL"
         echo "Order tests: $RUN_ORDER_TESTS"
         echo "Test ticker: $TEST_TICKER"
         echo "======================================"
         pytest tests/test_infra_broker_kis_domestic_live.py -v -s
 
+    - name: Encrypt KIS token cache
+      if: ${{ always() && hashFiles('.kis_token_cache.json') != '' }}
+      env:
+        KIS_TOKEN_CACHE_KEY: ${{ secrets.KIS_TOKEN_CACHE_KEY }}
+      run: |
+        if [ -z "${KIS_TOKEN_CACHE_KEY:-}" ]; then
+          echo "::warning::KIS_TOKEN_CACHE_KEY 미설정 - 토큰을 캐시에 저장하지 않습니다."
+          exit 0
+        fi
+        openssl enc -aes-256-cbc -pbkdf2 -salt \
+          -in .kis_token_cache.json -out .kis_token_cache.enc \
+          -pass env:KIS_TOKEN_CACHE_KEY
+
     - name: Save KIS token cache
-      if: always()
+      if: ${{ always() && hashFiles('.kis_token_cache.enc') != '' }}
       uses: actions/cache/save@v4
       with:
-        path: .kis_token_cache.json
+        path: .kis_token_cache.enc
         key: kis-token-${{ github.run_id }}

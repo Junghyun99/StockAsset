@@ -41,6 +41,7 @@ def fetch_hashkey(base_url: str, app_key: str, app_secret: str, data: dict, logg
                 "appsecret": app_secret,
             },
             json=data,
+            timeout=_pkg.KIS_HTTP_TIMEOUT,
         )
         res.raise_for_status()
         return res.json()["HASH"]

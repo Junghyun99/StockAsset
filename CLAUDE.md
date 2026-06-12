@@ -29,7 +29,7 @@ src/
 │   ├── broker/          # KIS domestic/overseas/mock 브로커
 │   ├── data.py          # YFinanceLoader
 │   ├── repo.py          # JsonRepository
-│   └── notifier.py      # SlackNotifier, TelegramNotifier
+│   └── notifier.py      # SlackNotifier
 ├── utils/               # IndicatorCalculator, TradeLogger
 └── backtest/            # 백테스트 프레임워크 (runner, components, cache, fetcher)
 tests/                   # 테스트 (80% 커버리지 요구)
@@ -53,6 +53,7 @@ accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
 - `ACCOUNTS_CONFIG_PATH` - accounts.yaml 경로 (기본값: "accounts.yaml")
 - `{PREFIX}_KIS_APP_KEY`, `{PREFIX}_KIS_APP_SECRET`, `{PREFIX}_KIS_ACC_NO` - 계정별 KIS API 인증 (PREFIX는 accounts.yaml의 kis_env_prefix 값)
 - `SLACK_WEBHOOK_URL` - Slack 알림
+- `KIS_HTTP_TIMEOUT` - KIS REST 호출 타임아웃(초) (기본값: 10)
 - `TRADING_INTERVAL_DAYS` - 리밸런싱 주기, 거래일 기준 (기본값: 1)
 - `REBALANCE_RATIO_A` - A 그룹 비율 (기본값: 0.5)
 

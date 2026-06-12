@@ -83,7 +83,7 @@ allowed-tools: Read, Grep, Glob
   - get_portfolio: ✅ 구현됨
   - execute_orders: ✅ 구현됨
   - fetch_current_prices: ✅ 구현됨
-- INotifier: 구현체 [SlackNotifier, TelegramNotifier]
+- INotifier: 구현체 [SlackNotifier]
   - send_message: ✅ 구현됨
   - send_alert: ✅ 구현됨
 

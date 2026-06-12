@@ -54,7 +54,7 @@ allowed-tools: Bash(git log *), Bash(git diff *), Read, Grep, Glob
 - 토큰 만료 처리가 되어 있는지
 - API 응답의 에러 처리가 있는지 (인증 실패 시 토큰 재시도 등)
 
-#### notifier.py (SlackNotifier, TelegramNotifier)
+#### notifier.py (SlackNotifier)
 - 웹훅 URL이 환경변수에서 로드되는지
 - 알림 메시지에 계좌번호, API 키 등이 포함되지 않는지
 

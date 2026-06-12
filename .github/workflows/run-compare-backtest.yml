@@ -51,7 +51,7 @@ jobs:
       run: python scripts/run_compare_ci.py
 
     - name: Commit and Push Results
-      uses: stefanzweifel/git-auto-commit-action@v5
+      uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
       with:
         commit_message: "📊 엔진 비교 백테스트 결과 업데이트 [skip ci]"
         file_pattern: "docs/data/backtest/compare/** logs/backtest/ci/*.log"

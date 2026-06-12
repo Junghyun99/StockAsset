@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock 
-from src.infra.notifier import TelegramNotifier, SlackNotifier
+from src.infra.notifier import SlackNotifier
 
 @pytest.fixture
 def mock_requests_post():
@@ -12,45 +12,6 @@ def mock_requests_post():
 def mock_logger():
     """가짜 로거 생성"""
     return MagicMock()
-def test_telegram_send_success(mock_requests_post, mock_logger):
-    # 1. 정상 전송 테스트
-    notifier = TelegramNotifier(token="1234:ABC", chat_id="999", logger=mock_logger)
-    notifier.send_message("Hello Test")
-    
-    # requests.post가 호출되었는지 확인
-    mock_requests_post.assert_called_once()
-    
-    # 호출된 인자 검사 (URL, JSON 데이터)
-    args, kwargs = mock_requests_post.call_args
-    assert "1234:ABC" in notifier.base_url
-    assert kwargs['json']['chat_id'] == "999"
-    assert "Hello Test" in kwargs['json']['text']
-
-def test_telegram_send_without_token(mock_requests_post, mock_logger):
-    # 2. 토큰이 없는 경우 (설정 미비)
-    notifier = TelegramNotifier(token="", chat_id="", logger=mock_logger)
-    notifier.send_message("Should not send")
-
-    # 전송 시도조차 하지 않아야 함
-    mock_requests_post.assert_not_called()
-    # logger.info로 mock 출력되었는지 확인
-    mock_logger.info.assert_called_once()
-    args, _ = mock_logger.info.call_args
-    assert "[Telegram Mock]" in args[0]
-
-def test_telegram_network_error(mock_requests_post, mock_logger):
-    # 3. 네트워크 에러 발생 시 프로그램이 죽지 않고 예외 처리하는지
-    mock_requests_post.side_effect = Exception("Connection Refused")
-
-    notifier = TelegramNotifier(token="123:ABC", chat_id="111", logger=mock_logger)
-
-    # 에러가 발생하더라도 catch 되어야 함 (여기서 raise되면 테스트 실패)
-    notifier.send_message("Error Test")
-
-    # logger.error로 에러 로그가 기록되었는지 확인
-    mock_logger.error.assert_called_once()
-    args, _ = mock_logger.error.call_args
-    assert "[Telegram Error]" in args[0]
 
 
 def test_slack_send_success(mock_requests_post,mock_logger):
@@ -91,18 +52,6 @@ def test_slack_send_failure(mock_requests_post, mock_logger):
     # 호출된 메시지 내용 확인
     args, _ = mock_logger.error.call_args
     assert "[Slack Error]" in args[0] # 메시지 내용에 에러 태그가 있는가?
-
-
-def test_telegram_detail_appended(mock_requests_post, mock_logger):
-    """detail이 주어지면 [Details] 블록이 본문에 붙는지 확인"""
-    notifier = TelegramNotifier(token="123:ABC", chat_id="999", logger=mock_logger)
-    notifier.send_message("Summary", detail="line1\nline2")
-
-    _, kwargs = mock_requests_post.call_args
-    text = kwargs['json']['text']
-    assert "Summary" in text
-    assert "[Details]" in text
-    assert "line1\nline2" in text
 
 
 def test_slack_bot_token_threaded_reply(mock_requests_post, mock_logger):

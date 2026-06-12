@@ -3,36 +3,6 @@ import requests
 from typing import Optional
 from src.core.interfaces import INotifier
 
-class TelegramNotifier(INotifier):
-    def __init__(self, token: str, chat_id: str, logger):
-        self.token = token
-        self.chat_id = chat_id
-        self.logger = logger
-        self.base_url = f"https://api.telegram.org/bot{token}/sendMessage"
-
-    def send_message(self, message: str, detail: Optional[str] = None) -> None:
-        text = f"🤖 [SolidQuant]\n{message}"
-        if detail:
-            text += f"\n\n[Details]\n{detail}"
-        self._send(text)
-
-    def send_alert(self, message: str, detail: Optional[str] = None) -> None:
-        text = f"🚨 [WARNING]\n{message}"
-        if detail:
-            text += f"\n\n[Details]\n{detail}"
-        self._send(text)
-
-    def _send(self, text: str):
-        if not self.token or not self.chat_id:
-            self.logger.info(f"[Telegram Mock] {text}") # 설정 없으면 로거 출력
-            return
-
-        try:
-            payload = {"chat_id": self.chat_id, "text": text}
-            requests.post(self.base_url, json=payload, timeout=5)
-        except Exception as e:
-            self.logger.error(f"[Telegram Error] Failed to send: {e}")
-
 class SlackNotifier(INotifier):
     """슬랙 알림. 요약(부모 메시지) + 상세 로그(스레드 댓글) 2단 구조.
 

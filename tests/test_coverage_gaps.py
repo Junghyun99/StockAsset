@@ -84,19 +84,6 @@ class TestBacktestDataLoaderEdgeCases:
 # Notifier 미커버 라인 (notifier.py 15, 44-47, 66-69)
 # ==========================================
 class TestNotifierEdgeCases:
-    def test_telegram_send_alert(self):
-        """TelegramNotifier.send_alert 테스트"""
-        from src.infra.notifier import TelegramNotifier
-
-        with patch('src.infra.notifier.requests.post') as mock_post:
-            notifier = TelegramNotifier(token="123:ABC", chat_id="999", logger=MagicMock())
-            notifier.send_alert("Danger!")
-
-            mock_post.assert_called_once()
-            _, kwargs = mock_post.call_args
-            assert "WARNING" in kwargs['json']['text']
-            assert "Danger!" in kwargs['json']['text']
-
     def test_slack_send_without_webhook(self):
         """SlackNotifier: webhook_url이 없을 때 콘솔 출력"""
         mock_logger = MagicMock()
