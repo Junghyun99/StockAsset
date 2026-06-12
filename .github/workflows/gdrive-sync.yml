@@ -10,19 +10,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: 저장소 코드 불러오기
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
     - name: 코드를 ZIP 파일로 압축하기
-      # 파일명 자체를 업로드할 이름으로 지정하여 압축합니다.
       run: zip -r repo-StockAsset-latest-backup.zip . -x "*.git/*"
 
+    - name: rclone 설치
+      run: sudo apt-get install -y rclone
+
     - name: 구글 드라이브에 업로드하기 (OAuth 방식)
-      uses: logickoder/google-drive-upload@80e9dbe39d1136b6b0758781de3797364dc7135b # 1.0.1
-      with:
-        filename: repo-StockAsset-latest-backup.zip
-        folderId: ${{ secrets.GDRIVE_FOLDER_ID }}
-        clientId: ${{ secrets.GDRIVE_CLIENT_ID }}
-        clientSecret: ${{ secrets.GDRIVE_CLIENT_SECRET }}
-        refreshToken: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
-        authType: oauth
-        overwrite: true
+      env:
+        GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+        GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+        GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+        GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+      run: |
+        python3 -c "
+        import json, os
+        token = json.dumps({
+            'access_token': '',
+            'token_type': 'Bearer',
+            'refresh_token': os.environ['GDRIVE_REFRESH_TOKEN'],
+            'expiry': '0001-01-01T00:00:00Z'
+        })
+        config = '[gdrive]\ntype = drive\nclient_id = {}\nclient_secret = {}\ntoken = {}\n'.format(
+            os.environ['GDRIVE_CLIENT_ID'],
+            os.environ['GDRIVE_CLIENT_SECRET'],
+            token
+        )
+        os.makedirs(os.path.expanduser('~/.config/rclone'), exist_ok=True)
+        with open(os.path.expanduser('~/.config/rclone/rclone.conf'), 'w') as f:
+            f.write(config)
+        print('rclone 설정 완료')
+        "
+        rclone copy repo-StockAsset-latest-backup.zip gdrive: \
+          --drive-root-folder-id "$GDRIVE_FOLDER_ID" \
+          --verbose
