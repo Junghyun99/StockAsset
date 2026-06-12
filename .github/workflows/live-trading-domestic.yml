@@ -103,7 +103,7 @@ jobs:
 
     - name: Commit and push updated dashboard data
       if: ${{ success() && steps.holiday.outputs.is_holiday != 'true' }}
-      uses: stefanzweifel/git-auto-commit-action@v5
+      uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
       with:
         commit_message: "chore(live): update domestic trading data [skip ci]"
         file_pattern: "docs/data/*.json docs/data/**/*.json logs/ci/*.log"
