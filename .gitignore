@@ -139,6 +139,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.*
 .envrc
 .venv
 env/
@@ -216,5 +217,10 @@ __marimo__/
 .claude/settings.local.json
 CLAUDE.local.md
 
+# 인증서 / 개인키 파일 (민감 정보)
+*.pem
+*.key
+
 # KIS API 토큰 캐시 (민감 정보)
 .kis_token_cache.json
+.kis_token_cache.enc
