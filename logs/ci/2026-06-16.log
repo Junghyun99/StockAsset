@@ -1,0 +1,46 @@
+2026-06-16 10:01:03,851 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-06-16 10:01:03,853 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-06-16 10:01:03,853 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-06-16 10:01:03,853 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-06-16 10:01:03,853 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-06-16 10:01:03,854 [INFO] Restored previous regime: Bull
+2026-06-16 10:01:04,738 [ERROR] [KisDomestic] Error getting portfolio: 500 Server Error: Internal Server Error for url: https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/trading/inquire-balance?CANO=90005152&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100=
+2026-06-16 10:01:05,106 [INFO] >>> Step 1: Data Collection
+2026-06-16 10:01:05,106 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-06-16 10:01:05,450 [INFO] [Data] VIX fetched: 16.20
+2026-06-16 10:01:05,451 [INFO] >>> Step 2: Indicator Calculation
+2026-06-16 10:01:05,453 [INFO] Market Data: Price=754.83, VIX=16.20, MDD=-0.62%
+2026-06-16 10:01:05,453 [INFO] >>> Step 3: Strategy Analysis
+2026-06-16 10:01:05,453 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-06-16 10:01:05,453 [INFO] >>> Step 4: Portfolio Status
+2026-06-16 10:01:06,298 [INFO] Fetching Real-time prices from Broker...
+2026-06-16 10:01:09,967 [INFO] Current Portfolio: Cash=$193,811, Value=$4,455,886
+2026-06-16 10:01:09,968 [INFO] >>> Step 5: Rebalancing
+2026-06-16 10:01:09,968 [INFO] [입력] Regime=Bull | TargetExposure=1.00 | TotalValue=$4,455,886.00 | Cash=$193,811.00
+2026-06-16 10:01:09,968 [INFO] [포트폴리오 현황]
+2026-06-16 10:01:09,968 [INFO]   A그룹(성장): $1,792,105.00 ( 40.2%)
+2026-06-16 10:01:09,968 [INFO]   B그룹(안전): $2,469,970.00 ( 55.4%)
+2026-06-16 10:01:09,968 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-06-16 10:01:09,968 [INFO]   현금(예수금): $ 193,811.00 (  4.3%)
+2026-06-16 10:01:09,969 [INFO] [비중 판정] ratio_A=0.420  ratio_B=0.580
+2026-06-16 10:01:09,969 [INFO]   A 상대이탈: 5.1% | B 상대이탈: 3.4% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-06-16 10:01:09,969 [INFO] [목표 금액]
+2026-06-16 10:01:09,969 [INFO]   A그룹: 현재 $1,792,105.00 → 목표 $1,873,598.09  (exposure 1.00 × ratio 0.42)
+2026-06-16 10:01:09,969 [INFO]   B그룹: 현재 $2,469,970.00 → 목표 $2,582,287.91  (exposure 1.00 × ratio 0.58)
+2026-06-16 10:01:09,969 [INFO]   C그룹: 현재 $      0.00 → 목표 $      0.00  (잔여)
+2026-06-16 10:01:09,969 [INFO] [A그룹(성장) 종목별]
+2026-06-16 10:01:09,969 [INFO]   KODEX 코스피: 보유 11주 $974,545.00 → 목표 $936,799.05 | diff=-37,745.95 → SELL 1주 @$88595.00
+2026-06-16 10:01:09,969 [INFO]   TIGER 미국나스닥100: 보유 4주 $817,560.00 → 목표 $936,799.05 | diff=+119,239.05 → 주문 없음 (수량 미달)
+2026-06-16 10:01:09,969 [INFO] [B그룹(안전) 종목별]
+2026-06-16 10:01:09,969 [INFO]   ACE 국고채10년: 보유 10주 $827,650.00 → 목표 $860,762.64 | diff=+33,112.64 → 주문 없음 (수량 미달)
+2026-06-16 10:01:09,969 [INFO]   TIGER 미국채10년선물: 보유 63주 $858,375.00 → 목표 $860,762.64 | diff=+2,387.64 → 주문 없음 (수량 미달)
+2026-06-16 10:01:09,969 [INFO]   ACE KRX금현물: 보유 27주 $783,945.00 → 목표 $860,762.64 | diff=+76,817.64 → BUY 2주 @$29035.00
+2026-06-16 10:01:09,969 [INFO] [최종 주문] SELL 0건 + BUY 1건 (총 주문금액: $58,070.00 / 자산대비 1.3%)
+2026-06-16 10:01:09,969 [INFO] [결정 사유] 비율 유지, 현금 소진 매수
+2026-06-16 10:01:09,969 [INFO] Executing 1 orders (비율 유지, 현금 소진 매수)
+2026-06-16 10:01:10,807 [ERROR] [KisDomestic] Error getting portfolio: 500 Server Error: Internal Server Error for url: https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/trading/inquire-balance?CANO=90005152&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100=
+2026-06-16 10:01:10,808 [INFO] [KisBroker] Available Cash for BUY: 0
+2026-06-16 10:01:11,549 [WARNING] ⚠️ Qty Adjusted: 411060.KS 2 -> 0
+2026-06-16 10:01:11,549 [INFO] Order Summary: total=1 filled=0 partial=0 ordered=0 rejected=0 failed=1
+2026-06-16 10:01:11,943 [INFO] >>> Step 6: Archiving Data
+2026-06-16 10:01:11,946 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=1 executions=0
