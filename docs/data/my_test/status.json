@@ -1,52 +1,52 @@
 {
-    "last_updated": "2026-06-17 05:01:23",
-    "last_rebalancing_date": "2026-06-16",
+    "last_updated": "2026-06-18 01:01:18",
+    "last_rebalancing_date": "2026-06-17",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 현금 소진 매수",
         "market_score": {
-            "vix": 16.40999984741211,
-            "spy_mdd": -0.0121647644657867,
-            "spy_momentum": 0.1140165942534754,
-            "spy_price": 750.3300170898438,
-            "spy_ma180": 690.8923326280382,
-            "spy_volatility": 0.15487881274908583
+            "vix": 18.440000534057617,
+            "spy_mdd": -0.02450068482445874,
+            "spy_momentum": 0.11278500756295434,
+            "spy_price": 740.9600219726562,
+            "spy_ma180": 691.321666124132,
+            "spy_volatility": 0.16151876848048988
         }
     },
     "portfolio": {
-        "total_value": 4478371.0,
-        "cash_balance": 122126.0,
+        "total_value": 4488911.0,
+        "cash_balance": 93031.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 202170.0,
-                "value": 808680.0
+                "price": 202945.0,
+                "value": 811780.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 11,
-                "price": 90350.0,
-                "value": 993850.0
+                "price": 91330.0,
+                "value": 1004630.0
             },
             {
                 "ticker": "305080.KS",
                 "qty": 64,
-                "price": 13635.0,
-                "value": 872640.0
+                "price": 13680.0,
+                "value": 875520.0
             },
             {
                 "ticker": "365780.KS",
                 "qty": 10,
-                "price": 83355.0,
-                "value": 833550.0
+                "price": 83140.0,
+                "value": 831400.0
             },
             {
                 "ticker": "411060.KS",
-                "qty": 29,
-                "price": 29225.0,
-                "value": 847525.0
+                "qty": 30,
+                "price": 29085.0,
+                "value": 872550.0
             }
         ]
     }
