@@ -127,7 +127,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
     const tbody = document.getElementById('holdings-table-body');
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
-    const totalValue = statusData.portfolio.total_value;
+    const totalValue = statusData.portfolio.total_value || (holdings.reduce((sum, h) => sum + (h.value || 0), 0) + (cash || 0));
 
     // 그룹별 정렬
     const sorted = [...holdings].sort((a, b) => {
@@ -140,7 +140,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
     sorted.forEach(h => {
         if (h.value <= 0 && h.qty <= 0) return; // 보유량 0인 항목 제외
         const g = getAssetGroup(h.ticker, groupConfig);
-        const ratio = totalValue > 0 ? Math.round(h.value / totalValue * 100) : 0;
+        const ratio = totalValue > 0 ? Math.round((h.value || 0) / totalValue * 100) : 0;
         rows += `
             <tr>
                 <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>
