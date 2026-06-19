@@ -215,6 +215,9 @@ let cachedGroupConfig = null;
 
 **Step 2: 함수 시그니처에 groupConfig 추가 + 캐시 저장**
 
+페이지네이션 시 `groupConfig` 없이 호출되면 `null`로 덮어써 alias가 사라지는 버그를 방지하기 위해,
+`groupConfig`가 명시적으로 전달된 경우에만 캐시를 업데이트한다.
+
 ```javascript
 // before:
 export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas') {
@@ -225,7 +228,9 @@ export function renderTradeHistory(historyData, page = undefined, marketType = '
 export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas', groupConfig = null) {
     cachedHistoryData = historyData;
     cachedMarketType = marketType;
-    cachedGroupConfig = groupConfig;
+    if (groupConfig !== null) {
+        cachedGroupConfig = groupConfig;
+    }
 ```
 
 **Step 3: 배지 내 ticker를 alias로 교체 (line ~359)**
