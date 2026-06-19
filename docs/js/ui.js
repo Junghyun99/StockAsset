@@ -6,6 +6,7 @@ import {
     getRegimeBannerClass,
     getAssetGroup,
     formatCurrency,
+    formatAmount,
     formatPercent,
     computeReturns,
     computeDrawdown,
@@ -60,12 +61,12 @@ export function renderStatusBanner(statusData) {
 /**
  * 상단 4개 요약 카드 정보 업데이트
  */
-export function updateSummaryCards(statusData, summaryData) {
+export function updateSummaryCards(statusData, summaryData, marketType = 'overseas') {
     const strategy = statusData.strategy;
     const portfolio = statusData.portfolio;
 
     // [1] 총 자산 (Total Assets)
-    document.getElementById('total-value').innerText = formatCurrency(portfolio.total_value);
+    document.getElementById('total-value').innerText = formatAmount(portfolio.total_value, marketType);
 
     // [1-2] 일간 수익률 계산 및 배지 업데이트 (vs Yesterday)
     const dailyReturnEl = document.getElementById('daily-return');
@@ -121,7 +122,7 @@ export function updateSummaryCards(statusData, summaryData) {
 /**
  * 보유 자산 테이블 렌더링 (그룹별 분류)
  */
-export function renderHoldingsTable(statusData, groupConfig) {
+export function renderHoldingsTable(statusData, groupConfig, marketType = 'overseas') {
     const tbody = document.getElementById('holdings-table-body');
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
@@ -142,21 +143,22 @@ export function renderHoldingsTable(statusData, groupConfig) {
                 <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>
                 <td class="fw-bold">${h.ticker}</td>
                 <td class="text-end">${h.qty}</td>
-                <td class="text-end">${formatCurrency(h.price)}</td>
-                <td class="text-end">${formatCurrency(h.value)}</td>
+                <td class="text-end">${formatAmount(h.price, marketType)}</td>
+                <td class="text-end">${formatAmount(h.value, marketType)}</td>
             </tr>
         `;
     });
 
     // Cash 행 추가
     if (cash > 0) {
+        const cashLabel = marketType === 'domestic' ? 'KRW' : 'USD';
         rows += `
             <tr class="table-light">
                 <td><span class="badge bg-secondary">Cash</span></td>
-                <td class="fw-bold">USD</td>
+                <td class="fw-bold">${cashLabel}</td>
                 <td class="text-end">-</td>
                 <td class="text-end">-</td>
-                <td class="text-end">${formatCurrency(cash)}</td>
+                <td class="text-end">${formatAmount(cash, marketType)}</td>
             </tr>
         `;
     }
@@ -167,7 +169,7 @@ export function renderHoldingsTable(statusData, groupConfig) {
 /**
  * 오늘의 활동 영역 렌더링
  */
-export function renderTodayActivity(historyData, statusData) {
+export function renderTodayActivity(historyData, statusData, marketType = 'overseas') {
     const container = document.getElementById('today-activity');
     if (!historyData || historyData.length === 0) {
         container.innerHTML = `
@@ -199,7 +201,7 @@ export function renderTodayActivity(historyData, statusData) {
             <p class="small text-muted mb-2">${lastTrade.reason}</p>
             <div>${actionsHtml}</div>
             <div class="small text-muted mt-2">
-                Amount: ${formatCurrency(lastTrade.total_trade_amount)}
+                Amount: ${formatAmount(lastTrade.total_trade_amount, marketType)}
             </div>
         </div>
     `;
@@ -308,24 +310,26 @@ export function renderPerformanceSummaryCards(summaryData) {
 /**
  * Trades 탭 - 거래 통계 카드 렌더링
  */
-export function renderTradeSummaryStats(historyData) {
+export function renderTradeSummaryStats(historyData, marketType = 'overseas') {
     const stats = computeTradeStats(historyData);
 
     document.getElementById('trade-count').innerText = stats.count.toLocaleString();
-    document.getElementById('trade-volume').innerText = formatCurrency(stats.totalVolume);
-    document.getElementById('trade-fees').innerText = formatCurrency(stats.totalFees);
+    document.getElementById('trade-volume').innerText = formatAmount(stats.totalVolume, marketType);
+    document.getElementById('trade-fees').innerText = formatAmount(stats.totalFees, marketType);
 }
 
 // 거래 내역 페이지네이션 상태
 let currentPage = 1;
 const TRADES_PER_PAGE = 10;
 let cachedHistoryData = [];
+let cachedMarketType = 'overseas';
 
 /**
  * 매매 기록 테이블 렌더링 (페이지네이션 지원)
  */
-export function renderTradeHistory(historyData, page) {
+export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas') {
     cachedHistoryData = historyData;
+    cachedMarketType = marketType;
     if (page !== undefined) currentPage = page;
 
     const tbody = document.getElementById('history-table-body');
@@ -365,9 +369,9 @@ export function renderTradeHistory(historyData, page) {
         row.innerHTML = `
             <td class="small fw-bold text-muted">${tx.date.split(' ')[0]}</td>
             <td class="small">${tx.reason}</td>
-            <td class="text-end small">${tx.portfolio_value ? formatCurrency(tx.portfolio_value) : '-'}</td>
-            <td class="text-end fw-bold text-dark">${formatCurrency(tx.total_trade_amount)}</td>
-            <td class="text-end small">${fee !== undefined ? formatCurrency(fee) : '-'}</td>
+            <td class="text-end small">${tx.portfolio_value ? formatAmount(tx.portfolio_value, cachedMarketType) : '-'}</td>
+            <td class="text-end fw-bold text-dark">${formatAmount(tx.total_trade_amount, cachedMarketType)}</td>
+            <td class="text-end small">${fee !== undefined ? formatAmount(fee, cachedMarketType) : '-'}</td>
             <td>${actionsHtml}</td>
         `;
         tbody.appendChild(row);
@@ -417,7 +421,7 @@ function renderPagination(totalPages) {
             e.preventDefault();
             const page = parseInt(a.dataset.page);
             if (page >= 1 && page <= totalPages) {
-                renderTradeHistory(cachedHistoryData, page);
+                renderTradeHistory(cachedHistoryData, page, cachedMarketType);
             }
         });
     });

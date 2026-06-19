@@ -5,6 +5,7 @@ import {
     filterByDateRange,
     getAssetGroup,
     formatCurrency,
+    formatAmount,
     computeMonthlyReturns,
     computeCumulativePnl,
     computeAlphaSeries,
@@ -110,7 +111,7 @@ export function renderStrategyChart(summaryData) {
 /**
  * Overview 탭 - 자산 그룹별 수평 Stacked Bar 차트
  */
-export function renderGroupBarChart(statusData, groupConfig) {
+export function renderGroupBarChart(statusData, groupConfig, marketType = 'overseas') {
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
     const totalValue = statusData.portfolio.total_value;
@@ -137,7 +138,7 @@ export function renderGroupBarChart(statusData, groupConfig) {
         datasets = Object.entries(groupConfig).map(([group, info]) => {
             const value = groupValues[group] || 0;
             return {
-                label: `${group}: ${info.label} (${formatCurrency(value)})`,
+                label: `${group}: ${info.label} (${formatAmount(value, marketType)})`,
                 data: [totalValue > 0 ? (value / totalValue * 100) : 0],
                 backgroundColor: info.color,
                 barPercentage: 0.8
@@ -147,7 +148,7 @@ export function renderGroupBarChart(statusData, groupConfig) {
         if (groupValues['?']) {
             const otherValue = groupValues['?'];
             datasets.push({
-                label: `Other (${formatCurrency(otherValue)})`,
+                label: `Other (${formatAmount(otherValue, marketType)})`,
                 data: [totalValue > 0 ? (otherValue / totalValue * 100) : 0],
                 backgroundColor: '#adb5bd',
                 barPercentage: 0.8
@@ -159,9 +160,9 @@ export function renderGroupBarChart(statusData, groupConfig) {
         const groupB = groupValues['B'] || 0;
         const groupC = groupValues['C'] || 0;
         datasets = [
-            { label: `A: Growth (${formatCurrency(groupA)})`, data: [totalValue > 0 ? (groupA / totalValue * 100) : 0], backgroundColor: '#0d6efd', barPercentage: 0.8 },
-            { label: `B: Safety (${formatCurrency(groupB)})`, data: [totalValue > 0 ? (groupB / totalValue * 100) : 0], backgroundColor: '#198754', barPercentage: 0.8 },
-            { label: `C: Cash (${formatCurrency(groupC)})`, data: [totalValue > 0 ? (groupC / totalValue * 100) : 0], backgroundColor: '#ffc107', barPercentage: 0.8 }
+            { label: `A: Growth (${formatAmount(groupA, marketType)})`, data: [totalValue > 0 ? (groupA / totalValue * 100) : 0], backgroundColor: '#0d6efd', barPercentage: 0.8 },
+            { label: `B: Safety (${formatAmount(groupB, marketType)})`, data: [totalValue > 0 ? (groupB / totalValue * 100) : 0], backgroundColor: '#198754', barPercentage: 0.8 },
+            { label: `C: Cash (${formatAmount(groupC, marketType)})`, data: [totalValue > 0 ? (groupC / totalValue * 100) : 0], backgroundColor: '#ffc107', barPercentage: 0.8 }
         ];
     }
 
@@ -220,9 +221,10 @@ export function resizeAllCharts() {
 /**
  * 누적 배당금 차트 (전체 기간 누적 합계 라인 차트)
  */
-export function renderCumulativeDividendChart(summaryData) {
+export function renderCumulativeDividendChart(summaryData, marketType = 'overseas') {
     const canvas = document.getElementById('cumulativeDividendChart');
     if (!canvas) return;
+    const currSymbol = marketType === 'domestic' ? '₩' : '$';
 
     // 배당금이 있는 날짜만 추출해 누적 합산
     let cumulative = 0;
@@ -251,7 +253,7 @@ export function renderCumulativeDividendChart(summaryData) {
         data: {
             labels,
             datasets: [{
-                label: '누적 배당금 ($)',
+                label: `누적 배당금 (${currSymbol})`,
                 data: cumulativeData,
                 borderColor: '#198754',
                 backgroundColor: 'rgba(25, 135, 84, 0.15)',
@@ -270,9 +272,9 @@ export function renderCumulativeDividendChart(summaryData) {
                 x: { grid: { display: false } },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Cumulative Dividend ($)' },
+                    title: { display: true, text: `Cumulative Dividend (${currSymbol})` },
                     ticks: {
-                        callback: v => '$' + v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+                        callback: v => currSymbol + v.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })
                     }
                 }
             },
@@ -280,7 +282,7 @@ export function renderCumulativeDividendChart(summaryData) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: ctx => `누적 배당금: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        label: ctx => `누적 배당금: ${currSymbol}${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     }
                 }
             }
@@ -291,9 +293,10 @@ export function renderCumulativeDividendChart(summaryData) {
 /**
  * 전체 기간 연간 배당금 바 차트
  */
-export function renderYearlyDividendChart(summaryData) {
+export function renderYearlyDividendChart(summaryData, marketType = 'overseas') {
     const canvas = document.getElementById('yearlyDividendChart');
     if (!canvas) return;
+    const currSymbol = marketType === 'domestic' ? '₩' : '$';
 
     // 전체 기간 연도별 집계
     const yearlyMap = {};
@@ -322,7 +325,7 @@ export function renderYearlyDividendChart(summaryData) {
         data: {
             labels: years,
             datasets: [{
-                label: '연간 배당금 ($)',
+                label: `연간 배당금 (${currSymbol})`,
                 data: barData,
                 backgroundColor: barData.map(v =>
                     v > 0 ? 'rgba(25, 135, 84, 0.75)' : 'rgba(200, 200, 200, 0.3)'
@@ -341,9 +344,9 @@ export function renderYearlyDividendChart(summaryData) {
                 x: { grid: { display: false } },
                 y: {
                     beginAtZero: true,
-                    title: { display: true, text: 'Annual Dividend ($)' },
+                    title: { display: true, text: `Annual Dividend (${currSymbol})` },
                     ticks: {
-                        callback: v => '$' + v.toFixed(0)
+                        callback: v => currSymbol + v.toFixed(0)
                     }
                 }
             },
@@ -351,7 +354,7 @@ export function renderYearlyDividendChart(summaryData) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: ctx => `연간 배당금: $${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        label: ctx => `연간 배당금: ${currSymbol}${ctx.parsed.y.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                     }
                 }
             }
@@ -372,12 +375,13 @@ function getRegimeColor(regimeStr) {
     return 'transparent'; // 매칭 안되면 투명하게
 }
 
-export function renderUnifiedChart(summaryData) {
+export function renderUnifiedChart(summaryData, marketType = 'overseas') {
     if (!summaryData || summaryData.length === 0) return;
 
     const canvas = document.getElementById('unifiedPerformanceChart');
     if (!canvas) return; // HTML에 캔버스가 없으면 에러 방지
     const ctx = canvas.getContext('2d');
+    const currSymbol = marketType === 'domestic' ? '₩' : '$';
 
     // 데이터 가공
     const labels = summaryData.map(d => d.date);
@@ -428,7 +432,7 @@ export function renderUnifiedChart(summaryData) {
             labels: labels,
             datasets: [
                 {
-                    label: 'Total Portfolio ($)',
+                    label: `Total Portfolio (${currSymbol})`,
                     data: portfolioData,
                     borderColor: '#0d6efd',
                     borderWidth: 2,
@@ -439,7 +443,7 @@ export function renderUnifiedChart(summaryData) {
                     stack: 'total'
                 },
                 {
-                    label: 'SPY Benchmark ($)',
+                    label: `SPY Benchmark (${currSymbol})`,
                     data: spyScaledData,
                     borderColor: 'rgba(253, 126, 20, 0.8)',
                     borderWidth: 2,
@@ -493,9 +497,9 @@ export function renderUnifiedChart(summaryData) {
                 x: { grid: { display: false } },
                 y: {
                     stacked: true,
-                    title: { display: true, text: 'Asset Value ($)' },
+                    title: { display: true, text: `Asset Value (${currSymbol})` },
                     ticks: {
-                        callback: function(value) { return '$' + value.toLocaleString(); }
+                        callback: function(value) { return currSymbol + value.toLocaleString(); }
                     }
                 }
             },
@@ -518,9 +522,9 @@ export function renderUnifiedChart(summaryData) {
                                 
                                 return `${datasetLabel}: ${percentage.toFixed(1)}%`;
                             } 
-                            // 2. 그 외의 경우 (Total Portfolio, SPY) -> 총액($)으로 표시
+                            // 2. 그 외의 경우 (Total Portfolio, SPY) -> 총액으로 표시
                             else {
-                                return `${datasetLabel}: $${value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+                                return `${datasetLabel}: ${currSymbol}${value.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
                             }
                         }                        
                     }
@@ -540,11 +544,11 @@ export function renderUnifiedChart(summaryData) {
  * @param {Array} summaryData - 전체 summary 배열
  * @param {string} range - '1M' | '3M' | '6M' | '1Y' | 'ALL'
  */
-export function updatePerformanceChartRange(summaryData, range) {
+export function updatePerformanceChartRange(summaryData, range, marketType = 'overseas') {
     const filtered = filterByDateRange(summaryData, range);
-    renderUnifiedChart(filtered);
+    renderUnifiedChart(filtered, marketType);
     // 신규: 누적 P&L / Alpha / 월별 히트맵도 기간에 맞춰 함께 갱신
-    renderCumulativePnlChart(filtered);
+    renderCumulativePnlChart(filtered, marketType);
     renderAlphaLineChart(filtered);
     renderMonthlyHeatmap(filtered);
 }
@@ -556,12 +560,13 @@ export function updatePerformanceChartRange(summaryData, range) {
 /**
  * 누적 손익 ($) 라인 차트 — 0 기준선 포함
  */
-export function renderCumulativePnlChart(summaryData) {
+export function renderCumulativePnlChart(summaryData, marketType = 'overseas') {
     const canvas = document.getElementById('cumulativePnlChart');
     if (!canvas) return;
     if (cumulativePnlChart) cumulativePnlChart.destroy();
     if (!summaryData || summaryData.length === 0) return;
 
+    const currSymbol = marketType === 'domestic' ? '₩' : '$';
     const pnlSeries = computeCumulativePnl(summaryData);
     const labels = pnlSeries.map(p => p.date);
     const values = pnlSeries.map(p => p.pnl);
@@ -571,7 +576,7 @@ export function renderCumulativePnlChart(summaryData) {
         data: {
             labels,
             datasets: [{
-                label: '누적 손익 ($)',
+                label: `누적 손익 (${currSymbol})`,
                 data: values,
                 borderColor: '#0d6efd',
                 backgroundColor: 'rgba(13, 110, 253, 0.12)',
@@ -588,9 +593,9 @@ export function renderCumulativePnlChart(summaryData) {
             scales: {
                 x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
                 y: {
-                    title: { display: true, text: '누적 손익 ($)' },
+                    title: { display: true, text: `누적 손익 (${currSymbol})` },
                     ticks: {
-                        callback: v => (v >= 0 ? '+$' : '-$') + Math.abs(Math.round(v)).toLocaleString()
+                        callback: v => (v >= 0 ? `+${currSymbol}` : `-${currSymbol}`) + Math.abs(Math.round(v)).toLocaleString()
                     }
                 }
             },
@@ -612,7 +617,7 @@ export function renderCumulativePnlChart(summaryData) {
                         label: ctx => {
                             const v = ctx.parsed.y;
                             const sign = v >= 0 ? '+' : '-';
-                            return `누적 손익: ${sign}$${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                            return `누적 손익: ${sign}${currSymbol}${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                         }
                     }
                 }
@@ -934,7 +939,7 @@ export function renderMonthlyTradeFrequencyChart(historyData) {
 /**
  * 티커별 거래 기여 가로 바 차트
  */
-export function renderTickerContributionChart(historyData) {
+export function renderTickerContributionChart(historyData, marketType = 'overseas') {
     const canvas = document.getElementById('tickerContributionChart');
     if (!canvas) return;
     if (tickerContributionChart) tickerContributionChart.destroy();
@@ -942,6 +947,7 @@ export function renderTickerContributionChart(historyData) {
     const data = computeTickerContribution(historyData);
     if (data.length === 0) return;
 
+    const currSymbol = marketType === 'domestic' ? '₩' : '$';
     const labels = data.map(d => d.ticker);
     const volumes = data.map(d => d.totalVolume);
 
@@ -950,7 +956,7 @@ export function renderTickerContributionChart(historyData) {
         data: {
             labels,
             datasets: [{
-                label: '거래 금액 ($)',
+                label: `거래 금액 (${currSymbol})`,
                 data: volumes,
                 backgroundColor: 'rgba(25, 135, 84, 0.65)',
                 borderColor: '#198754',
@@ -965,8 +971,8 @@ export function renderTickerContributionChart(historyData) {
             scales: {
                 x: {
                     beginAtZero: true,
-                    title: { display: true, text: '거래 금액 ($)' },
-                    ticks: { callback: v => '$' + Math.round(v).toLocaleString() }
+                    title: { display: true, text: `거래 금액 (${currSymbol})` },
+                    ticks: { callback: v => currSymbol + Math.round(v).toLocaleString() }
                 },
                 y: { grid: { display: false } }
             },
@@ -977,9 +983,9 @@ export function renderTickerContributionChart(historyData) {
                         label: ctx => {
                             const d = data[ctx.dataIndex];
                             return [
-                                `금액: ${formatCurrency(d.totalVolume)}`,
+                                `금액: ${formatAmount(d.totalVolume, marketType)}`,
                                 `거래 건수: ${d.trades}건`,
-                                `수수료: ${formatCurrency(d.totalFees)}`
+                                `수수료: ${formatAmount(d.totalFees, marketType)}`
                             ];
                         }
                     }
@@ -992,7 +998,7 @@ export function renderTickerContributionChart(historyData) {
 /**
  * 현재 자산 배분 도넛 (그룹 합산 + Cash)
  */
-export function renderCurrentAllocationDoughnut(statusData, groupConfig) {
+export function renderCurrentAllocationDoughnut(statusData, groupConfig, marketType = 'overseas') {
     const canvas = document.getElementById('currentAllocationDoughnut');
     if (!canvas) return;
     if (currentAllocationDoughnut) currentAllocationDoughnut.destroy();
@@ -1041,7 +1047,7 @@ export function renderCurrentAllocationDoughnut(statusData, groupConfig) {
                         label: ctx => {
                             const total = values.reduce((s, v) => s + v, 0);
                             const pct = total > 0 ? (ctx.parsed / total * 100).toFixed(1) : '0';
-                            return `${ctx.label}: ${formatCurrency(ctx.parsed)} (${pct}%)`;
+                            return `${ctx.label}: ${formatAmount(ctx.parsed, marketType)} (${pct}%)`;
                         }
                     }
                 }
@@ -1107,11 +1113,12 @@ export function renderRegimeDistributionDoughnut(summaryData) {
  * 자산군 비중 변화 추이 (Stacked Area)
  * group_a/b/c의 절대 금액을 시간축으로 쌓음
  */
-export function renderHistoricalAllocationChart(summaryData) {
+export function renderHistoricalAllocationChart(summaryData, marketType = 'overseas') {
     const canvas = document.getElementById('historicalAllocationChart');
     if (!canvas) return;
     if (historicalAllocationChart) historicalAllocationChart.destroy();
     if (!summaryData || summaryData.length === 0) return;
+    const currSymbol = marketType === 'domestic' ? '₩' : '$';
 
     const labels = summaryData.map(d => d.date);
     const groupA = summaryData.map(d => d.group_a || 0);
@@ -1163,8 +1170,8 @@ export function renderHistoricalAllocationChart(summaryData) {
                 x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
                 y: {
                     stacked: true,
-                    title: { display: true, text: 'Asset Value ($)' },
-                    ticks: { callback: v => '$' + v.toLocaleString() }
+                    title: { display: true, text: `Asset Value (${currSymbol})` },
+                    ticks: { callback: v => currSymbol + v.toLocaleString() }
                 }
             },
             plugins: {
@@ -1174,7 +1181,7 @@ export function renderHistoricalAllocationChart(summaryData) {
                         label: ctx => {
                             const total = summaryData[ctx.dataIndex].total_value || 0;
                             const pct = total > 0 ? (ctx.parsed.y / total * 100).toFixed(1) : '0';
-                            return `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)} (${pct}%)`;
+                            return `${ctx.dataset.label}: ${formatAmount(ctx.parsed.y, marketType)} (${pct}%)`;
                         }
                     }
                 }
