@@ -5,6 +5,7 @@ import {
     getRegimeColorClass,
     getRegimeBannerClass,
     getAssetGroup,
+    getTickerAlias,
     formatCurrency,
     formatAmount,
     formatPercent,
@@ -141,7 +142,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
         rows += `
             <tr>
                 <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>
-                <td class="fw-bold">${h.ticker}</td>
+                <td class="fw-bold">${getTickerAlias(h.ticker, groupConfig)}</td>
                 <td class="text-end">${h.qty}</td>
                 <td class="text-end">${formatAmount(h.price, marketType)}</td>
                 <td class="text-end">${formatAmount(h.value, marketType)}</td>
