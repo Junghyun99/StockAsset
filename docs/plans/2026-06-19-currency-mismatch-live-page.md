@@ -204,12 +204,13 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
 ```
 
 ```js
-// 변경 전 (ui.js:144-147)
-<td class="text-end">${h.price}</td>
+// 변경 전 (ui.js:144-147) — Qty/Price/Value 3개 셀
+<td class="text-end">${h.qty}</td>
 <td class="text-end">${formatCurrency(h.price)}</td>
 <td class="text-end">${formatCurrency(h.value)}</td>
 
-// 변경 후 (rows += 내부)
+// 변경 후 (rows += 내부) — Qty는 그대로, Price/Value만 formatAmount로 교체
+<td class="text-end">${h.qty}</td>
 <td class="text-end">${formatAmount(h.price, marketType)}</td>
 <td class="text-end">${formatAmount(h.value, marketType)}</td>
 ```
@@ -310,7 +311,7 @@ export function renderTradeHistory(historyData, page) {
     cachedHistoryData = historyData;
 
 // 변경 후
-export function renderTradeHistory(historyData, page, marketType = 'overseas') {
+export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas') {
     cachedHistoryData = historyData;
     cachedMarketType = marketType;
 ```
