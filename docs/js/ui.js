@@ -522,7 +522,7 @@ export function renderStatusFreshnessBadge(statusData) {
 /**
  * Overview 탭 - 미체결/실패 주문 상단 알림
  */
-export function renderFailedOrderAlert(historyData) {
+export function renderFailedOrderAlert(historyData, groupConfig = null) {
     const alert = document.getElementById('failed-order-alert');
     const text = document.getElementById('failed-order-alert-text');
     if (!alert || !text) return;
@@ -533,7 +533,7 @@ export function renderFailedOrderAlert(historyData) {
     }
     alert.classList.remove('d-none');
     const recent = failed.slice(-3).reverse();
-    const summary = recent.map(f => `${f.date} ${f.ticker} ${f.action} [${f.status}]`).join(', ');
+    const summary = recent.map(f => `${f.date} ${getTickerAlias(f.ticker, groupConfig)} ${f.action} [${f.status}]`).join(', ');
     text.innerHTML = ` ${failed.length}건 감지 — 최근: ${summary}`;
 }
 
