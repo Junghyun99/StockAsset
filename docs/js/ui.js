@@ -324,13 +324,17 @@ let currentPage = 1;
 const TRADES_PER_PAGE = 10;
 let cachedHistoryData = [];
 let cachedMarketType = 'overseas';
+let cachedGroupConfig = null;
 
 /**
  * 매매 기록 테이블 렌더링 (페이지네이션 지원)
  */
-export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas') {
+export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas', groupConfig = null) {
     cachedHistoryData = historyData;
     cachedMarketType = marketType;
+    if (groupConfig !== null) {
+        cachedGroupConfig = groupConfig;
+    }
     if (page !== undefined) currentPage = page;
 
     const tbody = document.getElementById('history-table-body');
@@ -357,7 +361,7 @@ export function renderTradeHistory(historyData, page = undefined, marketType = '
         // 체결 종목 배지 생성
         let actionsHtml = tx.executions.map(ex => `
             <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
-                ${ex.action} ${ex.ticker} (${ex.quantity})
+                ${ex.action} ${getTickerAlias(ex.ticker, cachedGroupConfig)} (${ex.quantity})
             </span>
         `).join('');
 
