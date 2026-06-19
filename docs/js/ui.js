@@ -127,6 +127,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
     const tbody = document.getElementById('holdings-table-body');
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
+    const totalValue = statusData.portfolio.total_value;
 
     // 그룹별 정렬
     const sorted = [...holdings].sort((a, b) => {
@@ -139,6 +140,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
     sorted.forEach(h => {
         if (h.value <= 0 && h.qty <= 0) return; // 보유량 0인 항목 제외
         const g = getAssetGroup(h.ticker, groupConfig);
+        const ratio = totalValue > 0 ? Math.round(h.value / totalValue * 100) : 0;
         rows += `
             <tr>
                 <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>
@@ -146,6 +148,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
                 <td class="text-end">${h.qty}</td>
                 <td class="text-end">${formatAmount(h.price, marketType)}</td>
                 <td class="text-end">${formatAmount(h.value, marketType)}</td>
+                <td class="text-end">${ratio}%</td>
             </tr>
         `;
     });
@@ -153,6 +156,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
     // Cash 행 추가
     if (cash > 0) {
         const cashLabel = marketType === 'domestic' ? 'KRW' : 'USD';
+        const cashRatio = totalValue > 0 ? Math.round(cash / totalValue * 100) : 0;
         rows += `
             <tr class="table-light">
                 <td><span class="badge bg-secondary">Cash</span></td>
@@ -160,11 +164,12 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
                 <td class="text-end">-</td>
                 <td class="text-end">-</td>
                 <td class="text-end">${formatAmount(cash, marketType)}</td>
+                <td class="text-end">${cashRatio}%</td>
             </tr>
         `;
     }
 
-    tbody.innerHTML = rows || '<tr><td colspan="5" class="text-center text-muted">No holdings</td></tr>';
+    tbody.innerHTML = rows || '<tr><td colspan="6" class="text-center text-muted">No holdings</td></tr>';
 }
 
 /**
