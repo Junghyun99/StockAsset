@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // 마지막 업데이트 시간 (첫 번째 계좌 기준)
         const first = accountsData.values().next().value;
         document.getElementById('last-updated').textContent =
-            `Last Update: ${first.status?.last_updated || 'Unknown'}`;
+            `Last Update: ${first?.status?.last_updated || 'Unknown'}`;
 
     } catch (err) {
         console.error('Portfolio load error:', err);
