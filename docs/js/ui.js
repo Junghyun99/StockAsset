@@ -540,7 +540,7 @@ export function renderFailedOrderAlert(historyData, groupConfig = null) {
 /**
  * Operations 탭 - 모든 카드/테이블 통합 렌더링
  */
-export function renderOperationsPanel(statusData, historyData, summaryData) {
+export function renderOperationsPanel(statusData, historyData, summaryData, groupConfig = null) {
     // [1] 마지막 실행 시각 카드
     const lastRunLabel = document.getElementById('ops-last-run-label');
     const lastRunTime = document.getElementById('ops-last-run-time');
@@ -596,7 +596,7 @@ export function renderOperationsPanel(statusData, historyData, summaryData) {
             failedTableBody.innerHTML = failed.slice().reverse().map(f => `
                 <tr>
                     <td class="ps-3 small text-muted">${f.date}</td>
-                    <td class="fw-bold">${f.ticker}</td>
+                    <td class="fw-bold">${getTickerAlias(f.ticker, groupConfig)}</td>
                     <td><span class="badge ${f.action === 'BUY' ? 'bg-success' : 'bg-danger'}">${f.action}</span></td>
                     <td class="text-end">${f.quantity}</td>
                     <td><span class="badge bg-warning text-dark">${f.status}</span></td>
