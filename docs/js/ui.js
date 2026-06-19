@@ -170,7 +170,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
 /**
  * 오늘의 활동 영역 렌더링
  */
-export function renderTodayActivity(historyData, statusData, marketType = 'overseas') {
+export function renderTodayActivity(historyData, statusData, marketType = 'overseas', groupConfig = null) {
     const container = document.getElementById('today-activity');
     if (!historyData || historyData.length === 0) {
         container.innerHTML = `
@@ -189,7 +189,7 @@ export function renderTodayActivity(historyData, statusData, marketType = 'overs
     // 체결 종목 배지 생성
     let actionsHtml = lastTrade.executions.map(ex => `
         <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
-            ${ex.action} ${ex.ticker} (${ex.quantity})
+            ${ex.action} ${getTickerAlias(ex.ticker, groupConfig)} (${ex.quantity})
         </span>
     `).join('');
 
