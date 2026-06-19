@@ -39,7 +39,7 @@ import {
     renderOperationsPanel
 } from './ui.js?v=3';
 
-import { loadEngineMeta, loadAccountsMeta } from './utils.js?v=4';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=4';
 
 import {
     renderCompareOverview,
@@ -139,7 +139,8 @@ async function loadLiveMode() {
     if (accountIds.length === 1) {
         // 단일 계좌: 기존 UI (경로만 계좌 서브디렉토리로 수정)
         const data = accountsData.get(accountIds[0]);
-        _renderSingleAccount(data);
+        const marketType = (ACCOUNT_MARKET_TYPES[accountIds[0]] || 'overseas');
+        _renderSingleAccount(data, marketType);
     } else {
         // 다중 계좌: 비교 UI
         renderAccountOverview(accountsData);
@@ -178,16 +179,16 @@ async function loadLiveMode() {
 /**
  * 단일 계좌 UI 렌더링 (기존 loadLiveMode 로직)
  */
-function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, groupConfig }) {
+function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, groupConfig }, marketType = 'overseas') {
     window.__summary = summaryData;
     window.__status = statusData;
     window.__history = historyData;
 
     renderStatusBanner(statusData);
-    updateSummaryCards(statusData, summaryData);
-    renderGroupBarChart(statusData, groupConfig);
-    renderHoldingsTable(statusData, groupConfig);
-    renderTodayActivity(historyData, statusData);
+    updateSummaryCards(statusData, summaryData, marketType);
+    renderGroupBarChart(statusData, groupConfig, marketType);
+    renderHoldingsTable(statusData, groupConfig, marketType);
+    renderTodayActivity(historyData, statusData, marketType);
     updateDecisionLogic(summaryData[summaryData.length - 1]);
     renderFailedOrderAlert(historyData);
     renderStatusFreshnessBadge(statusData);
@@ -203,33 +204,33 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderRollingReturnCards(summaryData);
         renderCurrentDrawdownCard(summaryData);
         renderCalmarCard(summaryData);
-        renderUnifiedChart(summaryData);
-        renderCumulativePnlChart(summaryData);
+        renderUnifiedChart(summaryData, marketType);
+        renderCumulativePnlChart(summaryData, marketType);
         renderAlphaLineChart(summaryData);
         renderMonthlyHeatmap(summaryData);
         renderStrategyChart(summaryData);
-        renderCumulativeDividendChart(summaryData);
-        renderYearlyDividendChart(summaryData);
-        setupTimeRangeSelector(summaryData);
+        renderCumulativeDividendChart(summaryData, marketType);
+        renderYearlyDividendChart(summaryData, marketType);
+        setupTimeRangeSelector(summaryData, marketType);
         perfRendered = true;
     }
 
     function renderAllocationTab() {
         if (allocationRendered) return;
-        renderCurrentAllocationDoughnut(statusData, groupConfig);
+        renderCurrentAllocationDoughnut(statusData, groupConfig, marketType);
         renderRegimeDistributionDoughnut(summaryData);
-        renderHistoricalAllocationChart(summaryData);
+        renderHistoricalAllocationChart(summaryData, marketType);
         allocationRendered = true;
     }
 
     function renderTradesTab() {
         if (tradesRendered) return;
-        renderTradeSummaryStats(historyData);
+        renderTradeSummaryStats(historyData, marketType);
         renderFeeImpactCard(historyData, summaryData);
         renderTradeReasonPie(historyData);
         renderMonthlyTradeFrequencyChart(historyData);
-        renderTickerContributionChart(historyData);
-        renderTradeHistory(historyData);
+        renderTickerContributionChart(historyData, marketType);
+        renderTradeHistory(historyData, undefined, marketType);
         tradesRendered = true;
     }
 
@@ -265,7 +266,7 @@ async function _loadLegacySingleAccount(basePath, cacheBust) {
         status:  await statusRes.json(),
         history: await historyRes.json(),
         groupConfig: groupConfigRes.ok ? await groupConfigRes.json() : null,
-    });
+    }, 'overseas');
 }
 
 /**
@@ -510,7 +511,7 @@ function activateTab(tabId) {
 /**
  * Live 모드용 기간 선택 버튼 이벤트
  */
-function setupTimeRangeSelector(summaryData) {
+function setupTimeRangeSelector(summaryData, marketType = 'overseas') {
     const selector = document.getElementById('time-range-selector');
     if (!selector) return;
 
@@ -518,7 +519,7 @@ function setupTimeRangeSelector(summaryData) {
         btn.addEventListener('click', () => {
             selector.querySelectorAll('button').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            updatePerformanceChartRange(summaryData, btn.getAttribute('data-range'));
+            updatePerformanceChartRange(summaryData, btn.getAttribute('data-range'), marketType);
         });
     });
 }

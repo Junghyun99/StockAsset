@@ -31,7 +31,7 @@ jobs:
     # 4. pytest 실행
     - name: Test with pytest
       run: |
-        pytest --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=80 tests/ --ignore=tests/test_infra_broker_kis_domestic_live.py
+        pytest --cov=src --cov-report=xml --cov-report=term-missing --cov-fail-under=80 tests/ --ignore=tests/test_infra_broker_kis_domestic_live.py --ignore=tests/test_infra_data_live.py
 
     - name: Slack Notification on Failure
       uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba273e # v3.19.0
