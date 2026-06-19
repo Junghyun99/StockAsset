@@ -4,6 +4,7 @@
 import {
     filterByDateRange,
     getAssetGroup,
+    getTickerAlias,
     formatCurrency,
     formatAmount,
     computeMonthlyReturns,
@@ -939,7 +940,7 @@ export function renderMonthlyTradeFrequencyChart(historyData) {
 /**
  * 티커별 거래 기여 가로 바 차트
  */
-export function renderTickerContributionChart(historyData, marketType = 'overseas') {
+export function renderTickerContributionChart(historyData, marketType = 'overseas', groupConfig = null) {
     const canvas = document.getElementById('tickerContributionChart');
     if (!canvas) return;
     if (tickerContributionChart) tickerContributionChart.destroy();
@@ -948,7 +949,7 @@ export function renderTickerContributionChart(historyData, marketType = 'oversea
     if (data.length === 0) return;
 
     const currSymbol = marketType === 'domestic' ? '₩' : '$';
-    const labels = data.map(d => d.ticker);
+    const labels = data.map(d => getTickerAlias(d.ticker, groupConfig));
     const volumes = data.map(d => d.totalVolume);
 
     tickerContributionChart = new Chart(canvas, {

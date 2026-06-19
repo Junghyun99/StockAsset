@@ -188,9 +188,9 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     updateSummaryCards(statusData, summaryData, marketType);
     renderGroupBarChart(statusData, groupConfig, marketType);
     renderHoldingsTable(statusData, groupConfig, marketType);
-    renderTodayActivity(historyData, statusData, marketType);
+    renderTodayActivity(historyData, statusData, marketType, groupConfig);
     updateDecisionLogic(summaryData[summaryData.length - 1]);
-    renderFailedOrderAlert(historyData);
+    renderFailedOrderAlert(historyData, groupConfig);
     renderStatusFreshnessBadge(statusData);
 
     let perfRendered = false;
@@ -229,14 +229,14 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderFeeImpactCard(historyData, summaryData);
         renderTradeReasonPie(historyData);
         renderMonthlyTradeFrequencyChart(historyData);
-        renderTickerContributionChart(historyData, marketType);
-        renderTradeHistory(historyData, undefined, marketType);
+        renderTickerContributionChart(historyData, marketType, groupConfig);
+        renderTradeHistory(historyData, undefined, marketType, groupConfig);
         tradesRendered = true;
     }
 
     function renderOperationsTab() {
         if (opsRendered) return;
-        renderOperationsPanel(statusData, historyData, summaryData);
+        renderOperationsPanel(statusData, historyData, summaryData, groupConfig);
         opsRendered = true;
     }
 

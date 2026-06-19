@@ -5,6 +5,7 @@ import {
     getRegimeColorClass,
     getRegimeBannerClass,
     getAssetGroup,
+    getTickerAlias,
     formatCurrency,
     formatAmount,
     formatPercent,
@@ -141,7 +142,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
         rows += `
             <tr>
                 <td><span class="badge" style="background-color: ${g.color}">${g.group}: ${g.label}</span></td>
-                <td class="fw-bold">${h.ticker}</td>
+                <td class="fw-bold">${getTickerAlias(h.ticker, groupConfig)}</td>
                 <td class="text-end">${h.qty}</td>
                 <td class="text-end">${formatAmount(h.price, marketType)}</td>
                 <td class="text-end">${formatAmount(h.value, marketType)}</td>
@@ -169,7 +170,7 @@ export function renderHoldingsTable(statusData, groupConfig, marketType = 'overs
 /**
  * 오늘의 활동 영역 렌더링
  */
-export function renderTodayActivity(historyData, statusData, marketType = 'overseas') {
+export function renderTodayActivity(historyData, statusData, marketType = 'overseas', groupConfig = null) {
     const container = document.getElementById('today-activity');
     if (!historyData || historyData.length === 0) {
         container.innerHTML = `
@@ -188,7 +189,7 @@ export function renderTodayActivity(historyData, statusData, marketType = 'overs
     // 체결 종목 배지 생성
     let actionsHtml = lastTrade.executions.map(ex => `
         <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
-            ${ex.action} ${ex.ticker} (${ex.quantity})
+            ${ex.action} ${getTickerAlias(ex.ticker, groupConfig)} (${ex.quantity})
         </span>
     `).join('');
 
@@ -323,13 +324,17 @@ let currentPage = 1;
 const TRADES_PER_PAGE = 10;
 let cachedHistoryData = [];
 let cachedMarketType = 'overseas';
+let cachedGroupConfig = null;
 
 /**
  * 매매 기록 테이블 렌더링 (페이지네이션 지원)
  */
-export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas') {
+export function renderTradeHistory(historyData, page = undefined, marketType = 'overseas', groupConfig = null) {
     cachedHistoryData = historyData;
     cachedMarketType = marketType;
+    if (groupConfig !== null) {
+        cachedGroupConfig = groupConfig;
+    }
     if (page !== undefined) currentPage = page;
 
     const tbody = document.getElementById('history-table-body');
@@ -356,7 +361,7 @@ export function renderTradeHistory(historyData, page = undefined, marketType = '
         // 체결 종목 배지 생성
         let actionsHtml = tx.executions.map(ex => `
             <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
-                ${ex.action} ${ex.ticker} (${ex.quantity})
+                ${ex.action} ${getTickerAlias(ex.ticker, cachedGroupConfig)} (${ex.quantity})
             </span>
         `).join('');
 
@@ -517,7 +522,7 @@ export function renderStatusFreshnessBadge(statusData) {
 /**
  * Overview 탭 - 미체결/실패 주문 상단 알림
  */
-export function renderFailedOrderAlert(historyData) {
+export function renderFailedOrderAlert(historyData, groupConfig = null) {
     const alert = document.getElementById('failed-order-alert');
     const text = document.getElementById('failed-order-alert-text');
     if (!alert || !text) return;
@@ -528,14 +533,14 @@ export function renderFailedOrderAlert(historyData) {
     }
     alert.classList.remove('d-none');
     const recent = failed.slice(-3).reverse();
-    const summary = recent.map(f => `${f.date} ${f.ticker} ${f.action} [${f.status}]`).join(', ');
+    const summary = recent.map(f => `${f.date} ${getTickerAlias(f.ticker, groupConfig)} ${f.action} [${f.status}]`).join(', ');
     text.innerHTML = ` ${failed.length}건 감지 — 최근: ${summary}`;
 }
 
 /**
  * Operations 탭 - 모든 카드/테이블 통합 렌더링
  */
-export function renderOperationsPanel(statusData, historyData, summaryData) {
+export function renderOperationsPanel(statusData, historyData, summaryData, groupConfig = null) {
     // [1] 마지막 실행 시각 카드
     const lastRunLabel = document.getElementById('ops-last-run-label');
     const lastRunTime = document.getElementById('ops-last-run-time');
@@ -591,7 +596,7 @@ export function renderOperationsPanel(statusData, historyData, summaryData) {
             failedTableBody.innerHTML = failed.slice().reverse().map(f => `
                 <tr>
                     <td class="ps-3 small text-muted">${f.date}</td>
-                    <td class="fw-bold">${f.ticker}</td>
+                    <td class="fw-bold">${getTickerAlias(f.ticker, groupConfig)}</td>
                     <td><span class="badge ${f.action === 'BUY' ? 'bg-success' : 'bg-danger'}">${f.action}</span></td>
                     <td class="text-end">${f.quantity}</td>
                     <td><span class="badge bg-warning text-dark">${f.status}</span></td>

@@ -645,3 +645,17 @@ export function getStatusFreshness(lastUpdatedISO, now = new Date()) {
     }
     return { label, colorClass, ageHours };
 }
+
+/**
+ * groupConfig.aliases에서 티커의 한글명(alias)을 반환.
+ * alias가 없으면 raw ticker를 그대로 반환.
+ * @param {string} ticker
+ * @param {Object|null} groupConfig - asset_groups.json 내용
+ * @returns {string}
+ */
+export function getTickerAlias(ticker, groupConfig) {
+    if (groupConfig && groupConfig.aliases && groupConfig.aliases[ticker]) {
+        return groupConfig.aliases[ticker];
+    }
+    return ticker;
+}
