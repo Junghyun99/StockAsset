@@ -302,6 +302,15 @@ export function formatCurrency(value) {
 }
 
 /**
+ * market_type에 따라 KRW 또는 USD 포맷 선택
+ * @param {number} value
+ * @param {'domestic'|'overseas'} marketType
+ */
+export function formatAmount(value, marketType) {
+    return marketType === 'domestic' ? formatKRW(value) : formatCurrency(value);
+}
+
+/**
  * 퍼센트 포맷팅 (부호 포함)
  */
 export function formatPercent(value) {
