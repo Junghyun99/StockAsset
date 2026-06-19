@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolidQuant Portfolio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <a class="navbar-brand" href="portfolio.html">
+                    <i class="fas fa-robot me-2"></i>SolidQuant Bot
+                </a>
+                <div class="btn-group btn-group-sm ms-3" role="group">
+                    <a href="portfolio.html" class="btn btn-outline-light active">Portfolio</a>
+                    <a href="index.html" class="btn btn-outline-light">Live</a>
+                    <a href="index.html?mode=backtest" class="btn btn-outline-light">Backtest</a>
+                </div>
+            </div>
+            <span class="navbar-text text-white" id="last-updated">Loading...</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+
+        <!-- 통화별 합산 배너 -->
+        <div class="row g-3 mb-4" id="currency-summary">
+            <!-- portfolio-main.js가 채움 -->
+        </div>
+
+        <!-- 계좌 카드 섹션 (KRW / USD 순서) -->
+        <div id="account-sections">
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-spinner fa-spin me-2"></i>계좌 데이터 로딩 중...
+            </div>
+        </div>
+
+        <!-- 누적 수익률 비교 차트 -->
+        <div class="card border-0 shadow-sm mb-4" id="comparison-chart-card">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center flex-wrap">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>누적 수익률 비교 (%)</h5>
+                <div class="btn-group btn-group-sm mt-2 mt-md-0" id="chart-range-selector">
+                    <button class="btn btn-outline-secondary" data-range="1M">1M</button>
+                    <button class="btn btn-outline-secondary" data-range="3M">3M</button>
+                    <button class="btn btn-outline-secondary" data-range="6M">6M</button>
+                    <button class="btn btn-outline-secondary" data-range="1Y">1Y</button>
+                    <button class="btn btn-outline-secondary active" data-range="ALL">ALL</button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="height: 400px;">
+                    <canvas id="portfolioComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script type="module" src="js/portfolio-main.js?v=1"></script>
+</body>
+</html>
