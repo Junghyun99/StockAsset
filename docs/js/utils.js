@@ -224,10 +224,14 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
 
     // Information Ratio = AnnualizedAlpha / TrackingError
     const excessReturns = portReturns.map((r, i) => r - spyReturns[i]);
-    const meanExcess = excessReturns.reduce((s, r) => s + r, 0) / excessReturns.length;
-    const trackingVariance = excessReturns.reduce((s, r) => s + Math.pow(r - meanExcess, 2), 0) / (excessReturns.length - 1);
-    const trackingError = Math.sqrt(trackingVariance) * Math.sqrt(252);
-    portMetrics.ir = trackingError > 0 ? (meanExcess * 252) / trackingError : 0;
+    let ir = 0;
+    if (excessReturns.length > 1) {
+        const meanExcess = excessReturns.reduce((s, r) => s + r, 0) / excessReturns.length;
+        const trackingVariance = excessReturns.reduce((s, r) => s + Math.pow(r - meanExcess, 2), 0) / (excessReturns.length - 1);
+        const trackingError = Math.sqrt(trackingVariance) * Math.sqrt(252);
+        ir = trackingError > 0 ? (meanExcess * 252) / trackingError : 0;
+    }
+    portMetrics.ir = ir;
     spyMetrics.ir = 0;
 
     return { portfolio: portMetrics, spy: spyMetrics };
