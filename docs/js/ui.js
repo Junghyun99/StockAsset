@@ -21,7 +21,7 @@ import {
     getStatusFreshness,
     computeRegimePerformance,
     computeYTDReturn
-} from './utils.js?v=4';
+} from './utils.js?v=5';
 
 /**
  * 상단 내비게이션 바의 모드 버튼 및 상태 배지 업데이트
