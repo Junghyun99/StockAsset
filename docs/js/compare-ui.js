@@ -62,6 +62,7 @@ export function renderCompareOverview(enginesData) {
         ['Sortino', 'sortino', 'ratio', true],
         ['Calmar', 'calmar', 'ratio', true],
         ['Beta', 'beta', 'ratio', null],
+        ['Information Ratio', 'ir', 'ratio', true],
     ];
 
     /**

@@ -312,6 +312,16 @@ export function renderPerformanceSummaryCards(summaryData) {
         </tr>
     `;
 
+    // Information Ratio 행 (포트폴리오 전용, SPY는 정의상 0)
+    const ir = p.ir;
+    const irClass = ir >= 0.5 ? 'text-success fw-bold' : ir < 0 ? 'text-danger fw-bold' : 'text-dark fw-bold';
+    html += `
+        <tr class="table-light">
+            <td class="ps-3 fw-bold">Information Ratio</td>
+            <td class="text-end ${irClass}" colspan="2">${ir.toFixed(2)}</td>
+        </tr>
+    `;
+
     tbody.innerHTML = html;
 }
 

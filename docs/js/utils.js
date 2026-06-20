@@ -144,9 +144,9 @@ export function getAssetGroup(ticker, groupConfig) {
  * @returns {{portfolio: Object, spy: Object}} 양쪽 지표 객체
  */
 export function computeAdvancedMetrics(summaryData, initialCash = null) {
-    const empty = { totalReturn: 0, cagr: 0, mdd: 0, volatility: 0, sharpe: 0, sortino: 0, calmar: 0, beta: 1.0 };
+    const empty = { totalReturn: 0, cagr: 0, mdd: 0, volatility: 0, sharpe: 0, sortino: 0, calmar: 0, beta: 1.0, ir: 0 };
     if (!summaryData || summaryData.length < 2) {
-        return { portfolio: { ...empty }, spy: { ...empty, beta: 1.0 } };
+        return { portfolio: { ...empty }, spy: { ...empty, beta: 1.0, ir: 0 } };
     }
 
     const first = summaryData[0];
@@ -221,6 +221,18 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
 
     portMetrics.beta = beta;
     spyMetrics.beta = 1.0;
+
+    // Information Ratio = AnnualizedAlpha / TrackingError
+    const excessReturns = portReturns.map((r, i) => r - spyReturns[i]);
+    let ir = 0;
+    if (excessReturns.length > 1) {
+        const meanExcess = excessReturns.reduce((s, r) => s + r, 0) / excessReturns.length;
+        const trackingVariance = excessReturns.reduce((s, r) => s + Math.pow(r - meanExcess, 2), 0) / (excessReturns.length - 1);
+        const trackingError = Math.sqrt(trackingVariance) * Math.sqrt(252);
+        ir = trackingError > 0 ? (meanExcess * 252) / trackingError : 0;
+    }
+    portMetrics.ir = ir;
+    spyMetrics.ir = 0;
 
     return { portfolio: portMetrics, spy: spyMetrics };
 }
