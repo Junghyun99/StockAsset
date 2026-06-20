@@ -50,6 +50,7 @@ export function renderAccountOverview(accountsData) {
         ['Volatility',    'volatility',   'percent_abs', false],
         ['Sharpe',        'sharpe',       'ratio',       true],
         ['Calmar',        'calmar',       'ratio',       true],
+        ['Information Ratio', 'ir',       'ratio',       true],
     ];
 
     function buildSection(ids, marketType) {
