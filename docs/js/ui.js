@@ -18,7 +18,8 @@ import {
     computeCurrentRegimeStreak,
     computeFailedExecutions,
     inferNextRebalanceDate,
-    getStatusFreshness
+    getStatusFreshness,
+    computeRegimePerformance
 } from './utils.js?v=3';
 
 /**
@@ -627,4 +628,45 @@ export function renderOperationsPanel(statusData, historyData, summaryData, grou
     setText('ops-target-exposure', statusData.strategy ? (statusData.strategy.target_exposure * 100).toFixed(0) + '%' : '-');
     setText('ops-trigger-reason', (statusData.strategy && statusData.strategy.trigger_reason) || '-');
     setText('ops-total-trades', (historyData || []).length + '건');
+}
+
+/**
+ * Performance 탭 - 국면별 성과 분석 테이블 렌더링
+ */
+export function renderRegimePerformanceTable(summaryData) {
+    const tbody = document.getElementById('regime-performance-table-body');
+    if (!tbody) return;
+
+    const rows = computeRegimePerformance(summaryData);
+    if (rows.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">데이터 없음</td></tr>';
+        return;
+    }
+
+    // 국면 표시 순서 정의
+    const ORDER = ['Bull', 'Sideways', 'Bear_Weak', 'Bear_Strong', 'Crash', 'Unknown'];
+    rows.sort((a, b) => {
+        const ai = ORDER.indexOf(a.regime);
+        const bi = ORDER.indexOf(b.regime);
+        return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+    });
+
+    tbody.innerHTML = rows.map(row => {
+        const colorClass = getRegimeColorClass(row.regime);
+        const cumClass = row.cumulativeReturn >= 0 ? 'text-success' : 'text-danger';
+        const annClass = row.annualized >= 0 ? 'text-success' : 'text-danger';
+        const mddClass = row.mdd < -5 ? 'text-danger' : 'text-muted';
+        const regimeLabel = row.regime.replace('_', ' ');
+
+        return `
+            <tr>
+                <td class="ps-3 fw-bold"><span class="${colorClass}">${regimeLabel}</span></td>
+                <td class="text-end">${row.days.toLocaleString()}</td>
+                <td class="text-end fw-bold ${cumClass}">${row.cumulativeReturn >= 0 ? '+' : ''}${row.cumulativeReturn.toFixed(2)}%</td>
+                <td class="text-end ${annClass}">${row.annualized >= 0 ? '+' : ''}${row.annualized.toFixed(1)}%</td>
+                <td class="text-end ${mddClass}">${row.mdd.toFixed(2)}%</td>
+                <td class="text-end pe-3 text-muted">${row.periodPct.toFixed(1)}%</td>
+            </tr>
+        `;
+    }).join('');
 }

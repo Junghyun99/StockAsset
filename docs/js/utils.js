@@ -647,6 +647,57 @@ export function getStatusFreshness(lastUpdatedISO, now = new Date()) {
 }
 
 /**
+ * 국면별 성과 분석 (일간 복리 합산 방식)
+ * @param {Array} summaryData - summary 배열 (regime, total_value 필드 필요)
+ * @returns {Array<{regime, days, cumulativeReturn, annualized, mdd, periodPct}>}
+ */
+export function computeRegimePerformance(summaryData) {
+    if (!summaryData || summaryData.length < 2) return [];
+
+    // 분모를 수익률 일수(n-1)로 설정해야 전체 비율 합이 100%가 됨
+    const totalActiveDays = summaryData.length - 1;
+
+    // 국면별 일간 수익률만 수집 (절대 자산가 미사용 — 비연속 국면 MDD 오류 방지)
+    const buckets = {};
+    for (let i = 1; i < summaryData.length; i++) {
+        const regime = summaryData[i].regime || 'Unknown';
+        const r = summaryData[i - 1].total_value > 0
+            ? summaryData[i].total_value / summaryData[i - 1].total_value - 1
+            : 0;
+        if (!buckets[regime]) buckets[regime] = [];
+        buckets[regime].push(r);
+    }
+
+    return Object.entries(buckets).map(([regime, returns]) => {
+        const days = returns.length;
+
+        // 누적 수익률 (복리)
+        const cumulativeReturn = (returns.reduce((acc, r) => acc * (1 + r), 1) - 1) * 100;
+
+        // 연환산 수익률 (평균 일간 수익률 기준)
+        const avgDaily = returns.reduce((s, r) => s + r, 0) / days;
+        const annualized = (Math.pow(1 + avgDaily, 252) - 1) * 100;
+
+        // 국면 내 MDD: 복리 누적 곡선 기준으로 계산 (비연속 국면에서도 정확)
+        let peak = 1;
+        let current = 1;
+        let mdd = 0;
+        returns.forEach(r => {
+            current = current * (1 + r);
+            if (current > peak) peak = current;
+            const dd = (current - peak) / peak;
+            if (dd < mdd) mdd = dd;
+        });
+        mdd = mdd * 100;
+
+        // 전체 기간 비율 (분모: 수익률 일수 = n-1)
+        const periodPct = (days / totalActiveDays) * 100;
+
+        return { regime, days, cumulativeReturn, annualized, mdd, periodPct };
+    });
+}
+
+/**
  * groupConfig.aliases에서 티커의 한글명(alias)을 반환.
  * alias가 없으면 raw ticker를 그대로 반환.
  * @param {string} ticker
