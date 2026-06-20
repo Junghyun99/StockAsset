@@ -720,12 +720,19 @@ export function computeRegimePerformance(summaryData) {
  * @returns {{portfolio: number|null, spy: number|null}}
  */
 export function computeYTDReturn(summaryData) {
-    const currentYear = new Date().getFullYear().toString();
-    const ytdData = summaryData.filter(d => d.date.startsWith(currentYear));
+    if (!summaryData || summaryData.length === 0) return { portfolio: null, spy: null };
+    // 백테스트 지원: 실제 캘린더 연도 대신 데이터셋의 마지막 날짜 기준 연도 사용
+    const latestDate = summaryData[summaryData.length - 1].date;
+    if (!latestDate) return { portfolio: null, spy: null };
+    const dataYear = latestDate.slice(0, 4);
+    const ytdData = summaryData.filter(d => d.date && d.date.startsWith(dataYear));
     if (ytdData.length < 2) return { portfolio: null, spy: null };
+    const first = ytdData[0];
+    const last = ytdData[ytdData.length - 1];
+    if (!first.total_value || !first.spy_price) return { portfolio: null, spy: null };
     return {
-        portfolio: (ytdData.at(-1).total_value / ytdData[0].total_value - 1) * 100,
-        spy: (ytdData.at(-1).spy_price / ytdData[0].spy_price - 1) * 100,
+        portfolio: (last.total_value / first.total_value - 1) * 100,
+        spy: (last.spy_price / first.spy_price - 1) * 100,
     };
 }
 
