@@ -637,7 +637,7 @@ export function renderCumulativePnlChart(summaryData, marketType = 'overseas') {
 export function renderDrawdownChart(summaryData) {
     const canvas = document.getElementById('drawdownChart');
     if (!canvas) return;
-    if (drawdownChart) drawdownChart.destroy();
+    if (drawdownChart) { drawdownChart.destroy(); drawdownChart = null; }
     if (!summaryData || summaryData.length === 0) return;
 
     const series = computeDrawdownSeries(summaryData);

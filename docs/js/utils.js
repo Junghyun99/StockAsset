@@ -420,8 +420,9 @@ export function computeDrawdownSeries(summaryData) {
     if (!summaryData || summaryData.length === 0) return [];
     let peak = -Infinity;
     return summaryData.map(d => {
-        if (d.total_value > peak) peak = d.total_value;
-        const dd = peak > 0 ? (d.total_value / peak - 1) * 100 : 0;
+        const val = d.total_value ?? 0;
+        if (val > peak) peak = val;
+        const dd = peak > 0 ? (val / peak - 1) * 100 : 0;
         return { date: d.date, drawdown: dd };
     });
 }
