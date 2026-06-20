@@ -10,6 +10,7 @@ import {
     computeMonthlyReturns,
     computeCumulativePnl,
     computeAlphaSeries,
+    computeDrawdownSeries,
     computeRegimeDistribution,
     computeTradeReasonDistribution,
     computeMonthlyTradeFrequency,
@@ -25,6 +26,7 @@ let yearlyDividendChart = null;
 
 // 신규 차트 인스턴스
 let cumulativePnlChart = null;
+let drawdownChart = null;
 let alphaLineChart = null;
 let monthlyHeatmapChart = null;
 let tradeReasonPieChart = null;
@@ -211,7 +213,7 @@ export function renderGroupBarChart(statusData, groupConfig, marketType = 'overs
 export function resizeAllCharts() {
     [
         stratChart, groupBarChartInstance, unifiedChart, cumulativeDividendChart, yearlyDividendChart,
-        cumulativePnlChart, alphaLineChart, monthlyHeatmapChart, tradeReasonPieChart,
+        cumulativePnlChart, drawdownChart, alphaLineChart, monthlyHeatmapChart, tradeReasonPieChart,
         monthlyFrequencyChart, tickerContributionChart, currentAllocationDoughnut,
         historicalAllocationChart, regimeDistributionDoughnut
     ].forEach(chart => {
@@ -548,8 +550,9 @@ export function renderUnifiedChart(summaryData, marketType = 'overseas') {
 export function updatePerformanceChartRange(summaryData, range, marketType = 'overseas') {
     const filtered = filterByDateRange(summaryData, range);
     renderUnifiedChart(filtered, marketType);
-    // 신규: 누적 P&L / Alpha / 월별 히트맵도 기간에 맞춰 함께 갱신
+    // 신규: 누적 P&L / 드로다운 / Alpha / 월별 히트맵도 기간에 맞춰 함께 갱신
     renderCumulativePnlChart(filtered, marketType);
+    renderDrawdownChart(filtered);
     renderAlphaLineChart(filtered);
     renderMonthlyHeatmap(filtered);
 }
@@ -619,6 +622,75 @@ export function renderCumulativePnlChart(summaryData, marketType = 'overseas') {
                             const v = ctx.parsed.y;
                             const sign = v >= 0 ? '+' : '-';
                             return `누적 손익: ${sign}${currSymbol}${Math.abs(v).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 드로다운 히스토리 차트 (Underwater Chart)
+ * 역대 신고점 대비 낙폭(%) 시계열 — 0% 기준선 아래 빨간 영역
+ */
+export function renderDrawdownChart(summaryData) {
+    const canvas = document.getElementById('drawdownChart');
+    if (!canvas) return;
+    if (drawdownChart) { drawdownChart.destroy(); drawdownChart = null; }
+    if (!summaryData || summaryData.length === 0) return;
+
+    const series = computeDrawdownSeries(summaryData);
+    const labels = series.map(p => p.date);
+    const values = series.map(p => p.drawdown);
+
+    drawdownChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                label: '드로다운 (%)',
+                data: values,
+                borderColor: 'rgba(220, 53, 69, 0.85)',
+                backgroundColor: 'rgba(220, 53, 69, 0.15)',
+                fill: true,
+                tension: 0.1,
+                pointRadius: 0,
+                borderWidth: 1.5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } },
+                y: {
+                    max: 0,
+                    title: { display: true, text: '드로다운 (%)' },
+                    ticks: {
+                        callback: v => v.toFixed(1) + '%'
+                    }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                annotation: {
+                    annotations: {
+                        zeroLine: {
+                            type: 'line',
+                            yMin: 0, yMax: 0,
+                            borderColor: 'rgba(108, 117, 125, 0.6)',
+                            borderWidth: 1,
+                            borderDash: [4, 4]
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const v = ctx.parsed.y;
+                            return `드로다운: ${v.toFixed(2)}%`;
                         }
                     }
                 }

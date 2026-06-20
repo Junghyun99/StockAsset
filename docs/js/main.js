@@ -10,6 +10,7 @@ import {
     renderCumulativeDividendChart,
     renderYearlyDividendChart,
     renderCumulativePnlChart,
+    renderDrawdownChart,
     renderAlphaLineChart,
     renderMonthlyHeatmap,
     renderTradeReasonPie,
@@ -208,6 +209,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderCalmarCard(summaryData);
         renderUnifiedChart(summaryData, marketType);
         renderCumulativePnlChart(summaryData, marketType);
+        renderDrawdownChart(summaryData);
         renderAlphaLineChart(summaryData);
         renderMonthlyHeatmap(summaryData);
         renderStrategyChart(summaryData);
