@@ -19,8 +19,9 @@ import {
     computeFailedExecutions,
     inferNextRebalanceDate,
     getStatusFreshness,
-    computeRegimePerformance
-} from './utils.js?v=3';
+    computeRegimePerformance,
+    computeYTDReturn
+} from './utils.js?v=4';
 
 /**
  * 상단 내비게이션 바의 모드 버튼 및 상태 배지 업데이트
@@ -441,6 +442,28 @@ function renderPagination(totalPages) {
 // ============================================================
 // 대시보드 확장: 신규 UI 렌더 함수들
 // ============================================================
+
+/**
+ * Performance 탭 - YTD Return 카드 (포트폴리오 + SPY 벤치마크)
+ */
+export function renderYTDCard(summaryData) {
+    const portfolioEl = document.getElementById('ytd-portfolio');
+    const spyEl = document.getElementById('ytd-spy');
+    if (!portfolioEl || !spyEl) return;
+
+    const ytd = computeYTDReturn(summaryData);
+    if (ytd.portfolio == null) {
+        portfolioEl.innerText = 'N/A';
+        portfolioEl.className = 'fw-bold mb-1 text-muted';
+        spyEl.innerText = 'SPY N/A';
+        spyEl.className = 'small text-muted';
+    } else {
+        portfolioEl.innerText = formatPercent(ytd.portfolio);
+        portfolioEl.className = 'fw-bold mb-1 ' + (ytd.portfolio >= 0 ? 'text-success' : 'text-danger');
+        spyEl.innerText = 'SPY ' + formatPercent(ytd.spy);
+        spyEl.className = 'small ' + (ytd.spy >= 0 ? 'text-success' : 'text-danger');
+    }
+}
 
 /**
  * Performance 탭 - 롤링 수익률 카드 4개

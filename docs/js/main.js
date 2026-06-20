@@ -38,8 +38,9 @@ import {
     renderStatusFreshnessBadge,
     renderFailedOrderAlert,
     renderOperationsPanel,
-    renderRegimePerformanceTable
-} from './ui.js?v=3';
+    renderRegimePerformanceTable,
+    renderYTDCard
+} from './ui.js?v=4';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=4';
 
@@ -204,6 +205,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         if (perfRendered) return;
         renderPerformanceSummaryCards(summaryData);
         renderRegimePerformanceTable(summaryData);
+        renderYTDCard(summaryData);
         renderRollingReturnCards(summaryData);
         renderCurrentDrawdownCard(summaryData);
         renderCalmarCard(summaryData);

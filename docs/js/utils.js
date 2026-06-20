@@ -715,6 +715,21 @@ export function computeRegimePerformance(summaryData) {
 }
 
 /**
+ * YTD(연초 이후) 수익률 계산
+ * @param {Array} summaryData - summary 배열 (date, total_value, spy_price 필드 필요)
+ * @returns {{portfolio: number|null, spy: number|null}}
+ */
+export function computeYTDReturn(summaryData) {
+    const currentYear = new Date().getFullYear().toString();
+    const ytdData = summaryData.filter(d => d.date.startsWith(currentYear));
+    if (ytdData.length < 2) return { portfolio: null, spy: null };
+    return {
+        portfolio: (ytdData.at(-1).total_value / ytdData[0].total_value - 1) * 100,
+        spy: (ytdData.at(-1).spy_price / ytdData[0].spy_price - 1) * 100,
+    };
+}
+
+/**
  * groupConfig.aliases에서 티커의 한글명(alias)을 반환.
  * alias가 없으면 raw ticker를 그대로 반환.
  * @param {string} ticker
