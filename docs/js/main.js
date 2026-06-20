@@ -40,19 +40,19 @@ import {
     renderOperationsPanel,
     renderRegimePerformanceTable,
     renderYTDCard
-} from './ui.js?v=4';
+} from './ui.js?v=5';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=4';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=5';
 
 import {
     renderCompareOverview,
     renderCompareTradesTab,
-} from './compare-ui.js?v=2';
+} from './compare-ui.js?v=3';
 
 import {
     renderAccountOverview,
     renderAccountTradesTab,
-} from './account-compare-ui.js?v=1';
+} from './account-compare-ui.js?v=2';
 
 import {
     renderAccountPerformanceChart,
