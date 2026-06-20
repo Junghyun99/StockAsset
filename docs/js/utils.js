@@ -411,6 +411,22 @@ export function computeRollingReturn(summaryData, days) {
 }
 
 /**
+ * 드로다운 시계열 계산 (Underwater Chart용)
+ * drawdown(t) = (total_value(t) / max(total_value[0..t]) - 1) × 100
+ * @param {Array} summaryData
+ * @returns {Array<{date:string, drawdown:number}>} 항상 0 이하
+ */
+export function computeDrawdownSeries(summaryData) {
+    if (!summaryData || summaryData.length === 0) return [];
+    let peak = -Infinity;
+    return summaryData.map(d => {
+        if (d.total_value > peak) peak = d.total_value;
+        const dd = peak > 0 ? (d.total_value / peak - 1) * 100 : 0;
+        return { date: d.date, drawdown: dd };
+    });
+}
+
+/**
  * 현재 드로다운 진행일 및 깊이
  * 마지막 peak 이후 경과한 거래일 수와 peak 대비 현재값의 낙폭(%)
  * @param {Array} summaryData
