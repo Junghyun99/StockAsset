@@ -647,6 +647,55 @@ export function getStatusFreshness(lastUpdatedISO, now = new Date()) {
 }
 
 /**
+ * 국면별 성과 분석 (일간 복리 합산 방식)
+ * @param {Array} summaryData - summary 배열 (regime, total_value 필드 필요)
+ * @returns {Array<{regime, days, cumulativeReturn, annualized, mdd, periodPct}>}
+ */
+export function computeRegimePerformance(summaryData) {
+    if (!summaryData || summaryData.length < 2) return [];
+
+    const totalDays = summaryData.length;
+
+    // 국면별 일간 수익률 및 자산가 버킷 수집
+    const buckets = {};
+    for (let i = 1; i < summaryData.length; i++) {
+        const regime = summaryData[i].regime || 'Unknown';
+        const r = summaryData[i - 1].total_value > 0
+            ? summaryData[i].total_value / summaryData[i - 1].total_value - 1
+            : 0;
+        if (!buckets[regime]) buckets[regime] = { returns: [], values: [summaryData[i - 1].total_value] };
+        buckets[regime].returns.push(r);
+        buckets[regime].values.push(summaryData[i].total_value);
+    }
+
+    return Object.entries(buckets).map(([regime, { returns, values }]) => {
+        const days = returns.length;
+
+        // 누적 수익률 (복리)
+        const cumulativeReturn = (returns.reduce((acc, r) => acc * (1 + r), 1) - 1) * 100;
+
+        // 연환산 수익률 (평균 일간 수익률 기준)
+        const avgDaily = returns.reduce((s, r) => s + r, 0) / days;
+        const annualized = (Math.pow(1 + avgDaily, 252) - 1) * 100;
+
+        // 국면 내 MDD
+        let peak = -Infinity;
+        let mdd = 0;
+        values.forEach(v => {
+            if (v > peak) peak = v;
+            const dd = peak > 0 ? (v - peak) / peak : 0;
+            if (dd < mdd) mdd = dd;
+        });
+        mdd = mdd * 100;
+
+        // 전체 기간 비율
+        const periodPct = (days / totalDays) * 100;
+
+        return { regime, days, cumulativeReturn, annualized, mdd, periodPct };
+    });
+}
+
+/**
  * groupConfig.aliases에서 티커의 한글명(alias)을 반환.
  * alias가 없으면 raw ticker를 그대로 반환.
  * @param {string} ticker

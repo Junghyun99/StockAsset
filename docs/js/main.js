@@ -36,7 +36,8 @@ import {
     renderFeeImpactCard,
     renderStatusFreshnessBadge,
     renderFailedOrderAlert,
-    renderOperationsPanel
+    renderOperationsPanel,
+    renderRegimePerformanceTable
 } from './ui.js?v=3';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=4';
@@ -201,6 +202,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     function renderPerformanceTab() {
         if (perfRendered) return;
         renderPerformanceSummaryCards(summaryData);
+        renderRegimePerformanceTable(summaryData);
         renderRollingReturnCards(summaryData);
         renderCurrentDrawdownCard(summaryData);
         renderCalmarCard(summaryData);
