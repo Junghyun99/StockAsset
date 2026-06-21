@@ -796,12 +796,13 @@ export function renderWinLossCards(summaryData) {
  * 동적 렌더링 완료 후 호출해야 신규 DOM 요소도 적용됨.
  */
 export function initTooltips() {
+    if (!window.bootstrap || !window.bootstrap.Tooltip) return;
     document.querySelectorAll('[data-metric-tooltip]').forEach(el => {
         const key = el.getAttribute('data-metric-tooltip');
         const content = METRIC_TOOLTIPS[key];
         if (!content) return;
         const existing = window.bootstrap.Tooltip.getInstance(el);
-        if (existing) existing.dispose();
+        if (existing) return;
         new window.bootstrap.Tooltip(el, {
             html: true,
             title: content,
