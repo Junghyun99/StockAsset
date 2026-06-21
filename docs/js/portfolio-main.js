@@ -1,6 +1,6 @@
 // docs/js/portfolio-main.js
 import { loadAccountsMeta } from './utils.js?v=6';
-import { renderCurrencySummary, renderAccountSections } from './portfolio-cards.js?v=2';
+import { renderCurrencySummary, renderAccountSections } from './portfolio-cards.js?v=20260621-1';
 import { renderComparisonChart, updateChartRange } from './portfolio-charts.js?v=2';
 
 document.addEventListener('DOMContentLoaded', async () => {

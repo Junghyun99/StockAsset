@@ -142,10 +142,15 @@ async function loadLiveMode() {
         });
     }));
 
-    if (accountIds.length === 1) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const singleAccountId = urlParams.get('account');
+    const targetId = singleAccountId && accountsData.has(singleAccountId) ? singleAccountId : null;
+
+    if (accountIds.length === 1 || targetId) {
         // 단일 계좌: 기존 UI (경로만 계좌 서브디렉토리로 수정)
-        const data = accountsData.get(accountIds[0]);
-        const marketType = (ACCOUNT_MARKET_TYPES[accountIds[0]] || 'overseas');
+        const id = targetId || accountIds[0];
+        const data = accountsData.get(id);
+        const marketType = (ACCOUNT_MARKET_TYPES[id] || 'overseas');
         _renderSingleAccount(data, marketType);
     } else {
         // 다중 계좌: 비교 UI
