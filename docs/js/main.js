@@ -62,7 +62,7 @@ import {
     renderAccountStrategyChart,
     updateAccountChartRange,
     resizeAccountCharts,
-} from './account-compare-charts.js?v=1';
+} from './account-compare-charts.js?v=2';
 
 import {
     renderComparePerformanceChart,
@@ -71,7 +71,7 @@ import {
     renderCompareYearlyDividendChart,
     updateCompareChartRange,
     resizeCompareCharts,
-} from './compare-charts.js?v=2';
+} from './compare-charts.js?v=3';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 1. URL 파라미터에서 모드 확인 (?mode=backtest)

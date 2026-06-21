@@ -3,7 +3,7 @@ import {
     formatAmount,
     ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES,
     getRegimeColorClass
-} from './utils.js?v=3';
+} from './utils.js?v=6';
 
 /**
  * 통화별 합산 배너 렌더링
