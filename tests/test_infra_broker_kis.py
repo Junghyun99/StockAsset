@@ -553,7 +553,8 @@ def test_paper_broker_send_order_real_mode_tr_ids(live_broker, mock_requests):
 def test_paper_broker_execute_sell_then_buy(mock_sleep, paper_broker, mock_requests):
     """매도 후 매수 순서 실행"""
     with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
-         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 100.3)):
 
         from src.core.models import TradeExecution
         sell_exec = TradeExecution('SPY', OrderAction.SELL, 5, 150.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
@@ -580,7 +581,8 @@ def test_paper_broker_execute_sell_then_buy(mock_sleep, paper_broker, mock_reque
 def test_paper_broker_execute_buy_only(mock_sleep, paper_broker, mock_requests):
     """매수만 있는 경우"""
     with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
-         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 100.3)):
 
         from src.core.models import TradeExecution
         buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
@@ -599,7 +601,8 @@ def test_paper_broker_execute_buy_only(mock_sleep, paper_broker, mock_requests):
 def test_paper_broker_execute_buy_qty_adjusted(mock_sleep, paper_broker, mock_requests):
     """매수 시 잔고 부족으로 수량 조정"""
     with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
-         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 100.3)):
 
         from src.core.models import TradeExecution
         buy_exec = TradeExecution('SPY', OrderAction.BUY, 1, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
@@ -612,7 +615,7 @@ def test_paper_broker_execute_buy_qty_adjusted(mock_sleep, paper_broker, mock_re
         orders = [Order('SPY', OrderAction.BUY, 100, 100.0)]  # 100주 요청하지만 돈이 부족
         executions = paper_broker.execute_orders(orders)
 
-        # 수량이 조정되어 실행됨 (200*0.98/102 = 1주)
+        # 수량이 조정되어 실행됨 (200*0.98/101 = 1주)
         assert len(executions) == 1
         paper_broker.logger.warning.assert_called()
 
@@ -880,7 +883,8 @@ def test_mock_broker_buy_price_zero():
 def test_paper_broker_execute_buy_calls_send_order_and_wait(mock_sleep, paper_broker, mock_requests):
     """[#222] 매수 주문 시 _send_order_and_wait이 호출되어야 함"""
     with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
-         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 100.3)):
 
         buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
         mock_send.return_value = buy_exec
@@ -895,7 +899,8 @@ def test_paper_broker_execute_buy_calls_send_order_and_wait(mock_sleep, paper_br
 def test_paper_broker_execute_buy_ordered_status_on_timeout(mock_sleep, paper_broker, mock_requests):
     """[#222] 매수 체결 대기 타임아웃 시 ORDERED 상태로 반환"""
     with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
-         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 100.3)):
 
         # _send_order_and_wait 자체가 타임아웃 시 ORDERED 반환
         buy_exec = TradeExecution('SPY', OrderAction.BUY, 5, 100.0, 0.0, '2024-01-01', ExecutionStatus.ORDERED)
@@ -1553,7 +1558,8 @@ def test_execute_orders_sell_filled_proceeds_to_buy(mock_sleep, paper_broker, mo
     buy_exec = TradeExecution('IEF', OrderAction.BUY, 10, 100.0, 0.0, '2024-01-01', ExecutionStatus.FILLED)
 
     with patch.object(paper_broker, '_send_order_and_wait') as mock_send, \
-         patch.object(paper_broker, 'get_portfolio') as mock_get_pf:
+         patch.object(paper_broker, 'get_portfolio') as mock_get_pf, \
+         patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 100.3)):
         mock_send.side_effect = [sell_exec, buy_exec]
         mock_get_pf.return_value = Portfolio(total_cash=10000.0, holdings={}, current_prices={})
 

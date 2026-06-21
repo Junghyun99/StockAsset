@@ -75,7 +75,8 @@ export function computeReturns(summaryData) {
  * @returns {{maxMDD: number, maxMDDDate: string, currentMDD: number}}
  */
 export function computeDrawdown(summaryData) {
-    if (!summaryData || summaryData.length === 0) {
+    summaryData = summaryData ? summaryData.filter(d => d.total_value > 0) : [];
+    if (summaryData.length === 0) {
         return { maxMDD: 0, maxMDDDate: '-', currentMDD: 0 };
     }
 
@@ -145,7 +146,9 @@ export function getAssetGroup(ticker, groupConfig) {
  */
 export function computeAdvancedMetrics(summaryData, initialCash = null) {
     const empty = { totalReturn: 0, cagr: 0, mdd: 0, volatility: 0, sharpe: 0, sortino: 0, calmar: 0, beta: 1.0, ir: 0 };
-    if (!summaryData || summaryData.length < 2) {
+    // total_value=0 레코드는 브로커 API 오류로 인한 잘못된 데이터이므로 제외
+    summaryData = summaryData ? summaryData.filter(d => d.total_value > 0) : [];
+    if (summaryData.length < 2) {
         return { portfolio: { ...empty }, spy: { ...empty, beta: 1.0, ir: 0 } };
     }
 

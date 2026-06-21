@@ -94,8 +94,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             data = res.json()
 
             if data['rt_cd'] != '0':
-                self.logger.warning(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
-                return Portfolio(total_cash=0.0, holdings={}, current_prices={})
+                raise RuntimeError(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
 
             output2_list = data.get('output2', [])
             summary = output2_list[0] if output2_list else {}
@@ -108,8 +107,10 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                     all_holdings[ticker] = qty
                     all_prices[ticker] = float(item.get('prpr', 0) or 0)
 
+        except RuntimeError:
+            raise
         except Exception as e:
-            self.logger.error(f"[KisDomestic] Error getting portfolio: {e}")
+            raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
 
         return Portfolio(
             total_cash=total_cash,
@@ -123,6 +124,23 @@ class KisDomesticBrokerBase(KisBrokerCommon):
         url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-cash"
 
         bid, ask = self._fetch_asking_price(order.ticker)
+
+        if order.action == OrderAction.BUY and ask <= 0:
+            self.logger.warning(f"[KisDomestic] 매수 호가 조회 실패 — {order.ticker} 주문 스킵")
+            return TradeExecution(
+                ticker=order.ticker, action=order.action, quantity=order.quantity,
+                price=0.0, fee=0.0,
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status=ExecutionStatus.REJECTED
+            )
+        if order.action == OrderAction.SELL and bid <= 0:
+            self.logger.warning(f"[KisDomestic] 매도 호가 조회 실패 — {order.ticker} 주문 스킵")
+            return TradeExecution(
+                ticker=order.ticker, action=order.action, quantity=order.quantity,
+                price=0.0, fee=0.0,
+                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                status=ExecutionStatus.REJECTED
+            )
 
         if not self._check_spread(bid, ask):
             mid = (bid + ask) / 2
@@ -138,10 +156,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 status=ExecutionStatus.REJECTED
             )
 
-        if order.action == OrderAction.BUY:
-            order_price = int(ask) if ask > 0 else int(order.price)
-        else:
-            order_price = int(bid) if bid > 0 else int(order.price)
+        order_price = int(ask) if order.action == OrderAction.BUY else int(bid)
 
         data = {
             "CANO": self.cano,

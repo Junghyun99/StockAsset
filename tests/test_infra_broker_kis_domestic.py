@@ -163,7 +163,7 @@ def test_domestic_get_portfolio_success(domestic_paper_broker, mock_requests):
 
 
 def test_domestic_get_portfolio_api_failure(domestic_paper_broker, mock_requests):
-    """잔고 조회 API 실패 시 빈 포트폴리오 반환"""
+    """잔고 조회 API 실패 시 RuntimeError 발생 (0값 저장 방지)"""
     portfolio_response = MagicMock()
     portfolio_response.json.return_value = {
         'rt_cd': '1',
@@ -171,9 +171,8 @@ def test_domestic_get_portfolio_api_failure(domestic_paper_broker, mock_requests
     }
     mock_requests.get.return_value = portfolio_response
 
-    pf = domestic_paper_broker.get_portfolio()
-    assert pf.total_cash == 0.0
-    assert pf.holdings == {}
+    with pytest.raises(RuntimeError, match="Get Portfolio Failed"):
+        domestic_paper_broker.get_portfolio()
 
 
 def test_domestic_get_portfolio_zero_qty_excluded(domestic_paper_broker, mock_requests):
@@ -543,6 +542,72 @@ def test_domestic_execute_orders_sell_then_buy(domestic_paper_broker, mock_reque
     assert sell_results[0].status == ExecutionStatus.FILLED
 
 
+def test_execute_orders_buy_skipped_on_portfolio_failure(domestic_paper_broker, mock_requests):
+    """매수 루프 내 get_portfolio() 실패 시 해당 종목 스킵, 이후 종목 계속, executions 반환."""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': {'bidp1': '71900', 'askp1': '72000'}
+    }
+    # 잔고 조회: 첫 번째 실패, 두 번째 성공
+    portfolio_fail = MagicMock()
+    portfolio_fail.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
+    portfolio_ok = MagicMock()
+    portfolio_ok.json.return_value = {
+        'rt_cd': '0', 'output1': [],
+        'output2': [{'prvs_rcdl_excc_amt': '1000000'}]
+    }
+    hash_response = MagicMock()
+    hash_response.json.return_value = {'HASH': 'hash123'}
+    buy_response = MagicMock()
+    buy_response.json.return_value = {'rt_cd': '0', 'output': {'ODNO': 'BUY001'}}
+    pending_response = MagicMock()
+    pending_response.json.return_value = {'rt_cd': '0', 'output': []}
+    fill_response = MagicMock()
+    fill_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [{'odno': 'BUY001', 'avg_prvs': '72000', 'tot_ccld_qty': '5', 'tot_ccld_amt': '360000'}]
+    }
+
+    mock_requests.get.side_effect = [
+        portfolio_fail,    # 첫 번째 종목 잔고 조회 실패
+        portfolio_ok,      # 두 번째 종목 잔고 조회 성공
+        asking_response,   # 두 번째 종목 호가 (execute_orders 내)
+        asking_response,   # 두 번째 종목 호가 (_send_order_and_wait 내)
+        pending_response,  # 미체결 poll
+        fill_response,     # 체결내역
+    ]
+    mock_requests.post.side_effect = [hash_response, buy_response]
+
+    buy_order1 = Order('005930', OrderAction.BUY, 5, 72000.0)
+    buy_order2 = Order('000660', OrderAction.BUY, 5, 72000.0)
+    results = domestic_paper_broker.execute_orders([buy_order1, buy_order2])
+
+    # 첫 종목 스킵, 두 번째 종목 체결
+    assert len(results) == 1
+    assert results[0].ticker == '000660'
+
+
+def test_execute_orders_buy_skipped_on_ask_price_zero(domestic_paper_broker, mock_requests):
+    """매수 루프에서 호가 조회 실패(ask=0) 시 폴백 없이 해당 종목 스킵."""
+    portfolio_ok = MagicMock()
+    portfolio_ok.json.return_value = {
+        'rt_cd': '0', 'output1': [],
+        'output2': [{'prvs_rcdl_excc_amt': '1000000'}]
+    }
+    # 호가 조회 실패
+    asking_fail = MagicMock()
+    asking_fail.json.return_value = {'rt_cd': '1', 'msg1': 'error'}
+
+    mock_requests.get.side_effect = [portfolio_ok, asking_fail]
+
+    buy_order = Order('005930', OrderAction.BUY, 5, 72000.0)
+    results = domestic_paper_broker.execute_orders([buy_order])
+
+    assert results == []
+    mock_requests.post.assert_not_called()
+
+
 # --- 라이브 브로커 TR_ID 차이 테스트 ---
 
 def test_domestic_live_vs_paper_tr_ids():
@@ -568,7 +633,35 @@ def test_domestic_check_spread_inherited(domestic_paper_broker):
     assert domestic_paper_broker._check_spread(0, 0) is True
 
 
-# --- 주문 거부 (스프레드 이상) 테스트 ---
+# --- 주문 거부 (호가 조회 실패 / 스프레드 이상) 테스트 ---
+
+def test_domestic_sell_order_skipped_on_asking_price_failure(domestic_paper_broker, mock_requests):
+    """매도 호가 조회 실패(bid=0) 시 order.price fallback 없이 REJECTED 반환."""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
+    mock_requests.get.return_value = asking_response
+
+    order = Order('005930.KS', OrderAction.SELL, 10, 72000.0)
+    result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.REJECTED
+    mock_requests.post.assert_not_called()
+
+
+def test_domestic_buy_order_skipped_on_asking_price_failure(domestic_paper_broker, mock_requests):
+    """매수 호가 조회 실패(ask=0) 시 order.price fallback 없이 REJECTED 반환."""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
+    mock_requests.get.return_value = asking_response
+
+    order = Order('005930.KS', OrderAction.BUY, 10, 72000.0)
+    result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.REJECTED
+    mock_requests.post.assert_not_called()
+
 
 def test_domestic_order_rejected_on_bad_spread(domestic_paper_broker, mock_requests):
     """스프레드 비정상 시 REJECTED 반환"""

@@ -73,22 +73,40 @@ def test_load_last_regime_returns_none_on_missing_key(repo):
     assert repo.load_last_regime() is None
 
 
-def test_save_summary_append(repo):
-    # 2. Summary 이어쓰기(Append) 테스트
+def test_save_summary_upsert_same_date(repo):
+    # 같은 날짜로 2번 저장하면 Upsert(덮어쓰기)되어 레코드 1개만 유지
     market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
-    signal = TradeSignal(0.8, [], "Test")
-    pf = Portfolio(1000, {}, {})
-    
-    # 두 번 저장
-    repo.save_daily_summary(market, signal, pf, MarketRegime.BULL)
-    repo.save_daily_summary(market, signal, pf, MarketRegime.BULL)
-    
-    # 파일 확인
+    signal1 = TradeSignal(0.8, [], "오전 실행")
+    signal2 = TradeSignal(0.8, [], "오후 실행")
+    pf1 = Portfolio(1000, {}, {})
+    pf2 = Portfolio(1200, {}, {})
+
+    repo.save_daily_summary(market, signal1, pf1, MarketRegime.BULL)
+    repo.save_daily_summary(market, signal2, pf2, MarketRegime.BULL)
+
     with open(repo.summary_file, 'r') as f:
         data = json.load(f)
-        assert isinstance(data, list)
-        assert len(data) == 2 # 데이터가 2건이어야 함
-        assert data[0]['date'] == "2024-01-01"
+    assert len(data) == 1
+    assert data[0]['date'] == "2024-01-01"
+    assert data[0]['reason'] == "오후 실행"   # 마지막 값으로 갱신
+    assert data[0]['total_value'] == 1200.0   # 마지막 포트폴리오 반영
+
+
+def test_save_summary_different_dates_both_kept(repo):
+    # 다른 날짜는 각각 append되어 2개 레코드 유지
+    market1 = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
+    market2 = MarketData("2024-01-02", 101, 91, 0.1, 0.1, -0.04, 14)
+    signal = TradeSignal(0.8, [], "Test")
+    pf = Portfolio(1000, {}, {})
+
+    repo.save_daily_summary(market1, signal, pf, MarketRegime.BULL)
+    repo.save_daily_summary(market2, signal, pf, MarketRegime.BULL)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert len(data) == 2
+    assert data[0]['date'] == "2024-01-01"
+    assert data[1]['date'] == "2024-01-02"
 
 def test_save_history_only_when_orders_exist(repo, dummy_portfolio):
     # Case A: 체결 내역 없음 (빈 리스트)

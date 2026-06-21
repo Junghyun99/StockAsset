@@ -115,7 +115,13 @@ class TradingEngine:
 
         # Step 4: 포트폴리오 조회 + 실시간 가격
         self.logger.info(">>> Step 4: Portfolio Status")
-        portfolio = self.get_portfolio()
+        try:
+            portfolio = self.get_portfolio()
+        except RuntimeError as e:
+            msg = f"⚠️ Portfolio API Error — 사이클 중단\n날짜: {sim_date or 'today'}\n{e}"
+            self.logger.error(msg)
+            self._notify_alert(msg, detail=self._cycle_detail())
+            raise
         self.logger.info(
             f"Current Portfolio: Cash=${portfolio.total_cash:,.0f}, "
             f"Value=${portfolio.total_value:,.0f}"
@@ -288,11 +294,19 @@ class TradingEngine:
                     )
                     if self.is_live_trading:
                         time.sleep(3)
-                    final_pf = self.broker.get_portfolio()
-                    self.logger.info(
-                        f"Updated Portfolio: Cash=${final_pf.total_cash:,.0f}, "
-                        f"Value=${final_pf.total_value:,.0f}"
-                    )
+                    try:
+                        final_pf = self.broker.get_portfolio()
+                        self.logger.info(
+                            f"Updated Portfolio: Cash=${final_pf.total_cash:,.0f}, "
+                            f"Value=${final_pf.total_value:,.0f}"
+                        )
+                    except RuntimeError as e:
+                        warn_msg = (
+                            f"⚠️ 거래 후 포트폴리오 조회 실패 — 거래 전 포트폴리오로 대체\n{e}\n"
+                            f"거래 기록은 정상 저장됩니다."
+                        )
+                        self.logger.error(warn_msg)
+                        self._notify_alert(warn_msg, detail=self._cycle_detail())
                 else:
                     self._notify_alert(
                         "⚠️ Orders sent but NO execution result returned.",
