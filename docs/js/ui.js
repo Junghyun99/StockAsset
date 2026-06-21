@@ -797,6 +797,8 @@ export function renderWinLossCards(summaryData) {
  */
 export function initTooltips() {
     if (!window.bootstrap || !window.bootstrap.Tooltip) return;
+    const isTouchOnly = window.matchMedia('(hover: none)').matches;
+    const trigger = isTouchOnly ? 'click' : 'hover focus';
     document.querySelectorAll('[data-metric-tooltip]').forEach(el => {
         const key = el.getAttribute('data-metric-tooltip');
         const content = METRIC_TOOLTIPS[key];
@@ -806,7 +808,7 @@ export function initTooltips() {
         new window.bootstrap.Tooltip(el, {
             html: true,
             title: content,
-            trigger: 'hover focus click',
+            trigger,
             placement: 'right',
         });
         el.style.cursor = 'help';
