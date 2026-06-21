@@ -43,19 +43,19 @@ import {
     renderYTDCard,
     renderDividendSummaryCards,
     renderWinLossCards
-} from './ui.js?v=5';
+} from './ui.js?v=6';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=6';
 
 import {
     renderCompareOverview,
     renderCompareTradesTab,
-} from './compare-ui.js?v=3';
+} from './compare-ui.js?v=4';
 
 import {
     renderAccountOverview,
     renderAccountTradesTab,
-} from './account-compare-ui.js?v=2';
+} from './account-compare-ui.js?v=3';
 
 import {
     renderAccountPerformanceChart,
