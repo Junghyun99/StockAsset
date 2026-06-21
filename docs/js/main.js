@@ -43,9 +43,9 @@ import {
     renderYTDCard,
     renderDividendSummaryCards,
     renderWinLossCards
-} from './ui.js?v=5';
+} from './ui.js?v=6';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=5';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=6';
 
 import {
     renderCompareOverview,

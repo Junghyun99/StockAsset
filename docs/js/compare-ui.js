@@ -9,7 +9,7 @@ import {
     formatPercent,
     ENGINE_COLORS,
     ENGINE_MARKET_TYPES,
-} from './utils.js?v=5';
+} from './utils.js?v=6';
 
 /**
  * Overview 탭 - 엔진 비교 요약 테이블 렌더링 (해외/국내 섹션 분리)
