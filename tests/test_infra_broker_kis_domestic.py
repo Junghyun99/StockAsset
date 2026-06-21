@@ -567,7 +567,35 @@ def test_domestic_check_spread_inherited(domestic_paper_broker):
     assert domestic_paper_broker._check_spread(0, 0) is True
 
 
-# --- 주문 거부 (스프레드 이상) 테스트 ---
+# --- 주문 거부 (호가 조회 실패 / 스프레드 이상) 테스트 ---
+
+def test_domestic_sell_order_skipped_on_asking_price_failure(domestic_paper_broker, mock_requests):
+    """매도 호가 조회 실패(bid=0) 시 order.price fallback 없이 REJECTED 반환."""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
+    mock_requests.get.return_value = asking_response
+
+    order = Order('005930.KS', OrderAction.SELL, 10, 72000.0)
+    result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.REJECTED
+    mock_requests.post.assert_not_called()
+
+
+def test_domestic_buy_order_skipped_on_asking_price_failure(domestic_paper_broker, mock_requests):
+    """매수 호가 조회 실패(ask=0) 시 order.price fallback 없이 REJECTED 반환."""
+    asking_response = MagicMock()
+    asking_response.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
+    mock_requests.get.return_value = asking_response
+
+    order = Order('005930.KS', OrderAction.BUY, 10, 72000.0)
+    result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
+
+    assert result is not None
+    assert result.status == ExecutionStatus.REJECTED
+    mock_requests.post.assert_not_called()
+
 
 def test_domestic_order_rejected_on_bad_spread(domestic_paper_broker, mock_requests):
     """스프레드 비정상 시 REJECTED 반환"""
