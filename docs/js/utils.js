@@ -761,3 +761,44 @@ export function getTickerAlias(ticker, groupConfig) {
     }
     return ticker;
 }
+
+/**
+ * 배당 수익률 요약 계산 (추정치, yfinance 배당락일 기준)
+ * @param {Array} summaryData - summary 배열 (daily_dividend, total_value 필드)
+ * @returns {{totalDividend: number, annualizedYield: number, ytdDividend: number}}
+ */
+export function computeDividendYield(summaryData) {
+    if (!summaryData || summaryData.length < 2) {
+        return { totalDividend: 0, annualizedYield: 0, ytdDividend: 0 };
+    }
+
+    const first = summaryData[0];
+    const last = summaryData[summaryData.length - 1];
+
+    if (!first || !last || !first.date || !last.date) {
+        return { totalDividend: 0, annualizedYield: 0, ytdDividend: 0 };
+    }
+
+    const totalDividend = summaryData.reduce((s, d) => s + (d.daily_dividend || 0), 0);
+
+    const avgValue = summaryData.reduce((s, d) => s + (d.total_value || 0), 0) / summaryData.length;
+
+    const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
+    const firstDate = new Date(first.date);
+    const lastDate = new Date(last.date);
+
+    if (isNaN(firstDate.getTime()) || isNaN(lastDate.getTime())) {
+        return { totalDividend, annualizedYield: 0, ytdDividend: 0 };
+    }
+
+    const years = Math.max((lastDate - firstDate) / msPerYear, 1 / 365);
+
+    const annualizedYield = avgValue > 0 ? (totalDividend / avgValue / years) * 100 : 0;
+
+    const dataYear = last.date.slice(0, 4);
+    const ytdDividend = summaryData
+        .filter(d => d.date && d.date.startsWith(dataYear))
+        .reduce((s, d) => s + (d.daily_dividend || 0), 0);
+
+    return { totalDividend, annualizedYield, ytdDividend };
+}

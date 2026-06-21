@@ -20,7 +20,8 @@ import {
     inferNextRebalanceDate,
     getStatusFreshness,
     computeRegimePerformance,
-    computeYTDReturn
+    computeYTDReturn,
+    computeDividendYield
 } from './utils.js?v=5';
 
 /**
@@ -702,4 +703,45 @@ export function renderRegimePerformanceTable(summaryData) {
             </tr>
         `;
     }).join('');
+}
+
+/**
+ * 배당 요약 카드 3개 렌더링 (누적 배당금, 연환산 수익률, 올해 배당금)
+ */
+export function renderDividendSummaryCards(summaryData, marketType = 'overseas') {
+    const container = document.getElementById('dividend-summary-cards');
+    if (!container) return;
+
+    const { totalDividend, annualizedYield, ytdDividend } = computeDividendYield(summaryData);
+    const fmt = v => formatAmount(v, marketType);
+
+    container.innerHTML = `
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-3">
+                    <h6 class="text-muted small mb-1">누적 배당금</h6>
+                    <h5 class="fw-bold mb-1 text-success">${fmt(totalDividend)}</h5>
+                    <div class="small text-muted">전체 기간 합계</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-3">
+                    <h6 class="text-muted small mb-1">연환산 수익률</h6>
+                    <h5 class="fw-bold mb-1 ${annualizedYield > 0 ? 'text-success' : 'text-muted'}">${annualizedYield.toFixed(2)}%</h5>
+                    <div class="small text-muted">배당금 / 평균 자산</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-3">
+                    <h6 class="text-muted small mb-1">올해 배당금</h6>
+                    <h5 class="fw-bold mb-1 text-success">${fmt(ytdDividend)}</h5>
+                    <div class="small text-muted">YTD 합계</div>
+                </div>
+            </div>
+        </div>
+    `;
 }
