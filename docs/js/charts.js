@@ -1535,8 +1535,9 @@ export function renderDeviationTrendChart(summaryData, groupConfig) {
         } else {
             const ratioA = (d.group_a || 0) / valRisky;
             const ratioB = (d.group_b || 0) / valRisky;
-            devA.push(effA > 0 ? Math.abs(ratioA - effA) / effA * 100 : null);
-            devB.push(effB > 0 ? Math.abs(ratioB - effB) / effB * 100 : null);
+            // 목표 비중 0이면 이격도 0 (백엔드 Rebalancer·이격도 배지와 동일 규약)
+            devA.push(effA > 0 ? Math.abs(ratioA - effA) / effA * 100 : 0);
+            devB.push(effB > 0 ? Math.abs(ratioB - effB) / effB * 100 : 0);
         }
         thr.push(resolveThreshold(rc, d.regime) * 100);
     });
