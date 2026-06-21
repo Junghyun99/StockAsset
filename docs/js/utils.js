@@ -823,7 +823,7 @@ export function computeWinLossStats(summaryData) {
     return {
         winRate: (wins.length / monthly.length) * 100,
         avgWin: wins.length > 0 ? (grossWin / wins.length) * 100 : 0,
-        avgLoss: losses.length > 0 ? (losses.reduce((s, m) => s + m.return, 0) / losses.length) * 100 : 0,
+        avgLoss: losses.length > 0 ? (-grossLoss / losses.length) * 100 : 0,
         profitFactor: grossLoss > 0 ? grossWin / grossLoss : Infinity,
         totalMonths: monthly.length,
     };

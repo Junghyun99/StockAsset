@@ -760,22 +760,29 @@ export function renderWinLossCards(summaryData) {
         el.className = 'fw-bold mb-0 ' + colorClass;
     };
 
-    setCard('win-rate-value',
-        stats.totalMonths > 0 ? stats.winRate.toFixed(1) + '%' : 'N/A',
-        stats.winRate >= 50 ? 'text-success' : 'text-danger');
+    if (stats.totalMonths === 0) {
+        setCard('win-rate-value', 'N/A', 'text-muted');
+        setCard('avg-win-value', 'N/A', 'text-muted');
+        setCard('avg-loss-value', 'N/A', 'text-muted');
+        setCard('profit-factor-value', 'N/A', 'text-muted');
+    } else {
+        setCard('win-rate-value',
+            stats.winRate.toFixed(1) + '%',
+            stats.winRate >= 50 ? 'text-success' : 'text-danger');
 
-    setCard('avg-win-value',
-        stats.avgWin > 0 ? '+' + stats.avgWin.toFixed(2) + '%' : 'N/A',
-        'text-success');
+        setCard('avg-win-value',
+            stats.avgWin > 0 ? '+' + stats.avgWin.toFixed(2) + '%' : 'N/A',
+            stats.avgWin > 0 ? 'text-success' : 'text-muted');
 
-    setCard('avg-loss-value',
-        stats.avgLoss < 0 ? stats.avgLoss.toFixed(2) + '%' : 'N/A',
-        'text-danger');
+        setCard('avg-loss-value',
+            stats.avgLoss < 0 ? stats.avgLoss.toFixed(2) + '%' : 'N/A',
+            stats.avgLoss < 0 ? 'text-danger' : 'text-muted');
 
-    const pfText = !isFinite(stats.profitFactor) ? '∞' : stats.profitFactor.toFixed(2) + '×';
-    const pfClass = !isFinite(stats.profitFactor) || stats.profitFactor >= 2.0
-        ? 'text-success' : (stats.profitFactor >= 1.0 ? 'text-dark' : 'text-danger');
-    setCard('profit-factor-value', pfText, pfClass);
+        const pfText = !isFinite(stats.profitFactor) ? '∞' : stats.profitFactor.toFixed(2) + '×';
+        const pfClass = !isFinite(stats.profitFactor) || stats.profitFactor >= 2.0
+            ? 'text-success' : (stats.profitFactor >= 1.0 ? 'text-dark' : 'text-danger');
+        setCard('profit-factor-value', pfText, pfClass);
+    }
 
     const hintEl = document.getElementById('win-loss-total-months');
     if (hintEl) hintEl.innerText = `${stats.totalMonths}개월 기준`;
