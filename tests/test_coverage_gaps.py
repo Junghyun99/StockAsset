@@ -7,6 +7,7 @@ from unittest.mock import patch, MagicMock
 from src.core.models import (
     MarketData, MarketRegime, TradeSignal, Order, Portfolio, TradeExecution
 )
+from src.main import TradingBot
 
 
 # ==========================================
@@ -187,6 +188,7 @@ class TestTradingBotEdgeCases:
              patch('src.main.JsonRepository') as MockRepo, \
              patch('src.main.SlackNotifier') as MockNotifier, \
              patch('src.main.KisOverseasLiveBroker') as MockKisBroker, \
+             patch.object(TradingBot, '_save_accounts_meta'), \
              patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
              patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
              patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
