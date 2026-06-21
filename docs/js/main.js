@@ -50,12 +50,12 @@ import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.
 import {
     renderCompareOverview,
     renderCompareTradesTab,
-} from './compare-ui.js?v=3';
+} from './compare-ui.js?v=4';
 
 import {
     renderAccountOverview,
     renderAccountTradesTab,
-} from './account-compare-ui.js?v=2';
+} from './account-compare-ui.js?v=3';
 
 import {
     renderAccountPerformanceChart,
