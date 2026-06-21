@@ -157,7 +157,11 @@ class KisBrokerCommon(IBrokerAdapter):
             prev_cash: Optional[float] = None
             for order in buy_orders:
                 # 매수 주문마다 증권사 API로 실제 가용 금액 조회
-                pf = self.get_portfolio()
+                try:
+                    pf = self.get_portfolio()
+                except RuntimeError as e:
+                    self.logger.error(f"[KisBroker] 매수 가용 현금 조회 실패 — {order.ticker} 스킵: {e}")
+                    continue
                 current_cash = pf.total_cash
                 # 현금 변동이 있을 때만 로깅(동일 값 반복 노이즈 방지)
                 if prev_cash is None or current_cash != prev_cash:
@@ -168,13 +172,15 @@ class KisBrokerCommon(IBrokerAdapter):
                 SAFE_MARGIN = 0.98
                 budget = current_cash * SAFE_MARGIN
 
-                # 호가 기반 매수가 추정 (ask 가격 사용, 실패 시 2% 버퍼)
+                # 호가 기반 매수가 추정 (ask 가격 사용, 실패 시 폴백 없이 스킵)
                 bid, ask = self._fetch_asking_price(order.ticker)
                 if not self._check_spread(bid, ask):
                     self.logger.warning(f"[KisBroker] 스프레드 비정상 — {order.ticker} 매수 건너뜀")
                     continue
-                estimated_price = ask if ask > 0 else order.price * 1.02
-                if estimated_price <= 0: continue
+                if ask <= 0:
+                    self.logger.warning(f"[KisBroker] 매수 호가 조회 실패 — {order.ticker} 스킵")
+                    continue
+                estimated_price = ask
 
                 # 수량 재계산
                 max_qty = int(budget / estimated_price)
