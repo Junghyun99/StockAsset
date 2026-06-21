@@ -16,11 +16,13 @@ class JsonRepository(IRepository):
         'C': {'label': 'Cash',   'color': '#ffc107'},
     }
 
-    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100, asset_groups: dict = None):
+    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100, asset_groups: dict = None, rebalance_config: dict = None):
         self.root = root_path
         self.max_summary_records = max_summary_records
         self.max_history_records = max_history_records
         self._asset_groups = asset_groups or {}
+        # 프론트엔드 목표 비중·이격도 계산용 리밸런싱 설정 (ratio_a, 국면맵, 임계치맵)
+        self._rebalance_config = rebalance_config
         os.makedirs(self.root, exist_ok=True)
 
         self.status_file = os.path.join(self.root, "status.json")
@@ -54,6 +56,9 @@ class JsonRepository(IRepository):
         aliases = {t: TICKER_ALIASES[t] for t in all_tickers if t in TICKER_ALIASES}
         if aliases:
             config['aliases'] = aliases
+        # 목표 비중·이격도(이탈도) 계산을 위한 리밸런싱 설정 노출
+        if self._rebalance_config:
+            config['rebalance_config'] = self._rebalance_config
         self._save_json(os.path.join(self.root, "asset_groups.json"), config)
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,

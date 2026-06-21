@@ -22,6 +22,7 @@ from src.infra.broker import (
 )
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
+from src.core.logic.rebalancer import Rebalancer
 
 
 def _resolve_engine_class(engine_name: str):
@@ -33,6 +34,28 @@ def _resolve_engine_class(engine_name: str):
     raise ValueError(
         f"알 수 없는 엔진 '{engine_name}'. 등록된 엔진: {registered}"
     )
+
+
+def _build_rebalance_config(engine_cls, ratio_a: float) -> dict:
+    """프론트엔드 목표 비중·이격도(이탈도) 계산용 리밸런싱 설정을 직렬화한다.
+
+    엔진 클래스의 고정 비율(ratio_a)·국면별 비율 맵·국면별 임계치 맵을
+    MarketRegime enum 값을 문자열 키로 변환해 asset_groups.json에 노출한다.
+    프론트엔드는 status.json의 현재 regime/exposure와 결합해 목표 비중과
+    리밸런싱 임계치 대비 이격도를 계산한다.
+    """
+    regime_map = getattr(engine_cls, "REGIME_RATIO_A_MAP", None)
+    return {
+        "ratio_a": ratio_a,
+        "regime_ratio_a_map": (
+            {regime.value: val for regime, val in regime_map.items()}
+            if regime_map else None
+        ),
+        "threshold_map": {
+            regime.value: val
+            for regime, val in Rebalancer.DEFAULT_THRESHOLD_MAP.items()
+        },
+    }
 
 
 def _create_broker(acc: AccountConfig, logger):
@@ -89,6 +112,7 @@ class TradingBot:
                 max_summary_records=self.config.MAX_SUMMARY_RECORDS,
                 max_history_records=self.config.MAX_HISTORY_RECORDS,
                 asset_groups=asset_groups,
+                rebalance_config=_build_rebalance_config(engine_cls, ratio_a),
             )
             engine = engine_cls(
                 asset_groups=asset_groups,

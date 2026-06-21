@@ -158,6 +158,31 @@ def test_repo_directory_creation(tmp_path):
     assert os.path.exists(new_path)
 
 
+def test_asset_groups_config_omits_rebalance_config_by_default(tmp_path):
+    """rebalance_config 미전달 시 asset_groups.json에 키가 없어야 한다."""
+    JsonRepository(root_path=str(tmp_path), asset_groups={'A': ['SSO']})
+    with open(os.path.join(str(tmp_path), "asset_groups.json"), encoding="utf-8") as f:
+        config = json.load(f)
+    assert 'rebalance_config' not in config
+
+
+def test_asset_groups_config_includes_rebalance_config(tmp_path):
+    """rebalance_config 전달 시 asset_groups.json에 그대로 직렬화돼야 한다."""
+    rebalance_config = {
+        "ratio_a": 0.4,
+        "regime_ratio_a_map": None,
+        "threshold_map": {"Bull": 0.075, "Sideways": 0.025},
+    }
+    JsonRepository(
+        root_path=str(tmp_path),
+        asset_groups={'A': ['226490.KS'], 'B': ['365780.KS']},
+        rebalance_config=rebalance_config,
+    )
+    with open(os.path.join(str(tmp_path), "asset_groups.json"), encoding="utf-8") as f:
+        config = json.load(f)
+    assert config['rebalance_config'] == rebalance_config
+
+
 def test_repo_resilience_empty_file(repo):
     """
     [심화] JSON 파일이 존재하지만 내용이 비어있는 경우(0 byte) 방어
