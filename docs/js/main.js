@@ -142,6 +142,7 @@ async function loadLiveMode() {
         });
     }));
 
+    const urlParams = new URLSearchParams(window.location.search);
     const singleAccountId = urlParams.get('account');
     const targetId = singleAccountId && accountsData.has(singleAccountId) ? singleAccountId : null;
 
