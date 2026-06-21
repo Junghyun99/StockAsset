@@ -1,7 +1,7 @@
 // docs/js/account-compare-charts.js
 // 라이브 다중 계좌 비교 전용 차트
 
-import { filterByDateRange, ACCOUNT_COLORS } from './utils.js?v=4';
+import { filterByDateRange, ACCOUNT_COLORS } from './utils.js?v=6';
 
 let accountPerformanceChart = null;
 let accountStrategyChart = null;
