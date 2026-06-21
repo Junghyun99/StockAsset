@@ -44,7 +44,7 @@ import {
     renderDividendSummaryCards
 } from './ui.js?v=5';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=5';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=6';
 
 import {
     renderCompareOverview,
