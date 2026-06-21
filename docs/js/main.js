@@ -41,7 +41,8 @@ import {
     renderOperationsPanel,
     renderRegimePerformanceTable,
     renderYTDCard,
-    renderDividendSummaryCards
+    renderDividendSummaryCards,
+    renderWinLossCards
 } from './ui.js?v=5';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=6';
@@ -208,6 +209,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderPerformanceSummaryCards(summaryData);
         renderRegimePerformanceTable(summaryData);
         renderYTDCard(summaryData);
+        renderWinLossCards(summaryData);
         renderRollingReturnCards(summaryData);
         renderCurrentDrawdownCard(summaryData);
         renderCalmarCard(summaryData);

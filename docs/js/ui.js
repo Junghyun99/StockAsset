@@ -21,7 +21,8 @@ import {
     getStatusFreshness,
     computeRegimePerformance,
     computeYTDReturn,
-    computeDividendYield
+    computeDividendYield,
+    computeWinLossStats
 } from './utils.js?v=5';
 
 /**
@@ -744,4 +745,45 @@ export function renderDividendSummaryCards(summaryData, marketType = 'overseas')
             </div>
         </div>
     `;
+}
+
+/**
+ * Performance 탭 - 승률/손익비 통계 카드 4개 렌더링
+ */
+export function renderWinLossCards(summaryData) {
+    const stats = computeWinLossStats(summaryData);
+
+    const setCard = (id, value, colorClass) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerText = value;
+        el.className = 'fw-bold mb-0 ' + colorClass;
+    };
+
+    if (stats.totalMonths === 0) {
+        setCard('win-rate-value', 'N/A', 'text-muted');
+        setCard('avg-win-value', 'N/A', 'text-muted');
+        setCard('avg-loss-value', 'N/A', 'text-muted');
+        setCard('profit-factor-value', 'N/A', 'text-muted');
+    } else {
+        setCard('win-rate-value',
+            stats.winRate.toFixed(1) + '%',
+            stats.winRate >= 50 ? 'text-success' : 'text-danger');
+
+        setCard('avg-win-value',
+            stats.avgWin > 0 ? '+' + stats.avgWin.toFixed(2) + '%' : 'N/A',
+            stats.avgWin > 0 ? 'text-success' : 'text-muted');
+
+        setCard('avg-loss-value',
+            stats.avgLoss < 0 ? stats.avgLoss.toFixed(2) + '%' : 'N/A',
+            stats.avgLoss < 0 ? 'text-danger' : 'text-muted');
+
+        const pfText = !isFinite(stats.profitFactor) ? '∞' : stats.profitFactor.toFixed(2) + '×';
+        const pfClass = !isFinite(stats.profitFactor) || stats.profitFactor >= 2.0
+            ? 'text-success' : (stats.profitFactor >= 1.0 ? 'text-dark' : 'text-danger');
+        setCard('profit-factor-value', pfText, pfClass);
+    }
+
+    const hintEl = document.getElementById('win-loss-total-months');
+    if (hintEl) hintEl.innerText = `${stats.totalMonths}개월 기준`;
 }
