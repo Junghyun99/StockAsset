@@ -163,7 +163,7 @@ def test_domestic_get_portfolio_success(domestic_paper_broker, mock_requests):
 
 
 def test_domestic_get_portfolio_api_failure(domestic_paper_broker, mock_requests):
-    """잔고 조회 API 실패 시 빈 포트폴리오 반환"""
+    """잔고 조회 API 실패 시 RuntimeError 발생 (0값 저장 방지)"""
     portfolio_response = MagicMock()
     portfolio_response.json.return_value = {
         'rt_cd': '1',
@@ -171,9 +171,8 @@ def test_domestic_get_portfolio_api_failure(domestic_paper_broker, mock_requests
     }
     mock_requests.get.return_value = portfolio_response
 
-    pf = domestic_paper_broker.get_portfolio()
-    assert pf.total_cash == 0.0
-    assert pf.holdings == {}
+    with pytest.raises(RuntimeError, match="Get Portfolio Failed"):
+        domestic_paper_broker.get_portfolio()
 
 
 def test_domestic_get_portfolio_zero_qty_excluded(domestic_paper_broker, mock_requests):

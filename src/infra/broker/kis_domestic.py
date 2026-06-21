@@ -94,8 +94,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             data = res.json()
 
             if data['rt_cd'] != '0':
-                self.logger.warning(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
-                return Portfolio(total_cash=0.0, holdings={}, current_prices={})
+                raise RuntimeError(f"[KisDomestic] Get Portfolio Failed: {data.get('msg1')}")
 
             output2_list = data.get('output2', [])
             summary = output2_list[0] if output2_list else {}
@@ -108,8 +107,10 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                     all_holdings[ticker] = qty
                     all_prices[ticker] = float(item.get('prpr', 0) or 0)
 
+        except RuntimeError:
+            raise
         except Exception as e:
-            self.logger.error(f"[KisDomestic] Error getting portfolio: {e}")
+            raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
 
         return Portfolio(
             total_cash=total_cash,
