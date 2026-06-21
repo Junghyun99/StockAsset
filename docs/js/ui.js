@@ -806,7 +806,7 @@ export function initTooltips() {
         new window.bootstrap.Tooltip(el, {
             html: true,
             title: content,
-            trigger: 'hover focus',
+            trigger: 'hover focus click',
             placement: 'right',
         });
         el.style.cursor = 'help';
