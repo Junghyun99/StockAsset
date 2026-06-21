@@ -39,7 +39,8 @@ import {
     renderFailedOrderAlert,
     renderOperationsPanel,
     renderRegimePerformanceTable,
-    renderYTDCard
+    renderYTDCard,
+    renderDividendSummaryCards
 } from './ui.js?v=5';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=5';
@@ -215,6 +216,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderAlphaLineChart(summaryData);
         renderMonthlyHeatmap(summaryData);
         renderStrategyChart(summaryData);
+        renderDividendSummaryCards(summaryData, marketType);
         renderCumulativeDividendChart(summaryData, marketType);
         renderYearlyDividendChart(summaryData, marketType);
         setupTimeRangeSelector(summaryData, marketType);
