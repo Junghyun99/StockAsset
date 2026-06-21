@@ -29,6 +29,7 @@ def mock_dependencies():
          patch('src.main.JsonRepository') as MockRepo, \
          patch('src.main.SlackNotifier') as MockNotifier, \
          patch('src.main.KisOverseasPaperBroker') as MockBrokerCls, \
+         patch.object(TradingBot, '_save_accounts_meta'), \
          patch('src.core.engine.base.IndicatorCalculator') as MockCalc, \
          patch('src.core.engine.base.RegimeAnalyzer') as MockAnalyzer, \
          patch('src.core.engine.base.VolatilityTargeter') as MockTargeter, \
