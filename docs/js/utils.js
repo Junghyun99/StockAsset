@@ -802,3 +802,35 @@ export function computeDividendYield(summaryData) {
 
     return { totalDividend, annualizedYield, ytdDividend };
 }
+
+/**
+ * 연간 수익률 계산 (포트폴리오 vs SPY)
+ * @param {Array} summaryData - summary 배열 (date, total_value, spy_price 필드 필요)
+ * @returns {Array<{year:string, portfolioReturn:number, spyReturn:number, isYTD:boolean}>}
+ */
+export function computeAnnualReturns(summaryData) {
+    if (!summaryData || summaryData.length < 2) return [];
+
+    const years = {};
+    summaryData.forEach(d => {
+        const year = d.date.slice(0, 4);
+        if (!years[year]) years[year] = [];
+        years[year].push(d);
+    });
+
+    const currentYear = summaryData[summaryData.length - 1].date.slice(0, 4);
+
+    return Object.entries(years)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .filter(([, days]) => days.length >= 2)
+        .map(([year, days]) => {
+            const firstDay = days[0];
+            const lastDay = days[days.length - 1];
+            return {
+                year,
+                portfolioReturn: firstDay.total_value ? (lastDay.total_value / firstDay.total_value - 1) * 100 : 0,
+                spyReturn: firstDay.spy_price ? (lastDay.spy_price / firstDay.spy_price - 1) * 100 : 0,
+                isYTD: year === currentYear,
+            };
+        });
+}

@@ -14,7 +14,8 @@ import {
     computeRegimeDistribution,
     computeTradeReasonDistribution,
     computeMonthlyTradeFrequency,
-    computeTickerContribution
+    computeTickerContribution,
+    computeAnnualReturns
 } from './utils.js?v=3';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
@@ -35,6 +36,7 @@ let tickerContributionChart = null;
 let currentAllocationDoughnut = null;
 let historicalAllocationChart = null;
 let regimeDistributionDoughnut = null;
+let annualReturnsChart = null;
 
 /**
  * Strategy Analysis 차트 렌더링 (투자 비중 + 모멘텀 듀얼 축)
@@ -215,7 +217,7 @@ export function resizeAllCharts() {
         stratChart, groupBarChartInstance, unifiedChart, cumulativeDividendChart, yearlyDividendChart,
         cumulativePnlChart, drawdownChart, alphaLineChart, monthlyHeatmapChart, tradeReasonPieChart,
         monthlyFrequencyChart, tickerContributionChart, currentAllocationDoughnut,
-        historicalAllocationChart, regimeDistributionDoughnut
+        historicalAllocationChart, regimeDistributionDoughnut, annualReturnsChart
     ].forEach(chart => {
         if (chart) chart.resize();
     });
@@ -1174,6 +1176,93 @@ export function renderRegimeDistributionDoughnut(summaryData) {
                         label: ctx => {
                             const pct = total > 0 ? (ctx.parsed / total * 100).toFixed(1) : '0';
                             return `${ctx.label}: ${ctx.parsed}일 (${pct}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 연간 수익률 vs SPY Grouped Bar Chart
+ */
+export function renderAnnualReturnsChart(summaryData) {
+    const canvas = document.getElementById('annualReturnsChart');
+    if (!canvas) return;
+    if (annualReturnsChart) annualReturnsChart.destroy();
+    if (!summaryData || summaryData.length < 2) return;
+
+    const data = computeAnnualReturns(summaryData);
+    if (data.length === 0) return;
+
+    const labels = data.map(d => d.isYTD ? `${d.year} (YTD)` : d.year);
+
+    annualReturnsChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Portfolio',
+                    data: data.map(d => d.portfolioReturn),
+                    backgroundColor: data.map(d => d.portfolioReturn >= 0 ? 'rgba(25, 135, 84, 0.75)' : 'rgba(220, 53, 69, 0.75)'),
+                    borderColor: data.map(d => d.portfolioReturn >= 0 ? '#198754' : '#dc3545'),
+                    borderWidth: 1,
+                    borderRadius: 4
+                },
+                {
+                    label: 'SPY',
+                    data: data.map(d => d.spyReturn),
+                    backgroundColor: data.map(d => d.spyReturn >= 0 ? 'rgba(253, 126, 20, 0.65)' : 'rgba(220, 53, 69, 0.45)'),
+                    borderColor: data.map(d => d.spyReturn >= 0 ? '#fd7e14' : '#dc3545'),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    title: { display: true, text: 'Return (%)' },
+                    ticks: {
+                        callback: v => (v >= 0 ? '+' : '') + v.toFixed(0) + '%'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 12, font: { size: 11 } }
+                },
+                annotation: {
+                    annotations: {
+                        zeroLine: {
+                            type: 'line',
+                            yMin: 0, yMax: 0,
+                            borderColor: 'rgba(108, 117, 125, 0.6)',
+                            borderWidth: 1,
+                            borderDash: [4, 4]
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const v = ctx.parsed.y;
+                            const sign = v >= 0 ? '+' : '';
+                            return `${ctx.dataset.label}: ${sign}${v.toFixed(2)}%`;
+                        },
+                        afterBody: ctx => {
+                            const idx = ctx[0].dataIndex;
+                            const d = data[idx];
+                            const alpha = d.portfolioReturn - d.spyReturn;
+                            const sign = alpha >= 0 ? '+' : '';
+                            return [`Alpha: ${sign}${alpha.toFixed(2)}%`];
                         }
                     }
                 }

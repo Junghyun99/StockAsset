@@ -13,6 +13,7 @@ import {
     renderDrawdownChart,
     renderAlphaLineChart,
     renderMonthlyHeatmap,
+    renderAnnualReturnsChart,
     renderTradeReasonPie,
     renderMonthlyTradeFrequencyChart,
     renderTickerContributionChart,
@@ -214,6 +215,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderCumulativePnlChart(summaryData, marketType);
         renderDrawdownChart(summaryData);
         renderAlphaLineChart(summaryData);
+        renderAnnualReturnsChart(summaryData);
         renderMonthlyHeatmap(summaryData);
         renderStrategyChart(summaryData);
         renderDividendSummaryCards(summaryData, marketType);
