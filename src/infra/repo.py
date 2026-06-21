@@ -92,7 +92,13 @@ class JsonRepository(IRepository):
         }
 
         data = self._load_json(self.summary_file, default=[])
-        data.append(record)
+
+        # 같은 날짜 레코드가 있으면 덮어쓰고(upsert), 없으면 추가
+        idx = next((i for i, r in enumerate(data) if r.get('date') == record['date']), None)
+        if idx is not None:
+            data[idx] = record
+        else:
+            data.append(record)
 
         if self.max_summary_records > 0:
             data = data[-self.max_summary_records:]
