@@ -129,7 +129,7 @@ function buildCard(id, data, marketType) {
                     </div>
                     ${groupBar}
                     <div class="mt-auto pt-2">
-                        <a href="index.html" class="btn btn-outline-secondary btn-sm w-100">
+                        <a href="index.html?account=${id}" class="btn btn-outline-secondary btn-sm w-100">
                             상세 보기 <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
