@@ -804,6 +804,32 @@ export function computeDividendYield(summaryData) {
 }
 
 /**
+ * 승률/손익비 통계 (월 단위)
+ * @param {Array} summaryData - summary 배열
+ * @returns {{winRate:number, avgWin:number, avgLoss:number, profitFactor:number, totalMonths:number}}
+ */
+export function computeWinLossStats(summaryData) {
+    const monthly = computeMonthlyReturns(summaryData);
+    if (monthly.length === 0) {
+        return { winRate: 0, avgWin: 0, avgLoss: 0, profitFactor: 0, totalMonths: 0 };
+    }
+
+    const wins = monthly.filter(m => m.return > 0);
+    const losses = monthly.filter(m => m.return < 0);
+
+    const grossWin = wins.reduce((s, m) => s + m.return, 0);
+    const grossLoss = Math.abs(losses.reduce((s, m) => s + m.return, 0));
+
+    return {
+        winRate: (wins.length / monthly.length) * 100,
+        avgWin: wins.length > 0 ? (grossWin / wins.length) * 100 : 0,
+        avgLoss: losses.length > 0 ? (losses.reduce((s, m) => s + m.return, 0) / losses.length) * 100 : 0,
+        profitFactor: grossLoss > 0 ? grossWin / grossLoss : Infinity,
+        totalMonths: monthly.length,
+    };
+}
+
+/**
  * 연간 수익률 계산 (포트폴리오 vs SPY)
  * @param {Array} summaryData - summary 배열 (date, total_value, spy_price 필드 필요)
  * @returns {Array<{year:string, portfolioReturn:number, spyReturn:number, isYTD:boolean}>}
