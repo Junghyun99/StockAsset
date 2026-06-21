@@ -25,6 +25,8 @@ import {
     computeWinLossStats
 } from './utils.js?v=6';
 
+import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
+
 /**
  * 상단 내비게이션 바의 모드 버튼 및 상태 배지 업데이트
  */
@@ -258,14 +260,14 @@ export function renderPerformanceSummaryCards(summaryData) {
 
     // 지표 정의: [label, portValue, spyValue, format, higherIsBetter]
     const rows = [
-        ['Total Return', p.totalReturn, s.totalReturn, 'percent', true],
-        ['CAGR', p.cagr, s.cagr, 'percent', true],
-        ['Max Drawdown', p.mdd, s.mdd, 'percent', false],
-        ['Volatility', p.volatility, s.volatility, 'percent_abs', false],
-        ['Sharpe Ratio', p.sharpe, s.sharpe, 'ratio', true],
-        ['Sortino Ratio', p.sortino, s.sortino, 'ratio', true],
-        ['Calmar Ratio', p.calmar, s.calmar, 'ratio', true],
-        ['Beta', p.beta, s.beta, 'ratio', null],
+        ['Total Return', p.totalReturn, s.totalReturn, 'percent',     true,  'totalReturn'],
+        ['CAGR',         p.cagr,        s.cagr,        'percent',     true,  'cagr'],
+        ['Max Drawdown', p.mdd,         s.mdd,         'percent',     false, 'mdd'],
+        ['Volatility',   p.volatility,  s.volatility,  'percent_abs', false, 'volatility'],
+        ['Sharpe Ratio', p.sharpe,      s.sharpe,      'ratio',       true,  'sharpe'],
+        ['Sortino Ratio',p.sortino,     s.sortino,     'ratio',       true,  'sortino'],
+        ['Calmar Ratio', p.calmar,      s.calmar,      'ratio',       true,  'calmar'],
+        ['Beta',         p.beta,        s.beta,        'ratio',       null,  'beta'],
     ];
 
     function fmt(value, format) {
@@ -293,11 +295,12 @@ export function renderPerformanceSummaryCards(summaryData) {
 
     const tbody = document.querySelector('#metrics-comparison-table tbody');
     let html = '';
-    rows.forEach(([label, portVal, spyVal, format, higherIsBetter]) => {
+    rows.forEach(([label, portVal, spyVal, format, higherIsBetter, tooltipKey]) => {
         const portClass = compareClass(portVal, spyVal, higherIsBetter);
+        const ttAttr = tooltipKey ? ` data-metric-tooltip="${tooltipKey}"` : '';
         html += `
             <tr>
-                <td class="ps-3">${label}</td>
+                <td class="ps-3"${ttAttr}>${label} <span class="text-muted small">ⓘ</span></td>
                 <td class="text-end ${portClass}">${fmt(portVal, format)}</td>
                 <td class="text-end pe-3">${fmt(spyVal, format)}</td>
             </tr>
@@ -309,7 +312,7 @@ export function renderPerformanceSummaryCards(summaryData) {
     const alphaClass = alpha >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
     html += `
         <tr class="table-light">
-            <td class="ps-3 fw-bold">Alpha</td>
+            <td class="ps-3 fw-bold" data-metric-tooltip="alpha">Alpha <span class="text-muted small">ⓘ</span></td>
             <td class="text-end ${alphaClass}" colspan="2">${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%</td>
         </tr>
     `;
@@ -319,7 +322,7 @@ export function renderPerformanceSummaryCards(summaryData) {
     const irClass = ir >= 0.5 ? 'text-success fw-bold' : ir < 0 ? 'text-danger fw-bold' : 'text-dark fw-bold';
     html += `
         <tr class="table-light">
-            <td class="ps-3 fw-bold">Information Ratio</td>
+            <td class="ps-3 fw-bold" data-metric-tooltip="ir">Information Ratio <span class="text-muted small">ⓘ</span></td>
             <td class="text-end ${irClass}" colspan="2">${ir.toFixed(2)}</td>
         </tr>
     `;
@@ -786,4 +789,25 @@ export function renderWinLossCards(summaryData) {
 
     const hintEl = document.getElementById('win-loss-total-months');
     if (hintEl) hintEl.innerText = `${stats.totalMonths}개월 기준`;
+}
+
+/**
+ * data-metric-tooltip 속성을 가진 요소에 Bootstrap Tooltip 초기화.
+ * 동적 렌더링 완료 후 호출해야 신규 DOM 요소도 적용됨.
+ */
+export function initTooltips() {
+    document.querySelectorAll('[data-metric-tooltip]').forEach(el => {
+        const key = el.getAttribute('data-metric-tooltip');
+        const content = METRIC_TOOLTIPS[key];
+        if (!content) return;
+        const existing = window.bootstrap.Tooltip.getInstance(el);
+        if (existing) existing.dispose();
+        new window.bootstrap.Tooltip(el, {
+            html: true,
+            title: content,
+            trigger: 'hover focus',
+            placement: 'right',
+        });
+        el.style.cursor = 'help';
+    });
 }
