@@ -617,3 +617,44 @@ def test_run_one_cycle_day_result_contains_daily_dividend():
     result = engine.run_one_cycle(mocks["data_provider"], daily_dividend=77.3)
 
     assert result.daily_dividend == 77.3
+
+
+# ─────────────────────────────────────────────────────────────────
+# 거래 후 포트폴리오 조회 실패 → 거래 기록은 반드시 저장
+# ─────────────────────────────────────────────────────────────────
+
+def test_post_trade_portfolio_failure_still_persists_executions():
+    """거래 실행 후 get_portfolio() 실패해도 Step 6(persist)는 반드시 실행되어야 한다.
+
+    거래 기록이 손실되면 실제 체결된 주문이 history.json에서 사라지는 치명적 버그.
+    대신 거래 전 포트폴리오를 final_pf로 사용해 저장을 완료해야 한다.
+    """
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier)
+    md = _make_market_data()
+    fake_order = Order("SSO", OrderAction.BUY, 5, 100.0)
+    fake_exec = TradeExecution("SSO", OrderAction.BUY, 5, 100.0, 0.1, "2024-01-10", ExecutionStatus.FILLED)
+    pre_trade_portfolio = _make_portfolio(cash=10000.0)
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [fake_order], "Rebalance")
+    mocks["broker"].execute_orders.return_value = [fake_exec]
+    # 첫 번째 get_portfolio (Step 4) 성공, 두 번째 (거래 후) 실패
+    mocks["broker"].get_portfolio.side_effect = [pre_trade_portfolio, RuntimeError("KIS API 500")]
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    # 예외가 전파되지 않아야 한다
+    assert isinstance(result, DayResult)
+    # 거래 기록이 포함된 채로 Step 6가 실행되어야 한다
+    mocks["repo"].save_trade_history.assert_called_once()
+    call_args = mocks["repo"].save_trade_history.call_args
+    saved_executions = call_args.args[0] if call_args.args else call_args.kwargs.get("executions", [])
+    assert saved_executions == [fake_exec]
+    # 거래 전 포트폴리오가 final_pf로 사용된다
+    assert result.final_pf.total_cash == pre_trade_portfolio.total_cash
+    # 알림이 발송된다
+    alert_msgs = [str(c) for c in notifier.send_alert.call_args_list]
+    assert any("거래 후 포트폴리오 조회 실패" in m for m in alert_msgs)
