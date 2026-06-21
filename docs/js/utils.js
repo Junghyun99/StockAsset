@@ -818,15 +818,19 @@ export function computeAnnualReturns(summaryData) {
         years[year].push(d);
     });
 
-    const currentYear = new Date().getFullYear().toString();
+    const currentYear = summaryData[summaryData.length - 1].date.slice(0, 4);
 
     return Object.entries(years)
         .sort(([a], [b]) => a.localeCompare(b))
         .filter(([, days]) => days.length >= 2)
-        .map(([year, days]) => ({
-            year,
-            portfolioReturn: (days.at(-1).total_value / days[0].total_value - 1) * 100,
-            spyReturn: (days.at(-1).spy_price / days[0].spy_price - 1) * 100,
-            isYTD: year === currentYear,
-        }));
+        .map(([year, days]) => {
+            const firstDay = days[0];
+            const lastDay = days[days.length - 1];
+            return {
+                year,
+                portfolioReturn: firstDay.total_value ? (lastDay.total_value / firstDay.total_value - 1) * 100 : 0,
+                spyReturn: firstDay.spy_price ? (lastDay.spy_price / firstDay.spy_price - 1) * 100 : 0,
+                isYTD: year === currentYear,
+            };
+        });
 }
