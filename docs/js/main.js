@@ -20,7 +20,7 @@ import {
     renderCurrentAllocationDoughnut,
     renderRegimeDistributionDoughnut,
     renderHistoricalAllocationChart
-} from './charts.js?v=3';
+} from './charts.js?v=4';
 
 import {
     updateModeUI,
@@ -44,7 +44,7 @@ import {
     renderDividendSummaryCards
 } from './ui.js?v=5';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=5';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=6';
 
 import {
     renderCompareOverview,
