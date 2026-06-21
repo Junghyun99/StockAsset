@@ -42,8 +42,9 @@ import {
     renderRegimePerformanceTable,
     renderYTDCard,
     renderDividendSummaryCards,
-    renderWinLossCards
-} from './ui.js?v=6';
+    renderWinLossCards,
+    initTooltips
+} from './ui.js?v=20260621-1';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=6';
 
@@ -203,6 +204,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     updateDecisionLogic(summaryData[summaryData.length - 1]);
     renderFailedOrderAlert(historyData, groupConfig);
     renderStatusFreshnessBadge(statusData);
+    initTooltips(); // Overview 탭 정적 요소 툴팁 초기화
 
     let perfRendered = false;
     let allocationRendered = false;
@@ -229,6 +231,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         renderCumulativeDividendChart(summaryData, marketType);
         renderYearlyDividendChart(summaryData, marketType);
         setupTimeRangeSelector(summaryData, marketType);
+        initTooltips(); // 동적 DOM 생성 완료 후 툴팁 초기화
         perfRendered = true;
     }
 

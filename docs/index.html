@@ -144,15 +144,15 @@
                             <div class="card-body">
                                 <h6 class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>Risk Indicators</h6>
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="small">VIX</span>
+                                    <span class="small" data-metric-tooltip="vix">VIX ⓘ</span>
                                     <span id="vix-value" class="fw-bold">-</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <span class="small">SPY MDD</span>
+                                    <span class="small" data-metric-tooltip="spyMdd">SPY MDD ⓘ</span>
                                     <span id="mdd-value" class="fw-bold text-danger">-</span>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center">
-                                    <span class="small">Volatility</span>
+                                    <span class="small" data-metric-tooltip="spyVolatility">Volatility ⓘ</span>
                                     <span id="volatility-value" class="fw-bold">-</span>
                                 </div>
                             </div>
@@ -251,10 +251,10 @@
                                     <tr>
                                         <th class="ps-3">국면</th>
                                         <th class="text-end">일수</th>
-                                        <th class="text-end">누적 수익률</th>
-                                        <th class="text-end">연환산 수익률</th>
-                                        <th class="text-end">국면 내 MDD</th>
-                                        <th class="text-end pe-3">전체 비율</th>
+                                        <th class="text-end" data-metric-tooltip="regimeCumReturn">누적 수익률 ⓘ</th>
+                                        <th class="text-end" data-metric-tooltip="regimeAnnReturn">연환산 수익률 ⓘ</th>
+                                        <th class="text-end" data-metric-tooltip="regimeMDD">국면 내 MDD ⓘ</th>
+                                        <th class="text-end pe-3" data-metric-tooltip="regimePct">전체 비율 ⓘ</th>
                                     </tr>
                                 </thead>
                                 <tbody id="regime-performance-table-body">
@@ -270,7 +270,7 @@
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">YTD Return</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="ytd">YTD Return ⓘ</h6>
                                 <h5 class="fw-bold mb-1" id="ytd-portfolio">-</h5>
                                 <div class="small text-muted" id="ytd-spy">SPY -</div>
                             </div>
@@ -283,7 +283,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">Win Rate</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="winRate">Win Rate ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="win-rate-value">-</h5>
                                 <div class="small text-muted" id="win-loss-total-months">-</div>
                             </div>
@@ -292,7 +292,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">Avg Win</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="avgWin">Avg Win ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="avg-win-value">-</h5>
                                 <div class="small text-muted">이익 월 평균</div>
                             </div>
@@ -301,7 +301,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">Avg Loss</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="avgLoss">Avg Loss ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="avg-loss-value">-</h5>
                                 <div class="small text-muted">손실 월 평균</div>
                             </div>
@@ -310,7 +310,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">Profit Factor</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="profitFactor">Profit Factor ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="profit-factor-value">-</h5>
                                 <div class="small text-muted">총이익 / 총손실</div>
                             </div>
@@ -323,7 +323,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">1M Return</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling1m">1M Return ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-1m">-</h5>
                             </div>
                         </div>
@@ -331,7 +331,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">3M Return</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling3m">3M Return ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-3m">-</h5>
                             </div>
                         </div>
@@ -339,7 +339,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">6M Return</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling6m">6M Return ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-6m">-</h5>
                             </div>
                         </div>
@@ -347,7 +347,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">1Y Return</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling1y">1Y Return ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-1y">-</h5>
                             </div>
                         </div>
@@ -355,7 +355,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">Calmar</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="calmar">Calmar ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="calmar-value">-</h5>
                             </div>
                         </div>
@@ -363,7 +363,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1">Current DD</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="currentDD">Current DD ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="current-dd-value">-</h5>
                                 <div class="small text-muted" id="current-dd-days">-</div>
                             </div>
