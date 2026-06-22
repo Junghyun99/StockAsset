@@ -185,8 +185,9 @@ def test_nan_data_skips_trade():
     mocks["analyzer"].analyze.assert_not_called()
     mocks["targeter"].calculate_exposure.assert_not_called()
     mocks["broker"].execute_orders.assert_not_called()
-    # 저장은 수행
-    mocks["repo"].save_daily_summary.assert_called_once()
+    # NaN 시 step 6 전체 스킵 — summary/status 모두 저장 안 함
+    mocks["repo"].save_daily_summary.assert_not_called()
+    mocks["repo"].update_status.assert_not_called()
 
 
 # ─────────────────────────────────────────────────────────────────
