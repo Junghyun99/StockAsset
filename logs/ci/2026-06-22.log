@@ -1,0 +1,24 @@
+2026-06-22 10:01:02,050 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-06-22 10:01:02,051 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-06-22 10:01:02,052 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-06-22 10:01:02,704 [INFO] [KisBroker] 새 토큰 발급 완료 (expires_at=2026-06-23 01:01:02)
+2026-06-22 10:01:02,705 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-06-22 10:01:02,706 [INFO] Restored previous regime: Bull
+2026-06-22 10:01:04,671 [INFO] >>> Step 1: Data Collection
+2026-06-22 10:01:04,671 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-06-22 10:01:05,337 [INFO] [Data] VIX fetched: nan
+2026-06-22 10:01:05,337 [INFO] >>> Step 2: Indicator Calculation
+2026-06-22 10:01:05,340 [INFO] Market Data: Price=746.74, VIX=nan, MDD=-1.69%
+2026-06-22 10:01:05,340 [INFO] >>> Step 3: Strategy Analysis
+2026-06-22 10:01:05,340 [ERROR] NaN detected in: vix. Treating as CRASH.
+2026-06-22 10:01:05,341 [INFO] Regime Change: Bull → Crash (Price=746.74, MA180=691.77, Momentum=0.1168, VIX=nan, MDD=-1.69%)
+2026-06-22 10:01:05,341 [INFO] Regime: Crash | Target Exposure: 0.00
+2026-06-22 10:01:05,341 [INFO] >>> Step 4: Portfolio Status
+2026-06-22 10:01:06,074 [INFO] Fetching Real-time prices from Broker...
+2026-06-22 10:01:09,466 [INFO] Current Portfolio: Cash=$93,031, Value=$4,512,871
+2026-06-22 10:01:09,467 [ERROR] ⚠️ Data Quality Alert — 매매 중단
+날짜: 2026-06-18
+NaN 필드: vix
+데이터 품질 이상으로 매매를 중단합니다.
+2026-06-22 10:01:10,258 [INFO] >>> Step 6: Archiving Data
+2026-06-22 10:01:10,261 [INFO] Cycle Completed: regime=Crash exposure=0.00 orders=0 executions=0
