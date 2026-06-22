@@ -383,7 +383,7 @@ export function renderTradeHistory(historyData, page = undefined, marketType = '
         // 체결 종목 배지 생성
         let actionsHtml = tx.executions.map(ex => `
             <span class="badge ${ex.action === 'BUY' ? 'bg-success' : 'bg-danger'} order-badge me-1 mb-1">
-                ${ex.action} ${getTickerAlias(ex.ticker, cachedGroupConfig)} (${ex.quantity})
+                ${ex.action} ${getTickerAlias(ex.ticker, cachedGroupConfig)} (${ex.quantity})${Number.isFinite(ex.price) ? ' @' + formatAmount(ex.price, cachedMarketType) : ''}
             </span>
         `).join('');
 
