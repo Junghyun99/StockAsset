@@ -1356,51 +1356,32 @@ export function renderHistoricalAllocationChart(summaryData, marketType = 'overs
 }
 
 /**
- * 현재 국면의 효과적인 A그룹 목표 비율(eff_a)을 해석한다.
- * 국면별 맵이 있으면 우선, 없으면 고정 ratio_a 사용.
- */
-function resolveEffRatioA(rebalanceConfig, regime) {
-    if (!rebalanceConfig) return null;
-    const map = rebalanceConfig.regime_ratio_a_map;
-    if (map && regime != null && map[regime] != null) return map[regime];
-    return rebalanceConfig.ratio_a != null ? rebalanceConfig.ratio_a : null;
-}
-
-/**
- * 현재 국면의 리밸런싱 임계치를 해석한다.
- */
-function resolveThreshold(rebalanceConfig, regime, fallback = 0.05) {
-    const map = rebalanceConfig && rebalanceConfig.threshold_map;
-    if (map && regime != null && map[regime] != null) return map[regime];
-    return fallback;
-}
-
-/**
  * 목표 vs 실제 자산 배분 막대 차트 + 리밸런싱 이격도 배지.
  *
  * 목표 비중(% 총자산): A = exposure×eff_a, B = exposure×eff_b, C = 1−exposure
  * 실제 비중: 보유 종목 평가액 / 총자산 (C는 SHV 등 + 예수금)
  * 이격도: 봇과 동일하게 위험자산(A+B) 내부 비율 기준
  *   rel_dev = |실제비율 − 목표비율| / 목표비율,  rel_dev > threshold 시 리밸런싱 발동
+ *
+ * eff_a·threshold는 같은 사이클에 기록된 최신 summary 레코드에서 가져온다.
  */
-export function renderTargetVsActualChart(statusData, groupConfig, marketType = 'overseas') {
+export function renderTargetVsActualChart(statusData, groupConfig, marketType = 'overseas', summaryData = null) {
     const canvas = document.getElementById('targetVsActualChart');
     const badge = document.getElementById('rebalanceDeviationBadge');
     if (!canvas) return;
     if (targetVsActualChart) targetVsActualChart.destroy();
 
-    const rc = groupConfig && groupConfig.rebalance_config;
     const strategy = statusData && statusData.strategy;
     const portfolio = statusData && statusData.portfolio;
-    if (!rc || !strategy || !portfolio) {
+    const lastRec = summaryData && summaryData.length ? summaryData[summaryData.length - 1] : null;
+    if (!groupConfig || !strategy || !portfolio || !lastRec || lastRec.target_ratio_a == null) {
         if (badge) badge.innerHTML = '';
         return;
     }
 
-    const regime = strategy.regime;
     const exposure = strategy.target_exposure != null ? strategy.target_exposure : 1.0;
-    const effA = resolveEffRatioA(rc, regime);
-    if (effA == null) { if (badge) badge.innerHTML = ''; return; }
+    const effA = lastRec.target_ratio_a;
+    const threshold = lastRec.rebalance_threshold;
     const effB = Math.max(1 - effA, 0);
 
     // 목표 비중(% 총자산)
@@ -1482,7 +1463,7 @@ export function renderTargetVsActualChart(statusData, groupConfig, marketType = 
     });
 
     // 이격도 배지 (봇과 동일한 위험자산 내부 비율 기준)
-    if (badge) badge.innerHTML = _buildDeviationBadge(valA, valB, effA, effB, resolveThreshold(rc, regime));
+    if (badge) badge.innerHTML = _buildDeviationBadge(valA, valB, effA, effB, threshold);
 }
 
 /**

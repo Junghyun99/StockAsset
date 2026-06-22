@@ -22,16 +22,5 @@
         "365780.KS": "ACE 국고채10년",
         "305080.KS": "TIGER 미국채10년선물",
         "411060.KS": "ACE KRX금현물"
-    },
-    "rebalance_config": {
-        "ratio_a": 0.4,
-        "regime_ratio_a_map": null,
-        "threshold_map": {
-            "Bull": 0.075,
-            "Sideways": 0.025,
-            "Bear_Weak": 0.05,
-            "Bear_Strong": 0.05,
-            "Crash": 0.05
-        }
     }
 }

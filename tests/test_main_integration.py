@@ -371,34 +371,3 @@ def test_is_rebalancing_due_invalid_date(mock_dependencies):
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = "not-a-date"
     bot = TradingBot()
     assert bot._is_rebalancing_due() is True
-
-
-def test_build_rebalance_config_fixed_ratio():
-    """국면 맵이 없는 엔진은 regime_ratio_a_map=None, 임계치 맵은 채워진다."""
-    from src.main import _build_rebalance_config
-    from src.core.logic.rebalancer import Rebalancer
-
-    class FixedEngine:
-        pass
-
-    cfg = _build_rebalance_config(FixedEngine, ratio_a=0.4)
-    assert cfg['ratio_a'] == 0.4
-    assert cfg['regime_ratio_a_map'] is None
-    assert cfg['threshold_map'] == {
-        r.value: v for r, v in Rebalancer.DEFAULT_THRESHOLD_MAP.items()
-    }
-    assert cfg['threshold_map']['Bull'] == Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.BULL]
-
-
-def test_build_rebalance_config_serializes_regime_map():
-    """국면 맵 엔진은 MarketRegime enum 키가 문자열 값으로 직렬화된다."""
-    from src.main import _build_rebalance_config
-
-    class RegimeEngine:
-        REGIME_RATIO_A_MAP = {
-            MarketRegime.BULL: 0.3,
-            MarketRegime.CRASH: 0.95,
-        }
-
-    cfg = _build_rebalance_config(RegimeEngine, ratio_a=0.5)
-    assert cfg['regime_ratio_a_map'] == {"Bull": 0.3, "Crash": 0.95}
