@@ -18,12 +18,14 @@ import {
     computeCurrentRegimeStreak,
     computeFailedExecutions,
     inferNextRebalanceDate,
+    computeExecutionGaps,
+    computeRebalanceProximity,
     getStatusFreshness,
     computeRegimePerformance,
     computeYTDReturn,
     computeDividendYield,
     computeWinLossStats
-} from './utils.js?v=6';
+} from './utils.js?v=7';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
 
@@ -603,7 +605,7 @@ export function renderOperationsPanel(statusData, historyData, summaryData, grou
     const nextDateEl = document.getElementById('ops-next-rebal-date');
     const nextHintEl = document.getElementById('ops-next-rebal-hint');
     if (nextDateEl && nextHintEl) {
-        const inferred = inferNextRebalanceDate(historyData);
+        const inferred = inferNextRebalanceDate(historyData, statusData.last_rebalancing_date);
         if (inferred.confidence === 'insufficient') {
             nextDateEl.innerText = '데이터 부족';
             nextDateEl.className = 'fw-bold mb-0 text-muted';
@@ -611,7 +613,10 @@ export function renderOperationsPanel(statusData, historyData, summaryData, grou
         } else {
             nextDateEl.innerText = inferred.estimatedDate;
             nextDateEl.className = 'fw-bold mb-0 text-primary';
-            nextHintEl.innerText = `최근 평균 ${inferred.intervalDays}일 주기 (${inferred.confidence})`;
+            const anchorTxt = inferred.anchorSource === 'status'
+                ? `${inferred.anchorDate} 리밸런싱 기준`
+                : `최근 거래 ${inferred.anchorDate} 기준`;
+            nextHintEl.innerText = `${anchorTxt} · 평균 ${inferred.intervalDays}일 주기 (${inferred.confidence})`;
         }
     }
 
@@ -662,10 +667,57 @@ export function renderOperationsPanel(statusData, historyData, summaryData, grou
         if (el) el.innerText = text;
     };
     setText('ops-last-updated-raw', statusData.last_updated || '-');
+    setText('ops-last-rebal-actual', statusData.last_rebalancing_date || '-');
     setText('ops-current-regime', (statusData.strategy && statusData.strategy.regime || '-').replace('_', ' '));
     setText('ops-target-exposure', statusData.strategy ? (statusData.strategy.target_exposure * 100).toFixed(0) + '%' : '-');
     setText('ops-trigger-reason', (statusData.strategy && statusData.strategy.trigger_reason) || '-');
     setText('ops-total-trades', (historyData || []).length + '건');
+
+    // [6] 실행 연속성 카드 (스케줄 갭 감지)
+    const scheduleStreakEl = document.getElementById('ops-schedule-streak');
+    const scheduleDetailEl = document.getElementById('ops-schedule-detail');
+    if (scheduleStreakEl && scheduleDetailEl) {
+        const gaps = computeExecutionGaps(summaryData);
+        scheduleStreakEl.innerText = gaps.consecutiveOkDays;
+        if (gaps.totalRuns === 0) {
+            scheduleStreakEl.className = 'text-muted';
+            scheduleDetailEl.innerText = '실행 기록 없음';
+        } else if (gaps.missedTotal === 0) {
+            scheduleStreakEl.className = 'text-success';
+            scheduleDetailEl.innerText = `총 ${gaps.totalRuns}회 실행 · 누락 없음`;
+        } else {
+            scheduleStreakEl.className = 'text-warning';
+            const g = gaps.recentGap;
+            const recentTxt = g ? ` (최근 ${g.from}~${g.to})` : '';
+            scheduleDetailEl.innerText = `누락 의심 ${gaps.missedTotal}영업일 · 공휴일 가능${recentTxt}`;
+        }
+    }
+
+    // [7] 리밸런싱 트리거 근접도 카드
+    const proximityEl = document.getElementById('ops-rebal-proximity');
+    const proximityBarEl = document.getElementById('ops-rebal-proximity-bar');
+    const proximityDetailEl = document.getElementById('ops-rebal-proximity-detail');
+    if (proximityEl && proximityBarEl && proximityDetailEl) {
+        const prox = computeRebalanceProximity(summaryData);
+        if (!prox.available) {
+            proximityEl.innerText = 'N/A';
+            proximityEl.className = 'fw-bold mb-1 text-muted';
+            proximityBarEl.style.width = '0%';
+            proximityBarEl.className = 'progress-bar bg-secondary';
+            proximityDetailEl.innerText = '비율 데이터 부족';
+        } else {
+            const pct = prox.proximityPct;
+            const colorWord = prox.willTrigger ? 'danger' : (pct >= 70 ? 'warning' : 'success');
+            proximityEl.innerText = pct.toFixed(0) + '%';
+            proximityEl.className = 'fw-bold mb-1 text-' + colorWord;
+            proximityBarEl.style.width = Math.max(pct, 2) + '%';
+            proximityBarEl.className = 'progress-bar bg-' + colorWord;
+            const trigTxt = prox.willTrigger ? ' · 트리거 도달' : '';
+            proximityDetailEl.innerText =
+                `현재 A ${(prox.ratioA * 100).toFixed(1)}% / 목표 ${(prox.targetA * 100).toFixed(0)}% · ` +
+                `이탈 ${(prox.maxDev * 100).toFixed(1)}% / 임계 ${(prox.threshold * 100).toFixed(1)}%${trigTxt}`;
+        }
+    }
 }
 
 /**

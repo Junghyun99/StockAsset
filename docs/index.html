@@ -765,6 +765,31 @@
                     </div>
                 </div>
 
+                <!-- Operations Cards Row 2 -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted"><i class="fas fa-stream me-1"></i>실행 연속성</h6>
+                                <h4 class="fw-bold mb-0"><span id="ops-schedule-streak">-</span> <small class="text-muted">일 연속 정상</small></h4>
+                                <div class="small text-muted mt-1" id="ops-schedule-detail">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-muted"><i class="fas fa-bullseye me-1"></i>리밸런싱 트리거 근접도</h6>
+                                <h4 class="fw-bold mb-1" id="ops-rebal-proximity">-</h4>
+                                <div class="progress mb-2" style="height: 6px;">
+                                    <div class="progress-bar" id="ops-rebal-proximity-bar" role="progressbar" style="width: 0%;"></div>
+                                </div>
+                                <div class="small text-muted" id="ops-rebal-proximity-detail">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Failed Orders Detail + Recent Activity -->
                 <div class="row g-4 mb-4">
                     <div class="col-lg-7">
@@ -806,6 +831,9 @@
                                     <dt class="col-sm-5 text-muted">Last Updated</dt>
                                     <dd class="col-sm-7" id="ops-last-updated-raw">-</dd>
 
+                                    <dt class="col-sm-5 text-muted">마지막 리밸런싱</dt>
+                                    <dd class="col-sm-7" id="ops-last-rebal-actual">-</dd>
+
                                     <dt class="col-sm-5 text-muted">현재 국면</dt>
                                     <dd class="col-sm-7" id="ops-current-regime">-</dd>
 
@@ -838,6 +866,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Dashboard Logic (ES Modules) -->
-    <script type="module" src="js/main.js?v=20260622-2"></script>
+    <script type="module" src="js/main.js?v=20260622-3"></script>
 </body>
 </html>
