@@ -1510,15 +1510,16 @@ function _buildDeviationBadge(valA, valB, effA, effB, threshold) {
 /**
  * 이격도(이탈도) 추이 라인 차트.
  *
- * summary.json의 매 레코드(group_a/b, regime)로부터 위험자산 내부 비율 이격도를
- * 재계산해 시계열로 표시한다. 임계치는 국면별로 달라 stepped 라인으로 함께 표시.
+ * summary.json 레코드에 그 시점 저장된 target_ratio_a·rebalance_threshold와
+ * group_a/b로부터 위험자산 내부 비율 이격도를 계산해 시계열로 표시한다.
+ * 저장값을 그대로 쓰므로 이후 설정이 바뀌어도 과거 이격도는 불변이다.
+ * 임계치는 국면별로 달라 stepped 라인으로 함께 표시.
  */
-export function renderDeviationTrendChart(summaryData, groupConfig) {
+export function renderDeviationTrendChart(summaryData) {
     const canvas = document.getElementById('deviationTrendChart');
     if (!canvas) return;
     if (deviationTrendChart) deviationTrendChart.destroy();
     if (!summaryData || summaryData.length === 0) return;
-    const rc = groupConfig && groupConfig.rebalance_config;
 
     const labels = [];
     const devA = [];
@@ -1526,11 +1527,10 @@ export function renderDeviationTrendChart(summaryData, groupConfig) {
     const thr = [];
     summaryData.forEach(d => {
         labels.push(d.date);
-        // 그 시점에 저장된 목표비율·임계치 우선 사용(설정 변경에도 불변).
-        // 구버전 레코드는 현재 설정으로 폴백.
-        const effA = d.target_ratio_a != null ? d.target_ratio_a : resolveEffRatioA(rc, d.regime);
+        // 그 시점에 저장된 목표비율·임계치 사용 (설정 변경에도 불변).
+        const effA = d.target_ratio_a;
         const effB = effA != null ? Math.max(1 - effA, 0) : null;
-        const threshold = d.rebalance_threshold != null ? d.rebalance_threshold : resolveThreshold(rc, d.regime);
+        const threshold = d.rebalance_threshold;
         const valRisky = (d.group_a || 0) + (d.group_b || 0);
         if (effA == null || valRisky <= 0) {
             devA.push(null);
