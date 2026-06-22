@@ -604,9 +604,9 @@ export function inferNextRebalanceDate(historyData, lastRebalanceDate = null) {
     if (!historyData || historyData.length < 3) {
         return { estimatedDate: null, intervalDays: null, confidence: 'insufficient' };
     }
-    // 최근 5건 거래 날짜 수집 (오름차순)
+    // 최근 5건 거래 날짜 수집 (오름차순) — 로컬 자정 기준 파싱(TZ 시프트 방지)
     const recent = historyData.slice(-6);
-    const dates = recent.map(tx => new Date((tx.date || '').split(' ')[0]));
+    const dates = recent.map(tx => _parseLocalDate((tx.date || '').split(' ')[0]));
     const intervals = [];
     for (let i = 1; i < dates.length; i++) {
         const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
@@ -623,7 +623,7 @@ export function inferNextRebalanceDate(historyData, lastRebalanceDate = null) {
         : Math.round(intervals[mid]);
 
     // 앵커 우선순위: status.last_rebalancing_date(권위) > history 마지막 거래일
-    const anchor = lastRebalanceDate ? new Date(lastRebalanceDate) : null;
+    const anchor = lastRebalanceDate ? _parseLocalDate((lastRebalanceDate || '').split(' ')[0]) : null;
     const lastDate = (anchor && !isNaN(anchor.getTime())) ? anchor : dates[dates.length - 1];
     const next = new Date(lastDate);
     next.setDate(next.getDate() + medianDays);
@@ -658,9 +658,12 @@ export function computeExecutionGaps(summaryData) {
     const dates = summaryData.map(d => d.date).filter(Boolean);
     if (dates.length === 0) return empty;
 
+    // 영업일 갭을 1회만 계산해 재사용(중복 파싱/연산 제거)
     const gaps = [];
+    const missingDays = [];
     for (let i = 1; i < dates.length; i++) {
         const missing = _businessDaysStrictlyBetween(_parseLocalDate(dates[i - 1]), _parseLocalDate(dates[i]));
+        missingDays.push(missing);
         if (missing > 0) {
             gaps.push({ from: dates[i - 1], to: dates[i], missingBusinessDays: missing });
         }
@@ -668,9 +671,8 @@ export function computeExecutionGaps(summaryData) {
 
     // 최근부터 역순으로 연속 정상(갭 0) 실행일수 집계
     let consecutiveOkDays = dates.length >= 1 ? 1 : 0;
-    for (let i = dates.length - 1; i >= 1; i--) {
-        const missing = _businessDaysStrictlyBetween(_parseLocalDate(dates[i - 1]), _parseLocalDate(dates[i]));
-        if (missing === 0) consecutiveOkDays++;
+    for (let i = missingDays.length - 1; i >= 0; i--) {
+        if (missingDays[i] === 0) consecutiveOkDays++;
         else break;
     }
 
