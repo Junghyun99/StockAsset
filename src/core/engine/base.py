@@ -1,5 +1,6 @@
 # src/core/engine/base.py
 import time
+from datetime import date as _date
 from typing import List, Optional, Tuple
 
 import pandas as pd
@@ -96,6 +97,11 @@ class TradingEngine:
         # (멀티 계정 공유 로거에서 이전 계정 로그 혼입 방지 + 백테스트 메모리 바운드)
         self.logger.clear_captured_logs()
 
+        # 저장 key 및 리밸런싱 날짜로 사용할 실행일 결정
+        # 백테스트: sim_date(시뮬레이션 날짜) 사용
+        # 라이브: 오늘 실행일 사용 (market_data.date는 전일 미국 거래일이므로 부적합)
+        record_date = sim_date or _date.today().strftime("%Y-%m-%d")
+
         # Step 1: 데이터 수집
         self.logger.info(">>> Step 1: Data Collection")
         spy_df, vix = self.collect_data(data_provider)
@@ -129,13 +135,13 @@ class TradingEngine:
 
         # Step 5: 조건 분기 & 실행
         signal, executions, final_pf, is_rebalancing = self.execute_cycle(
-            market_data, portfolio, regime, exposure, nan_fields, sim_date
+            market_data, portfolio, regime, exposure, nan_fields, sim_date, record_date
         )
 
         # Step 6: 저장 (NaN 데이터 품질 이상 시 전체 스킵 — step 4 API 오류와 동일 처리)
         self.logger.info(">>> Step 6: Archiving Data")
         if not nan_fields:
-            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend)
+            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, record_date)
         self.logger.info(
             f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
             f"orders={len(signal.orders)} executions={len(executions)}"
@@ -215,6 +221,7 @@ class TradingEngine:
         exposure: float,
         nan_fields: List[str],
         sim_date: Optional[str],
+        record_date: str,
     ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
         """Step 5: 3-way 조건 분기: NaN이상 / 모니터링 / 리밸런싱."""
         executions: List[TradeExecution] = []
@@ -231,7 +238,7 @@ class TradingEngine:
             signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
             msg = (
                 f"⚠️ Data Quality Alert — 매매 중단\n"
-                f"날짜: {market_data.date}\n"
+                f"날짜: {record_date}\n"
                 f"NaN 필드: {', '.join(nan_fields)}\n"
                 f"데이터 품질 이상으로 매매를 중단합니다."
             )
@@ -243,7 +250,7 @@ class TradingEngine:
             signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(display_names)}")
             msg = (
                 f"⚠️ Price Data Alert — 매매 중단\n"
-                f"날짜: {market_data.date}\n"
+                f"날짜: {record_date}\n"
                 f"가격 조회 실패 종목: {', '.join(display_names)}\n"
                 f"보유 종목 가격 이상으로 리밸런싱을 중단합니다.\n"
                 f"total_value 왜곡으로 인한 비정상 주문 방지."
@@ -333,10 +340,12 @@ class TradingEngine:
         is_rebalancing: bool,
         sim_date: Optional[str],
         daily_dividend: float = 0.0,
+        record_date: str = "",
     ) -> None:
         """Step 6: 저장 3종 호출."""
-        rebalancing_date = (sim_date or market_data.date) if is_rebalancing else None
-        self.repo.save_daily_summary(market_data, signal, final_pf, regime, daily_dividend=daily_dividend)
+        rebalancing_date = record_date if is_rebalancing else None
+        self.repo.save_daily_summary(market_data, signal, final_pf, regime,
+                                     daily_dividend=daily_dividend, date_override=record_date or None)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,

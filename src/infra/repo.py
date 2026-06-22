@@ -57,7 +57,8 @@ class JsonRepository(IRepository):
         self._save_json(os.path.join(self.root, "asset_groups.json"), config)
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,
-                           regime: MarketRegime, daily_dividend: float = 0.0):
+                           regime: MarketRegime, daily_dividend: float = 0.0,
+                           date_override: Optional[str] = None):
         """일별 요약 저장 (Append 방식)"""
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(self.asset_groups.get('A', []))
@@ -68,7 +69,7 @@ class JsonRepository(IRepository):
         val_c_total = val_c_pure_stock + pf.total_cash
 
         record = {
-            "date": market.date,
+            "date": date_override or market.date,
 
             # [자산 정보]
             "total_value": pf.total_value,
