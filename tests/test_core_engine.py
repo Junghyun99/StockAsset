@@ -467,9 +467,12 @@ def test_is_due_stale_future_date_returns_true():
 # ─────────────────────────────────────────────────────────────────
 
 def test_rebalancing_date_set_on_rebalancing_day():
-    """리밸런싱 날: update_status에 market_data.date가 rebalancing_date로 전달."""
+    """리밸런싱 날: update_status에 오늘 실행일(record_date, KST 기준)이 rebalancing_date로 전달.
+    (market_data.date는 전일 미국 거래일이므로 실행일과 다름)
+    """
+    from datetime import datetime, timezone, timedelta
     engine, mocks = _make_engine(repo_last_reb=None)
-    md = _make_market_data()  # date="2024-01-10"
+    md = _make_market_data()  # date="2024-01-10" (전일 미국 거래일)
 
     mocks["calculator"].calculate.return_value = md
     mocks["analyzer"].analyze.return_value = MarketRegime.BULL
@@ -479,7 +482,9 @@ def test_rebalancing_date_set_on_rebalancing_day():
     engine.run_one_cycle(mocks["data_provider"])
 
     _, kwargs = mocks["repo"].update_status.call_args
-    assert kwargs.get("rebalancing_date") == "2024-01-10"
+    # sim_date=None → record_date = 오늘 KST 실행일 (market_data.date가 아님)
+    kst_today = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
+    assert kwargs.get("rebalancing_date") == kst_today
 
 
 def test_rebalancing_date_none_on_monitoring_day():
@@ -513,6 +518,25 @@ def test_rebalancing_date_uses_sim_date_when_provided():
 
     _, kwargs = mocks["repo"].update_status.call_args
     assert kwargs.get("rebalancing_date") == "2023-06-01"
+
+
+def test_record_date_used_as_date_override_in_summary():
+    """sim_date 지정 시 save_daily_summary에 date_override=sim_date가 전달됨.
+    (market_data.date 대신 실행일이 저장 key로 사용되어야 함)
+    """
+    engine, mocks = _make_engine(repo_last_reb=None)
+    md = _make_market_data()  # date="2024-01-10" (전일 미국 거래일)
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    engine.run_one_cycle(mocks["data_provider"], sim_date="2023-06-01")
+
+    _, kwargs = mocks["repo"].save_daily_summary.call_args
+    # sim_date가 date_override로 전달되어야 함
+    assert kwargs.get("date_override") == "2023-06-01"
 
 
 # ─────────────────────────────────────────────────────────────────

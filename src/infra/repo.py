@@ -4,8 +4,10 @@ import math
 import os
 from typing import List, Dict, Optional
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
+
+_KST = timezone(timedelta(hours=9))
 from src.core.interfaces import IRepository
 from src.config import TICKER_ALIASES
 
@@ -57,7 +59,8 @@ class JsonRepository(IRepository):
         self._save_json(os.path.join(self.root, "asset_groups.json"), config)
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,
-                           regime: MarketRegime, daily_dividend: float = 0.0):
+                           regime: MarketRegime, daily_dividend: float = 0.0,
+                           date_override: Optional[str] = None):
         """일별 요약 저장 (Append 방식)"""
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(self.asset_groups.get('A', []))
@@ -68,7 +71,7 @@ class JsonRepository(IRepository):
         val_c_total = val_c_pure_stock + pf.total_cash
 
         record = {
-            "date": market.date,
+            "date": date_override or market.date,
 
             # [자산 정보]
             "total_value": pf.total_value,
@@ -121,8 +124,8 @@ class JsonRepository(IRepository):
             date_str = sim_date
             tx_id = f"tx_{sim_date.replace('-', '')}"
         else:
-            date_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            tx_id = f"tx_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            date_str = datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S")
+            tx_id = f"tx_{datetime.now(_KST).strftime('%Y%m%d_%H%M%S')}"
 
         record = {
             "id": tx_id,                    # [추가]
@@ -151,7 +154,7 @@ class JsonRepository(IRepository):
                       sim_date: str = None,          # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
                       rebalancing_date: str = None): # 리밸런싱 실행일 (None이면 기존 값 유지)
 
-        last_updated = sim_date if sim_date else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        last_updated = sim_date if sim_date else datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S")
 
         # 리밸런싱 날짜: 전달된 값 우선, 없으면 기존 status에서 읽어 유지
         existing = self._load_json(self.status_file, default={})

@@ -3,9 +3,11 @@
 from typing import List, Dict, Optional
 import time
 import src.infra.broker as _pkg  # test patch 타깃: src.infra.broker.requests
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
+
+_KST = timezone(timedelta(hours=9))
 from src.config import TICKER_EXCHANGE_MAP, EXCHANGE_CODE_SHORT_TO_FULL
 
 from .kis_base import KisBrokerCommon
@@ -158,7 +160,7 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                 quantity=order.quantity,
                 price=order_price,
                 fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.ORDERED
             )
 
@@ -184,7 +186,7 @@ class KisOverseasBrokerBase(KisBrokerCommon):
             return TradeExecution(
                 ticker=order.ticker, action=order.action, quantity=order.quantity,
                 price=order.price, fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.REJECTED
             )
 
@@ -242,7 +244,7 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                         quantity=actual_qty,
                         price=actual_price,
                         fee=fill_fee,
-                        date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                         status=ExecutionStatus.FILLED,
                         reason=f"ODNO={odno}"
                     )
@@ -263,7 +265,7 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                 quantity=order.quantity,
                 price=order_price,
                 fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.ORDERED,
                 reason=f"ODNO={odno}" if odno else ""
             )
@@ -308,7 +310,7 @@ class KisOverseasBrokerBase(KisBrokerCommon):
             return 0.0, 0, 0.0
 
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/inquire-ccnl"
-        today = datetime.now().strftime("%Y%m%d")
+        today = datetime.now(_KST).strftime("%Y%m%d")
         params = {
             "CANO": self.cano,
             "ACNT_PRDT_CD": self.acnt_prdt_cd,

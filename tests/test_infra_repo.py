@@ -73,6 +73,32 @@ def test_load_last_regime_returns_none_on_missing_key(repo):
     assert repo.load_last_regime() is None
 
 
+def test_save_daily_summary_date_override(repo, dummy_portfolio):
+    """date_override 전달 시 market.date 대신 override 값이 저장 key로 사용됨."""
+    market = MarketData("2024-01-10", 100, 90, 0.1, 0.1, -0.05, 15)  # 전일 미국 거래일
+    signal = TradeSignal(0.8, [], "test")
+
+    repo.save_daily_summary(market, signal, dummy_portfolio, MarketRegime.BULL,
+                            date_override="2024-01-11")  # 실행일 (오늘)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert len(data) == 1
+    assert data[0]['date'] == "2024-01-11"  # market.date("2024-01-10")가 아닌 override값
+
+
+def test_save_daily_summary_no_override_uses_market_date(repo, dummy_portfolio):
+    """date_override 미전달 시 market.date가 저장 key로 사용됨 (백워드 호환)."""
+    market = MarketData("2024-01-10", 100, 90, 0.1, 0.1, -0.05, 15)
+    signal = TradeSignal(0.8, [], "test")
+
+    repo.save_daily_summary(market, signal, dummy_portfolio, MarketRegime.BULL)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert data[0]['date'] == "2024-01-10"
+
+
 def test_save_summary_upsert_same_date(repo):
     # 같은 날짜로 2번 저장하면 Upsert(덮어쓰기)되어 레코드 1개만 유지
     market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
