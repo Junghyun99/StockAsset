@@ -363,7 +363,8 @@ class TradingEngine:
             return True
         try:
             last = pd.Timestamp(last_str)
-            today = pd.Timestamp(sim_date) if sim_date else pd.Timestamp.today().normalize()
+            today = pd.Timestamp(sim_date) if sim_date \
+                else pd.Timestamp(datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d"))
             diff_days = (today - last).days
             # sim_date가 last_rebalancing_date보다 과거이면 stale 데이터 → 리밸런싱 실행
             if diff_days < 0:

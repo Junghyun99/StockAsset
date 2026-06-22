@@ -3,9 +3,11 @@
 from typing import List, Dict, Optional
 import time
 import src.infra.broker as _pkg  # test patch 타깃: src.infra.broker.requests
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
+
+_KST = timezone(timedelta(hours=9))
 
 from .kis_base import KisBrokerCommon
 from .kis_order_helpers import poll_order_fill
@@ -130,7 +132,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             return TradeExecution(
                 ticker=order.ticker, action=order.action, quantity=order.quantity,
                 price=0.0, fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.REJECTED
             )
         if order.action == OrderAction.SELL and bid <= 0:
@@ -138,7 +140,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             return TradeExecution(
                 ticker=order.ticker, action=order.action, quantity=order.quantity,
                 price=0.0, fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.REJECTED
             )
 
@@ -152,7 +154,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             return TradeExecution(
                 ticker=order.ticker, action=order.action, quantity=order.quantity,
                 price=order.price, fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.REJECTED
             )
 
@@ -202,7 +204,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                         quantity=actual_qty,
                         price=actual_price,
                         fee=fill_fee,
-                        date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                         status=ExecutionStatus.FILLED,
                         reason=f"ODNO={odno}"
                     )
@@ -223,7 +225,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 quantity=order.quantity,
                 price=float(order_price),
                 fee=0.0,
-                date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
                 status=ExecutionStatus.ORDERED,
                 reason=f"ODNO={odno}" if odno else ""
             )
@@ -280,7 +282,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             return 0.0, 0, 0.0
 
         url = f"{self.base_url}/uapi/domestic-stock/v1/trading/inquire-daily-ccld"
-        today = datetime.now().strftime("%Y%m%d")
+        today = datetime.now(_KST).strftime("%Y%m%d")
         params = {
             "CANO": self.cano,
             "ACNT_PRDT_CD": self.acnt_prdt_cd,

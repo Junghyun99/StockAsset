@@ -1,9 +1,11 @@
 # src/infra/broker/mock.py
 from typing import List, Dict, Optional
 import time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from src.core.interfaces import IBrokerAdapter, ILogger
+
+_KST = timezone(timedelta(hours=9))
 from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
 
 
@@ -104,7 +106,7 @@ class MockBroker(IBrokerAdapter):
             quantity=actual_qty,
             price=round(exec_price, 2),
             fee=round(fee, 2),
-            date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
             status=ExecutionStatus.FILLED
         )
 
