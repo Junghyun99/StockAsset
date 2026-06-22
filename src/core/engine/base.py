@@ -1,6 +1,6 @@
 # src/core/engine/base.py
 import time
-from datetime import date as _date
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Tuple
 
 import pandas as pd
@@ -100,7 +100,7 @@ class TradingEngine:
         # 저장 key 및 리밸런싱 날짜로 사용할 실행일 결정
         # 백테스트: sim_date(시뮬레이션 날짜) 사용
         # 라이브: 오늘 실행일 사용 (market_data.date는 전일 미국 거래일이므로 부적합)
-        record_date = sim_date or _date.today().strftime("%Y-%m-%d")
+        record_date = sim_date or datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
 
         # Step 1: 데이터 수집
         self.logger.info(">>> Step 1: Data Collection")
@@ -340,12 +340,13 @@ class TradingEngine:
         is_rebalancing: bool,
         sim_date: Optional[str],
         daily_dividend: float = 0.0,
-        record_date: str = "",
+        record_date: Optional[str] = None,
     ) -> None:
         """Step 6: 저장 3종 호출."""
-        rebalancing_date = record_date if is_rebalancing else None
+        effective_record_date = record_date or sim_date or market_data.date
+        rebalancing_date = effective_record_date if is_rebalancing else None
         self.repo.save_daily_summary(market_data, signal, final_pf, regime,
-                                     daily_dividend=daily_dividend, date_override=record_date or None)
+                                     daily_dividend=daily_dividend, date_override=record_date)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,

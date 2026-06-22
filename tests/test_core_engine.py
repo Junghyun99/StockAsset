@@ -467,10 +467,10 @@ def test_is_due_stale_future_date_returns_true():
 # ─────────────────────────────────────────────────────────────────
 
 def test_rebalancing_date_set_on_rebalancing_day():
-    """리밸런싱 날: update_status에 오늘 실행일(record_date)이 rebalancing_date로 전달.
+    """리밸런싱 날: update_status에 오늘 실행일(record_date, KST 기준)이 rebalancing_date로 전달.
     (market_data.date는 전일 미국 거래일이므로 실행일과 다름)
     """
-    from datetime import date as _d
+    from datetime import datetime, timezone, timedelta
     engine, mocks = _make_engine(repo_last_reb=None)
     md = _make_market_data()  # date="2024-01-10" (전일 미국 거래일)
 
@@ -482,8 +482,9 @@ def test_rebalancing_date_set_on_rebalancing_day():
     engine.run_one_cycle(mocks["data_provider"])
 
     _, kwargs = mocks["repo"].update_status.call_args
-    # sim_date=None → record_date = 오늘 실행일 (market_data.date가 아님)
-    assert kwargs.get("rebalancing_date") == _d.today().strftime("%Y-%m-%d")
+    # sim_date=None → record_date = 오늘 KST 실행일 (market_data.date가 아님)
+    kst_today = datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
+    assert kwargs.get("rebalancing_date") == kst_today
 
 
 def test_rebalancing_date_none_on_monitoring_day():

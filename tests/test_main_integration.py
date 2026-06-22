@@ -328,6 +328,7 @@ def test_bot_run_rebalancing_day_updates_rebalancing_date(mock_dependencies):
     """[리밸런싱 날] update_status에 오늘 실행일(rebalancing_date)이 전달됨.
     (market_data.date는 전일 미국 거래일이므로 record_date = 오늘 날짜가 사용됨)
     """
+    from datetime import datetime, timezone, timedelta as td
     # 마지막 리밸런싱 = 10일 전 → 인터벌 충족 → 리밸런싱 실행
     old_date = (date.today() - timedelta(days=10)).strftime("%Y-%m-%d")
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = old_date
@@ -342,8 +343,9 @@ def test_bot_run_rebalancing_day_updates_rebalancing_date(mock_dependencies):
     bot.run()
 
     _, kwargs = mock_dependencies['repo'].update_status.call_args
-    # sim_date=None → record_date = 오늘 실행일 (market_data.date가 아님)
-    assert kwargs.get("rebalancing_date") == date.today().strftime("%Y-%m-%d")
+    # sim_date=None → record_date = 오늘 KST 실행일 (market_data.date가 아님)
+    kst_today = datetime.now(timezone(td(hours=9))).strftime("%Y-%m-%d")
+    assert kwargs.get("rebalancing_date") == kst_today
 
 
 def test_is_rebalancing_due_first_run(mock_dependencies):
