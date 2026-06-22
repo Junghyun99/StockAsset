@@ -163,7 +163,7 @@ class JsonRepository(IRepository):
         if preserve_regime:
             try:
                 regime = MarketRegime(existing["strategy"]["regime"])
-            except (KeyError, ValueError):
+            except (KeyError, ValueError, TypeError):
                 pass  # 기존 값 없으면 전달받은 regime 그대로 사용
 
         status = {
