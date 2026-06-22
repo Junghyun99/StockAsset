@@ -1517,8 +1517,8 @@ export function renderDeviationTrendChart(summaryData, groupConfig) {
     const canvas = document.getElementById('deviationTrendChart');
     if (!canvas) return;
     if (deviationTrendChart) deviationTrendChart.destroy();
+    if (!summaryData || summaryData.length === 0) return;
     const rc = groupConfig && groupConfig.rebalance_config;
-    if (!rc || !summaryData || summaryData.length === 0) return;
 
     const labels = [];
     const devA = [];
@@ -1526,8 +1526,11 @@ export function renderDeviationTrendChart(summaryData, groupConfig) {
     const thr = [];
     summaryData.forEach(d => {
         labels.push(d.date);
-        const effA = resolveEffRatioA(rc, d.regime);
+        // 그 시점에 저장된 목표비율·임계치 우선 사용(설정 변경에도 불변).
+        // 구버전 레코드는 현재 설정으로 폴백.
+        const effA = d.target_ratio_a != null ? d.target_ratio_a : resolveEffRatioA(rc, d.regime);
         const effB = effA != null ? Math.max(1 - effA, 0) : null;
+        const threshold = d.rebalance_threshold != null ? d.rebalance_threshold : resolveThreshold(rc, d.regime);
         const valRisky = (d.group_a || 0) + (d.group_b || 0);
         if (effA == null || valRisky <= 0) {
             devA.push(null);
@@ -1539,7 +1542,7 @@ export function renderDeviationTrendChart(summaryData, groupConfig) {
             devA.push(effA > 0 ? Math.abs(ratioA - effA) / effA * 100 : 0);
             devB.push(effB > 0 ? Math.abs(ratioB - effB) / effB * 100 : 0);
         }
-        thr.push(resolveThreshold(rc, d.regime) * 100);
+        thr.push(threshold != null ? threshold * 100 : null);
     });
 
     deviationTrendChart = new Chart(canvas, {

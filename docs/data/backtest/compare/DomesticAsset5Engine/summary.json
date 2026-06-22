@@ -15,7 +15,9 @@
         "vix": 15.0,
         "regime": "Bull",
         "reason": "첫 투자: 40:60 비율로 진입",
-        "target_exposure": 1.0
+        "target_exposure": 1.0,
+        "target_ratio_a": 0.4,
+        "rebalance_threshold": 0.075
     },
     {
         "date": "2023-01-03",
@@ -33,7 +35,9 @@
         "vix": 15.0,
         "regime": "Bull",
         "reason": "비율 유지, 현금 소진 매수",
-        "target_exposure": 1.0
+        "target_exposure": 1.0,
+        "target_ratio_a": 0.4,
+        "rebalance_threshold": 0.075
     },
     {
         "date": "2023-01-04",
@@ -51,7 +55,9 @@
         "vix": 15.0,
         "regime": "Bull",
         "reason": "비율 유지, 현금 소진 매수",
-        "target_exposure": 1.0
+        "target_exposure": 1.0,
+        "target_ratio_a": 0.4,
+        "rebalance_threshold": 0.075
     },
     {
         "date": "2023-01-05",
@@ -69,6 +75,8 @@
         "vix": 15.0,
         "regime": "Bull",
         "reason": "비율 유지, 추가 주문 없음",
-        "target_exposure": 1.0
+        "target_exposure": 1.0,
+        "target_ratio_a": 0.4,
+        "rebalance_threshold": 0.075
     }
 ]

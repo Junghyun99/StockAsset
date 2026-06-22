@@ -76,6 +76,10 @@ class TradeSignal:
     target_exposure: float
     orders: List[Order]
     reason: str
+    # 리밸런싱 진단값 (프론트 이격도 시계열용). 리밸런서를 거치지 않는
+    # 신호(NaN/가격조회 실패/모니터링)에서는 None.
+    target_ratio_a: float | None = None       # 해당 국면의 목표 A그룹 비율(eff_a)
+    rebalance_threshold: float | None = None  # 해당 국면의 리밸런싱 임계치
 
     @property
     def has_orders(self) -> bool:

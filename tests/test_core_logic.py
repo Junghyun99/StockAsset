@@ -575,6 +575,28 @@ def test_rebalancer_threshold_logic(create_portfolio):
     assert signal_bear.has_orders is True
     assert "비율 재조정" in signal_bear.reason
 
+
+def test_rebalancer_signal_carries_target_ratio_and_threshold(create_portfolio):
+    """생성된 신호에 그 국면의 목표 A비율(eff_a)과 임계치가 담겨야 한다(이격도 시계열용)."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    rebalancer = Rebalancer(groups, ratio_a=0.6)
+    pf = create_portfolio(holdings={'SPY': 600, 'IEF': 400}, prices={'SPY': 1000, 'IEF': 1000})
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.BULL)
+    assert signal.target_ratio_a == 0.6
+    assert signal.rebalance_threshold == Rebalancer.DEFAULT_THRESHOLD_MAP[MarketRegime.BULL]
+
+
+def test_rebalancer_signal_uses_regime_ratio_map(create_portfolio):
+    """국면별 ratio 맵이 있으면 해당 국면의 eff_a가 신호에 반영된다."""
+    groups = {'A': ['SPY'], 'B': ['IEF']}
+    regime_map = {MarketRegime.BULL: 0.3, MarketRegime.CRASH: 0.9}
+    rebalancer = Rebalancer(groups, ratio_a=0.5, regime_ratio_a_map=regime_map)
+    pf = create_portfolio(holdings={'SPY': 500, 'IEF': 500}, prices={'SPY': 1000, 'IEF': 1000})
+
+    signal = rebalancer.generate_signal(pf, target_exposure=1.0, regime=MarketRegime.CRASH)
+    assert signal.target_ratio_a == 0.9
+
 def test_rebalancer_crash_sells_all_risky_assets(create_portfolio):
     """
     [CRASH 시나리오]

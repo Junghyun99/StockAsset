@@ -106,7 +106,9 @@ class Rebalancer:
         return TradeSignal(
             target_exposure=target_exposure,
             orders=sorted_orders,
-            reason=reason
+            reason=reason,
+            target_ratio_a=eff_a,
+            rebalance_threshold=threshold,
         )
 
     # ===================================================================

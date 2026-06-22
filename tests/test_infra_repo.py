@@ -579,6 +579,32 @@ def test_save_daily_summary_records_dividend(repo, dummy_market_data, dummy_port
     assert data[0]['daily_dividend'] == 55.25
 
 
+def test_save_daily_summary_persists_rebalance_diagnostics(repo, dummy_market_data, dummy_portfolio):
+    """신호의 target_ratio_a·rebalance_threshold가 summary 레코드에 저장돼야 한다."""
+    import json
+    signal = TradeSignal(1.0, [], "test", target_ratio_a=0.4, rebalance_threshold=0.075)
+
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert data[0]['target_ratio_a'] == 0.4
+    assert data[0]['rebalance_threshold'] == 0.075
+
+
+def test_save_daily_summary_rebalance_diagnostics_default_none(repo, dummy_market_data, dummy_portfolio):
+    """리밸런서를 거치지 않은 신호는 진단값이 None으로 저장된다."""
+    import json
+    signal = TradeSignal(0.0, [], "데이터 이상")
+
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.CRASH)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert data[0]['target_ratio_a'] is None
+    assert data[0]['rebalance_threshold'] is None
+
+
 def test_save_daily_summary_default_dividend_zero(repo, dummy_market_data, dummy_portfolio):
     """daily_dividend 미전달 시 기본값 0.0으로 저장되는지 확인"""
     import json
