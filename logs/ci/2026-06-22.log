@@ -22,3 +22,44 @@ NaN 필드: vix
 데이터 품질 이상으로 매매를 중단합니다.
 2026-06-22 10:01:10,258 [INFO] >>> Step 6: Archiving Data
 2026-06-22 10:01:10,261 [INFO] Cycle Completed: regime=Crash exposure=0.00 orders=0 executions=0
+2026-06-22 14:01:03,613 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-06-22 14:01:03,614 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-06-22 14:01:03,615 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-06-22 14:01:03,615 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-06-22 14:01:03,615 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-06-22 14:01:03,615 [INFO] Restored previous regime: Bull
+2026-06-22 14:01:04,766 [INFO] >>> Step 1: Data Collection
+2026-06-22 14:01:04,766 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-06-22 14:01:05,031 [INFO] [Data] VIX fetched: 16.40
+2026-06-22 14:01:05,031 [INFO] >>> Step 2: Indicator Calculation
+2026-06-22 14:01:05,034 [INFO] Market Data: Price=746.74, VIX=16.40, MDD=-1.69%
+2026-06-22 14:01:05,034 [INFO] >>> Step 3: Strategy Analysis
+2026-06-22 14:01:05,034 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-06-22 14:01:05,034 [INFO] >>> Step 4: Portfolio Status
+2026-06-22 14:01:05,882 [INFO] Fetching Real-time prices from Broker...
+2026-06-22 14:01:09,593 [INFO] Current Portfolio: Cash=$93,031, Value=$4,499,671
+2026-06-22 14:01:09,594 [INFO] >>> Step 5: Rebalancing
+2026-06-22 14:01:09,594 [INFO] [입력] Regime=Bull | TargetExposure=1.00 | TotalValue=$4,499,671.00 | Cash=$93,031.00
+2026-06-22 14:01:09,594 [INFO] [포트폴리오 현황]
+2026-06-22 14:01:09,594 [INFO]   A그룹(성장): $1,848,270.00 ( 41.1%)
+2026-06-22 14:01:09,594 [INFO]   B그룹(안전): $2,558,370.00 ( 56.9%)
+2026-06-22 14:01:09,594 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-06-22 14:01:09,594 [INFO]   현금(예수금): $  93,031.00 (  2.1%)
+2026-06-22 14:01:09,594 [INFO] [비중 판정] ratio_A=0.419  ratio_B=0.581
+2026-06-22 14:01:09,594 [INFO]   A 상대이탈: 4.9% | B 상대이탈: 3.2% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-06-22 14:01:09,594 [INFO] [목표 금액]
+2026-06-22 14:01:09,594 [INFO]   A그룹: 현재 $1,848,270.00 → 목표 $1,887,289.84  (exposure 1.00 × ratio 0.42)
+2026-06-22 14:01:09,594 [INFO]   B그룹: 현재 $2,558,370.00 → 목표 $2,612,381.16  (exposure 1.00 × ratio 0.58)
+2026-06-22 14:01:09,594 [INFO]   C그룹: 현재 $      0.00 → 목표 $      0.00  (잔여)
+2026-06-22 14:01:09,594 [INFO] [A그룹(성장) 종목별]
+2026-06-22 14:01:09,594 [INFO]   KODEX 코스피: 보유 11주 $1,023,330.00 → 목표 $943,644.92 | diff=-79,685.08 → SELL 1주 @$93030.00
+2026-06-22 14:01:09,594 [INFO]   TIGER 미국나스닥100: 보유 4주 $824,940.00 → 목표 $943,644.92 | diff=+118,704.92 → 주문 없음 (수량 미달)
+2026-06-22 14:01:09,594 [INFO] [B그룹(안전) 종목별]
+2026-06-22 14:01:09,595 [INFO]   ACE 국고채10년: 보유 10주 $825,500.00 → 목표 $870,793.72 | diff=+45,293.72 → 주문 없음 (수량 미달)
+2026-06-22 14:01:09,595 [INFO]   TIGER 미국채10년선물: 보유 64주 $881,920.00 → 목표 $870,793.72 | diff=-11,126.28 → SELL 1주 @$13780.00
+2026-06-22 14:01:09,595 [INFO]   ACE KRX금현물: 보유 30주 $850,950.00 → 목표 $870,793.72 | diff=+19,843.72 → 주문 없음 (수량 미달)
+2026-06-22 14:01:09,595 [INFO] [최종 주문] 주문 없음
+2026-06-22 14:01:09,595 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-06-22 14:01:09,595 [INFO] No Rebalance Needed.
+2026-06-22 14:01:09,813 [INFO] >>> Step 6: Archiving Data
+2026-06-22 14:01:09,816 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
