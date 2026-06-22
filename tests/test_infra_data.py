@@ -177,10 +177,11 @@ def test_fetch_ohlcv_datetime_index(mock_yf_download, mock_logger):
 
 def test_fetch_daily_dividends_returns_dividend_on_ex_date(mock_yf_download, mock_logger):
     """오늘 배당락일인 종목의 주당 배당금을 반환하는지 확인"""
-    from datetime import date
+    from datetime import datetime, timezone, timedelta
     import pandas as pd
 
-    today = pd.Timestamp(date.today())
+    _KST = timezone(timedelta(hours=9))
+    today = pd.Timestamp(datetime.now(_KST).strftime("%Y-%m-%d"))
     # Dividends 컬럼이 있는 MultiIndex DataFrame 생성
     columns = pd.MultiIndex.from_product([['Close', 'Dividends'], ['IEF', 'GLD']])
     data = {

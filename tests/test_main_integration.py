@@ -1,6 +1,12 @@
 import pytest
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, timezone
 from unittest.mock import MagicMock, patch
+
+_KST = timezone(timedelta(hours=9))
+
+
+def _today_kst() -> str:
+    return datetime.now(_KST).strftime("%Y-%m-%d")
 from src.main import TradingBot
 from src.account_config import AccountConfig
 from src.core.models import MarketData, MarketRegime, TradeSignal, Order, Portfolio
@@ -281,7 +287,7 @@ def test_bot_repo_save_permission_error(mock_dependencies):
 def test_bot_run_monitoring_day_skips_orders(mock_dependencies):
     """[모니터링 날] _is_rebalancing_due()=False → 주문 없이 기록만"""
     # 오늘 리밸런싱 → TRADING_INTERVAL_DAYS(1)일 미충족 → 모니터링 모드
-    recent_date = date.today().strftime("%Y-%m-%d")
+    recent_date = _today_kst()
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = recent_date
 
     mock_dependencies['calc'].calculate.return_value = MarketData(
@@ -308,7 +314,7 @@ def test_bot_run_monitoring_day_skips_orders(mock_dependencies):
 
 def test_bot_run_monitoring_does_not_update_rebalancing_date(mock_dependencies):
     """[모니터링 날] update_status에 rebalancing_date=None이 전달됨"""
-    recent_date = date.today().strftime("%Y-%m-%d")
+    recent_date = _today_kst()
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = recent_date
 
     mock_dependencies['calc'].calculate.return_value = MarketData(
@@ -357,7 +363,7 @@ def test_is_rebalancing_due_first_run(mock_dependencies):
 
 def test_is_rebalancing_due_recent(mock_dependencies):
     """최근 리밸런싱(인터벌 미충족) → False"""
-    today = date.today().strftime("%Y-%m-%d")
+    today = _today_kst()
     mock_dependencies['repo'].get_last_rebalancing_date.return_value = today
     bot = TradingBot()
     assert bot._is_rebalancing_due() is False
