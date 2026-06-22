@@ -600,13 +600,13 @@ export function computeFailedExecutions(historyData) {
  * @param {Array} historyData
  * @returns {{estimatedDate:string|null, intervalDays:number|null, confidence:string}}
  */
-export function inferNextRebalanceDate(historyData) {
+export function inferNextRebalanceDate(historyData, lastRebalanceDate = null) {
     if (!historyData || historyData.length < 3) {
         return { estimatedDate: null, intervalDays: null, confidence: 'insufficient' };
     }
-    // 최근 5건 거래 날짜 수집 (오름차순)
+    // 최근 5건 거래 날짜 수집 (오름차순) — 로컬 자정 기준 파싱(TZ 시프트 방지)
     const recent = historyData.slice(-6);
-    const dates = recent.map(tx => new Date((tx.date || '').split(' ')[0]));
+    const dates = recent.map(tx => _parseLocalDate((tx.date || '').split(' ')[0]));
     const intervals = [];
     for (let i = 1; i < dates.length; i++) {
         const diff = (dates[i] - dates[i - 1]) / (1000 * 60 * 60 * 24);
@@ -622,17 +622,120 @@ export function inferNextRebalanceDate(historyData) {
         ? Math.round((intervals[mid - 1] + intervals[mid]) / 2)
         : Math.round(intervals[mid]);
 
-    const lastDate = dates[dates.length - 1];
+    // 앵커 우선순위: status.last_rebalancing_date(권위) > history 마지막 거래일
+    const anchor = lastRebalanceDate ? _parseLocalDate((lastRebalanceDate || '').split(' ')[0]) : null;
+    const lastDate = (anchor && !isNaN(anchor.getTime())) ? anchor : dates[dates.length - 1];
     const next = new Date(lastDate);
     next.setDate(next.getDate() + medianDays);
     const yyyy = next.getFullYear();
     const mm = String(next.getMonth() + 1).padStart(2, '0');
     const dd = String(next.getDate()).padStart(2, '0');
 
+    const ly = lastDate.getFullYear();
+    const lm = String(lastDate.getMonth() + 1).padStart(2, '0');
+    const ld = String(lastDate.getDate()).padStart(2, '0');
+
     return {
         estimatedDate: `${yyyy}-${mm}-${dd}`,
         intervalDays: medianDays,
+        anchorDate: `${ly}-${lm}-${ld}`,
+        anchorSource: (anchor && !isNaN(anchor.getTime())) ? 'status' : 'history',
         confidence: historyData.length >= 5 ? 'high' : 'medium'
+    };
+}
+
+/**
+ * 봇 실행 누락(스케줄 갭) 감지 — summary 날짜 시퀀스의 영업일 갭을 분석.
+ * summary는 봇 실행 1회당 1건이 누적되므로, 연속 영업일 사이의 빈 영업일은
+ * 실행 누락(또는 한국 공휴일)을 의미한다. 주말은 정상 제외한다.
+ * @param {Array} summaryData - summary 배열 (date 필드 필요)
+ * @returns {{totalRuns, lastRunDate, gaps, recentGap, missedTotal, consecutiveOkDays}}
+ */
+export function computeExecutionGaps(summaryData) {
+    const empty = { totalRuns: 0, lastRunDate: null, gaps: [], recentGap: null, missedTotal: 0, consecutiveOkDays: 0 };
+    if (!summaryData || summaryData.length === 0) return empty;
+
+    const dates = summaryData.map(d => d.date).filter(Boolean);
+    if (dates.length === 0) return empty;
+
+    // 영업일 갭을 1회만 계산해 재사용(중복 파싱/연산 제거)
+    const gaps = [];
+    const missingDays = [];
+    for (let i = 1; i < dates.length; i++) {
+        const missing = _businessDaysStrictlyBetween(_parseLocalDate(dates[i - 1]), _parseLocalDate(dates[i]));
+        missingDays.push(missing);
+        if (missing > 0) {
+            gaps.push({ from: dates[i - 1], to: dates[i], missingBusinessDays: missing });
+        }
+    }
+
+    // 최근부터 역순으로 연속 정상(갭 0) 실행일수 집계
+    let consecutiveOkDays = dates.length >= 1 ? 1 : 0;
+    for (let i = missingDays.length - 1; i >= 0; i--) {
+        if (missingDays[i] === 0) consecutiveOkDays++;
+        else break;
+    }
+
+    return {
+        totalRuns: dates.length,
+        lastRunDate: dates[dates.length - 1],
+        gaps,
+        recentGap: gaps.length ? gaps[gaps.length - 1] : null,
+        missedTotal: gaps.reduce((s, g) => s + g.missingBusinessDays, 0),
+        consecutiveOkDays,
+    };
+}
+
+/** "YYYY-MM-DD" → 로컬 자정 Date (TZ 흔들림 방지) */
+function _parseLocalDate(s) {
+    const [y, m, d] = (s || '').split('-').map(Number);
+    return new Date(y || 1970, (m || 1) - 1, d || 1);
+}
+
+/** start와 end 사이(양끝 제외)의 영업일(월~금) 수 */
+function _businessDaysStrictlyBetween(start, end) {
+    let count = 0;
+    const d = new Date(start);
+    d.setDate(d.getDate() + 1);
+    while (d < end) {
+        const wd = d.getDay();
+        if (wd !== 0 && wd !== 6) count++;
+        d.setDate(d.getDate() + 1);
+    }
+    return count;
+}
+
+/**
+ * 리밸런싱 트리거 근접도 — rebalancer.py의 상대이탈 판정 로직을 그대로 재현.
+ *   ratio_a = val_a / (val_a + val_b)  (현금 그룹 C 제외, risky 기준)
+ *   rel_dev = |ratio - target| / target,  트리거 = max(rel_dev_a, rel_dev_b) > threshold
+ * @param {Array} summaryData - summary 배열 (group_a/group_b/target_ratio_a/rebalance_threshold 필요)
+ * @returns {{available, ratioA, targetA, threshold, maxDev, proximityPct, willTrigger, date}}
+ */
+export function computeRebalanceProximity(summaryData) {
+    if (!summaryData || summaryData.length === 0) return { available: false };
+    const last = summaryData[summaryData.length - 1];
+    const valA = last.group_a || 0;
+    const valB = last.group_b || 0;
+    const risky = valA + valB;
+    const targetA = last.target_ratio_a;
+    const threshold = last.rebalance_threshold;
+    if (!risky || targetA == null || threshold == null || targetA <= 0) {
+        return { available: false };
+    }
+    const targetB = 1 - targetA;
+    const ratioA = valA / risky;
+    const ratioB = valB / risky;
+    const relDevA = Math.abs(ratioA - targetA) / targetA;
+    const relDevB = targetB > 0 ? Math.abs(ratioB - targetB) / targetB : 0;
+    const maxDev = Math.max(relDevA, relDevB);
+    const proximityPct = threshold > 0 ? Math.min((maxDev / threshold) * 100, 100) : 0;
+
+    return {
+        available: true,
+        ratioA, targetA, threshold, maxDev, proximityPct,
+        willTrigger: maxDev > threshold,
+        date: last.date,
     };
 }
 
