@@ -88,7 +88,11 @@ class JsonRepository(IRepository):
             # [전략 상태]
             "regime": regime.value,          # MarketRegime enum 값 (예: "Bull", "Bear", "Crash")
             "reason": signal.reason,         # 상세 사유 (예: "Bull (모니터링)", "데이터 이상 - NaN: ...")
-            "target_exposure": signal.target_exposure
+            "target_exposure": signal.target_exposure,
+            # [리밸런싱 진단] 그 시점의 목표 비율·임계치를 함께 저장해
+            # 이격도 시계열이 설정 변경과 무관하게 불변이 되도록 한다.
+            "target_ratio_a": signal.target_ratio_a,
+            "rebalance_threshold": signal.rebalance_threshold,
         }
 
         data = self._load_json(self.summary_file, default=[])

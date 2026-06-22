@@ -19,8 +19,10 @@ import {
     renderTickerContributionChart,
     renderCurrentAllocationDoughnut,
     renderRegimeDistributionDoughnut,
-    renderHistoricalAllocationChart
-} from './charts.js?v=4';
+    renderHistoricalAllocationChart,
+    renderTargetVsActualChart,
+    renderDeviationTrendChart
+} from './charts.js?v=5';
 
 import {
     updateModeUI,
@@ -237,6 +239,8 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
 
     function renderAllocationTab() {
         if (allocationRendered) return;
+        renderTargetVsActualChart(statusData, groupConfig, marketType, summaryData);
+        renderDeviationTrendChart(summaryData);
         renderCurrentAllocationDoughnut(statusData, groupConfig, marketType);
         renderRegimeDistributionDoughnut(summaryData);
         renderHistoricalAllocationChart(summaryData, marketType);

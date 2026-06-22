@@ -37,6 +37,8 @@ let currentAllocationDoughnut = null;
 let historicalAllocationChart = null;
 let regimeDistributionDoughnut = null;
 let annualReturnsChart = null;
+let targetVsActualChart = null;
+let deviationTrendChart = null;
 
 /**
  * Strategy Analysis 차트 렌더링 (투자 비중 + 모멘텀 듀얼 축)
@@ -217,7 +219,8 @@ export function resizeAllCharts() {
         stratChart, groupBarChartInstance, unifiedChart, cumulativeDividendChart, yearlyDividendChart,
         cumulativePnlChart, drawdownChart, alphaLineChart, monthlyHeatmapChart, tradeReasonPieChart,
         monthlyFrequencyChart, tickerContributionChart, currentAllocationDoughnut,
-        historicalAllocationChart, regimeDistributionDoughnut, annualReturnsChart
+        historicalAllocationChart, regimeDistributionDoughnut, annualReturnsChart,
+        targetVsActualChart, deviationTrendChart
     ].forEach(chart => {
         if (chart) chart.resize();
     });
@@ -1345,6 +1348,237 @@ export function renderHistoricalAllocationChart(summaryData, marketType = 'overs
                             const pct = total > 0 ? (ctx.parsed.y / total * 100).toFixed(1) : '0';
                             return `${ctx.dataset.label}: ${formatAmount(ctx.parsed.y, marketType)} (${pct}%)`;
                         }
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 목표 vs 실제 자산 배분 막대 차트 + 리밸런싱 이격도 배지.
+ *
+ * 목표 비중(% 총자산): A = exposure×eff_a, B = exposure×eff_b, C = 1−exposure
+ * 실제 비중: 보유 종목 평가액 / 총자산 (C는 SHV 등 + 예수금)
+ * 이격도: 봇과 동일하게 위험자산(A+B) 내부 비율 기준
+ *   rel_dev = |실제비율 − 목표비율| / 목표비율,  rel_dev > threshold 시 리밸런싱 발동
+ *
+ * eff_a·threshold는 같은 사이클에 기록된 최신 summary 레코드에서 가져온다.
+ */
+export function renderTargetVsActualChart(statusData, groupConfig, marketType = 'overseas', summaryData = null) {
+    const canvas = document.getElementById('targetVsActualChart');
+    const badge = document.getElementById('rebalanceDeviationBadge');
+    if (!canvas) return;
+    if (targetVsActualChart) targetVsActualChart.destroy();
+
+    const strategy = statusData && statusData.strategy;
+    const portfolio = statusData && statusData.portfolio;
+    const lastRec = summaryData && summaryData.length ? summaryData[summaryData.length - 1] : null;
+    if (!groupConfig || !strategy || !portfolio || !lastRec || lastRec.target_ratio_a == null) {
+        if (badge) badge.innerHTML = '';
+        return;
+    }
+
+    const exposure = strategy.target_exposure != null ? strategy.target_exposure : 1.0;
+    const effA = lastRec.target_ratio_a;
+    const threshold = lastRec.rebalance_threshold;
+    const effB = Math.max(1 - effA, 0);
+
+    // 목표 비중(% 총자산)
+    const targetA = exposure * effA * 100;
+    const targetB = exposure * effB * 100;
+    const targetC = Math.max(1 - exposure, 0) * 100;
+
+    // 실제 비중 (보유 종목 그룹별 합산)
+    const holdings = portfolio.holdings || [];
+    const cash = portfolio.cash_balance || 0;
+    const total = portfolio.total_value || 0;
+    const tickersA = (groupConfig.A && groupConfig.A.tickers) || [];
+    const tickersB = (groupConfig.B && groupConfig.B.tickers) || [];
+    let valA = 0, valB = 0, valCStock = 0;
+    holdings.forEach(h => {
+        if (!h.value || h.value <= 0) return;
+        if (tickersA.includes(h.ticker)) valA += h.value;
+        else if (tickersB.includes(h.ticker)) valB += h.value;
+        else valCStock += h.value;  // C그룹(SHV 등) 또는 미분류
+    });
+    const valC = valCStock + cash;
+    const actualA = total > 0 ? valA / total * 100 : 0;
+    const actualB = total > 0 ? valB / total * 100 : 0;
+    const actualC = total > 0 ? valC / total * 100 : 0;
+
+    const labelA = (groupConfig.A && groupConfig.A.label) || 'A';
+    const labelB = (groupConfig.B && groupConfig.B.label) || 'B';
+    const labels = [`A · ${labelA}`, `B · ${labelB}`, 'C · Cash'];
+
+    targetVsActualChart = new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: '목표',
+                    data: [targetA, targetB, targetC],
+                    backgroundColor: 'rgba(13, 110, 253, 0.35)',
+                    borderColor: '#0d6efd',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                },
+                {
+                    label: '실제',
+                    data: [actualA, actualB, actualC],
+                    backgroundColor: 'rgba(25, 135, 84, 0.65)',
+                    borderColor: '#198754',
+                    borderWidth: 1.5,
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '총자산 대비 비중 (%)' },
+                    ticks: { callback: v => v + '%' }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 10 } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`,
+                        afterBody: items => {
+                            const i = items[0].dataIndex;
+                            const tgt = [targetA, targetB, targetC][i];
+                            const act = [actualA, actualB, actualC][i];
+                            return `편차: ${(act - tgt >= 0 ? '+' : '') + (act - tgt).toFixed(1)}%p`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // 이격도 배지 (봇과 동일한 위험자산 내부 비율 기준)
+    if (badge) badge.innerHTML = _buildDeviationBadge(valA, valB, effA, effB, threshold);
+}
+
+/**
+ * 리밸런싱 이격도 배지 HTML 생성.
+ */
+function _buildDeviationBadge(valA, valB, effA, effB, threshold) {
+    const valRisky = valA + valB;
+    if (valRisky <= 0) {
+        return '<span class="badge bg-secondary">위험자산 미보유</span>';
+    }
+    const ratioA = valA / valRisky;
+    const ratioB = valB / valRisky;
+    const relDevA = effA > 0 ? Math.abs(ratioA - effA) / effA : 0;
+    const relDevB = effB > 0 ? Math.abs(ratioB - effB) / effB : 0;
+    const maxDev = Math.max(relDevA, relDevB);
+    const devPct = (maxDev * 100).toFixed(1);
+    const thrPct = (threshold * 100).toFixed(1);
+    if (maxDev > threshold) {
+        return `<span class="badge bg-danger">리밸런싱 발동 · 이격도 ${devPct}% &gt; 임계 ${thrPct}%</span>`;
+    }
+    const marginPct = ((threshold - maxDev) * 100).toFixed(1);
+    return `<span class="badge bg-success">비율 유지 · 이격도 ${devPct}% (임계 ${thrPct}%, 여유 ${marginPct}%p)</span>`;
+}
+
+/**
+ * 이격도(이탈도) 추이 라인 차트.
+ *
+ * summary.json 레코드에 그 시점 저장된 target_ratio_a·rebalance_threshold와
+ * group_a/b로부터 위험자산 내부 비율 이격도를 계산해 시계열로 표시한다.
+ * 저장값을 그대로 쓰므로 이후 설정이 바뀌어도 과거 이격도는 불변이다.
+ * 임계치는 국면별로 달라 stepped 라인으로 함께 표시.
+ */
+export function renderDeviationTrendChart(summaryData) {
+    const canvas = document.getElementById('deviationTrendChart');
+    if (!canvas) return;
+    if (deviationTrendChart) deviationTrendChart.destroy();
+    if (!summaryData || summaryData.length === 0) return;
+
+    const labels = [];
+    const devA = [];
+    const devB = [];
+    const thr = [];
+    summaryData.forEach(d => {
+        labels.push(d.date);
+        // 그 시점에 저장된 목표비율·임계치 사용 (설정 변경에도 불변).
+        const effA = d.target_ratio_a;
+        const effB = effA != null ? Math.max(1 - effA, 0) : null;
+        const threshold = d.rebalance_threshold;
+        const valRisky = (d.group_a || 0) + (d.group_b || 0);
+        if (effA == null || valRisky <= 0) {
+            devA.push(null);
+            devB.push(null);
+        } else {
+            const ratioA = (d.group_a || 0) / valRisky;
+            const ratioB = (d.group_b || 0) / valRisky;
+            // 목표 비중 0이면 이격도 0 (백엔드 Rebalancer·이격도 배지와 동일 규약)
+            devA.push(effA > 0 ? Math.abs(ratioA - effA) / effA * 100 : 0);
+            devB.push(effB > 0 ? Math.abs(ratioB - effB) / effB * 100 : 0);
+        }
+        thr.push(threshold != null ? threshold * 100 : null);
+    });
+
+    deviationTrendChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'A그룹 이격도',
+                    data: devA,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    spanGaps: true,
+                    tension: 0.2
+                },
+                {
+                    label: 'B그룹 이격도',
+                    data: devB,
+                    borderColor: '#198754',
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    spanGaps: true,
+                    tension: 0.2
+                },
+                {
+                    label: '리밸런싱 임계치',
+                    data: thr,
+                    borderColor: '#dc3545',
+                    borderWidth: 1.5,
+                    borderDash: [6, 4],
+                    pointRadius: 0,
+                    stepped: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '위험자산 내부 이격도 (%)' },
+                    ticks: { callback: v => v + '%' }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 15 } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ctx.parsed.y == null ? null : `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`
                     }
                 }
             }
