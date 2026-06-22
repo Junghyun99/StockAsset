@@ -185,8 +185,11 @@ def test_nan_data_skips_trade():
     mocks["analyzer"].analyze.assert_not_called()
     mocks["targeter"].calculate_exposure.assert_not_called()
     mocks["broker"].execute_orders.assert_not_called()
-    # 저장은 수행
-    mocks["repo"].save_daily_summary.assert_called_once()
+    # NaN 시 summary 저장 스킵 — corrupt 데이터 차단
+    mocks["repo"].save_daily_summary.assert_not_called()
+    # update_status는 호출되되 preserve_regime=True로 기존 regime 보존
+    call_kwargs = mocks["repo"].update_status.call_args
+    assert call_kwargs.kwargs.get("preserve_regime") is True
 
 
 # ─────────────────────────────────────────────────────────────────

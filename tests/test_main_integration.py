@@ -226,9 +226,11 @@ def test_bot_nan_data_treated_as_crash(mock_dependencies):
     assert "Data Quality Alert" in alert_msg
     assert "spy_volatility" in alert_msg
 
-    # 4. 데이터 저장은 정상 수행
-    mock_dependencies['repo'].save_daily_summary.assert_called_once()
+    # 4. NaN 시 summary 저장 스킵, update_status는 호출되되 regime 보존 플래그 전달
+    mock_dependencies['repo'].save_daily_summary.assert_not_called()
     mock_dependencies['repo'].update_status.assert_called_once()
+    call_kwargs = mock_dependencies['repo'].update_status.call_args
+    assert call_kwargs.kwargs.get("preserve_regime") is True
 
 def test_bot_restores_prev_regime_from_repo(mock_dependencies):
     """[히스테리시스 상태 복원] 프로세스 재시작 시 이전 국면을 status.json에서 복원한다.

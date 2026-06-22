@@ -73,6 +73,29 @@ def test_load_last_regime_returns_none_on_missing_key(repo):
     assert repo.load_last_regime() is None
 
 
+def test_update_status_preserve_regime_keeps_existing_regime(repo, dummy_portfolio, dummy_market_data):
+    """preserve_regime=True 시 기존 status.json의 regime이 유지되어야 한다.
+
+    NaN 데이터로 인해 CRASH로 잘못 저장되는 버그 방지.
+    이전 Bull 상태가 있으면 NaN 사이클 이후에도 Bull이 유지되어야 한다.
+    """
+    # 기존 상태: Bull
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data, "Bull 정상")
+    assert repo.load_last_regime() == MarketRegime.BULL
+
+    # NaN 감지 → preserve_regime=True로 호출 (regime=CRASH이지만 기존 값 유지해야 함)
+    repo.update_status(MarketRegime.CRASH, 0.0, dummy_portfolio, dummy_market_data,
+                       "데이터 이상 - NaN: vix", preserve_regime=True)
+    assert repo.load_last_regime() == MarketRegime.BULL
+
+
+def test_update_status_preserve_regime_no_existing_file_uses_passed_regime(repo, dummy_portfolio, dummy_market_data):
+    """preserve_regime=True이지만 기존 status.json이 없으면 전달된 regime을 그대로 사용한다."""
+    repo.update_status(MarketRegime.CRASH, 0.0, dummy_portfolio, dummy_market_data,
+                       "데이터 이상 - NaN: vix", preserve_regime=True)
+    assert repo.load_last_regime() == MarketRegime.CRASH
+
+
 def test_save_summary_upsert_same_date(repo):
     # 같은 날짜로 2번 저장하면 Upsert(덮어쓰기)되어 레코드 1개만 유지
     market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)
