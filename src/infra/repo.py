@@ -148,9 +148,8 @@ class JsonRepository(IRepository):
                       pf: Portfolio,
                       market_data: MarketData, # [필수] 데이터 매핑을 위해 필요
                       reason: str,
-                      sim_date: str = None,           # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
-                      rebalancing_date: str = None,   # 리밸런싱 실행일 (None이면 기존 값 유지)
-                      preserve_regime: bool = False): # NaN 이상 시 기존 regime 유지
+                      sim_date: str = None,          # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
+                      rebalancing_date: str = None): # 리밸런싱 실행일 (None이면 기존 값 유지)
 
         last_updated = sim_date if sim_date else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -158,13 +157,6 @@ class JsonRepository(IRepository):
         existing = self._load_json(self.status_file, default={})
         last_rebalancing = rebalancing_date if rebalancing_date is not None \
             else existing.get("last_rebalancing_date")
-
-        # NaN 데이터 품질 이상 시 기존 regime 보존 (잘못된 Crash 상태 저장 방지)
-        if preserve_regime:
-            try:
-                regime = MarketRegime(existing["strategy"]["regime"])
-            except (KeyError, ValueError, TypeError):
-                pass  # 기존 값 없으면 전달받은 regime 그대로 사용
 
         status = {
             "last_updated": last_updated,

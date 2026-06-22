@@ -132,9 +132,10 @@ class TradingEngine:
             market_data, portfolio, regime, exposure, nan_fields, sim_date
         )
 
-        # Step 6: 저장
+        # Step 6: 저장 (NaN 데이터 품질 이상 시 전체 스킵 — step 4 API 오류와 동일 처리)
         self.logger.info(">>> Step 6: Archiving Data")
-        self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, nan_fields=nan_fields)
+        if not nan_fields:
+            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend)
         self.logger.info(
             f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
             f"orders={len(signal.orders)} executions={len(executions)}"
@@ -332,19 +333,15 @@ class TradingEngine:
         is_rebalancing: bool,
         sim_date: Optional[str],
         daily_dividend: float = 0.0,
-        nan_fields: Optional[List[str]] = None,
     ) -> None:
         """Step 6: 저장 3종 호출."""
         rebalancing_date = (sim_date or market_data.date) if is_rebalancing else None
-        # NaN 데이터 품질 이상 시 summary 저장 스킵 — corrupt 레코드 차단
-        if not nan_fields:
-            self.repo.save_daily_summary(market_data, signal, final_pf, regime, daily_dividend=daily_dividend)
+        self.repo.save_daily_summary(market_data, signal, final_pf, regime, daily_dividend=daily_dividend)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,
             sim_date=sim_date,
             rebalancing_date=rebalancing_date,
-            preserve_regime=bool(nan_fields),
         )
 
     # ── Private helpers (NOT part of template) ────────────────────────────────

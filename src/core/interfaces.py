@@ -85,5 +85,4 @@ class IRepository(ABC):
     def update_status(self, regime: MarketRegime, exposure: float, portfolio: Portfolio,
                       market_data: MarketData, reason: str,
                       sim_date: Optional[str] = None,
-                      rebalancing_date: Optional[str] = None,
-                      preserve_regime: bool = False) -> None: ...
+                      rebalancing_date: Optional[str] = None) -> None: ...
