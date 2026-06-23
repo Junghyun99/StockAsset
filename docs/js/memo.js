@@ -122,23 +122,22 @@ class MemoTab {
         const portfolioReturns = data.map(d => firstValue ? ((d.total_value / firstValue) - 1) * 100 : 0);
         const spyReturns = data.map(d => firstSpy ? ((d.spy_price / firstSpy) - 1) * 100 : 0);
 
-        // 코멘트 마커 어노테이션 생성
+        // 코멘트 마커: 해당 날짜 인덱스에 네모 포인트 스타일 적용
         this._commentLabelIndices = {};
-        const annotations = {};
         this.comments.forEach((c, i) => {
             const nearestDate = this._findNearestDate(labels, c.date);
             if (!nearestDate) return;
             this._commentLabelIndices[i] = labels.indexOf(nearestDate);
-            annotations[`comment_${i}`] = {
-                type: 'line',
-                xMin: nearestDate,
-                xMax: nearestDate,
-                borderColor: 'rgba(255, 193, 7, 0.9)',
-                borderWidth: 2,
-                borderDash: [5, 3],
-                drawTime: 'afterDraw'
-            };
         });
+
+        const commentIndexSet = new Set(Object.values(this._commentLabelIndices));
+        const hasComments = commentIndexSet.size > 0;
+        const portfolioPointRadius = labels.map((_, i) => commentIndexSet.has(i) ? 7 : 0);
+        const portfolioPointStyle = labels.map((_, i) => commentIndexSet.has(i) ? 'rect' : 'circle');
+        const portfolioPointBg = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(255, 193, 7, 0.9)' : 'transparent');
+        const portfolioPointBorder = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(180, 130, 0, 1)' : 'transparent');
+        const portfolioPointHoverBg = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(255, 193, 7, 1)' : '#0d6efd');
+        const portfolioPointHoverBorder = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(180, 130, 0, 1)' : '#0d6efd');
 
         this.chart = new Chart(canvas, {
             type: 'line',
@@ -150,7 +149,14 @@ class MemoTab {
                         data: portfolioReturns,
                         borderColor: '#0d6efd',
                         borderWidth: 2,
-                        pointRadius: 0,
+                        pointRadius: portfolioPointRadius,
+                        pointStyle: portfolioPointStyle,
+                        pointBackgroundColor: portfolioPointBg,
+                        pointBorderColor: portfolioPointBorder,
+                        pointBorderWidth: 1.5,
+                        pointHoverRadius: portfolioPointRadius.map(r => r > 0 ? r + 2 : 4),
+                        pointHoverBackgroundColor: portfolioPointHoverBg,
+                        pointHoverBorderColor: portfolioPointHoverBorder,
                         fill: false,
                         tension: 0.1
                     },
@@ -179,25 +185,34 @@ class MemoTab {
                     }
                 },
                 plugins: {
-                    annotation: { annotations },
                     legend: {
                         position: 'bottom',
+                        onClick: (e, legendItem, legend) => {
+                            if (legendItem.datasetIndex === undefined) return;
+                            const index = legendItem.datasetIndex;
+                            const ci = legend.chart;
+                            if (ci.isDatasetVisible(index)) {
+                                ci.hide(index);
+                            } else {
+                                ci.show(index);
+                            }
+                        },
                         labels: {
                             usePointStyle: true,
                             padding: 20,
                             generateLabels: chart => {
-                                const labels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
-                                if (Object.keys(annotations).length > 0) {
-                                    labels.push({
+                                const items = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                                if (hasComments) {
+                                    items.push({
                                         text: '코멘트 (클릭)',
-                                        strokeStyle: 'rgba(255, 193, 7, 0.9)',
-                                        fillStyle: 'rgba(255, 193, 7, 0.3)',
-                                        lineWidth: 2,
-                                        pointStyle: 'line',
+                                        pointStyle: 'rect',
+                                        fillStyle: 'rgba(255, 193, 7, 0.9)',
+                                        strokeStyle: 'rgba(180, 130, 0, 1)',
+                                        lineWidth: 1.5,
                                         hidden: false
                                     });
                                 }
-                                return labels;
+                                return items;
                             }
                         }
                     },

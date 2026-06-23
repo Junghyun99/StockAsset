@@ -67,7 +67,7 @@ import {
     resizeAccountCharts,
 } from './account-compare-charts.js?v=2';
 
-import { initMemoTab } from './memo.js?v=20260623-1';
+import { initMemoTab } from './memo.js?v=20260623-3';
 
 import {
     renderComparePerformanceChart,
