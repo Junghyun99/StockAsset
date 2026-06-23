@@ -1374,7 +1374,7 @@ export function renderTargetVsActualChart(statusData, groupConfig, marketType = 
     const strategy = statusData && statusData.strategy;
     const portfolio = statusData && statusData.portfolio;
     const lastRec = summaryData && summaryData.length
-        ? [...summaryData].reverse().find(r => r.target_ratio_a != null) ?? summaryData[summaryData.length - 1]
+        ? (summaryData.findLast(r => r.target_ratio_a != null) ?? summaryData[summaryData.length - 1])
         : null;
     if (!groupConfig || !strategy || !portfolio || !lastRec || lastRec.target_ratio_a == null) {
         if (badge) badge.innerHTML = '';
