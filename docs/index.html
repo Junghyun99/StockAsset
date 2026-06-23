@@ -29,10 +29,10 @@
             </div>
             <div class="d-flex align-items-center">
                 <!-- 현재 모드 상태 표시 배지 -->
-                <span id="mode-badge" class="badge me-3">Checking...</span>
+                <span id="mode-badge" class="badge me-3">확인 중...</span>
                 <!-- 데이터 신선도 배지 (Live 모드 전용) -->
                 <span id="freshness-badge" class="badge me-3 d-none">-</span>
-                <span class="navbar-text text-white" id="last-updated">Updating...</span>
+                <span class="navbar-text text-white" id="last-updated">업데이트 중...</span>
             </div>
         </div>
     </nav>
@@ -43,27 +43,27 @@
             <ul class="nav nav-tabs border-0" id="dashboardTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab" aria-controls="overview" aria-selected="true">
-                        <i class="fas fa-tachometer-alt me-1"></i>Overview
+                        <i class="fas fa-tachometer-alt me-1"></i>개요
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="false">
-                        <i class="fas fa-chart-line me-1"></i>Performance
+                        <i class="fas fa-chart-line me-1"></i>성과
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="allocation-tab" data-bs-toggle="tab" data-bs-target="#allocation" type="button" role="tab" aria-controls="allocation" aria-selected="false">
-                        <i class="fas fa-chart-pie me-1"></i>Allocation
+                        <i class="fas fa-chart-pie me-1"></i>배분
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="trades-tab" data-bs-toggle="tab" data-bs-target="#trades" type="button" role="tab" aria-controls="trades" aria-selected="false">
-                        <i class="fas fa-exchange-alt me-1"></i>Trades
+                        <i class="fas fa-exchange-alt me-1"></i>거래
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="operations-tab" data-bs-toggle="tab" data-bs-target="#operations" type="button" role="tab" aria-controls="operations" aria-selected="false">
-                        <i class="fas fa-heartbeat me-1"></i>Operations
+                        <i class="fas fa-heartbeat me-1"></i>운영
                     </button>
                 </li>
             </ul>
@@ -101,11 +101,11 @@
                     <div class="col-md-6 col-lg-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="text-muted"><i class="fas fa-wallet me-1"></i>Total Assets</h6>
+                                <h6 class="text-muted"><i class="fas fa-wallet me-1"></i>총 자산</h6>
                                 <h2 class="fw-bold mb-0" id="total-value">-</h2>
                                 <div class="mt-2">
                                     <span id="daily-return" class="badge rounded-pill bg-secondary">0.00%</span>
-                                    <span class="text-muted small ms-1">vs Yesterday</span>
+                                    <span class="text-muted small ms-1">전일 대비</span>
                                 </div>
                             </div>
                         </div>
@@ -115,10 +115,10 @@
                     <div class="col-md-6 col-lg-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="text-muted"><i class="fas fa-flag me-1"></i>Market Regime</h6>
+                                <h6 class="text-muted"><i class="fas fa-flag me-1"></i>시장 국면</h6>
                                 <h3 class="fw-bold mb-0" id="regime-text">-</h3>
                                 <div class="mt-1 text-muted small">
-                                    Momentum: <span id="momentum-score">-</span>
+                                    모멘텀: <span id="momentum-score">-</span>
                                 </div>
                                 <div id="trigger-reason" class="mt-1 small text-muted fst-italic"></div>
                             </div>
@@ -129,7 +129,7 @@
                     <div class="col-md-6 col-lg-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="text-muted"><i class="fas fa-balance-scale me-1"></i>Target Exposure</h6>
+                                <h6 class="text-muted"><i class="fas fa-balance-scale me-1"></i>목표 익스포저</h6>
                                 <h3 class="fw-bold mb-0" id="target-exposure">-</h3>
                                 <div class="progress mt-2" style="height: 6px;">
                                     <div id="exposure-bar" class="progress-bar bg-info" role="progressbar" style="width: 0%"></div>
@@ -142,7 +142,7 @@
                     <div class="col-md-6 col-lg-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body">
-                                <h6 class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>Risk Indicators</h6>
+                                <h6 class="text-muted"><i class="fas fa-exclamation-triangle me-1"></i>리스크 지표</h6>
                                 <div class="d-flex justify-content-between align-items-center mb-1">
                                     <span class="small" data-metric-tooltip="vix">VIX ⓘ</span>
                                     <span id="vix-value" class="fw-bold">-</span>
@@ -166,7 +166,7 @@
                     <div class="col-lg-7">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-white py-3">
-                                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Asset Allocation</h5>
+                                <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>자산 배분</h5>
                             </div>
                             <div class="card-body">
                                 <div style="height: 60px;">
@@ -176,12 +176,12 @@
                                     <table class="table table-sm table-hover mb-0">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>Group</th>
-                                                <th>Ticker</th>
-                                                <th class="text-end">Qty</th>
-                                                <th class="text-end">Price</th>
-                                                <th class="text-end">Value</th>
-                                                <th class="text-end">Ratio</th>
+                                                <th>그룹</th>
+                                                <th>티커</th>
+                                                <th class="text-end">수량</th>
+                                                <th class="text-end">가격</th>
+                                                <th class="text-end">평가액</th>
+                                                <th class="text-end">비율</th>
                                             </tr>
                                         </thead>
                                         <tbody id="holdings-table-body">
@@ -203,7 +203,7 @@
                                 <div id="today-activity" class="mb-3">
                                 </div>
                                 <!-- Decision Factors 인라인 -->
-                                <h6 class="fw-bold mt-3 mb-2"><i class="fas fa-search-dollar me-1"></i>Decision Factors</h6>
+                                <h6 class="fw-bold mt-3 mb-2"><i class="fas fa-search-dollar me-1"></i>결정 요소</h6>
                                 <ul class="list-group list-group-flush small" id="decision-logic-list">
                                 </ul>
                             </div>
@@ -218,16 +218,16 @@
                 <!-- Performance Comparison Table -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3">
-                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Portfolio vs SPY Benchmark</h5>
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>포트폴리오 vs SPY 벤치마크</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0 align-middle" id="metrics-comparison-table">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="ps-3">Metric</th>
-                                        <th class="text-end">Portfolio</th>
-                                        <th class="text-end pe-3">SPY (Benchmark)</th>
+                                        <th class="ps-3">지표</th>
+                                        <th class="text-end">포트폴리오</th>
+                                        <th class="text-end pe-3">SPY (벤치마크)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -270,7 +270,7 @@
                     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="ytd">YTD Return ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="ytd">연초 대비 수익률 ⓘ</h6>
                                 <h5 class="fw-bold mb-1" id="ytd-portfolio">-</h5>
                                 <div class="small text-muted" id="ytd-spy">SPY -</div>
                             </div>
@@ -283,7 +283,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="winRate">Win Rate ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="winRate">승률 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="win-rate-value">-</h5>
                                 <div class="small text-muted" id="win-loss-total-months">-</div>
                             </div>
@@ -292,7 +292,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="avgWin">Avg Win ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="avgWin">평균 수익 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="avg-win-value">-</h5>
                                 <div class="small text-muted">이익 월 평균</div>
                             </div>
@@ -301,7 +301,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="avgLoss">Avg Loss ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="avgLoss">평균 손실 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="avg-loss-value">-</h5>
                                 <div class="small text-muted">손실 월 평균</div>
                             </div>
@@ -310,7 +310,7 @@
                     <div class="col-6 col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="profitFactor">Profit Factor ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="profitFactor">수익 팩터 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="profit-factor-value">-</h5>
                                 <div class="small text-muted">총이익 / 총손실</div>
                             </div>
@@ -323,7 +323,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling1m">1M Return ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling1m">1개월 수익률 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-1m">-</h5>
                             </div>
                         </div>
@@ -331,7 +331,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling3m">3M Return ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling3m">3개월 수익률 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-3m">-</h5>
                             </div>
                         </div>
@@ -339,7 +339,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling6m">6M Return ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling6m">6개월 수익률 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-6m">-</h5>
                             </div>
                         </div>
@@ -347,7 +347,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling1y">1Y Return ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="rolling1y">1년 수익률 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="rolling-1y">-</h5>
                             </div>
                         </div>
@@ -355,7 +355,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="calmar">Calmar ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="calmar">칼마 비율 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="calmar-value">-</h5>
                             </div>
                         </div>
@@ -363,7 +363,7 @@
                     <div class="col-6 col-md-4 col-lg-2">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center p-3">
-                                <h6 class="text-muted small mb-1" data-metric-tooltip="currentDD">Current DD ⓘ</h6>
+                                <h6 class="text-muted small mb-1" data-metric-tooltip="currentDD">현재 낙폭 ⓘ</h6>
                                 <h5 class="fw-bold mb-0" id="current-dd-value">-</h5>
                                 <div class="small text-muted" id="current-dd-days">-</div>
                             </div>
@@ -476,7 +476,7 @@
                     <div class="col-lg-6">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-header bg-white py-3">
-                                <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>Strategy Analysis</h5>
+                                <h5 class="mb-0"><i class="fas fa-microchip me-2"></i>전략 분석</h5>
                             </div>
                             <div class="card-body">
                                 <div style="height: 250px;">
@@ -614,7 +614,7 @@
                     <div class="col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <h6 class="text-muted">Total Trades</h6>
+                                <h6 class="text-muted">총 거래 수</h6>
                                 <h3 class="fw-bold mb-0" id="trade-count">-</h3>
                             </div>
                         </div>
@@ -622,7 +622,7 @@
                     <div class="col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <h6 class="text-muted">Total Volume</h6>
+                                <h6 class="text-muted">총 거래량</h6>
                                 <h3 class="fw-bold mb-0" id="trade-volume">-</h3>
                             </div>
                         </div>
@@ -630,7 +630,7 @@
                     <div class="col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <h6 class="text-muted">Total Fees</h6>
+                                <h6 class="text-muted">총 수수료</h6>
                                 <h3 class="fw-bold mb-0" id="trade-fees">-</h3>
                             </div>
                         </div>
@@ -638,7 +638,7 @@
                     <div class="col-md-3">
                         <div class="card h-100 border-0 shadow-sm">
                             <div class="card-body text-center">
-                                <h6 class="text-muted">Fee Impact</h6>
+                                <h6 class="text-muted">수수료 영향</h6>
                                 <h3 class="fw-bold mb-0" id="fee-impact-pct">-</h3>
                                 <div class="small text-muted mt-1">현재 자산 대비 누적 수수료 비율</div>
                             </div>
@@ -692,7 +692,7 @@
                 <!-- Trade History Table with Pagination -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>Trade History</h5>
+                        <h5 class="mb-0"><i class="fas fa-history me-2"></i>거래 내역</h5>
                         <span class="badge bg-light text-dark border" id="trade-page-info"></span>
                     </div>
                     <div class="card-body p-0">
@@ -700,12 +700,12 @@
                             <table class="table table-hover mb-0 align-middle">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
-                                        <th>Reason</th>
-                                        <th class="text-end">Portfolio</th>
-                                        <th class="text-end">Amount</th>
-                                        <th class="text-end">Fees</th>
-                                        <th>Actions</th>
+                                        <th>날짜</th>
+                                        <th>사유</th>
+                                        <th class="text-end">포트폴리오 가치</th>
+                                        <th class="text-end">거래 금액</th>
+                                        <th class="text-end">수수료</th>
+                                        <th>상세</th>
                                     </tr>
                                 </thead>
                                 <tbody id="history-table-body">
@@ -802,12 +802,12 @@
                                     <table class="table table-hover mb-0 align-middle">
                                         <thead class="table-light">
                                             <tr>
-                                                <th class="ps-3">Date</th>
-                                                <th>Ticker</th>
-                                                <th>Action</th>
-                                                <th class="text-end">Qty</th>
-                                                <th>Status</th>
-                                                <th class="pe-3">Reason</th>
+                                                <th class="ps-3">날짜</th>
+                                                <th>티커</th>
+                                                <th>구분</th>
+                                                <th class="text-end">수량</th>
+                                                <th>상태</th>
+                                                <th class="pe-3">사유</th>
                                             </tr>
                                         </thead>
                                         <tbody id="ops-failed-table-body">
@@ -828,7 +828,7 @@
                                     <dt class="col-sm-5 text-muted">데이터 신선도</dt>
                                     <dd class="col-sm-7"><span id="ops-freshness-label" class="badge bg-secondary">-</span></dd>
 
-                                    <dt class="col-sm-5 text-muted">Last Updated</dt>
+                                    <dt class="col-sm-5 text-muted">최근 업데이트</dt>
                                     <dd class="col-sm-7" id="ops-last-updated-raw">-</dd>
 
                                     <dt class="col-sm-5 text-muted">마지막 리밸런싱</dt>
