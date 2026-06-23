@@ -22,7 +22,7 @@ import {
     renderHistoricalAllocationChart,
     renderTargetVsActualChart,
     renderDeviationTrendChart
-} from './charts.js?v=20260623-2';
+} from './charts.js?v=20260623-3';
 
 import {
     updateModeUI,
