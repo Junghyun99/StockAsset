@@ -64,6 +64,7 @@ def _build_qld_shv_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = QldSHVEngine(
             broker=broker,
@@ -107,6 +108,7 @@ def _build_qld_schd_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = QldSdyEngine(
             broker=broker,
@@ -238,6 +240,7 @@ def test_qld_shv_end_to_end_rebalancing():
     mocks["rebalancer"] = MagicMock()
     engine.rebalancer = mocks["rebalancer"]
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
@@ -382,6 +385,7 @@ def test_qld_schd_end_to_end_rebalancing():
     mocks["rebalancer"] = MagicMock()
     engine.rebalancer = mocks["rebalancer"]
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
@@ -399,6 +403,7 @@ def test_qld_schd_end_to_end_crash():
     mocks["rebalancer"] = MagicMock()
     engine.rebalancer = mocks["rebalancer"]
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Full Exposure")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
@@ -494,6 +499,7 @@ def _build_qqq_schd_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = QqqSdyEngine(
             broker=broker,
@@ -602,6 +608,7 @@ def test_qqq_schd_end_to_end_rebalancing():
     mocks["rebalancer"] = MagicMock()
     engine.rebalancer = mocks["rebalancer"]
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
@@ -741,6 +748,7 @@ def _build_asset5_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = Asset5Engine(
             broker=broker,
@@ -809,6 +817,7 @@ def test_asset5_end_to_end_rebalancing():
     mocks["rebalancer"] = MagicMock()
     engine.rebalancer = mocks["rebalancer"]
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
@@ -945,6 +954,7 @@ def _build_domestic_asset5_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = DomesticAsset5Engine(
             broker=broker,
@@ -1013,6 +1023,7 @@ def test_domestic_asset5_end_to_end_rebalancing():
     mocks["rebalancer"] = MagicMock()
     engine.rebalancer = mocks["rebalancer"]
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 

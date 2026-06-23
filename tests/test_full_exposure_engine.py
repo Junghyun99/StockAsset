@@ -60,6 +60,7 @@ def _make_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = FullExposureEngine(
             asset_groups={'A': ['SSO', 'QLD'], 'B': ['IEF', 'GLD'], 'C': ['SHV']},

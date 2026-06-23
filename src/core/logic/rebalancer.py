@@ -115,6 +115,12 @@ class Rebalancer:
     # Domain helpers
     # ===================================================================
 
+    def get_target_params(self, regime: MarketRegime) -> Tuple[float, float]:
+        """국면에 따른 (target_ratio_a, rebalance_threshold) 반환."""
+        eff_a, _ = self._resolve_ratios(regime)
+        threshold = self._threshold_map.get(regime, 0.05)
+        return eff_a, threshold
+
     def _resolve_ratios(self, regime: MarketRegime) -> Tuple[float, float]:
         """국면별 ratio_a 조회 (맵이 없으면 고정값 사용)"""
         if self._regime_ratio_a_map is not None:
