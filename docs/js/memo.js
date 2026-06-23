@@ -136,6 +136,8 @@ class MemoTab {
         const portfolioPointStyle = labels.map((_, i) => commentIndexSet.has(i) ? 'rect' : 'circle');
         const portfolioPointBg = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(255, 193, 7, 0.9)' : 'transparent');
         const portfolioPointBorder = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(180, 130, 0, 1)' : 'transparent');
+        const portfolioPointHoverBg = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(255, 193, 7, 1)' : '#0d6efd');
+        const portfolioPointHoverBorder = labels.map((_, i) => commentIndexSet.has(i) ? 'rgba(180, 130, 0, 1)' : '#0d6efd');
 
         this.chart = new Chart(canvas, {
             type: 'line',
@@ -153,6 +155,8 @@ class MemoTab {
                         pointBorderColor: portfolioPointBorder,
                         pointBorderWidth: 1.5,
                         pointHoverRadius: portfolioPointRadius.map(r => r > 0 ? r + 2 : 4),
+                        pointHoverBackgroundColor: portfolioPointHoverBg,
+                        pointHoverBorderColor: portfolioPointHoverBorder,
                         fill: false,
                         tension: 0.1
                     },
@@ -183,6 +187,16 @@ class MemoTab {
                 plugins: {
                     legend: {
                         position: 'bottom',
+                        onClick: (e, legendItem, legend) => {
+                            if (legendItem.datasetIndex === undefined) return;
+                            const index = legendItem.datasetIndex;
+                            const ci = legend.chart;
+                            if (ci.isDatasetVisible(index)) {
+                                ci.hide(index);
+                            } else {
+                                ci.show(index);
+                            }
+                        },
                         labels: {
                             usePointStyle: true,
                             padding: 20,
