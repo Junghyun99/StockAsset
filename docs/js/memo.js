@@ -116,11 +116,11 @@ class MemoTab {
         if (!data || data.length === 0) return;
 
         const labels = data.map(d => d.date);
-        const firstValue = data[0].total_value;
-        const firstSpy = data[0].spy_price;
+        const firstValue = data[0]?.total_value || 0;
+        const firstSpy = data[0]?.spy_price || 0;
 
-        const portfolioReturns = data.map(d => ((d.total_value / firstValue) - 1) * 100);
-        const spyReturns = data.map(d => ((d.spy_price / firstSpy) - 1) * 100);
+        const portfolioReturns = data.map(d => firstValue ? ((d.total_value / firstValue) - 1) * 100 : 0);
+        const spyReturns = data.map(d => firstSpy ? ((d.spy_price / firstSpy) - 1) * 100 : 0);
 
         // 코멘트 마커 어노테이션 생성
         this._commentLabelIndices = {};
@@ -259,13 +259,16 @@ class MemoTab {
         const popup = document.createElement('div');
         popup.id = 'memo-comment-popup';
         popup.className = 'card border shadow-lg';
+        const nativeEvt = evt.native || evt;
+        const clientX = nativeEvt.clientX ?? 0;
+        const clientY = nativeEvt.clientY ?? 0;
         popup.style.cssText = [
             'position: fixed',
             'z-index: 9999',
             'max-width: 320px',
             'min-width: 200px',
-            `top: ${Math.min(evt.clientY + 12, window.innerHeight - 220)}px`,
-            `left: ${Math.min(evt.clientX + 12, window.innerWidth - 340)}px`
+            `top: ${Math.min(clientY + 12, window.innerHeight - 220)}px`,
+            `left: ${Math.min(clientX + 12, window.innerWidth - 340)}px`
         ].join(';');
 
         popup.innerHTML = `
@@ -346,7 +349,11 @@ class MemoTab {
         const feedbackEl = document.getElementById('memo-feedback');
         if (!form || !dateInput || !textInput || !submitBtn || !feedbackEl) return;
 
-        dateInput.value = new Date().toISOString().slice(0, 10);
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
         this._updateFormState();
 
         form.addEventListener('submit', async e => {
@@ -385,22 +392,28 @@ class MemoTab {
     }
 
     async _handleAdd(date, text) {
-        this.comments.push({ date, text, created_at: new Date().toISOString() });
-        await this._saveToGitHub();
-        this._renderChart();
-        this._renderCommentList();
-    }
-
-    async _handleDelete(index) {
-        if (!this.githubApi) return;
-        if (!confirm('코멘트를 삭제하시겠습니까?')) return;
-        this.comments.splice(index, 1);
+        const newComment = { date, text, created_at: new Date().toISOString() };
+        this.comments.push(newComment);
         try {
             await this._saveToGitHub();
             this._renderChart();
             this._renderCommentList();
         } catch (err) {
-            // 롤백
+            this.comments.pop();
+            throw err;
+        }
+    }
+
+    async _handleDelete(index) {
+        if (!this.githubApi) return;
+        if (!confirm('코멘트를 삭제하시겠습니까?')) return;
+        const removed = this.comments.splice(index, 1)[0];
+        try {
+            await this._saveToGitHub();
+            this._renderChart();
+            this._renderCommentList();
+        } catch (err) {
+            if (removed) this.comments.splice(index, 0, removed);
             alert(`삭제 실패: ${err.message}`);
         }
     }
