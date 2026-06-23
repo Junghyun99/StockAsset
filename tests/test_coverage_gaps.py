@@ -202,6 +202,7 @@ class TestTradingBotEdgeCases:
             analyzer = MockAnalyzer.return_value
             targeter = MockTargeter.return_value
             rebalancer = MockRebalancer.return_value
+            rebalancer.get_target_params.return_value = (0.5, 0.075)
 
             broker.get_portfolio.return_value = Portfolio(
                 total_cash=10000.0,
