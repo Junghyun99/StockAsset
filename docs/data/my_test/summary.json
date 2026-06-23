@@ -781,10 +781,10 @@
     },
     {
         "date": "2026-06-23",
-        "total_value": 4486876.0,
+        "total_value": 4408756.0,
         "cash_balance": 93031.0,
-        "group_a": 1837435.0,
-        "group_b": 2556410.0,
+        "group_a": 1777275.0,
+        "group_b": 2538450.0,
         "group_c": 93031.0,
         "daily_dividend": 0,
         "spy_price": 744.3900146484375,
@@ -794,9 +794,9 @@
         "mdd": -0.019984981673060905,
         "vix": 17.280000686645508,
         "regime": "Bull",
-        "reason": "비율 유지, 추가 주문 없음",
+        "reason": "Bull (모니터링)",
         "target_exposure": 1.0,
-        "target_ratio_a": 0.4,
-        "rebalance_threshold": 0.075
+        "target_ratio_a": null,
+        "rebalance_threshold": null
     }
 ]
