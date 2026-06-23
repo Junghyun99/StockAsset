@@ -67,6 +67,8 @@ import {
     resizeAccountCharts,
 } from './account-compare-charts.js?v=2';
 
+import { initMemoTab } from './memo.js?v=20260623-1';
+
 import {
     renderComparePerformanceChart,
     renderCompareStrategyChart,
@@ -154,7 +156,7 @@ async function loadLiveMode() {
         const id = targetId || accountIds[0];
         const data = accountsData.get(id);
         const marketType = (ACCOUNT_MARKET_TYPES[id] || 'overseas');
-        _renderSingleAccount(data, marketType);
+        _renderSingleAccount(data, marketType, id);
     } else {
         // 다중 계좌: 비교 UI
         renderAccountOverview(accountsData);
@@ -193,7 +195,7 @@ async function loadLiveMode() {
 /**
  * 단일 계좌 UI 렌더링 (기존 loadLiveMode 로직)
  */
-function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, groupConfig }, marketType = 'overseas') {
+function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, groupConfig }, marketType = 'overseas', accountId = null) {
     window.__summary = summaryData;
     window.__status = statusData;
     window.__history = historyData;
@@ -208,10 +210,25 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     renderStatusFreshnessBadge(statusData);
     initTooltips(); // Overview 탭 정적 요소 툴팁 초기화
 
+    // accountId가 있을 때만 메모 탭 표시
+    const memoTabItem = document.getElementById('memo-tab-item');
+    const memoTabBtn = document.getElementById('memo-tab');
+    if (memoTabItem && memoTabBtn && accountId) {
+        memoTabItem.classList.remove('d-none');
+        memoTabBtn.classList.remove('d-none');
+    }
+
+    let memoRendered = false;
     let perfRendered = false;
     let allocationRendered = false;
     let tradesRendered = false;
     let opsRendered = false;
+
+    function renderMemoTab() {
+        if (memoRendered) return;
+        initMemoTab(summaryData, accountId);
+        memoRendered = true;
+    }
 
     function renderPerformanceTab() {
         if (perfRendered) return;
@@ -265,6 +282,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     }
 
     setupTabEvents({
+        memo: renderMemoTab,
         performance: renderPerformanceTab,
         allocation: renderAllocationTab,
         trades: renderTradesTab,
@@ -290,7 +308,7 @@ async function _loadLegacySingleAccount(basePath, cacheBust) {
         status:  await statusRes.json(),
         history: await historyRes.json(),
         groupConfig: groupConfigRes.ok ? await groupConfigRes.json() : null,
-    }, 'overseas');
+    }, 'overseas', null);
 }
 
 /**
@@ -445,11 +463,13 @@ function setupComparePerformanceHTML() {
  *   각 탭 핸들러는 선택적 (미지정 시 해당 탭에 no-op).
  */
 function setupTabEvents(handlers) {
-    const { performance: onPerformance, allocation: onAllocation,
+    const { memo: onMemo, performance: onPerformance, allocation: onAllocation,
             trades: onTrades, operations: onOperations, onResize } = handlers;
 
     const dispatch = (target) => {
-        if (target === '#performance' && onPerformance) {
+        if (target === '#memo' && onMemo) {
+            onMemo();
+        } else if (target === '#performance' && onPerformance) {
             onPerformance();
             if (onResize) setTimeout(() => onResize(), 50);
         } else if (target === '#allocation' && onAllocation) {
@@ -474,6 +494,7 @@ function setupTabEvents(handlers) {
     // 현재 해시에 따라 해당 탭 활성화
     const currentHash = window.location.hash.replace('#', '') || 'overview';
     const hashToTabId = {
+        'memo': 'memo-tab',
         'performance': 'performance-tab',
         'allocation': 'allocation-tab',
         'trades': 'trades-tab',
@@ -510,6 +531,7 @@ function setupTabRouting() {
         const hash = window.location.hash.replace('#', '');
         const tabMap = {
             'overview': 'overview-tab',
+            'memo': 'memo-tab',
             'performance': 'performance-tab',
             'allocation': 'allocation-tab',
             'trades': 'trades-tab',

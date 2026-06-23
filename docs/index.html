@@ -46,6 +46,11 @@
                         <i class="fas fa-tachometer-alt me-1"></i>개요
                     </button>
                 </li>
+                <li class="nav-item" role="presentation" id="memo-tab-item">
+                    <button class="nav-link d-none" id="memo-tab" data-bs-toggle="tab" data-bs-target="#memo" type="button" role="tab" aria-controls="memo" aria-selected="false">
+                        <i class="fas fa-edit me-1"></i>메모
+                    </button>
+                </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="performance-tab" data-bs-toggle="tab" data-bs-target="#performance" type="button" role="tab" aria-controls="performance" aria-selected="false">
                         <i class="fas fa-chart-line me-1"></i>성과
@@ -210,6 +215,82 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- ==================== TAB: MEMO ==================== -->
+            <div class="tab-pane fade" id="memo" role="tabpanel" aria-labelledby="memo-tab">
+
+                <!-- GitHub 인증 -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="fas fa-key me-2"></i>GitHub 인증 (저장 시 필요)</h6>
+                        <span id="memo-token-status" class="small"></span>
+                    </div>
+                    <div class="card-body py-2">
+                        <div class="row g-2 align-items-center">
+                            <div class="col">
+                                <input type="password" class="form-control form-control-sm" id="memo-github-token"
+                                       placeholder="GitHub Personal Access Token (repo 스코프)" autocomplete="off">
+                            </div>
+                            <div class="col-auto">
+                                <button class="btn btn-sm btn-outline-secondary" id="memo-token-save">저장</button>
+                            </div>
+                        </div>
+                        <div class="text-muted small mt-1">토큰은 브라우저 localStorage에만 저장되며 서버로 전송되지 않습니다.</div>
+                    </div>
+                </div>
+
+                <!-- 포트폴리오 vs SPY 차트 -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>포트폴리오 vs SPY 수익률</h5>
+                        <div class="text-muted small mt-1">첫날 기준 누적 수익률(%) 비교 — <span style="color:rgba(255,193,7,0.9)">▌</span> 노란 점선: 코멘트 시점 (클릭하면 내용 확인)</div>
+                    </div>
+                    <div class="card-body">
+                        <div style="height: 350px;">
+                            <canvas id="memoChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 코멘트 추가 폼 -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-pen me-2"></i>코멘트 추가</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="memo-add-form">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">날짜</label>
+                                    <input type="date" class="form-control form-control-sm" id="memo-date" required>
+                                </div>
+                                <div class="col-md-9">
+                                    <label class="form-label small fw-bold">내용</label>
+                                    <textarea class="form-control form-control-sm" id="memo-text" rows="3"
+                                              placeholder="투자 판단, 시장 전망, 포지션 이유 등을 기록하세요" required></textarea>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-3">
+                                <button type="submit" class="btn btn-sm btn-primary" id="memo-submit" disabled>
+                                    <i class="fas fa-save me-1"></i>저장하기
+                                </button>
+                                <span id="memo-feedback" class="small"></span>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 코멘트 목록 -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white py-3">
+                        <h5 class="mb-0"><i class="fas fa-list me-2"></i>코멘트 목록</h5>
+                    </div>
+                    <div class="card-body" id="memo-comment-list">
+                        <p class="text-muted text-center py-3 mb-0">로딩 중...</p>
+                    </div>
+                </div>
+
             </div>
 
             <!-- ==================== TAB 2: PERFORMANCE ==================== -->
@@ -866,6 +947,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Dashboard Logic (ES Modules) -->
-    <script type="module" src="js/main.js?v=20260622-4"></script>
+    <script type="module" src="js/main.js?v=20260623-1"></script>
 </body>
 </html>
