@@ -282,11 +282,13 @@ export function renderPerformanceSummaryCards(summaryData) {
         if (format === 'percent_abs') return value.toFixed(2) + '%';
         return value.toFixed(2);
     }
-    // 포트폴리오가 주 벤치마크 대비 우수하면 success, 열위면 danger
+    // 포트폴리오가 주 벤치마크 대비 우수하면 success, 열위면 danger.
+    // higherIsBetter에 따라 비교 방향을 결정한다(Volatility/MDD 등 낮을수록 좋은 지표 대응).
     function portClassVs(portVal, refVal, higherIsBetter) {
         if (higherIsBetter === null) return '';
         if (Math.abs(portVal - refVal) < 0.005) return '';
-        return portVal > refVal ? 'text-success fw-bold' : 'text-danger';
+        const isBetter = higherIsBetter ? (portVal > refVal) : (portVal < refVal);
+        return isBetter ? 'text-success fw-bold' : 'text-danger';
     }
 
     // 헤더 (계좌 통화별로 벤치마크 셋이 다르므로 동적 생성)
@@ -304,7 +306,7 @@ export function renderPerformanceSummaryCards(summaryData) {
     const stdRows = [
         ['Total Return',  'totalReturn', 'percent',     true,  'totalReturn'],
         ['CAGR',          'cagr',        'percent',     true,  'cagr'],
-        ['Max Drawdown',  'mdd',         'percent',     false, 'mdd'],
+        ['Max Drawdown',  'mdd',         'percent',     true,  'mdd'],
         ['Volatility',    'volatility',  'percent_abs', false, 'volatility'],
         ['Sharpe Ratio',  'sharpe',      'ratio',       true,  'sharpe'],
         ['Sortino Ratio', 'sortino',     'ratio',       true,  'sortino'],
