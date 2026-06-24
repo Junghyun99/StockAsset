@@ -99,6 +99,69 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
     mock_dependencies['notifier'].send_message.assert_called()
 
 
+def test_fetch_benchmarks_overseas(mock_dependencies):
+    """해외 계좌: 미국상장 티커가 논리명으로 매핑된다."""
+    bot = TradingBot()
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {
+        'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
+    }
+    result = bot._fetch_benchmarks('overseas')
+    assert result == {'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0}
+
+
+def test_fetch_benchmarks_domestic(mock_dependencies):
+    """국내 계좌: 국내상장(KRW) 티커가 같은 논리명으로 매핑된다."""
+    bot = TradingBot()
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {
+        '069500.KS': 38500.0, '360750.KS': 19000.0, '133690.KS': 102300.0,
+    }
+    result = bot._fetch_benchmarks('domestic')
+    assert result == {'KOSPI200': 38500.0, 'S&P500': 19000.0, 'NASDAQ100': 102300.0}
+
+
+def test_fetch_benchmarks_unknown_market(mock_dependencies):
+    """매핑 없는 market_type은 빈 dict (다운로드 호출 안 함)."""
+    bot = TradingBot()
+    assert bot._fetch_benchmarks('crypto') == {}
+    mock_dependencies['loader'].fetch_latest_prices.assert_not_called()
+
+
+def test_fetch_benchmarks_partial(mock_dependencies):
+    """일부 티커만 조회되면 해당 논리명만 포함된다."""
+    bot = TradingBot()
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {'SPY': 500.0}
+    result = bot._fetch_benchmarks('overseas')
+    assert result == {'S&P500': 500.0}
+
+
+def test_fetch_benchmarks_exception_returns_empty(mock_dependencies):
+    """조회 예외 시 빈 dict로 처리(매매 사이클 차단 안 함)."""
+    bot = TradingBot()
+    mock_dependencies['loader'].fetch_latest_prices.side_effect = RuntimeError("boom")
+    assert bot._fetch_benchmarks('overseas') == {}
+
+
+def test_bot_passes_benchmarks_to_summary(mock_dependencies):
+    """run() 시 수집한 벤치마크가 save_daily_summary로 전달된다."""
+    mock_dependencies['calc'].calculate.return_value = MarketData(
+        "2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15.0
+    )
+    mock_dependencies['analyzer'].analyze.return_value = MarketRegime.BULL
+    mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
+    mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
+        1.0, [], "Hold"
+    )
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {
+        'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
+    }
+
+    bot = TradingBot()
+    bot.run()
+
+    _, kwargs = mock_dependencies['repo'].save_daily_summary.call_args
+    assert kwargs['benchmarks'] == {'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0}
+
+
 def test_bot_run_risk_condition_stop(mock_dependencies):
     """[시나리오 2: CRASH 감지]
     CRASH 시: 전략 분석 수행 → exposure=0으로 리밸런싱 실행(현금화) → 알림 → 데이터 저장

@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from typing import List, Tuple
 
-from src.config import Config
+from src.config import Config, BENCHMARKS_BY_MARKET
 from src.strategy_config import StrategyConfig
 from src.account_config import AccountConfig, load_accounts
 from src.core.engine import TradingEngine  # noqa: F401  (테스트 호환)
@@ -145,6 +145,25 @@ class TradingBot:
         """하위 호환 (첫 번째 계좌 기준)."""
         return self.runners[0].engine._is_due(sim_date=None)
 
+    def _fetch_benchmarks(self, market_type: str) -> dict:
+        """계좌 market_type에 맞는 벤치마크 최신가를 {논리명: 가격}으로 반환.
+
+        실패해도 매매 사이클을 막지 않도록 빈 dict를 반환한다(부가 지표).
+        """
+        mapping = BENCHMARKS_BY_MARKET.get(market_type, {})
+        if not mapping:
+            return {}
+        try:
+            prices = self.data_loader.fetch_latest_prices(list(mapping.values()))
+            return {
+                name: prices[ticker]
+                for name, ticker in mapping.items()
+                if ticker in prices
+            }
+        except Exception as e:
+            self.logger.warning(f"벤치마크 조회 실패, 빈 값으로 처리: {e}")
+            return {}
+
     def _run_one_account(self, runner: AccountRunner):
         acc = runner.account
         try:
@@ -159,7 +178,13 @@ class TradingBot:
             except Exception as e:
                 self.logger.warning(f"[{acc.id}] 배당 조회 실패, 0.0으로 처리: {e}")
 
-            runner.engine.run_one_cycle(self.data_loader, daily_dividend=daily_dividend)
+            benchmark_prices = self._fetch_benchmarks(acc.market_type)
+
+            runner.engine.run_one_cycle(
+                self.data_loader,
+                daily_dividend=daily_dividend,
+                benchmark_prices=benchmark_prices,
+            )
         except Exception as e:
             error_msg = f"[{acc.id}] Critical Error:\n{traceback.format_exc()}"
             self.logger.error(error_msg)

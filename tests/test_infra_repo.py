@@ -99,6 +99,32 @@ def test_save_daily_summary_no_override_uses_market_date(repo, dummy_portfolio):
     assert data[0]['date'] == "2024-01-10"
 
 
+def test_save_daily_summary_records_benchmarks(repo, dummy_portfolio):
+    """benchmarks 전달 시 레코드에 그대로 저장된다."""
+    market = MarketData("2024-01-10", 100, 90, 0.1, 0.1, -0.05, 15)
+    signal = TradeSignal(0.8, [], "test")
+    benchmarks = {"KOSPI200": 38500.0, "S&P500": 512.3, "NASDAQ100": 102300.0}
+
+    repo.save_daily_summary(market, signal, dummy_portfolio, MarketRegime.BULL,
+                            benchmarks=benchmarks)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert data[0]['benchmarks'] == benchmarks
+
+
+def test_save_daily_summary_benchmarks_default_empty(repo, dummy_portfolio):
+    """benchmarks 미전달(백테스트 등) 시 빈 dict로 저장된다."""
+    market = MarketData("2024-01-10", 100, 90, 0.1, 0.1, -0.05, 15)
+    signal = TradeSignal(0.8, [], "test")
+
+    repo.save_daily_summary(market, signal, dummy_portfolio, MarketRegime.BULL)
+
+    with open(repo.summary_file, 'r') as f:
+        data = json.load(f)
+    assert data[0]['benchmarks'] == {}
+
+
 def test_save_summary_upsert_same_date(repo):
     # 같은 날짜로 2번 저장하면 Upsert(덮어쓰기)되어 레코드 1개만 유지
     market = MarketData("2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15)

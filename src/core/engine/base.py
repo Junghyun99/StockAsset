@@ -81,6 +81,7 @@ class TradingEngine:
         data_provider: IDataProvider,
         sim_date: Optional[str] = None,
         daily_dividend: float = 0.0,
+        benchmark_prices: Optional[dict] = None,
     ) -> DayResult:
         """하루치 트레이딩 사이클 전체를 실행한다 (Template Method).
 
@@ -141,7 +142,7 @@ class TradingEngine:
         # Step 6: 저장 (NaN 데이터 품질 이상 시 전체 스킵 — step 4 API 오류와 동일 처리)
         self.logger.info(">>> Step 6: Archiving Data")
         if not nan_fields:
-            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, record_date)
+            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, record_date, benchmark_prices)
         self.logger.info(
             f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
             f"orders={len(signal.orders)} executions={len(executions)}"
@@ -341,12 +342,14 @@ class TradingEngine:
         sim_date: Optional[str],
         daily_dividend: float = 0.0,
         record_date: Optional[str] = None,
+        benchmark_prices: Optional[dict] = None,
     ) -> None:
         """Step 6: 저장 3종 호출."""
         effective_record_date = record_date or sim_date or market_data.date
         rebalancing_date = effective_record_date if is_rebalancing else None
         self.repo.save_daily_summary(market_data, signal, final_pf, regime,
-                                     daily_dividend=daily_dividend, date_override=record_date)
+                                     daily_dividend=daily_dividend, date_override=record_date,
+                                     benchmarks=benchmark_prices)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,

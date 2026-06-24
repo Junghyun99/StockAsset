@@ -87,3 +87,35 @@ class YFinanceLoader(IDataProvider):
         except Exception as e:
             self.logger.error(f"[Data] Error fetching dividends: {e} — returning empty")
             return {}
+
+    def fetch_latest_prices(self, tickers: List[str]) -> Dict[str, float]:
+        """티커별 최신 종가를 조회한다. {ticker: last_close}.
+
+        벤치마크 등 부가 지표용. 일부 티커만 실패해도 나머지는 반환하며,
+        전체 실패 시 {} 반환(호출부에서 매매 로직을 막지 않도록 한다).
+        """
+        if not tickers:
+            return {}
+        try:
+            df = yf.download(tickers, period="7d", auto_adjust=False, progress=False)
+            if df is None or df.empty:
+                return {}
+            # MultiIndex(field, ticker) → 'Close' 레벨 선택
+            if isinstance(df.columns, pd.MultiIndex):
+                close = df["Close"]
+            else:
+                # 단일 티커: 컬럼이 평탄화된 경우
+                close = df[["Close"]]
+                close.columns = [tickers[0]]
+            prices: Dict[str, float] = {}
+            for ticker in tickers:
+                try:
+                    series = close[ticker].dropna()
+                    if not series.empty:
+                        prices[ticker] = float(series.iloc[-1])
+                except (KeyError, IndexError, ValueError):
+                    continue
+            return prices
+        except Exception as e:
+            self.logger.error(f"[Data] Error fetching latest prices: {e} — returning empty")
+            return {}

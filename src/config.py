@@ -13,6 +13,10 @@ TICKER_ALIASES: dict[str, str] = {
     '365780.KS' : 'ACE 국고채10년',
     '305080.KS' : 'TIGER 미국채10년선물',
     '411060.KS' : 'ACE KRX금현물',
+    # 벤치마크 전용 ETF
+    '069500.KS' : 'KODEX 200',
+    '360750.KS' : 'TIGER 미국S&P500',
+    'EWY' : 'iShares MSCI Korea',
 }
 
 
@@ -44,6 +48,23 @@ EXCHANGE_CODE_SHORT_TO_FULL: dict[str, str] = {
     'NAS': 'NASD',
     'NYS': 'NYSE',
     'AMS': 'AMEX',
+}
+
+# 대시보드 벤치마크 정의 (market_type → {논리명: yfinance 티커})
+# - 키(논리명)는 국내·해외가 공유하여 차트 범례 일관성을 유지한다.
+# - 국내(domestic)는 KRW·환노출형 국내상장 ETF, 해외(overseas)는 USD 미국상장 ETF.
+#   동일 통화로 맞춰야 포트폴리오 평가금액과 비교 시 환율 오염이 없다.
+BENCHMARKS_BY_MARKET: dict[str, dict[str, str]] = {
+    'overseas': {                  # USD
+        'KOSPI200':  'EWY',        # iShares MSCI Korea (KOSPI200 근사 프록시)
+        'S&P500':    'SPY',
+        'NASDAQ100': 'QQQ',
+    },
+    'domestic': {                  # KRW · 환노출형
+        'KOSPI200':  '069500.KS',  # KODEX 200
+        'S&P500':    '360750.KS',  # TIGER 미국S&P500
+        'NASDAQ100': '133690.KS',  # TIGER 미국나스닥100
+    },
 }
 
 class Config:

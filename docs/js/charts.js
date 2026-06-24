@@ -16,7 +16,7 @@ import {
     computeMonthlyTradeFrequency,
     computeTickerContribution,
     computeAnnualReturns
-} from './utils.js?v=6';
+} from './utils.js?v=20260624-1';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
 let stratChart = null;
@@ -394,15 +394,48 @@ export function renderUnifiedChart(summaryData, marketType = 'overseas') {
     // 데이터 가공
     const labels = summaryData.map(d => d.date);
     const initialPortfolioValue = summaryData[0].total_value;
-    const initialSpyPrice = summaryData[0].spy_price;
 
-    // SPY 가격을 내 포트폴리오 초기 투자금 기준으로 환산 (스케일링)
-    const spyScaledData = summaryData.map(d => (d.spy_price / initialSpyPrice) * initialPortfolioValue);
-    
     const portfolioData = summaryData.map(d => d.total_value);
     const groupAData = summaryData.map(d => d.group_a || 0);
     const groupBData = summaryData.map(d => d.group_b || 0);
     const groupCData = summaryData.map(d => d.group_c || 0);
+
+    // 벤치마크 선: summary.json의 benchmarks 맵(논리명→가격)을 순회해
+    // 논리명별 정규화 선을 생성한다. 계좌 통화에 맞춘 지수라 환율 오염이 없다.
+    // 구버전 레코드엔 benchmarks가 없으므로(forward-only) 결측은 null로 처리해
+    // 데이터가 존재하는 구간부터 선이 그려진다.
+    const BENCHMARK_STYLE = {
+        'S&P500':    'rgba(253, 126, 20, 0.8)',  // 주황
+        'NASDAQ100': 'rgba(23, 190, 207, 0.8)',  // 청록
+        'KOSPI200':  'rgba(111, 66, 193, 0.8)',  // 보라
+    };
+    const benchmarkNames = Object.keys(BENCHMARK_STYLE).filter(name =>
+        summaryData.some(d => d.benchmarks && typeof d.benchmarks[name] === 'number')
+    );
+    const benchmarkDatasets = benchmarkNames.map(name => {
+        // 벤치마크가 처음 등장하는 날의 포트폴리오 평가액에 기준선을 맞춰
+        // "그 시점 이후 누가 앞서는가"를 공정하게 비교한다.
+        const baseIdx = summaryData.findIndex(d => d.benchmarks && typeof d.benchmarks[name] === 'number');
+        const basePrice = summaryData[baseIdx].benchmarks[name];
+        const anchor = summaryData[baseIdx].total_value;
+        const data = summaryData.map(d => {
+            const p = d.benchmarks ? d.benchmarks[name] : undefined;
+            return (typeof p === 'number') ? (p / basePrice) * anchor : null;
+        });
+        return {
+            label: `${name} (${currSymbol})`,
+            data: data,
+            borderColor: BENCHMARK_STYLE[name],
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+            tension: 0.1,
+            spanGaps: false,
+            order: 2,
+            stack: `bm_${name}`,
+        };
+    });
 
     // 국면(Regime) 배경 박스 계산 (Annotation 플러그인용)
     const annotations = {};
@@ -450,18 +483,7 @@ export function renderUnifiedChart(summaryData, marketType = 'overseas') {
                     order: 1, // 가장 위에 그림
                     stack: 'total'
                 },
-                {
-                    label: `SPY Benchmark (${currSymbol})`,
-                    data: spyScaledData,
-                    borderColor: 'rgba(253, 126, 20, 0.8)',
-                    borderWidth: 2,
-                    borderDash:[5, 5], 
-                    pointRadius: 0,
-                    fill: false,
-                    tension: 0.1,
-                    order: 2,
-                    stack: 'spy'
-                },
+                ...benchmarkDatasets,
                 {
                     label: 'Group C (Cash/SHV)',
                     data: groupCData,
@@ -722,7 +744,7 @@ export function renderAlphaLineChart(summaryData) {
         data: {
             labels,
             datasets: [{
-                label: 'Alpha vs SPY (%)',
+                label: 'Alpha vs S&P500 (%)',
                 data: values,
                 borderColor: ctx => {
                     const val = ctx.raw;
@@ -1215,7 +1237,7 @@ export function renderAnnualReturnsChart(summaryData) {
                     borderRadius: 4
                 },
                 {
-                    label: 'SPY',
+                    label: 'S&P500',
                     data: data.map(d => d.spyReturn),
                     backgroundColor: data.map(d => d.spyReturn >= 0 ? 'rgba(253, 126, 20, 0.65)' : 'rgba(220, 53, 69, 0.45)'),
                     borderColor: data.map(d => d.spyReturn >= 0 ? '#fd7e14' : '#dc3545'),

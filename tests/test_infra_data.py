@@ -48,6 +48,61 @@ def test_fetch_vix_success(mock_yf_download,mock_logger):
     
     assert vix == 17.5 # 마지막 값
 
+def _multi_close_df():
+    """yfinance 다중 티커 응답 형태(MultiIndex 컬럼) 모의 DataFrame."""
+    dates = pd.date_range('2024-01-01', periods=3)
+    cols = pd.MultiIndex.from_product([['Open', 'Close'], ['SPY', 'QQQ', 'EWY']])
+    data = [
+        [1, 1, 1, 500, 400, 80],
+        [1, 1, 1, 501, 401, 81],
+        [1, 1, 1, 502, 402, 82],
+    ]
+    return pd.DataFrame(data, index=dates, columns=cols)
+
+
+def test_fetch_latest_prices_success(mock_yf_download, mock_logger):
+    """다중 티커 최신 종가를 {ticker: last_close}로 반환."""
+    mock_yf_download.return_value = _multi_close_df()
+    loader = YFinanceLoader(mock_logger)
+
+    prices = loader.fetch_latest_prices(['SPY', 'QQQ', 'EWY'])
+
+    assert prices == {'SPY': 502.0, 'QQQ': 402.0, 'EWY': 82.0}
+
+
+def test_fetch_latest_prices_skips_trailing_nan(mock_yf_download, mock_logger):
+    """최신 행이 NaN이면 직전 유효 종가를 사용한다."""
+    df = _multi_close_df()
+    df.loc[df.index[-1], ('Close', 'SPY')] = float('nan')
+    mock_yf_download.return_value = df
+    loader = YFinanceLoader(mock_logger)
+
+    prices = loader.fetch_latest_prices(['SPY', 'QQQ', 'EWY'])
+
+    assert prices['SPY'] == 501.0  # 마지막 NaN 직전 값
+    assert prices['QQQ'] == 402.0
+
+
+def test_fetch_latest_prices_empty_tickers(mock_logger):
+    """티커 목록이 비면 빈 dict 반환(다운로드 호출 안 함)."""
+    loader = YFinanceLoader(mock_logger)
+    assert loader.fetch_latest_prices([]) == {}
+
+
+def test_fetch_latest_prices_empty_df(mock_yf_download, mock_logger):
+    """데이터가 비면 빈 dict 반환."""
+    mock_yf_download.return_value = pd.DataFrame()
+    loader = YFinanceLoader(mock_logger)
+    assert loader.fetch_latest_prices(['SPY']) == {}
+
+
+def test_fetch_latest_prices_exception_returns_empty(mock_yf_download, mock_logger):
+    """다운로드 예외 시 빈 dict 반환(매매 로직을 막지 않음)."""
+    mock_yf_download.side_effect = RuntimeError("network")
+    loader = YFinanceLoader(mock_logger)
+    assert loader.fetch_latest_prices(['SPY', 'QQQ']) == {}
+
+
 def test_fetch_vix_failure_fallback(mock_yf_download,mock_logger):
     # 4. VIX 조회 실패 시 안전값(20.0) 반환 확인
     mock_yf_download.return_value = pd.DataFrame() # 빈 DF
