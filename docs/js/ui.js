@@ -253,7 +253,7 @@ export function updateDecisionLogic(lastData) {
 }
 
 /**
- * Performance 탭 - 포트폴리오 vs SPY 비교 테이블 렌더링
+ * Performance 탭 - 포트폴리오 vs S&P500 비교 테이블 렌더링
  */
 export function renderPerformanceSummaryCards(summaryData) {
     const metrics = computeAdvancedMetrics(summaryData);
@@ -461,7 +461,7 @@ function renderPagination(totalPages) {
 // ============================================================
 
 /**
- * Performance 탭 - YTD Return 카드 (포트폴리오 + SPY 벤치마크)
+ * Performance 탭 - YTD Return 카드 (포트폴리오 + S&P500 벤치마크)
  */
 export function renderYTDCard(summaryData) {
     const portfolioEl = document.getElementById('ytd-portfolio');
@@ -472,12 +472,12 @@ export function renderYTDCard(summaryData) {
     if (ytd.portfolio == null) {
         portfolioEl.innerText = 'N/A';
         portfolioEl.className = 'fw-bold mb-1 text-muted';
-        spyEl.innerText = 'SPY N/A';
+        spyEl.innerText = 'S&P500 N/A';
         spyEl.className = 'small text-muted';
     } else {
         portfolioEl.innerText = formatPercent(ytd.portfolio);
         portfolioEl.className = 'fw-bold mb-1 ' + (ytd.portfolio >= 0 ? 'text-success' : 'text-danger');
-        spyEl.innerText = 'SPY ' + formatPercent(ytd.spy);
+        spyEl.innerText = 'S&P500 ' + formatPercent(ytd.spy);
         spyEl.className = 'small ' + (ytd.spy >= 0 ? 'text-success' : 'text-danger');
     }
 }
