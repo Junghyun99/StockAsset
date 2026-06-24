@@ -117,10 +117,15 @@ class MemoTab {
 
         const labels = data.map(d => d.date);
         const firstValue = data[0]?.total_value || 0;
-        const firstSpy = data[0]?.spy_price || 0;
+
+        // 벤치마크 기준가: 전체 윈도우가 S&P500 벤치마크가를 가질 때만 사용하고
+        // (계좌 통화 일치) 아니면 레거시 spy_price로 폴백 → 통화 경계 스파이크 방지.
+        const useBench = data.length > 0 && data.every(d => Number.isFinite(d?.benchmarks?.['S&P500']));
+        const benchPrices = useBench ? data.map(d => d.benchmarks['S&P500']) : data.map(d => d.spy_price);
+        const firstSpy = benchPrices[0] || 0;
 
         const portfolioReturns = data.map(d => firstValue ? ((d.total_value / firstValue) - 1) * 100 : 0);
-        const spyReturns = data.map(d => firstSpy ? ((d.spy_price / firstSpy) - 1) * 100 : 0);
+        const spyReturns = benchPrices.map(p => firstSpy ? ((p / firstSpy) - 1) * 100 : 0);
 
         // 코멘트 마커: 해당 날짜 인덱스에 네모 포인트 스타일 적용
         this._commentLabelIndices = {};
@@ -161,7 +166,7 @@ class MemoTab {
                         tension: 0.1
                     },
                     {
-                        label: 'SPY 수익률 (%)',
+                        label: 'S&P500 수익률 (%)',
                         data: spyReturns,
                         borderColor: 'rgba(253, 126, 20, 0.85)',
                         borderWidth: 2,

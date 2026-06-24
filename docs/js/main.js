@@ -22,7 +22,7 @@ import {
     renderHistoricalAllocationChart,
     renderTargetVsActualChart,
     renderDeviationTrendChart
-} from './charts.js?v=20260623-3';
+} from './charts.js?v=20260624-1';
 
 import {
     updateModeUI,
@@ -48,7 +48,7 @@ import {
     initTooltips
 } from './ui.js?v=20260622-4';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=8';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-2';
 
 import {
     renderCompareOverview,
@@ -67,7 +67,7 @@ import {
     resizeAccountCharts,
 } from './account-compare-charts.js?v=2';
 
-import { initMemoTab } from './memo.js?v=20260623-3';
+import { initMemoTab } from './memo.js?v=20260624-1';
 
 import {
     renderComparePerformanceChart,

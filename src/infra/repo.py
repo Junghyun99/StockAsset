@@ -60,7 +60,8 @@ class JsonRepository(IRepository):
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,
                            regime: MarketRegime, daily_dividend: float = 0.0,
-                           date_override: Optional[str] = None):
+                           date_override: Optional[str] = None,
+                           benchmarks: Optional[dict] = None):
         """일별 요약 저장 (Append 방식)"""
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(self.asset_groups.get('A', []))
@@ -87,6 +88,10 @@ class JsonRepository(IRepository):
             "spy_momentum": market.spy_momentum,     # [추가]
             "mdd": market.spy_mdd,
             "vix": market.vix,                       # [추가] 디버깅 및 분석용
+
+            # [벤치마크] 계좌 통화에 맞춘 비교 지수 최신가 {논리명: 가격}
+            # 신호용 spy_* 필드와 별개. 미전달(백테스트 등) 시 빈 dict.
+            "benchmarks": benchmarks or {},
 
             # [전략 상태]
             "regime": regime.value,          # MarketRegime enum 값 (예: "Bull", "Bear", "Crash")

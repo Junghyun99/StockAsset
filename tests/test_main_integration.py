@@ -61,6 +61,7 @@ def mock_dependencies():
             holdings={'SPY': 10},
             current_prices={'SPY': 100.0}
         )
+        broker.fetch_current_prices.return_value = {}
 
         # 기본값: 이전 리밸런싱 기록 없음 → _is_rebalancing_due() = True
         repo.get_last_rebalancing_date.return_value = None
@@ -98,6 +99,36 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
     mock_dependencies['loader'].fetch_ohlcv.assert_called()
     mock_dependencies['repo'].save_daily_summary.assert_called()
     mock_dependencies['notifier'].send_message.assert_called()
+
+
+def test_overseas_account_injects_overseas_benchmarks(mock_dependencies):
+    """해외 계좌 엔진에 해외(USD) 벤치마크 매핑이 주입된다."""
+    bot = TradingBot()
+    assert bot.runners[0].engine.benchmarks == {
+        'KOSPI200': 'EWY', 'S&P500': 'SPY', 'NASDAQ100': 'QQQ',
+    }
+
+
+def test_bot_passes_benchmarks_to_summary(mock_dependencies):
+    """run() 시 엔진이 브로커로 조회한 벤치마크가 save_daily_summary로 전달된다."""
+    mock_dependencies['calc'].calculate.return_value = MarketData(
+        "2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15.0
+    )
+    mock_dependencies['analyzer'].analyze.return_value = MarketRegime.BULL
+    mock_dependencies['targeter'].calculate_exposure.return_value = 1.0
+    mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
+        1.0, [], "Hold"
+    )
+    # 엔진은 보유 종목과 같은 브로커(fetch_current_prices)로 벤치마크 현재가를 조회
+    mock_dependencies['broker'].fetch_current_prices.return_value = {
+        'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
+    }
+
+    bot = TradingBot()
+    bot.run()
+
+    _, kwargs = mock_dependencies['repo'].save_daily_summary.call_args
+    assert kwargs['benchmarks'] == {'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0}
 
 
 def test_bot_run_risk_condition_stop(mock_dependencies):
@@ -157,7 +188,8 @@ def test_bot_run_rebalance_execution(mock_dependencies):
     bot = TradingBot()
     bot.run()
 
-    mock_dependencies['broker'].fetch_current_prices.assert_called_once()
+    # 보유 종목 + 벤치마크 현재가 조회로 fetch_current_prices가 호출된다
+    mock_dependencies['broker'].fetch_current_prices.assert_called()
     mock_dependencies['broker'].execute_orders.assert_called_once()
     mock_dependencies['notifier'].send_message.assert_called()
     mock_dependencies['repo'].save_trade_history.assert_called()

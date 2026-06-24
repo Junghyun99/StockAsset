@@ -51,6 +51,28 @@ export function filterByDateRange(data, range) {
 }
 
 /**
+ * 벤치마크 기준가 시계열을 반환한다.
+ *
+ * 윈도우의 모든 레코드가 S&P500 벤치마크가(계좌 통화에 일치)를 가질 때만
+ * 그 값을 사용하고, 하나라도 없으면(구버전/forward-only 과도기) 전체를
+ * 레거시 spy_price로 폴백한다. → 통화가 섞이는 경계 스파이크를 방지한다.
+ *
+ * 국내 계좌는 KRW 표시 S&P500(360750)이라 포트폴리오와 환 노출이 일치하고,
+ * 해외 계좌는 SPY(USD)라 기존 spy_price와 동일해 연속성이 유지된다.
+ * @param {Array} data - summary 배열
+ * @returns {{prices: number[], usingBenchmark: boolean}}
+ */
+export function benchmarkPriceSeries(data) {
+    const arr = data || [];
+    const usingBenchmark = arr.length > 0 &&
+        arr.every(d => Number.isFinite(d?.benchmarks?.['S&P500']));
+    const prices = usingBenchmark
+        ? arr.map(d => d.benchmarks['S&P500'])
+        : arr.map(d => d.spy_price);
+    return { prices, usingBenchmark };
+}
+
+/**
  * 누적 수익률 계산
  * @param {Array} summaryData - summary 배열
  * @returns {{portfolioReturn: number, spyReturn: number, alpha: number}}
@@ -61,9 +83,10 @@ export function computeReturns(summaryData) {
     }
     const first = summaryData[0];
     const last = summaryData[summaryData.length - 1];
+    const { prices } = benchmarkPriceSeries(summaryData);
 
-    const portfolioReturn = (last.total_value / first.total_value - 1) * 100;
-    const spyReturn = (last.spy_price / first.spy_price - 1) * 100;
+    const portfolioReturn = first.total_value ? (last.total_value / first.total_value - 1) * 100 : 0;
+    const spyReturn = prices[0] ? (prices[prices.length - 1] / prices[0] - 1) * 100 : 0;
     const alpha = portfolioReturn - spyReturn;
 
     return { portfolioReturn, spyReturn, alpha };
@@ -160,12 +183,15 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
     const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
     const years = Math.max((new Date(last.date) - new Date(first.date)) / msPerYear, 1 / 365);
 
+    // 벤치마크 기준가 시계열 (S&P500 우선, 구버전 폴백 spy_price)
+    const { prices: benchPrices } = benchmarkPriceSeries(summaryData);
+
     // 일간 수익률 배열
     const portReturns = [];
     const spyReturns = [];
     for (let i = 1; i < n; i++) {
         portReturns.push(summaryData[i].total_value / summaryData[i - 1].total_value - 1);
-        spyReturns.push(summaryData[i].spy_price / summaryData[i - 1].spy_price - 1);
+        spyReturns.push(benchPrices[i] / benchPrices[i - 1] - 1);
     }
 
     function calcMetrics(values, dailyReturns, baseValue = null) {
@@ -207,7 +233,7 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
     }
 
     const portValues = summaryData.map(d => d.total_value);
-    const spyValues = summaryData.map(d => d.spy_price);
+    const spyValues = benchPrices;
 
     const portMetrics = calcMetrics(portValues, portReturns, initialCash);
     const spyMetrics = calcMetrics(spyValues, spyReturns);
@@ -402,11 +428,12 @@ export function computeCumulativePnl(summaryData, initialCash = null) {
 export function computeAlphaSeries(summaryData) {
     if (!summaryData || summaryData.length === 0) return [];
     const basePort = summaryData[0].total_value;
-    const baseSpy = summaryData[0].spy_price;
+    const { prices } = benchmarkPriceSeries(summaryData);
+    const baseSpy = prices[0];
     if (!basePort || !baseSpy) return [];
-    return summaryData.map(d => {
+    return summaryData.map((d, i) => {
         const portNorm = d.total_value / basePort;
-        const spyNorm = d.spy_price / baseSpy;
+        const spyNorm = prices[i] / baseSpy;
         return { date: d.date, alpha: (portNorm - spyNorm) * 100 };
     });
 }
@@ -847,10 +874,11 @@ export function computeYTDReturn(summaryData) {
     if (ytdData.length < 2) return { portfolio: null, spy: null };
     const first = ytdData[0];
     const last = ytdData[ytdData.length - 1];
-    if (!first.total_value || !first.spy_price) return { portfolio: null, spy: null };
+    const { prices } = benchmarkPriceSeries(ytdData);
+    if (!first.total_value || !prices[0]) return { portfolio: null, spy: null };
     return {
         portfolio: (last.total_value / first.total_value - 1) * 100,
-        spy: (last.spy_price / first.spy_price - 1) * 100,
+        spy: (prices[prices.length - 1] / prices[0] - 1) * 100,
     };
 }
 
@@ -958,10 +986,11 @@ export function computeAnnualReturns(summaryData) {
         .map(([year, days]) => {
             const firstDay = days[0];
             const lastDay = days[days.length - 1];
+            const { prices } = benchmarkPriceSeries(days);
             return {
                 year,
                 portfolioReturn: firstDay.total_value ? (lastDay.total_value / firstDay.total_value - 1) * 100 : 0,
-                spyReturn: firstDay.spy_price ? (lastDay.spy_price / firstDay.spy_price - 1) * 100 : 0,
+                spyReturn: prices[0] ? (prices[prices.length - 1] / prices[0] - 1) * 100 : 0,
                 isYTD: year === currentYear,
             };
         });

@@ -684,3 +684,68 @@ def test_post_trade_portfolio_failure_still_persists_executions():
     # 알림이 발송된다
     alert_msgs = [str(c) for c in notifier.send_alert.call_args_list]
     assert any("거래 후 포트폴리오 조회 실패" in m for m in alert_msgs)
+
+
+# ─────────────────────────────────────────────────────────────────
+# 벤치마크 현재가 조회 (보유 종목과 같은 브로커·같은 시점)
+# ─────────────────────────────────────────────────────────────────
+
+def _benchmark_engine(broker_prices, benchmarks):
+    broker = MagicMock()
+    repo = MagicMock()
+    repo.load_last_regime.return_value = None
+    broker.fetch_current_prices.return_value = broker_prices
+    engine = TradingEngine(
+        asset_groups={'A': ['SSO'], 'B': ['SHV']},
+        broker=broker,
+        repo=repo,
+        logger=MagicMock(),
+        benchmarks=benchmarks,
+    )
+    return engine
+
+
+def test_fetch_benchmark_prices_maps_logical_names():
+    """브로커 응답(티커 키)을 논리명으로 매핑한다."""
+    engine = _benchmark_engine(
+        {'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0},
+        {'KOSPI200': 'EWY', 'S&P500': 'SPY', 'NASDAQ100': 'QQQ'},
+    )
+    assert engine._fetch_benchmark_prices() == {
+        'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0,
+    }
+
+
+def test_fetch_benchmark_prices_filters_nonpositive():
+    """0 이하 가격(조회 실패)은 제외한다."""
+    engine = _benchmark_engine(
+        {'EWY': 0.0, 'SPY': 500.0, 'QQQ': -1.0},
+        {'KOSPI200': 'EWY', 'S&P500': 'SPY', 'NASDAQ100': 'QQQ'},
+    )
+    assert engine._fetch_benchmark_prices() == {'S&P500': 500.0}
+
+
+def test_fetch_benchmark_prices_empty_when_no_benchmarks():
+    """벤치마크 미설정 시 빈 dict, 브로커 호출도 하지 않는다."""
+    engine = _benchmark_engine({'SPY': 500.0}, {})
+    assert engine._fetch_benchmark_prices() == {}
+    engine.broker.fetch_current_prices.assert_not_called()
+
+
+def test_fetch_benchmark_prices_exception_returns_empty():
+    """브로커 예외 시 빈 dict (매매 사이클 차단 안 함)."""
+    engine = _benchmark_engine({}, {'S&P500': 'SPY'})
+    engine.broker.fetch_current_prices.side_effect = RuntimeError("boom")
+    assert engine._fetch_benchmark_prices() == {}
+
+
+def test_get_portfolio_stashes_benchmark_prices():
+    """get_portfolio가 벤치마크 현재가를 _benchmark_prices에 저장한다."""
+    engine = _benchmark_engine(
+        {'SSO': 100.0, 'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0},
+        {'KOSPI200': 'EWY', 'S&P500': 'SPY', 'NASDAQ100': 'QQQ'},
+    )
+    engine.get_portfolio()
+    assert engine._benchmark_prices == {
+        'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0,
+    }

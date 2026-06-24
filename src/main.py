@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from typing import List, Tuple
 
-from src.config import Config
+from src.config import Config, BENCHMARKS_BY_MARKET
 from src.strategy_config import StrategyConfig
 from src.account_config import AccountConfig, load_accounts
 from src.core.engine import TradingEngine  # noqa: F401  (테스트 호환)
@@ -99,6 +99,7 @@ class TradingBot:
                 trading_interval_days=self.strategy.TRADING_INTERVAL_DAYS,
                 notifier=self.notifier,
                 is_live_trading=acc.is_live,
+                benchmarks=BENCHMARKS_BY_MARKET.get(acc.market_type, {}),
             )
             self.runners.append(AccountRunner(acc, engine, broker, repo))
 
@@ -159,7 +160,10 @@ class TradingBot:
             except Exception as e:
                 self.logger.warning(f"[{acc.id}] 배당 조회 실패, 0.0으로 처리: {e}")
 
-            runner.engine.run_one_cycle(self.data_loader, daily_dividend=daily_dividend)
+            runner.engine.run_one_cycle(
+                self.data_loader,
+                daily_dividend=daily_dividend,
+            )
         except Exception as e:
             error_msg = f"[{acc.id}] Critical Error:\n{traceback.format_exc()}"
             self.logger.error(error_msg)
