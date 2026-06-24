@@ -44,3 +44,22 @@
 2026-06-24 10:01:16,399 [INFO] Updated Portfolio: Cash=$65,346, Value=$4,393,726
 2026-06-24 10:01:16,399 [INFO] >>> Step 6: Archiving Data
 2026-06-24 10:01:16,402 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=1 executions=1
+2026-06-24 14:01:05,407 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-06-24 14:01:05,408 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-06-24 14:01:05,408 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-06-24 14:01:05,408 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-06-24 14:01:05,408 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-06-24 14:01:05,408 [INFO] Restored previous regime: Bull
+2026-06-24 14:01:07,013 [INFO] >>> Step 1: Data Collection
+2026-06-24 14:01:07,015 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-06-24 14:01:07,848 [INFO] [Data] VIX fetched: 19.49
+2026-06-24 14:01:07,848 [INFO] >>> Step 2: Indicator Calculation
+2026-06-24 14:01:07,850 [INFO] Market Data: Price=733.58, VIX=19.49, MDD=-3.42%
+2026-06-24 14:01:07,850 [INFO] >>> Step 3: Strategy Analysis
+2026-06-24 14:01:07,850 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-06-24 14:01:07,850 [INFO] >>> Step 4: Portfolio Status
+2026-06-24 14:01:08,598 [INFO] Fetching Real-time prices from Broker...
+2026-06-24 14:01:12,185 [INFO] Current Portfolio: Cash=$65,346, Value=$4,389,006
+2026-06-24 14:01:12,186 [INFO] >>> Step 5: Monitoring (리밸런싱 인터벌 미충족, 1일 기준)
+2026-06-24 14:01:12,809 [INFO] >>> Step 6: Archiving Data
+2026-06-24 14:01:12,832 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
