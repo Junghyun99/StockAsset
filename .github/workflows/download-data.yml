@@ -45,7 +45,7 @@ jobs:
         real_start = datetime.strptime(start_date, '%Y-%m-%d') - timedelta(days=500)
         real_start_str = real_start.strftime('%Y-%m-%d')
 
-        tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'DBC', 'SHV', 'SDY', 'SPY', 'EEM', 'EMB', 'QQQ', '069500.KS', '143850.KS', '132030.KS', '305080.KS', '148070.KS' ]
+        tickers = ['SSO', 'QLD', 'IEF', 'GLD', 'DBC', 'SHV', 'SDY', 'SPY', 'EEM', 'EMB', 'QQQ', '069500.KS', '143850.KS', '132030.KS', '305080.KS', '148070.KS', '360750.KS', '133690.KS']
 
         cache = BacktestDataCache(logger=TradeLogger())
         ohlcv, vix, dividends = cache.get_data(tickers, real_start_str, end_date)
