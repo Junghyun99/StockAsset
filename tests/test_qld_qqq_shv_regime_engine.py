@@ -77,6 +77,7 @@ def _build_regime_engine(repo_last_reb=None, notifier=None):
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = QldQqqShvRegimeEngine(
             broker=broker,
@@ -244,6 +245,7 @@ def test_regime_engine_end_to_end_bull():
     mocks["analyzer"].analyze.return_value = MarketRegime.BULL
     engine.rebalancer = MagicMock()
     engine.rebalancer.generate_signal.return_value = TradeSignal(0.7, [], "Hold")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 
@@ -260,6 +262,7 @@ def test_regime_engine_end_to_end_crash():
     mocks["analyzer"].analyze.return_value = MarketRegime.CRASH
     engine.rebalancer = MagicMock()
     engine.rebalancer.generate_signal.return_value = TradeSignal(0.75, [], "Max Leverage")
+    engine.rebalancer.get_target_params.return_value = (0.5, 0.075)
 
     result = engine.run_one_cycle(mocks["data_provider"])
 

@@ -235,8 +235,12 @@ class TradingEngine:
             if q > 0 and portfolio.current_prices.get(t, 0) <= 0
         ]
 
+        # 모든 분기에서 공통으로 사용할 목표 파라미터 (regime 기반)
+        target_ratio_a, rebalance_threshold = self.rebalancer.get_target_params(regime)
+
         if nan_fields:
-            signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
+            signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}",
+                                 target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold)
             msg = (
                 f"⚠️ Data Quality Alert — 매매 중단\n"
                 f"날짜: {record_date}\n"
@@ -248,7 +252,8 @@ class TradingEngine:
 
         elif zero_price_tickers:
             display_names = [ticker_display(t) for t in zero_price_tickers]
-            signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(display_names)}")
+            signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(display_names)}",
+                                 target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold)
             msg = (
                 f"⚠️ Price Data Alert — 매매 중단\n"
                 f"날짜: {record_date}\n"
@@ -260,7 +265,8 @@ class TradingEngine:
             self._notify_alert(msg, detail=self._cycle_detail())
 
         elif not self._is_due(sim_date) and regime != MarketRegime.CRASH:
-            signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)")
+            signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)",
+                                 target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold)
             self.logger.info(
                 f">>> Step 5: Monitoring "
                 f"(리밸런싱 인터벌 미충족, {self.trading_interval_days}일 기준)"

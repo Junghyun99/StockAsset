@@ -65,6 +65,7 @@ def _make_engine(
         analyzer._prev_regime = None
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         engine = TradingEngine(
             asset_groups={'A': ['SSO', 'QLD'], 'B': ['IEF', 'GLD'], 'C': ['SHV']},

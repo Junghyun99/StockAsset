@@ -53,6 +53,7 @@ def mock_dependencies():
         analyzer = MockAnalyzer.return_value
         targeter = MockTargeter.return_value
         rebalancer = MockRebalancer.return_value
+        rebalancer.get_target_params.return_value = (0.5, 0.075)
 
         # [중요] 브로커가 반환할 기본 포트폴리오 설정
         broker.get_portfolio.return_value = Portfolio(
