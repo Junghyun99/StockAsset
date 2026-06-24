@@ -9,7 +9,7 @@ import {
     formatPercent,
     ACCOUNT_COLORS,
     ACCOUNT_MARKET_TYPES,
-} from './utils.js?v=20260624-1';
+} from './utils.js?v=20260624-2';
 
 /**
  * Overview 탭 - 계좌별 비교 요약 테이블 렌더링 (해외/국내 섹션 분리)

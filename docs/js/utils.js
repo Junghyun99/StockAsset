@@ -85,8 +85,8 @@ export function computeReturns(summaryData) {
     const last = summaryData[summaryData.length - 1];
     const { prices } = benchmarkPriceSeries(summaryData);
 
-    const portfolioReturn = (last.total_value / first.total_value - 1) * 100;
-    const spyReturn = (prices[prices.length - 1] / prices[0] - 1) * 100;
+    const portfolioReturn = first.total_value ? (last.total_value / first.total_value - 1) * 100 : 0;
+    const spyReturn = prices[0] ? (prices[prices.length - 1] / prices[0] - 1) * 100 : 0;
     const alpha = portfolioReturn - spyReturn;
 
     return { portfolioReturn, spyReturn, alpha };

@@ -141,6 +141,29 @@ def test_fetch_benchmarks_exception_returns_empty(mock_dependencies):
     assert bot._fetch_benchmarks('overseas') == {}
 
 
+def test_fetch_benchmarks_caches_by_market(mock_dependencies):
+    """동일 market_type 재호출 시 캐시를 사용해 중복 조회하지 않는다."""
+    bot = TradingBot()
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {
+        'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
+    }
+    r1 = bot._fetch_benchmarks('overseas')
+    r2 = bot._fetch_benchmarks('overseas')
+    assert r1 == r2 == {'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0}
+    assert mock_dependencies['loader'].fetch_latest_prices.call_count == 1
+
+
+def test_fetch_benchmarks_empty_result_not_cached(mock_dependencies):
+    """빈 결과는 캐싱하지 않아 다음 호출에서 재시도한다."""
+    bot = TradingBot()
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {}
+    bot._fetch_benchmarks('overseas')
+    mock_dependencies['loader'].fetch_latest_prices.return_value = {'SPY': 500.0}
+    result = bot._fetch_benchmarks('overseas')
+    assert result == {'S&P500': 500.0}
+    assert mock_dependencies['loader'].fetch_latest_prices.call_count == 2
+
+
 def test_bot_passes_benchmarks_to_summary(mock_dependencies):
     """run() 시 수집한 벤치마크가 save_daily_summary로 전달된다."""
     mock_dependencies['calc'].calculate.return_value = MarketData(

@@ -61,6 +61,8 @@ class TradingBot:
         self.logger.info("=== Initializing Trading Bot (multi-account) ===")
 
         self.data_loader = YFinanceLoader(self.logger)
+        # market_type별 벤치마크 조회 결과 캐시 (동일 통화 계좌 간 중복 API 호출 방지)
+        self._benchmark_cache: dict = {}
         self.notifier = SlackNotifier(
             self.config.SLACK_WEBHOOK_URL,
             self.logger,
@@ -149,13 +151,17 @@ class TradingBot:
         """계좌 market_type에 맞는 벤치마크 최신가를 {논리명: 가격}으로 반환.
 
         실패해도 매매 사이클을 막지 않도록 빈 dict를 반환한다(부가 지표).
+        동일 market_type 계좌가 여러 개면 같은 티커를 중복 조회하지 않도록
+        성공 결과를 캐싱한다(빈 결과는 캐싱하지 않아 다음 계좌에서 재시도 허용).
         """
+        if market_type in self._benchmark_cache:
+            return self._benchmark_cache[market_type]
         mapping = BENCHMARKS_BY_MARKET.get(market_type, {})
         if not mapping:
             return {}
         try:
             prices = self.data_loader.fetch_latest_prices(list(mapping.values()))
-            return {
+            result = {
                 name: prices[ticker]
                 for name, ticker in mapping.items()
                 if ticker in prices
@@ -163,6 +169,9 @@ class TradingBot:
         except Exception as e:
             self.logger.warning(f"벤치마크 조회 실패, 빈 값으로 처리: {e}")
             return {}
+        if result:
+            self._benchmark_cache[market_type] = result
+        return result
 
     def _run_one_account(self, runner: AccountRunner):
         acc = runner.account

@@ -48,7 +48,7 @@ import {
     initTooltips
 } from './ui.js?v=20260622-4';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-1';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-2';
 
 import {
     renderCompareOverview,
