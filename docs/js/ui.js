@@ -25,7 +25,7 @@ import {
     computeYTDReturn,
     computeDividendYield,
     computeWinLossStats
-} from './utils.js?v=20260624-2';
+} from './utils.js?v=20260624-3';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
 
@@ -258,77 +258,92 @@ export function updateDecisionLogic(lastData) {
 export function renderPerformanceSummaryCards(summaryData) {
     const metrics = computeAdvancedMetrics(summaryData);
     const p = metrics.portfolio;
-    const s = metrics.spy;
 
-    // 지표 정의: [label, portValue, spyValue, format, higherIsBetter]
-    const rows = [
-        ['Total Return', p.totalReturn, s.totalReturn, 'percent',     true,  'totalReturn'],
-        ['CAGR',         p.cagr,        s.cagr,        'percent',     true,  'cagr'],
-        ['Max Drawdown', p.mdd,         s.mdd,         'percent',     false, 'mdd'],
-        ['Volatility',   p.volatility,  s.volatility,  'percent_abs', false, 'volatility'],
-        ['Sharpe Ratio', p.sharpe,      s.sharpe,      'ratio',       true,  'sharpe'],
-        ['Sortino Ratio',p.sortino,     s.sortino,     'ratio',       true,  'sortino'],
-        ['Calmar Ratio', p.calmar,      s.calmar,      'ratio',       true,  'calmar'],
-        ['Beta',         p.beta,        s.beta,        'ratio',       null,  'beta'],
-    ];
+    // 표시할 벤치마크 컬럼 구성 (데이터에 존재하는 것만, 정해진 순서대로)
+    const BENCH_ORDER = ['S&P500', 'NASDAQ100', 'KOSPI200'];
+    const BENCH_COLOR = { 'S&P500': '#fd7e14', 'NASDAQ100': '#17becf', 'KOSPI200': '#6f42c1' };
+    let cols = BENCH_ORDER
+        .filter(name => metrics.benchmarks && metrics.benchmarks[name])
+        .map(name => ({ name, m: metrics.benchmarks[name], color: BENCH_COLOR[name] }));
+    // 벤치마크 데이터가 전혀 없으면(구버전) S&P500 단일 컬럼으로 폴백
+    if (cols.length === 0) {
+        const s = metrics.spy;
+        cols = [{
+            name: 'S&P500',
+            color: BENCH_COLOR['S&P500'],
+            m: { ...s, portBeta: p.beta, portIR: p.ir, alpha: p.totalReturn - s.totalReturn },
+        }];
+    }
+    const primary = cols[0].m; // 포트폴리오 우열 색상 기준(주 벤치마크)
 
     function fmt(value, format) {
-        if (format === 'percent') {
-            const sign = value >= 0 ? '+' : '';
-            return sign + value.toFixed(2) + '%';
-        }
-        if (format === 'percent_abs') {
-            return value.toFixed(2) + '%';
-        }
+        if (value == null || !isFinite(value)) return 'N/A';
+        if (format === 'percent') return (value >= 0 ? '+' : '') + value.toFixed(2) + '%';
+        if (format === 'percent_abs') return value.toFixed(2) + '%';
         return value.toFixed(2);
     }
-
-    // 우열 판단: 포트폴리오가 우수하면 text-success, 열위하면 text-danger
-    function compareClass(portVal, spyVal, higherIsBetter) {
-        if (higherIsBetter === null) return ''; // Beta는 비교 안 함
-        if (Math.abs(portVal - spyVal) < 0.005) return ''; // 거의 동일
-        if (higherIsBetter) {
-            return portVal > spyVal ? 'text-success fw-bold' : 'text-danger';
-        } else {
-            // MDD, Volatility: 낮을수록 좋음 (MDD는 음수이므로 더 큰 값이 좋음)
-            return portVal > spyVal ? 'text-success fw-bold' : 'text-danger';
-        }
+    // 포트폴리오가 주 벤치마크 대비 우수하면 success, 열위면 danger.
+    // higherIsBetter에 따라 비교 방향을 결정한다(Volatility/MDD 등 낮을수록 좋은 지표 대응).
+    function portClassVs(portVal, refVal, higherIsBetter) {
+        if (higherIsBetter === null) return '';
+        if (Math.abs(portVal - refVal) < 0.005) return '';
+        const isBetter = higherIsBetter ? (portVal > refVal) : (portVal < refVal);
+        return isBetter ? 'text-success fw-bold' : 'text-danger';
     }
 
-    const tbody = document.querySelector('#metrics-comparison-table tbody');
+    // 헤더 (계좌 통화별로 벤치마크 셋이 다르므로 동적 생성)
+    const thead = document.querySelector('#metrics-comparison-table thead');
+    if (thead) {
+        thead.innerHTML = `
+            <tr>
+                <th class="ps-3">지표</th>
+                <th class="text-end">포트폴리오</th>
+                ${cols.map(c => `<th class="text-end pe-3"><span style="color:${c.color}">●</span> ${c.name}</th>`).join('')}
+            </tr>`;
+    }
+
+    // 독립 지표 행: 포트폴리오 + 각 인덱스의 자체 값
+    const stdRows = [
+        ['Total Return',  'totalReturn', 'percent',     true,  'totalReturn'],
+        ['CAGR',          'cagr',        'percent',     true,  'cagr'],
+        ['Max Drawdown',  'mdd',         'percent',     true,  'mdd'],
+        ['Volatility',    'volatility',  'percent_abs', false, 'volatility'],
+        ['Sharpe Ratio',  'sharpe',      'ratio',       true,  'sharpe'],
+        ['Sortino Ratio', 'sortino',     'ratio',       true,  'sortino'],
+        ['Calmar Ratio',  'calmar',      'ratio',       true,  'calmar'],
+    ];
     let html = '';
-    rows.forEach(([label, portVal, spyVal, format, higherIsBetter, tooltipKey]) => {
-        const portClass = compareClass(portVal, spyVal, higherIsBetter);
-        const ttAttr = tooltipKey ? ` data-metric-tooltip="${tooltipKey}"` : '';
+    stdRows.forEach(([label, key, format, better, tip]) => {
+        const portClass = portClassVs(p[key], primary[key], better);
         html += `
             <tr>
-                <td class="ps-3"${ttAttr}>${label} <span class="text-muted small">ⓘ</span></td>
-                <td class="text-end ${portClass}">${fmt(portVal, format)}</td>
-                <td class="text-end pe-3">${fmt(spyVal, format)}</td>
-            </tr>
-        `;
+                <td class="ps-3" data-metric-tooltip="${tip}">${label} <span class="text-muted small">ⓘ</span></td>
+                <td class="text-end ${portClass}">${fmt(p[key], format)}</td>
+                ${cols.map(c => `<td class="text-end pe-3">${fmt(c.m[key], format)}</td>`).join('')}
+            </tr>`;
     });
 
-    // Alpha 행 (포트폴리오 전용)
-    const alpha = p.totalReturn - s.totalReturn;
-    const alphaClass = alpha >= 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
-    html += `
-        <tr class="table-light">
-            <td class="ps-3 fw-bold" data-metric-tooltip="alpha">Alpha <span class="text-muted small">ⓘ</span></td>
-            <td class="text-end ${alphaClass}" colspan="2">${alpha >= 0 ? '+' : ''}${alpha.toFixed(2)}%</td>
-        </tr>
-    `;
+    // 상대 지표 행: 포트폴리오의 '각 인덱스 대비' 값 (포트폴리오 컬럼은 의미 없어 '—')
+    const relRows = [
+        ['Alpha',             'alpha',    'percent', 'alpha', true],
+        ['Beta',              'portBeta', 'ratio',   'beta',  false],
+        ['Information Ratio', 'portIR',   'ratio',   'ir',    true],
+    ];
+    relRows.forEach(([label, key, format, tip, signColor]) => {
+        html += `
+            <tr class="table-light">
+                <td class="ps-3 fw-bold" data-metric-tooltip="${tip}">${label} <span class="text-muted small">ⓘ</span></td>
+                <td class="text-end text-muted">—</td>
+                ${cols.map(c => {
+                    const v = c.m[key];
+                    const cls = (signColor && v != null && isFinite(v))
+                        ? (v >= 0 ? 'text-success fw-bold' : 'text-danger') : '';
+                    return `<td class="text-end pe-3 ${cls}">${fmt(v, format)}</td>`;
+                }).join('')}
+            </tr>`;
+    });
 
-    // Information Ratio 행 (포트폴리오 전용, SPY는 정의상 0)
-    const ir = p.ir ?? 0;
-    const irClass = ir >= 0.5 ? 'text-success fw-bold' : ir < 0 ? 'text-danger fw-bold' : 'text-dark fw-bold';
-    html += `
-        <tr class="table-light">
-            <td class="ps-3 fw-bold" data-metric-tooltip="ir">Information Ratio <span class="text-muted small">ⓘ</span></td>
-            <td class="text-end ${irClass}" colspan="2">${ir.toFixed(2)}</td>
-        </tr>
-    `;
-
+    const tbody = document.querySelector('#metrics-comparison-table tbody');
     tbody.innerHTML = html;
 }
 
