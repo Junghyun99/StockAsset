@@ -41,6 +41,7 @@ TICKER_EXCHANGE_MAP: dict[str, str] = {
     'TLT': 'NAS',
     'EMB': 'NYS',
     'DBC': 'NYS',
+    'EWY': 'AMS',  # iShares MSCI Korea (NYSE Arca) — 해외 계좌 KOSPI 벤치마크
 }
 
 # 단축 코드 → 주문/잔고/미체결 API용 전체 코드 변환

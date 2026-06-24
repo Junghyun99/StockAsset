@@ -42,6 +42,7 @@ class TradingEngine:
         trading_interval_days: int = 5,
         notifier: Optional[INotifier] = None,  # 백테스트는 None
         is_live_trading: bool = False,
+        benchmarks: Optional[dict] = None,
     ):
         # 클래스 속성 우선, 없으면 파라미터 사용
         groups = getattr(type(self), 'ASSET_GROUPS', asset_groups)
@@ -70,6 +71,11 @@ class TradingEngine:
         self.notifier = notifier
         self.is_live_trading = is_live_trading
 
+        # 벤치마크 {논리명: 티커}. 포트폴리오와 동일 브로커·동일 시점으로 현재가를 조회한다.
+        # 백테스트는 BacktestBroker가 과거 종가를 서빙하므로 동일 경로로 동작한다.
+        self.benchmarks: dict = benchmarks or {}
+        self._benchmark_prices: dict = {}  # get_portfolio에서 매 사이클 갱신
+
         # 히스테리시스 상태 복원 (프로세스 재시작 시 이전 국면 유지)
         last_regime = self.repo.load_last_regime()
         if last_regime is not None:
@@ -81,7 +87,6 @@ class TradingEngine:
         data_provider: IDataProvider,
         sim_date: Optional[str] = None,
         daily_dividend: float = 0.0,
-        benchmark_prices: Optional[dict] = None,
     ) -> DayResult:
         """하루치 트레이딩 사이클 전체를 실행한다 (Template Method).
 
@@ -142,7 +147,7 @@ class TradingEngine:
         # Step 6: 저장 (NaN 데이터 품질 이상 시 전체 스킵 — step 4 API 오류와 동일 처리)
         self.logger.info(">>> Step 6: Archiving Data")
         if not nan_fields:
-            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, record_date, benchmark_prices)
+            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, record_date, self._benchmark_prices)
         self.logger.info(
             f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
             f"orders={len(signal.orders)} executions={len(executions)}"
@@ -205,14 +210,35 @@ class TradingEngine:
         return regime, exposure, nan_fields
 
     def get_portfolio(self) -> Portfolio:
-        """Step 4: 포트폴리오 조회 후 실시간 가격 업데이트."""
+        """Step 4: 포트폴리오 조회 후 실시간 가격 업데이트 + 벤치마크 현재가 수집."""
         portfolio = self.broker.get_portfolio()
         self.logger.info("Fetching Real-time prices from Broker...")
         real_time_prices = self.broker.fetch_current_prices(self.all_tickers)
         for ticker, price in real_time_prices.items():
             if price > 0:
                 portfolio.current_prices[ticker] = price
+        # 보유 종목과 같은 브로커·같은 시점으로 벤치마크 현재가도 조회한다.
+        self._benchmark_prices = self._fetch_benchmark_prices()
         return portfolio
+
+    def _fetch_benchmark_prices(self) -> dict:
+        """벤치마크 {논리명: 현재가}를 self.broker로 조회한다.
+
+        실패하거나 가격이 0 이하인 티커는 제외한다. 벤치마크 미설정 시 {} 반환.
+        부가 지표이므로 매매 사이클을 막지 않는다.
+        """
+        if not self.benchmarks:
+            return {}
+        try:
+            raw = self.broker.fetch_current_prices(list(self.benchmarks.values()))
+            return {
+                name: raw[ticker]
+                for name, ticker in self.benchmarks.items()
+                if raw.get(ticker, 0) > 0
+            }
+        except Exception as e:
+            self.logger.warning(f"벤치마크 현재가 조회 실패, 빈 값으로 처리: {e}")
+            return {}
 
     def execute_cycle(
         self,

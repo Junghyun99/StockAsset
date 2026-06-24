@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
-from src.config import Config
+from src.config import Config, BENCHMARKS_BY_MARKET
 from src.strategy_config import StrategyConfig
 from src.core.models import TradeExecution
 from src.core.engine import (
@@ -166,6 +166,10 @@ def run_compare_backtest(
         groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
         for group_tickers in groups.values():
             all_tickers.update(group_tickers)
+        # 해당 엔진 market_type의 벤치마크 티커도 다운로드 대상에 포함
+        # (BacktestBroker가 fetch_current_prices로 서빙 → 엔진이 동일 경로로 기록)
+        mt = _ENGINE_MARKET_TYPES.get(name, "overseas")
+        all_tickers.update(BENCHMARKS_BY_MARKET.get(mt, {}).values())
     all_tickers.add("SPY")
     tickers = list(all_tickers)
 
@@ -215,6 +219,7 @@ def run_compare_backtest(
             trading_interval_days=strategy.TRADING_INTERVAL_DAYS,
             notifier=None,
             is_live_trading=False,
+            benchmarks=BENCHMARKS_BY_MARKET.get(market_type, {}),
         )
         engines[name] = {
             "engine": engine,

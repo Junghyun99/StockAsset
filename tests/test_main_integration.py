@@ -61,6 +61,7 @@ def mock_dependencies():
             holdings={'SPY': 10},
             current_prices={'SPY': 100.0}
         )
+        broker.fetch_current_prices.return_value = {}
 
         # 기본값: 이전 리밸런싱 기록 없음 → _is_rebalancing_due() = True
         repo.get_last_rebalancing_date.return_value = None
@@ -100,73 +101,16 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
     mock_dependencies['notifier'].send_message.assert_called()
 
 
-def test_fetch_benchmarks_overseas(mock_dependencies):
-    """해외 계좌: 미국상장 티커가 논리명으로 매핑된다."""
+def test_overseas_account_injects_overseas_benchmarks(mock_dependencies):
+    """해외 계좌 엔진에 해외(USD) 벤치마크 매핑이 주입된다."""
     bot = TradingBot()
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {
-        'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
+    assert bot.runners[0].engine.benchmarks == {
+        'KOSPI200': 'EWY', 'S&P500': 'SPY', 'NASDAQ100': 'QQQ',
     }
-    result = bot._fetch_benchmarks('overseas')
-    assert result == {'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0}
-
-
-def test_fetch_benchmarks_domestic(mock_dependencies):
-    """국내 계좌: 국내상장(KRW) 티커가 같은 논리명으로 매핑된다."""
-    bot = TradingBot()
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {
-        '069500.KS': 38500.0, '360750.KS': 19000.0, '133690.KS': 102300.0,
-    }
-    result = bot._fetch_benchmarks('domestic')
-    assert result == {'KOSPI200': 38500.0, 'S&P500': 19000.0, 'NASDAQ100': 102300.0}
-
-
-def test_fetch_benchmarks_unknown_market(mock_dependencies):
-    """매핑 없는 market_type은 빈 dict (다운로드 호출 안 함)."""
-    bot = TradingBot()
-    assert bot._fetch_benchmarks('crypto') == {}
-    mock_dependencies['loader'].fetch_latest_prices.assert_not_called()
-
-
-def test_fetch_benchmarks_partial(mock_dependencies):
-    """일부 티커만 조회되면 해당 논리명만 포함된다."""
-    bot = TradingBot()
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {'SPY': 500.0}
-    result = bot._fetch_benchmarks('overseas')
-    assert result == {'S&P500': 500.0}
-
-
-def test_fetch_benchmarks_exception_returns_empty(mock_dependencies):
-    """조회 예외 시 빈 dict로 처리(매매 사이클 차단 안 함)."""
-    bot = TradingBot()
-    mock_dependencies['loader'].fetch_latest_prices.side_effect = RuntimeError("boom")
-    assert bot._fetch_benchmarks('overseas') == {}
-
-
-def test_fetch_benchmarks_caches_by_market(mock_dependencies):
-    """동일 market_type 재호출 시 캐시를 사용해 중복 조회하지 않는다."""
-    bot = TradingBot()
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {
-        'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
-    }
-    r1 = bot._fetch_benchmarks('overseas')
-    r2 = bot._fetch_benchmarks('overseas')
-    assert r1 == r2 == {'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0}
-    assert mock_dependencies['loader'].fetch_latest_prices.call_count == 1
-
-
-def test_fetch_benchmarks_empty_result_not_cached(mock_dependencies):
-    """빈 결과는 캐싱하지 않아 다음 호출에서 재시도한다."""
-    bot = TradingBot()
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {}
-    bot._fetch_benchmarks('overseas')
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {'SPY': 500.0}
-    result = bot._fetch_benchmarks('overseas')
-    assert result == {'S&P500': 500.0}
-    assert mock_dependencies['loader'].fetch_latest_prices.call_count == 2
 
 
 def test_bot_passes_benchmarks_to_summary(mock_dependencies):
-    """run() 시 수집한 벤치마크가 save_daily_summary로 전달된다."""
+    """run() 시 엔진이 브로커로 조회한 벤치마크가 save_daily_summary로 전달된다."""
     mock_dependencies['calc'].calculate.return_value = MarketData(
         "2024-01-01", 100, 90, 0.1, 0.1, -0.05, 15.0
     )
@@ -175,7 +119,8 @@ def test_bot_passes_benchmarks_to_summary(mock_dependencies):
     mock_dependencies['rebalancer'].generate_signal.return_value = TradeSignal(
         1.0, [], "Hold"
     )
-    mock_dependencies['loader'].fetch_latest_prices.return_value = {
+    # 엔진은 보유 종목과 같은 브로커(fetch_current_prices)로 벤치마크 현재가를 조회
+    mock_dependencies['broker'].fetch_current_prices.return_value = {
         'EWY': 80.0, 'SPY': 500.0, 'QQQ': 400.0,
     }
 
@@ -243,7 +188,8 @@ def test_bot_run_rebalance_execution(mock_dependencies):
     bot = TradingBot()
     bot.run()
 
-    mock_dependencies['broker'].fetch_current_prices.assert_called_once()
+    # 보유 종목 + 벤치마크 현재가 조회로 fetch_current_prices가 호출된다
+    mock_dependencies['broker'].fetch_current_prices.assert_called()
     mock_dependencies['broker'].execute_orders.assert_called_once()
     mock_dependencies['notifier'].send_message.assert_called()
     mock_dependencies['repo'].save_trade_history.assert_called()
