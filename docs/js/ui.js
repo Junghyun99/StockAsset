@@ -25,7 +25,7 @@ import {
     computeYTDReturn,
     computeDividendYield,
     computeWinLossStats
-} from './utils.js?v=20260624-3';
+} from './utils.js?v=20260624-5';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
 
@@ -255,8 +255,8 @@ export function updateDecisionLogic(lastData) {
 /**
  * Performance 탭 - 포트폴리오 vs S&P500 비교 테이블 렌더링
  */
-export function renderPerformanceSummaryCards(summaryData) {
-    const metrics = computeAdvancedMetrics(summaryData);
+export function renderPerformanceSummaryCards(summaryData, marketType = null) {
+    const metrics = computeAdvancedMetrics(summaryData, null, marketType);
     const p = metrics.portfolio;
 
     // 표시할 벤치마크 컬럼 구성 (데이터에 존재하는 것만, 정해진 순서대로)
