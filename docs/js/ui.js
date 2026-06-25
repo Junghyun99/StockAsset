@@ -286,6 +286,8 @@ export function renderPerformanceSummaryCards(summaryData) {
     // higherIsBetter에 따라 비교 방향을 결정한다(Volatility/MDD 등 낮을수록 좋은 지표 대응).
     function portClassVs(portVal, refVal, higherIsBetter) {
         if (higherIsBetter === null) return '';
+        // 비유한 값(N/A 지표)은 색상을 적용하지 않는다 (fmt가 'N/A'로 표시)
+        if (!Number.isFinite(portVal) || !Number.isFinite(refVal)) return '';
         if (Math.abs(portVal - refVal) < 0.005) return '';
         const isBetter = higherIsBetter ? (portVal > refVal) : (portVal < refVal);
         return isBetter ? 'text-success fw-bold' : 'text-danger';
