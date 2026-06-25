@@ -25,7 +25,7 @@ import {
     computeYTDReturn,
     computeDividendYield,
     computeWinLossStats
-} from './utils.js?v=20260624-4';
+} from './utils.js?v=20260624-5';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
 

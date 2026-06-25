@@ -1,5 +1,5 @@
 // docs/js/portfolio-main.js
-import { loadAccountsMeta } from './utils.js?v=20260624-4';
+import { loadAccountsMeta } from './utils.js?v=20260624-5';
 import { renderCurrencySummary, renderAccountSections } from './portfolio-cards.js?v=20260621-1';
 import { renderComparisonChart, updateChartRange } from './portfolio-charts.js?v=2';
 

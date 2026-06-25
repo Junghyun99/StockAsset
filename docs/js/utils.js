@@ -227,7 +227,9 @@ export function computeAdvancedMetrics(summaryData, initialCash = null, marketTy
 
         // Volatility (연환산)
         const meanRet = dailyReturns.reduce((s, r) => s + r, 0) / dailyReturns.length;
-        const variance = dailyReturns.reduce((s, r) => s + Math.pow(r - meanRet, 2), 0) / (dailyReturns.length - 1);
+        const variance = dailyReturns.length > 1
+            ? dailyReturns.reduce((s, r) => s + Math.pow(r - meanRet, 2), 0) / (dailyReturns.length - 1)
+            : 0;
         const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100;
 
         // Sharpe Ratio (무위험 수익률 초과수익 기준)
@@ -237,7 +239,7 @@ export function computeAdvancedMetrics(summaryData, initialCash = null, marketTy
 
         // Sortino Ratio (MAR = 무위험 수익률, 하방 편차만)
         const downsideReturns = dailyReturns.filter(r => r < rfDaily);
-        const downsideVariance = downsideReturns.length > 0
+        const downsideVariance = downsideReturns.length > 0 && dailyReturns.length > 1
             ? downsideReturns.reduce((s, r) => s + Math.pow(r - rfDaily, 2), 0) / (dailyReturns.length - 1)
             : 0;
         const downsideStd = Math.sqrt(downsideVariance);
