@@ -172,7 +172,7 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
     // total_value=0 레코드는 브로커 API 오류로 인한 잘못된 데이터이므로 제외
     summaryData = summaryData ? summaryData.filter(d => d.total_value > 0) : [];
     if (summaryData.length < 2) {
-        return { portfolio: { ...empty }, spy: { ...empty, beta: 1.0, ir: 0 } };
+        return { portfolio: { ...empty }, spy: { ...empty, beta: 1.0, ir: 0 }, benchmarks: {} };
     }
 
     const first = summaryData[0];
@@ -263,7 +263,44 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
     portMetrics.ir = ir;
     spyMetrics.ir = 0;
 
-    return { portfolio: portMetrics, spy: spyMetrics };
+    // 각 벤치마크(존재 시)별 인덱스 지표 + 포트폴리오의 해당 지수 대비 상대지표.
+    // S&P500 전용 spy_price 폴백은 적용하지 않는다(다른 지수/통화 오염 방지) —
+    // 전 구간에 값이 있는 벤치마크만 컬럼으로 포함한다.
+    const BENCHMARK_NAMES = ['S&P500', 'NASDAQ100', 'KOSPI200'];
+    const benchmarks = {};
+    for (const name of BENCHMARK_NAMES) {
+        if (!summaryData.every(d => Number.isFinite(d?.benchmarks?.[name]))) continue;
+        const bPrices = summaryData.map(d => d.benchmarks[name]);
+        const bReturns = [];
+        for (let i = 1; i < n; i++) bReturns.push(bPrices[i] / bPrices[i - 1] - 1);
+        const m = calcMetrics(bPrices, bReturns);
+
+        // 포트폴리오 vs 이 인덱스: Beta
+        const meanB = bReturns.reduce((s, r) => s + r, 0) / bReturns.length;
+        let covB = 0, varB = 0;
+        for (let i = 0; i < portReturns.length; i++) {
+            covB += (portReturns[i] - meanPort) * (bReturns[i] - meanB);
+            varB += Math.pow(bReturns[i] - meanB, 2);
+        }
+        m.portBeta = varB !== 0 ? covB / varB : 1.0;
+
+        // 포트폴리오 vs 이 인덱스: Information Ratio
+        const exc = portReturns.map((r, i) => r - bReturns[i]);
+        let portIR = 0;
+        if (exc.length > 1) {
+            const me = exc.reduce((s, r) => s + r, 0) / exc.length;
+            const tv = exc.reduce((s, r) => s + Math.pow(r - me, 2), 0) / (exc.length - 1);
+            const te = Math.sqrt(tv) * Math.sqrt(252);
+            portIR = te > 0 ? (me * 252) / te : 0;
+        }
+        m.portIR = portIR;
+
+        // 포트폴리오 누적 초과수익 vs 이 인덱스
+        m.alpha = portMetrics.totalReturn - m.totalReturn;
+        benchmarks[name] = m;
+    }
+
+    return { portfolio: portMetrics, spy: spyMetrics, benchmarks };
 }
 
 /**
