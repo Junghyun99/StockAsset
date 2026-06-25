@@ -162,12 +162,23 @@ export function getAssetGroup(ticker, groupConfig) {
 }
 
 /**
+ * 무위험 수익률(연율). 현재 3개월 단기국채 금리 기준.
+ * 금리는 천천히 변하므로 상수로 두고 필요 시 수동 갱신한다
+ * (Sharpe/Sortino의 초과수익 분자에만 영향, 통화별로 다름).
+ */
+export const RISK_FREE_RATE_ANNUAL = {
+    overseas: 0.038,  // 미국 3개월 T-bill
+    domestic: 0.027,  // 한국 3개월 단기국채
+};
+
+/**
  * 포트폴리오 & SPY 벤치마크 고급 지표 계산
  * @param {Array} summaryData - summary 배열 (total_value, spy_price 포함)
  * @param {number|null} initialCash - 실제 초기 자본 (status.json의 initial_cash). 없으면 summary 첫 값 사용.
+ * @param {string|null} marketType - 'overseas'|'domestic'. 통화별 무위험 수익률 선택용(미지정 시 Rf=0).
  * @returns {{portfolio: Object, spy: Object}} 양쪽 지표 객체
  */
-export function computeAdvancedMetrics(summaryData, initialCash = null) {
+export function computeAdvancedMetrics(summaryData, initialCash = null, marketType = null) {
     const empty = { totalReturn: 0, cagr: 0, mdd: 0, volatility: 0, sharpe: 0, sortino: 0, calmar: 0, beta: 1.0, ir: 0 };
     // total_value=0 레코드는 브로커 API 오류로 인한 잘못된 데이터이므로 제외
     summaryData = summaryData ? summaryData.filter(d => d.total_value > 0) : [];
@@ -182,6 +193,10 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
     // 기간 (연 단위)
     const msPerYear = 365.25 * 24 * 60 * 60 * 1000;
     const years = Math.max((new Date(last.date) - new Date(first.date)) / msPerYear, 1 / 365);
+
+    // 무위험 수익률 일간 환산 (3개월 단기국채 연율 → 일률). marketType 미지정 시 0.
+    const rfAnnual = RISK_FREE_RATE_ANNUAL[marketType] ?? 0;
+    const rfDaily = Math.pow(1 + rfAnnual, 1 / 252) - 1;
 
     // 벤치마크 기준가 시계열 (S&P500 우선, 구버전 폴백 spy_price)
     const { prices: benchPrices } = benchmarkPriceSeries(summaryData);
@@ -215,16 +230,18 @@ export function computeAdvancedMetrics(summaryData, initialCash = null) {
         const variance = dailyReturns.reduce((s, r) => s + Math.pow(r - meanRet, 2), 0) / (dailyReturns.length - 1);
         const volatility = Math.sqrt(variance) * Math.sqrt(252) * 100;
 
-        // Sharpe Ratio (무위험 수익률 0 가정)
-        const sharpe = volatility !== 0 ? (meanRet / Math.sqrt(variance)) * Math.sqrt(252) : 0;
+        // Sharpe Ratio (무위험 수익률 초과수익 기준)
+        const std = Math.sqrt(variance);
+        const excessMean = meanRet - rfDaily;
+        const sharpe = std !== 0 ? (excessMean / std) * Math.sqrt(252) : 0;
 
-        // Sortino Ratio (하방 변동성만)
-        const downsideReturns = dailyReturns.filter(r => r < 0);
+        // Sortino Ratio (MAR = 무위험 수익률, 하방 편차만)
+        const downsideReturns = dailyReturns.filter(r => r < rfDaily);
         const downsideVariance = downsideReturns.length > 0
-            ? downsideReturns.reduce((s, r) => s + Math.pow(r, 2), 0) / (dailyReturns.length - 1)
+            ? downsideReturns.reduce((s, r) => s + Math.pow(r - rfDaily, 2), 0) / (dailyReturns.length - 1)
             : 0;
         const downsideStd = Math.sqrt(downsideVariance);
-        const sortino = downsideStd !== 0 ? (meanRet / downsideStd) * Math.sqrt(252) : 0;
+        const sortino = downsideStd !== 0 ? (excessMean / downsideStd) * Math.sqrt(252) : 0;
 
         // Calmar Ratio (CAGR / |MDD|)
         const calmar = mdd !== 0 ? (cagr / 100) / Math.abs(mdd / 100) : 0;

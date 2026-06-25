@@ -9,7 +9,7 @@ import {
     formatPercent,
     ACCOUNT_COLORS,
     ACCOUNT_MARKET_TYPES,
-} from './utils.js?v=20260624-3';
+} from './utils.js?v=20260624-4';
 
 /**
  * Overview 탭 - 계좌별 비교 요약 테이블 렌더링 (해외/국내 섹션 분리)
@@ -25,7 +25,7 @@ export function renderAccountOverview(accountsData) {
 
     const accountMetrics = {};
     for (const [id, data] of accountsData) {
-        accountMetrics[id] = computeAdvancedMetrics(data.summary, null);
+        accountMetrics[id] = computeAdvancedMetrics(data.summary, null, ACCOUNT_MARKET_TYPES[id]);
     }
 
     const today = new Date().toISOString().slice(0, 10);

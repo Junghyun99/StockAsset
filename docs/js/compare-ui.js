@@ -9,7 +9,7 @@ import {
     formatPercent,
     ENGINE_COLORS,
     ENGINE_MARKET_TYPES,
-} from './utils.js?v=20260624-3';
+} from './utils.js?v=20260624-4';
 
 /**
  * Overview 탭 - 엔진 비교 요약 테이블 렌더링 (해외/국내 섹션 분리)
@@ -29,7 +29,7 @@ export function renderCompareOverview(enginesData) {
     const engineMetrics = {};
     for (const [name, data] of enginesData) {
         const initialCash = data.status?.initial_cash ?? null;
-        engineMetrics[name] = computeAdvancedMetrics(data.summary, initialCash);
+        engineMetrics[name] = computeAdvancedMetrics(data.summary, initialCash, ENGINE_MARKET_TYPES[name]);
     }
 
     // 각 엔진 최종 자산

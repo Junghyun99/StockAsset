@@ -16,7 +16,7 @@ import {
     computeMonthlyTradeFrequency,
     computeTickerContribution,
     computeAnnualReturns
-} from './utils.js?v=20260624-3';
+} from './utils.js?v=20260624-4';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
 let stratChart = null;

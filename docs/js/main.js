@@ -46,19 +46,19 @@ import {
     renderDividendSummaryCards,
     renderWinLossCards,
     initTooltips
-} from './ui.js?v=20260624-4';
+} from './ui.js?v=20260624-5';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-3';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-4';
 
 import {
     renderCompareOverview,
     renderCompareTradesTab,
-} from './compare-ui.js?v=4';
+} from './compare-ui.js?v=5';
 
 import {
     renderAccountOverview,
     renderAccountTradesTab,
-} from './account-compare-ui.js?v=3';
+} from './account-compare-ui.js?v=4';
 
 import {
     renderAccountPerformanceChart,
@@ -232,7 +232,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
 
     function renderPerformanceTab() {
         if (perfRendered) return;
-        renderPerformanceSummaryCards(summaryData);
+        renderPerformanceSummaryCards(summaryData, marketType);
         renderRegimePerformanceTable(summaryData);
         renderYTDCard(summaryData);
         renderWinLossCards(summaryData);
