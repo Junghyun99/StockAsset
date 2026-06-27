@@ -26,6 +26,7 @@ from src.core.engine.simple import (
     DomesticAsset5Engine,
 )
 from src.core.engine.regime import QldSdyShvEngine, QldQqqShvRegimeEngine
+from src.core.engine.dip_buy import DipBuyEngine
 
 __all__ = [
     "_ENGINE_REGISTRY",
@@ -44,4 +45,5 @@ __all__ = [
     "DomesticAsset5Engine",
     "QldSdyShvEngine",
     "QldQqqShvRegimeEngine",
+    "DipBuyEngine",
 ]
