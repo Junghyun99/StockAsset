@@ -26,7 +26,7 @@ def _pf(cash, qld=0, price=100.0):
 
 
 def _disarmed():
-    return {t: False for t in ("ma20", "ma60", "ma120", "dip", "sell")}
+    return {t: False for t in ("ma20", "ma60", "ma120", "dip")}
 
 
 # ── 지표 계산기 ────────────────────────────────────────────────────────
@@ -76,7 +76,8 @@ def test_state_roundtrip_serialization():
 def test_state_from_empty_dict_defaults():
     state = DipBuyState.from_dict({})
     assert state.queue == []
-    assert state.armed == {"ma20": True, "ma60": True, "ma120": True, "dip": True, "sell": True}
+    assert state.armed == {"ma20": True, "ma60": True, "ma120": True, "dip": True}
+    assert state.rsi_was_overbought is False
 
 
 # ── 트리거 평가 (적재 + 당일 소진 결합 동작) ──────────────────────────────
@@ -164,14 +165,40 @@ def test_sell_order_limited_by_holdings():
     assert sells[0].quantity == 2                   # min(ceil(1000/100)=10, 보유 2)
 
 
-def test_rsi_over_70_sells_down_to_target_cash_ratio():
+def test_sell_does_not_fire_while_rsi_still_overbought():
+    """RSI가 70 위에 있는 동안엔 매도하지 않고 과매수 도달만 기록한다."""
     planner = DipBuyPlanner(ticker="QLD", sell_target_cash_ratio=0.20)
-    # 총자산 1000 (현금 0 + QLD 10주*100). 목표 현금 200 → 부족분 200 → 5일 분할 40/일
     sig = _signals(price=300.0, ma20=200.0, ma60=200.0, ma120=200.0, rsi=80.0)
-    _, _, state = planner.plan(sig, _pf(cash=0.0, qld=10, price=100.0), DipBuyState())
-    sell = [t for t in state.queue if t.side == "SELL"][0]
+    orders, _, state = planner.plan(sig, _pf(cash=0.0, qld=10, price=100.0), DipBuyState())
+    assert [o for o in orders if o.action == OrderAction.SELL] == []
+    assert state.rsi_was_overbought is True
+    assert [t for t in state.queue if t.side == "SELL"] == []
+
+
+def test_sell_fires_on_rsi_crossdown_above_trend():
+    """A+B: 과매수 후 RSI 70 하향 돌파 + price>ma120 → 목표 현금비중까지 5일 분할."""
+    planner = DipBuyPlanner(ticker="QLD", sell_target_cash_ratio=0.20)
+    pf = _pf(cash=0.0, qld=10, price=100.0)   # 총자산 1000, price>ma120
+    # 1일차: RSI 80 → 과매수 도달
+    _, _, s1 = planner.plan(_signals(120.0, 90.0, 90.0, 90.0, 80.0), pf, DipBuyState())
+    # 2일차: RSI 65로 꺾임, price(120)>ma120(90) → 매도 발동
+    _, _, s2 = planner.plan(_signals(120.0, 90.0, 90.0, 90.0, 65.0), pf, s1)
+    sell = [t for t in s2.queue if t.side == "SELL"][0]
+    # 목표 현금 200, 부족분 200 → 5일 분할 40/일, 당일 1일치 소진 후 4일 남음
     assert sell.per_day_amount == pytest.approx(40.0)
     assert sell.remaining_days == 4
+    assert s2.rsi_was_overbought is False
+
+
+def test_sell_does_not_fire_on_crossdown_below_trend():
+    """하락장 반등: RSI 70 하향 돌파했지만 price<ma120 → 매도 안 함(데드캣 보호)."""
+    planner = DipBuyPlanner(ticker="QLD", sell_target_cash_ratio=0.20)
+    pf = _pf(cash=0.0, qld=10, price=100.0)
+    _, _, s1 = planner.plan(_signals(80.0, 120.0, 120.0, 120.0, 80.0), pf, DipBuyState())
+    # price(80) < ma120(120) → 추세 아래 → 매도 금지, 과매수 플래그만 해제
+    _, _, s2 = planner.plan(_signals(80.0, 120.0, 120.0, 120.0, 65.0), pf, s1)
+    assert [t for t in s2.queue if t.side == "SELL"] == []
+    assert s2.rsi_was_overbought is False
 
 
 def test_no_orders_when_no_triggers_and_empty_queue():

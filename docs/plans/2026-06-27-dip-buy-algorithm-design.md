@@ -36,6 +36,7 @@
 | 분할 금액 기준 | **트리거 시점에 `현금×비중`을 고정**해 N등분 (큐) |
 | 중첩 트리거 | 큐에 누적, 활성 트랜치들의 당일 슬라이스 합산(병행 소진) |
 | 매도 목표 현금비중 | **20%** |
+| 매도 트리거 | **A+B**: price>ma120(추세 위) **그리고** RSI 70 상향 후 하향 돌파(꺾임 확인) |
 | 영속성 | 국면 히스테리시스와 동일 패턴(repo 저장 → 생성 시 복원) |
 
 ## 선택한 접근법: 전용 엔진 + 전용 순수 로직 컴포넌트
@@ -126,7 +127,8 @@ OHLCV(종가)에서 MA20/60/120, RSI(14, Wilder smoothing)를 계산해 `DipBuyS
 @dataclass
 class DipBuyState:
     queue: list[Tranche]            # 활성 트랜치
-    armed: dict[str, bool]          # 트리거별 무장 플래그
+    armed: dict[str, bool]          # 매수 트리거별 무장 플래그(ma20/ma60/ma120/dip)
+    rsi_was_overbought: bool        # 직전 RSI>70 도달 여부(매도 꺾임 판정용)
     # to_dict() / from_dict() 로 JSON 직렬화
 
 @dataclass
@@ -141,21 +143,30 @@ class DipBuyPlanner:
 
 **plan() 로직(매 거래일):**
 
-1. **트리거 평가** (종가 기준, 밴드폭 `band`=0.02):
+1. **매수 트리거 평가** (종가 기준, 밴드폭 `band`=0.02):
    - `in_band(price, ma, band)`: `|price/ma - 1| <= band`
    - `ma20` 밴드 진입 & `armed.ma20` → 매수 트랜치(현금×0.10, 1일) 적재, `armed.ma20=False`
    - `ma60` 밴드 진입 & `armed.ma60` → 매수 트랜치(현금×0.50, 5일) 적재, `armed.ma60=False`
    - `ma120` 밴드 진입 & `armed.ma120` → 매수 트랜치(현금×0.50, 5일) 적재, `armed.ma120=False`
    - `price < ma120` & `rsi < 30` & `armed.dip` → 매수 트랜치(현금×1.00, 40일) 적재, `armed.dip=False`
-   - `rsi > 70` & `armed.sell` → 매도 트랜치(목표 현금비중 20%까지 부족분, 5일) 적재, `armed.sell=False`
-2. **재무장**: 각 트리거 조건이 더 이상 성립하지 않으면 해당 `armed=True`로 복귀
-   (밴드 이탈/ RSI 정상 복귀). → 같은 신호가 매일 재발동하는 것 방지.
-3. **당일 슬라이스 산출**: 모든 활성 트랜치에서 `per_day_amount`를 합산,
+2. **매도 트리거 평가 (A+B 추세 필터)**: RSI는 모멘텀 지표일 뿐 추세를 구분하지
+   못하므로 단독 매도는 하락장 반등/횡보장 상단에서도 발동한다. 따라서:
+   - `rsi > 70` → `rsi_was_overbought=True` (과매수 도달만 기록, 매도 안 함)
+   - `rsi <= 70` & 직전 `rsi_was_overbought` & `price > ma120` → 매도 트랜치
+     (목표 현금비중 20%까지 부족분, 5일) 적재 (B. 꺾임 확인 + A. 추세 위)
+   - `rsi <= 70`이면 `rsi_was_overbought=False`로 재무장 (추세 아래면 매도 없이 종료
+     → 데드캣 바운스에 바닥 매수분을 되파는 사고 방지)
+3. **재무장(매수)**: 각 매수 트리거 조건이 더 이상 성립하지 않으면 해당 `armed=True`로
+   복귀 (밴드 이탈). → 같은 신호가 매일 재발동하는 것 방지.
+4. **당일 슬라이스 산출**: 모든 활성 트랜치에서 `per_day_amount`를 합산,
    `remaining_days -= 1`, 0 되면 큐에서 제거.
-4. **주문 생성**:
+5. **주문 생성**:
    - 매수: 합산 매수금액을 가용현금으로 캡 → `floor(amount / price)`주 BUY
    - 매도: 합산 매도금액 → `ceil(amount / price)`주(보유 수량 한도) SELL
-5. **반환**: orders, reason(사유 문자열), new_state
+6. **반환**: orders, reason(사유 문자열), new_state
+
+> 가격 가드: `price`(대상 티커)가 없음/NaN/≤0이면 상태 변경 없이 조기 반환
+> (트랜치 헛소진 방지).
 
 **엣지 처리:**
 - 현금 0 → 매수 트랜치 슬라이스 스킵(트랜치는 유지, remaining_days만 감소하지
