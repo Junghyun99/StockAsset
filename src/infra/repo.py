@@ -28,6 +28,7 @@ class JsonRepository(IRepository):
         self.status_file = os.path.join(self.root, "status.json")
         self.summary_file = os.path.join(self.root, "summary.json")
         self.history_file = os.path.join(self.root, "history.json")
+        self._strategy_state_file = os.path.join(self.root, "strategy_state.json")
 
         self.save_asset_groups_config()
 
@@ -216,6 +217,20 @@ class JsonRepository(IRepository):
             return MarketRegime(regime_str)
         except (KeyError, ValueError):
             return None
+    def load_strategy_state(self, key: str) -> dict:
+        """strategy_state.json에서 key에 해당하는 전략 상태를 로드한다.
+
+        상태형 엔진의 사이클 간 상태 복원에 사용 (국면 히스테리시스와 동일 패턴).
+        """
+        data = self._load_json(self._strategy_state_file, default={})
+        return data.get(key, {})
+
+    def save_strategy_state(self, key: str, state: dict) -> None:
+        """strategy_state.json에 key별 전략 상태를 저장한다 (다른 key 보존)."""
+        data = self._load_json(self._strategy_state_file, default={})
+        data[key] = state
+        self._save_json(self._strategy_state_file, data)
+
     def get_last_rebalancing_date(self) -> Optional[str]:
         """마지막 리밸런싱 실행 날짜 반환 (status.json, 없으면 None)"""
         data = self._load_json(self.status_file, default={})

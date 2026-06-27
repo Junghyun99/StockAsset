@@ -87,3 +87,15 @@ class IRepository(ABC):
                       market_data: MarketData, reason: str,
                       sim_date: Optional[str] = None,
                       rebalancing_date: Optional[str] = None) -> None: ...
+
+    # ── 전략 상태 영속화 (선택적 기능, 기본 안전 degrade) ──────────────
+    # 상태형 엔진(예: DipBuyEngine의 트랜치 큐)이 프로세스 수명을 넘는 상태를
+    # 저장/복원하는 데 사용한다. 미지원 구현체(테스트 더블 등)도 AttributeError
+    # 없이 동작하도록 기본 구현을 제공한다 (국면 히스테리시스와 동일 패턴).
+    def load_strategy_state(self, key: str) -> dict:
+        """저장된 전략 상태를 반환한다 (기본: 빈 dict)."""
+        return {}
+
+    def save_strategy_state(self, key: str, state: dict) -> None:
+        """전략 상태를 저장한다 (기본 no-op)."""
+        return None

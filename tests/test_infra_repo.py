@@ -669,3 +669,21 @@ def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
     assert data[0]['date'] == "2024-01-01" # 첫째 날
     assert data[-1]['date'] == "2024-01-07" # 마지막 날
     assert data[-1]['spy_price'] == 106.0 # 가격 변화 반영 확인
+
+def test_strategy_state_roundtrip(tmp_path):
+    from src.infra.repo import JsonRepository
+    repo = JsonRepository(str(tmp_path))
+    assert repo.load_strategy_state("dip_buy") == {}
+    repo.save_strategy_state("dip_buy", {"queue": [], "armed": {"ma20": False}})
+    assert repo.load_strategy_state("dip_buy") == {"queue": [], "armed": {"ma20": False}}
+    # 다른 key는 영향 없음
+    assert repo.load_strategy_state("other") == {}
+
+
+def test_strategy_state_preserves_other_keys(tmp_path):
+    from src.infra.repo import JsonRepository
+    repo = JsonRepository(str(tmp_path))
+    repo.save_strategy_state("a", {"x": 1})
+    repo.save_strategy_state("b", {"y": 2})
+    assert repo.load_strategy_state("a") == {"x": 1}
+    assert repo.load_strategy_state("b") == {"y": 2}
