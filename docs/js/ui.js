@@ -352,8 +352,8 @@ export function renderPerformanceSummaryCards(summaryData, marketType = null) {
     // Rf 안내 캡션 — Sharpe/Sortino가 무위험 수익률을 반영함을 명시(항상 표시)
     const table = document.getElementById('metrics-comparison-table');
     if (table) {
-        const rf = RISK_FREE_RATE_ANNUAL[marketType];
-        const cap = table.querySelector('caption') || table.createCaption();
+        const rf = marketType ? RISK_FREE_RATE_ANNUAL[marketType] : null;
+        const cap = table.createCaption();  // 이미 있으면 기존 caption 반환(idempotent)
         cap.className = 'text-muted small text-start px-3 py-2';
         cap.style.captionSide = 'bottom';
         cap.textContent = (rf != null)
