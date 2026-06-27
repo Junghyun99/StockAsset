@@ -24,7 +24,8 @@ import {
     computeRegimePerformance,
     computeYTDReturn,
     computeDividendYield,
-    computeWinLossStats
+    computeWinLossStats,
+    RISK_FREE_RATE_ANNUAL
 } from './utils.js?v=20260624-5';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
@@ -347,6 +348,18 @@ export function renderPerformanceSummaryCards(summaryData, marketType = null) {
 
     const tbody = document.querySelector('#metrics-comparison-table tbody');
     tbody.innerHTML = html;
+
+    // Rf 안내 캡션 — Sharpe/Sortino가 무위험 수익률을 반영함을 명시(항상 표시)
+    const table = document.getElementById('metrics-comparison-table');
+    if (table) {
+        const rf = RISK_FREE_RATE_ANNUAL[marketType];
+        const cap = table.querySelector('caption') || table.createCaption();
+        cap.className = 'text-muted small text-start px-3 py-2';
+        cap.style.captionSide = 'bottom';
+        cap.textContent = (rf != null)
+            ? `※ Sharpe·Sortino는 무위험 수익률 연 ${(rf * 100).toFixed(1)}% (${marketType === 'domestic' ? '한국' : '미국'} 3개월 단기국채) 기준`
+            : '※ Sharpe·Sortino는 무위험 수익률 0% 기준';
+    }
 }
 
 /**
