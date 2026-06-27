@@ -81,9 +81,6 @@ class DipBuyEngine(TradingEngine):
         orders, reason, new_state = self._planner.plan(
             self.dip_signals, portfolio, self.dip_state
         )
-        # 상태 갱신 + 영속화 (라이브 재시작 대비)
-        self.dip_state = new_state
-        self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
         signal = TradeSignal(exposure, orders, reason)
         self.logger.info(f">>> Step 5: DipBuy ({reason})")
@@ -97,5 +94,11 @@ class DipBuyEngine(TradingEngine):
             except RuntimeError as e:
                 self.logger.error(f"거래 후 포트폴리오 조회 실패 — 거래 전 포트폴리오로 대체: {e}")
                 final_pf = portfolio
+
+        # 상태 갱신 + 영속화는 주문 실행 시도 이후에 수행한다. execute_orders가
+        # 예외로 중단되면 차감된 트랜치 상태가 저장되지 않아, 다음 거래일에 동일
+        # 상태로 재시도된다 (주문 미실행 + 상태 차감의 불일치 방지).
+        self.dip_state = new_state
+        self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
         return signal, executions, final_pf, is_rebalancing

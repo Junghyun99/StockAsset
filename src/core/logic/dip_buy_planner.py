@@ -58,6 +58,13 @@ class DipBuyPlanner:
 
     def plan(self, signals: DipBuySignals, portfolio: Portfolio,
              state: DipBuyState) -> Tuple[List[Order], str, DipBuyState]:
+        # 가격 정보가 비정상이면 상태를 전혀 변경하지 않고 조기 반환한다.
+        # (트랜치 소진/무장 변경 없이 다음 거래일에 동일 상태로 재시도 → 데이터
+        #  일시 누락으로 분할 트랜치가 헛되이 소진되는 상태 꼬임을 방지)
+        price = portfolio.current_prices.get(self.ticker, 0.0)
+        if price is None or math.isnan(price) or price <= 0:
+            return [], "대기(가격 정보 없음)", state
+
         armed = dict(state.armed)
         queue = list(state.queue)
 
@@ -83,8 +90,7 @@ class DipBuyPlanner:
                 next_queue.append(t)
         new_state = DipBuyState(queue=next_queue, armed=armed)
 
-        # 4. 주문 생성 (매도 우선 → 자금 확보 후 매수)
-        price = portfolio.current_prices.get(self.ticker, 0.0)
+        # 4. 주문 생성 (매도 우선 → 자금 확보 후 매수). price는 위에서 검증 완료.
         orders: List[Order] = []
         reasons: List[str] = []
 
@@ -136,6 +142,8 @@ class DipBuyPlanner:
         """RSI 과열 시 목표 현금비중까지 부족분을 5일 분할 매도하는 트랜치."""
         def factory():
             price = pf.current_prices.get(self.ticker, 0.0)
+            if price is None or math.isnan(price) or price <= 0:
+                return None
             holdings_val = pf.holdings.get(self.ticker, 0) * price
             total = pf.total_cash + holdings_val
             if total <= 0 or holdings_val <= 0:

@@ -26,6 +26,14 @@ class DipBuyIndicatorCalculator:
     """OHLCV에서 MA20/60/120, RSI(14)를 계산한다 (순수 로직)."""
 
     def calculate(self, df: pd.DataFrame) -> DipBuySignals:
+        # 데이터 수집 실패 등으로 빈 DataFrame이 들어오면 NaN 신호로 안전 degrade.
+        # (엔진은 NaN 지표에서 매매를 스킵한다.)
+        if df is None or df.empty:
+            return DipBuySignals(
+                date="", price=float("nan"),
+                ma20=float("nan"), ma60=float("nan"),
+                ma120=float("nan"), rsi=float("nan"),
+            )
         df = df.copy().ffill().bfill()
         # IDataProvider 계약: 단일 종목 → SingleIndex. MultiIndex는 방어 코드.
         if isinstance(df.columns, pd.MultiIndex):

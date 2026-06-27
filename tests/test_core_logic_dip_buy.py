@@ -56,6 +56,13 @@ def test_insufficient_data_yields_nan():
     assert math.isnan(sig.ma120)
 
 
+def test_empty_dataframe_yields_nan_signals():
+    sig = DipBuyIndicatorCalculator().calculate(pd.DataFrame())
+    assert sig.date == ""
+    assert math.isnan(sig.price)
+    assert math.isnan(sig.ma20) and math.isnan(sig.rsi)
+
+
 # ── 상태 직렬화 ────────────────────────────────────────────────────────
 def test_state_roundtrip_serialization():
     state = DipBuyState(
@@ -182,6 +189,30 @@ def test_no_buy_when_cash_zero():
     orders, _, state = planner.plan(sig, _pf(cash=0.0, price=100.0), DipBuyState())
     assert orders == []
     assert state.armed["ma20"] is False   # 현금 없어도 무장 해제(밴드 이탈 전까지 대기)
+
+
+def test_invalid_price_returns_unchanged_state():
+    planner = DipBuyPlanner(ticker="QLD")
+    state = DipBuyState(queue=[Tranche("BUY", 100.0, 5)], armed=_disarmed())
+    sig = _signals(price=100.0, ma20=100.0, ma60=80.0, ma120=70.0, rsi=50.0)
+    # 대상 티커 가격이 0 → 상태 변경/주문 없이 조기 반환
+    pf = Portfolio(total_cash=1000.0, holdings={"QLD": 0}, current_prices={"QLD": 0.0})
+    orders, reason, new_state = planner.plan(sig, pf, state)
+    assert orders == []
+    assert "가격" in reason
+    assert new_state is state
+    assert new_state.queue[0].remaining_days == 5   # 소진되지 않음
+
+
+def test_nan_price_returns_unchanged_state():
+    planner = DipBuyPlanner(ticker="QLD")
+    state = DipBuyState(queue=[Tranche("BUY", 100.0, 5)], armed=_disarmed())
+    sig = _signals(price=100.0, ma20=100.0, ma60=80.0, ma120=70.0, rsi=50.0)
+    pf = Portfolio(total_cash=1000.0, holdings={"QLD": 0},
+                   current_prices={"QLD": float("nan")})
+    orders, _, new_state = planner.plan(sig, pf, state)
+    assert orders == []
+    assert new_state.queue[0].remaining_days == 5
 
 
 def test_nan_rsi_disables_dip_and_sell():
