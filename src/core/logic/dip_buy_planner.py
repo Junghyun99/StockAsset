@@ -5,6 +5,10 @@
 '추세 위에서 꺾일 때' 매도 트랜치를 적재한다. 매 거래일 활성 트랜치의 당일
 슬라이스를 합산해 주문을 생성한다.
 
+매수 사이징은 '트리거 시점 총자산(현금+보유평가액)의 비율'을 N등분해 고정한다.
+(원작의 '현금의 %'는 앞선 레벨이 현금을 소진해 더 깊은 레벨이 작게 들어가는
+비대칭이 있어, 풀사이클 백테스트에서 우위였던 총자산 기준으로 채택했다.)
+
 매도 조건(A+B):
   - A. 추세 필터: price > ma120 (상승 추세 위에서만 트림)
   - B. 모멘텀 꺾임 확인: RSI가 70 위로 갔다가 다시 70 아래로 내려온 시점
@@ -140,12 +144,17 @@ class DipBuyPlanner:
         return abs(price / ma - 1.0) <= self.band
 
     def _evaluate_buy_conditions(self, sig: DipBuySignals, pf: Portfolio):
-        cash = pf.total_cash
+        # 사이징 기준 = 트리거 시점 총자산(현금+보유평가액).
+        # '남은 현금의 %'로 하면 앞선 레벨이 현금을 소진해 더 깊고 싼 레벨이
+        # 오히려 작게 들어가는 비대칭이 생긴다. 총자산 기준은 이 비대칭을 없애고
+        # (깊은 레벨 ≥ 얕은 레벨), 라이브에서 계좌 규모에 맞춰 스케일된다.
+        # 실제 체결은 plan()에서 가용현금으로 캡되므로 과투입은 발생하지 않는다.
+        base = pf.total_value
         rsi_ok = not math.isnan(sig.rsi)
 
         def buy(ratio: float, days: int):
             return lambda: (
-                Tranche("BUY", (cash * ratio) / days, days) if cash > 0 else None
+                Tranche("BUY", (base * ratio) / days, days) if pf.total_cash > 0 else None
             )
 
         ma120_valid = not math.isnan(sig.ma120) and sig.ma120 > 0

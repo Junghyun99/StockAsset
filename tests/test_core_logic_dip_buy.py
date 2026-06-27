@@ -91,6 +91,17 @@ def test_ma20_touch_buys_10pct_immediately():
     assert state.armed["ma20"] is False
 
 
+def test_buy_sizing_uses_total_value_not_just_cash():
+    planner = DipBuyPlanner(ticker="QLD")
+    # 현금 500 + QLD 5주×100=500 → 총자산 1000. MA60 50% = 500/5 = 100/일.
+    # (현금 기준이었다면 50% of 500 = 250/5 = 50/일)
+    pf = Portfolio(total_cash=500.0, holdings={"QLD": 5}, current_prices={"QLD": 100.0})
+    sig = _signals(price=100.0, ma20=130.0, ma60=100.0, ma120=70.0, rsi=50.0)
+    _, _, state = planner.plan(sig, pf, DipBuyState())
+    t = [x for x in state.queue if x.side == "BUY"][0]
+    assert t.per_day_amount == pytest.approx(100.0)
+
+
 def test_ma60_band_enqueues_50pct_over_5_days():
     planner = DipBuyPlanner(ticker="QLD")
     sig = _signals(price=100.0, ma20=130.0, ma60=100.0, ma120=70.0, rsi=50.0)
