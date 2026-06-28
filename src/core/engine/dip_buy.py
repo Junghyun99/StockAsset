@@ -195,10 +195,32 @@ class DipBuyGatedEngine(DipBuyEngine):
             return super().execute_cycle(market_data, portfolio, regime, exposure,
                                          nan_fields, sim_date, record_date)
 
+        if self.dip_signals is None:
+            signal = TradeSignal(0.0, [], "지표 데이터 없음 (dip_signals=None) — 매매 중단")
+            self.logger.error("dip_signals is None — 매매 중단")
+            return signal, [], portfolio, False
+
         price = portfolio.current_prices.get(self._ticker, 0.0)
-        ma = self.dip_signals.ma200 if self.dip_signals is not None else float("nan")
+        ma = self.dip_signals.ma200
         risk_on = price > 0 and not math.isnan(ma) and ma > 0 and price >= ma
         r = self.RISK_OFF_TICKER
+
+        # 가격 검증: 이번 사이클에 거래가 필요한 종목의 현재가가 없으면(≤0) 상태 변경 없이 중단.
+        # (특히 risk-off 전환 시 r 가격이 없으면 기존 자산만 팔고 r은 못 사 의도치 않게
+        #  100% 현금이 되는 문제를 방지 — 베이스 엔진의 zero-price 가드와 동일 철학)
+        bad = []
+        if portfolio.holdings.get(self._ticker, 0) > 0 and price <= 0:
+            bad.append(self._ticker)
+        if self._cash_ticker and portfolio.holdings.get(self._cash_ticker, 0) > 0 \
+                and portfolio.current_prices.get(self._cash_ticker, 0.0) <= 0:
+            bad.append(self._cash_ticker)
+        if r and portfolio.current_prices.get(r, 0.0) <= 0 \
+                and (not risk_on or portfolio.holdings.get(r, 0) > 0):
+            bad.append(r)
+        if bad:
+            reason = f"가격 조회 실패 — 매매 중단: {', '.join(bad)}"
+            self.logger.error(reason)
+            return TradeSignal(0.0, [], reason), [], portfolio, False
 
         if risk_on:
             # risk-off 자산을 보유 중이면 먼저 청산(전환 사이클), 아니면 정상 DipBuy 위임
@@ -269,8 +291,10 @@ class DipBuyGatedEngine(DipBuyEngine):
                   ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
         """risk-off/전환 주문을 실행하고 결과 튜플 생성 (DipBuy 비활성 → 상태 리셋)."""
         new_state = DipBuyState()
+        # 이미 초기화 상태면 디스크 재쓰기를 건너뛴다 (장기 risk-off 구간 불필요 I/O 절감)
+        if self.dip_state.to_dict() != new_state.to_dict():
+            self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
         self.dip_state = new_state
-        self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
         signal = TradeSignal(0.0, orders, reason)
         self.logger.info(f">>> Step 5: DipBuyGated ({reason})")

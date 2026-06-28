@@ -185,6 +185,26 @@ def test_gated_spy_risk_on_liquidates_spy(tmp_path):
     assert "청산" in signal.reason
 
 
+def test_gated_spy_halts_on_missing_risk_off_price(tmp_path):
+    """risk-off인데 SPY 가격이 없으면(≤0) QLD를 청산하지 않고 매매 중단 (의도치 않은 현금화 방지)."""
+    eng, _, _ = _make_gated_spy(tmp_path)
+    eng.dip_signals = DipBuySignals("2024-01-01", 80.0, 85.0, 90.0, 95.0, 50.0, ma200=100.0)
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 50, "SHV": 10},
+                   current_prices={"QLD": 80.0, "SHV": 100.0, "SPY": 0.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.0, [], "2024-01-01", "2024-01-01")
+    assert signal.orders == []
+    assert "가격 조회 실패" in signal.reason
+
+
+def test_gated_halts_when_dip_signals_none(tmp_path):
+    eng, _, _ = _make_gated(tmp_path)
+    eng.dip_signals = None
+    pf = Portfolio(total_cash=1000.0, holdings={}, current_prices={"QLD": 100.0, "SHV": 100.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.0, [], "2024-01-01", "2024-01-01")
+    assert signal.orders == []
+    assert "지표 데이터 없음" in signal.reason
+
+
 def test_gated_spy_risk_on_no_spy_runs_dipbuy(tmp_path):
     eng, _, _ = _make_gated_spy(tmp_path)
     # risk-on이고 SPY 미보유 → 정상 DipBuy (전환/청산 reason 아님)
