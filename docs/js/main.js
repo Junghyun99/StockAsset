@@ -336,14 +336,22 @@ async function loadCompareMode() {
             fetch(`${enginePath}history.json?${cacheBust}`),
             fetch(`${enginePath}asset_groups.json?${cacheBust}`),
         ]);
+        // 매니페스트(engines.json)에 있지만 실제 데이터가 없는 엔진은 건너뛴다.
+        // 한 엔진의 누락이 전체 비교 페이지 로딩을 막지 않도록 방어한다.
+        if (!summaryRes.ok || !statusRes.ok || !historyRes.ok) {
+            console.warn(`엔진 데이터 누락으로 건너뜀: ${name}`);
+            return;
+        }
         enginesData.set(name, {
-            summary: await summaryRes.json(),
-            status: await statusRes.json(),
-            history: await historyRes.json(),
-            groupConfig: groupRes.ok ? await groupRes.json() : null,
+            summary: await summaryRes.json().catch(() => []),
+            status: await statusRes.json().catch(() => ({})),
+            history: await historyRes.json().catch(() => []),
+            groupConfig: groupRes.ok ? await groupRes.json().catch(() => null) : null,
         });
     });
     await Promise.all(loadPromises);
+
+    if (enginesData.size === 0) throw new Error('No engine data loaded');
 
     // 3. Overview 탭 렌더링
     renderCompareOverview(enginesData);
