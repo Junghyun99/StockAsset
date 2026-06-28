@@ -1,19 +1,8 @@
 {
     "dip_buy": {
-        "queue": [
-            {
-                "side": "BUY",
-                "per_day_amount": 35486147.6166017,
-                "remaining_days": 15
-            },
-            {
-                "side": "SELL",
-                "per_day_amount": 76945821.58128318,
-                "remaining_days": 2
-            }
-        ],
+        "queue": [],
         "armed": {
-            "ma20": true,
+            "ma20": false,
             "ma60": true,
             "ma120": true,
             "dip": true
