@@ -158,6 +158,30 @@ def test_tranche_removed_when_days_exhausted():
     assert new_state.queue == []
 
 
+def test_available_cash_param_overrides_total_cash_for_buy_cap():
+    """예수금이 0이어도 available_cash(SHV 포함)가 있으면 그만큼 매수 가능."""
+    planner = DipBuyPlanner(ticker="QLD")
+    state = DipBuyState(queue=[Tranche("BUY", 100000.0, 5)], armed=_disarmed())
+    sig = _signals(price=200.0, ma20=200.0, ma60=200.0, ma120=200.0, rsi=50.0)
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 0}, current_prices={"QLD": 100.0})
+    orders, _, _ = planner.plan(sig, pf, state, available_cash=300.0)
+    buys = [o for o in orders if o.action == OrderAction.BUY]
+    assert buys[0].quantity == 3                     # floor(min(100000,300)/100)
+
+
+def test_sell_target_counts_available_cash():
+    """매도 목표 현금비중은 available_cash(예수금+SHV) 기준으로 판정한다.
+    이미 목표비중을 채웠으면(현금이 SHV에 있어도) 매도하지 않는다."""
+    planner = DipBuyPlanner(ticker="QLD", sell_target_cash_ratio=0.20)
+    # 총자산 = available_cash 250 + QLD 1000 = 1250, 목표현금 250, 이미 250 → 매도 없음
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 10}, current_prices={"QLD": 100.0})
+    _, _, s1 = planner.plan(_signals(120.0, 90.0, 90.0, 90.0, 80.0), pf, DipBuyState(),
+                            available_cash=250.0)
+    _, _, s2 = planner.plan(_signals(120.0, 90.0, 90.0, 90.0, 65.0), pf, s1,
+                            available_cash=250.0)
+    assert [t for t in s2.queue if t.side == "SELL"] == []
+
+
 def test_buy_capped_by_available_cash():
     planner = DipBuyPlanner(ticker="QLD")
     state = DipBuyState(queue=[Tranche("BUY", 100000.0, 5)], armed=_disarmed())

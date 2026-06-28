@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 
 from src.core.engine.dip_buy import DipBuyEngine
+from src.core.models import Order, OrderAction, Portfolio
 from src.infra.broker.mock import MockBroker
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
@@ -68,6 +69,41 @@ def test_state_survives_engine_recreation(tmp_path):
         asset_groups={"A": ["QLD"]}, trading_interval_days=1,
     )
     assert engine2.dip_state.to_dict()["armed"] == saved_before["armed"]
+
+
+def test_deployable_cash_includes_shv(tmp_path):
+    engine, _, _ = _make_engine(tmp_path)
+    pf = Portfolio(total_cash=500.0, holdings={"SHV": 10},
+                   current_prices={"SHV": 100.0, "QLD": 50.0})
+    assert engine._deployable_cash(pf) == 500.0 + 10 * 100.0   # 예수금 + SHV평가액
+
+
+def test_reservoir_sweeps_idle_cash_to_shv(tmp_path):
+    engine, _, _ = _make_engine(tmp_path)
+    pf = Portfolio(total_cash=1000.0, holdings={}, current_prices={"SHV": 100.0, "QLD": 50.0})
+    orders = engine._apply_cash_reservoir([], pf)   # QLD 주문 없음 → 전액 SHV 스윕
+    shv_buys = [o for o in orders if o.ticker == "SHV" and o.action == OrderAction.BUY]
+    assert shv_buys and shv_buys[0].quantity == 10   # floor(1000/100)
+
+
+def test_reservoir_sells_shv_to_fund_qld_buy(tmp_path):
+    engine, _, _ = _make_engine(tmp_path)
+    pf = Portfolio(total_cash=0.0, holdings={"SHV": 20},
+                   current_prices={"SHV": 100.0, "QLD": 50.0})
+    qld_buy = [Order("QLD", OrderAction.BUY, 10, 50.0)]   # 비용 500
+    orders = engine._apply_cash_reservoir(list(qld_buy), pf)
+    shv_sells = [o for o in orders if o.ticker == "SHV" and o.action == OrderAction.SELL]
+    assert shv_sells and shv_sells[0].quantity == 5      # ceil(500/100)
+
+
+def test_reservoir_sweeps_qld_sell_proceeds_to_shv(tmp_path):
+    engine, _, _ = _make_engine(tmp_path)
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 10, "SHV": 0},
+                   current_prices={"SHV": 100.0, "QLD": 50.0})
+    qld_sell = [Order("QLD", OrderAction.SELL, 10, 50.0)]  # 유입 500
+    orders = engine._apply_cash_reservoir(list(qld_sell), pf)
+    shv_buys = [o for o in orders if o.ticker == "SHV" and o.action == OrderAction.BUY]
+    assert shv_buys and shv_buys[0].quantity == 5         # floor(500/100)
 
 
 def test_multi_day_cycle_executes_orders(tmp_path):

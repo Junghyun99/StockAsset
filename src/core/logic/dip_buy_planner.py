@@ -79,7 +79,14 @@ class DipBuyPlanner:
         self.sell_target_cash_ratio = sell_target_cash_ratio
 
     def plan(self, signals: DipBuySignals, portfolio: Portfolio,
-             state: DipBuyState) -> Tuple[List[Order], str, DipBuyState]:
+             state: DipBuyState,
+             available_cash: float = None) -> Tuple[List[Order], str, DipBuyState]:
+        # available_cash: 매수/매도 판단에 쓰는 '가용 현금'. 기본은 예수금(total_cash).
+        # SHV 같은 현금성 자산을 저수지로 쓰는 엔진은 (예수금 + SHV평가액)을 주입한다.
+        # (예수금만 보면 SHV에 현금이 들어간 순간 매수 캡·매도목표가 오작동함)
+        if available_cash is None:
+            available_cash = portfolio.total_cash
+
         # 가격 정보가 비정상이면 상태를 전혀 변경하지 않고 조기 반환한다.
         # (트랜치 소진/상태 변경 없이 다음 거래일에 동일 상태로 재시도 → 데이터
         #  일시 누락으로 분할 트랜치가 헛되이 소진되는 상태 꼬임을 방지)
@@ -91,7 +98,7 @@ class DipBuyPlanner:
         queue = list(state.queue)
 
         # 1. 매수 트리거 평가 + 적재 + 무장/재무장 (엣지 트리거)
-        for key, active, make_tranche in self._evaluate_buy_conditions(signals, portfolio):
+        for key, active, make_tranche in self._evaluate_buy_conditions(signals, portfolio, available_cash):
             if active and armed.get(key, True):
                 tranche = make_tranche()
                 if tranche is not None:
@@ -101,7 +108,7 @@ class DipBuyPlanner:
                 armed[key] = True
 
         # 2. 매도 트리거 평가 (A. 추세 위 price>ma120 + B. RSI 70 하향 돌파 확인)
-        rsi_was_overbought = self._evaluate_sell(signals, portfolio, state, queue)
+        rsi_was_overbought = self._evaluate_sell(signals, portfolio, state, queue, available_cash)
 
         # 3. 당일 슬라이스 합산
         buy_amount = sum(t.per_day_amount for t in queue if t.side == "BUY")
@@ -128,7 +135,7 @@ class DipBuyPlanner:
                 reasons.append(f"분할매도 {qty}주")
 
         if buy_amount > 0:
-            capped = min(buy_amount, portfolio.total_cash)
+            capped = min(buy_amount, available_cash)
             qty = math.floor(capped / price)
             if qty > 0:
                 orders.append(Order(self.ticker, OrderAction.BUY, qty, price))
@@ -143,7 +150,7 @@ class DipBuyPlanner:
             return False
         return abs(price / ma - 1.0) <= self.band
 
-    def _evaluate_buy_conditions(self, sig: DipBuySignals, pf: Portfolio):
+    def _evaluate_buy_conditions(self, sig: DipBuySignals, pf: Portfolio, available_cash: float):
         # 사이징 기준 = 트리거 시점 총자산(현금+보유평가액).
         # '남은 현금의 %'로 하면 앞선 레벨이 현금을 소진해 더 깊고 싼 레벨이
         # 오히려 작게 들어가는 비대칭이 생긴다. 총자산 기준은 이 비대칭을 없애고
@@ -154,7 +161,7 @@ class DipBuyPlanner:
 
         def buy(ratio: float, days: int):
             return lambda: (
-                Tranche("BUY", (base * ratio) / days, days) if pf.total_cash > 0 else None
+                Tranche("BUY", (base * ratio) / days, days) if available_cash > 0 else None
             )
 
         ma120_valid = not math.isnan(sig.ma120) and sig.ma120 > 0
@@ -169,7 +176,8 @@ class DipBuyPlanner:
 
     # ── 매도 트리거 평가 (A. 추세 필터 + B. 모멘텀 꺾임 확인) ──────────────
     def _evaluate_sell(self, sig: DipBuySignals, pf: Portfolio,
-                       state: DipBuyState, queue: List[Tranche]) -> bool:
+                       state: DipBuyState, queue: List[Tranche],
+                       available_cash: float) -> bool:
         """RSI 70 상향 도달 후 하향 돌파 + 추세 위(price>ma120)에서 매도 트랜치 적재.
 
         Returns: 갱신된 rsi_was_overbought 플래그.
@@ -183,7 +191,7 @@ class DipBuyPlanner:
 
         # rsi <= 70 : 과매수 구간에서 막 내려온 시점
         if state.rsi_was_overbought and self._above_trend(sig):
-            tranche = self._build_sell_tranche(pf)
+            tranche = self._build_sell_tranche(pf, available_cash)
             if tranche is not None:
                 queue.append(tranche)
         # 과매수 에피소드 종료 → 재무장 (다시 70 넘으면 새 에피소드)
@@ -193,17 +201,21 @@ class DipBuyPlanner:
         """A. 추세 필터: ma120이 유효하고 price가 그 위에 있는가."""
         return (not math.isnan(sig.ma120)) and sig.ma120 > 0 and sig.price > sig.ma120
 
-    def _build_sell_tranche(self, pf: Portfolio):
-        """목표 현금비중까지 부족분을 5일 분할 매도하는 트랜치 (없으면 None)."""
+    def _build_sell_tranche(self, pf: Portfolio, available_cash: float):
+        """목표 현금비중까지 부족분을 5일 분할 매도하는 트랜치 (없으면 None).
+
+        '현금'은 available_cash(예수금+SHV 등 현금성)를 기준으로 한다. 매도는
+        QLD를 팔아 가용현금을 목표비중까지 끌어올리는 동작이다.
+        """
         price = pf.current_prices.get(self.ticker, 0.0)
         if price is None or math.isnan(price) or price <= 0:
             return None
         holdings_val = pf.holdings.get(self.ticker, 0) * price
-        total = pf.total_cash + holdings_val
+        total = available_cash + holdings_val
         if total <= 0 or holdings_val <= 0:
             return None
         target_cash = total * self.sell_target_cash_ratio
-        shortfall = target_cash - pf.total_cash
+        shortfall = target_cash - available_cash
         if shortfall <= 0:
             return None
         sell_amt = min(shortfall, holdings_val)

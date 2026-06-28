@@ -4,9 +4,14 @@
 QLD 단일 종목을 대상으로 이동평균선(MA20/60/120) 눌림목과 RSI 과매도/과열을
 트리거로 현금을 분할 투입/회수한다. 트랜치 큐는 strategy_state.json에 영속화되어
 백테스트(엔진 재사용)와 라이브(매일 재시작)가 동일한 코드 경로로 동작한다.
+
+현금성 자산(C그룹, 기본 SHV)을 '현금 저수지'로 사용한다: QLD에 들어가지 않은
+모든 현금을 SHV로 주차해 단기채 이자를 받고, 눌림 매수 시 SHV를 팔아 자금을
+확보한다. 가용현금 = 예수금 + SHV평가액으로 계산한다.
 """
 from typing import List, Optional, Tuple
 
+import math
 import pandas as pd
 
 from src.core.engine.base import TradingEngine
@@ -15,21 +20,23 @@ from src.core.interfaces import IDataProvider
 from src.core.logic.dip_buy_indicators import DipBuyIndicatorCalculator
 from src.core.logic.dip_buy_planner import DipBuyPlanner, DipBuyState
 from src.core.models import (
-    MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution,
+    MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, Order, OrderAction,
 )
 
 
 @register_engine(color="#e45756")
 class DipBuyEngine(TradingEngine):
-    """QLD 단일 종목 눌림목 분할매수 전략 엔진.
+    """QLD(A그룹) + SHV(C그룹 현금 저수지) 눌림목 분할매수 전략 엔진.
 
-    - 자산군 A: [QLD] (현금은 예수금으로 보유, 별도 현금 ETF 미사용)
+    - 자산군 A: [QLD] (눌림목 분할매수 대상)
+    - 자산군 C: [SHV] (현금 저수지 — 유휴 현금을 주차해 단기채 이자 수취)
     - 트리거(종가 ±2% 밴드): MA20 터치 10% / MA60·120 부근 50% 5일 분할 /
       MA120 아래 & RSI<30 100% 40일 분할 / RSI>70 목표 현금비중 20%까지 5일 분할 매도
+    - 가용현금 = 예수금 + SHV평가액. QLD 매수 시 SHV 매도로 자금 확보, 잔여 현금은 SHV로 스윕
     - 트랜치 큐/무장 상태는 repo(strategy_state.json)에 영속화
     """
 
-    ASSET_GROUPS: dict = {"A": ["QLD"]}
+    ASSET_GROUPS: dict = {"A": ["QLD"], "C": ["SHV"]}
     BAND: float = 0.02
     SELL_TARGET_CASH_RATIO: float = 0.20
     STATE_KEY: str = "dip_buy"
@@ -37,6 +44,9 @@ class DipBuyEngine(TradingEngine):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._ticker = self.ASSET_GROUPS["A"][0]
+        # 현금 저수지 티커 (C그룹 첫 종목). 없으면 예수금만 사용(cash-only 모드).
+        c_group = self.ASSET_GROUPS.get("C", [])
+        self._cash_ticker = c_group[0] if c_group else None
         self._dip_calc = DipBuyIndicatorCalculator()
         self._planner = DipBuyPlanner(
             ticker=self._ticker,
@@ -78,9 +88,12 @@ class DipBuyEngine(TradingEngine):
             self.logger.error(f"NaN detected: {', '.join(nan_fields)} — 매매 중단")
             return signal, executions, final_pf, is_rebalancing
 
+        deployable_cash = self._deployable_cash(portfolio)
         orders, reason, new_state = self._planner.plan(
-            self.dip_signals, portfolio, self.dip_state
+            self.dip_signals, portfolio, self.dip_state, available_cash=deployable_cash
         )
+        # 현금 저수지 관리: QLD 매수 자금은 SHV 매도로 확보, 잔여 현금은 SHV로 스윕
+        orders = self._apply_cash_reservoir(orders, portfolio)
 
         signal = TradeSignal(exposure, orders, reason)
         self.logger.info(f">>> Step 5: DipBuy ({reason})")
@@ -102,3 +115,46 @@ class DipBuyEngine(TradingEngine):
         self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
         return signal, executions, final_pf, is_rebalancing
+
+    # ── 현금 저수지(SHV) 관리 ──────────────────────────────────────────────
+    def _deployable_cash(self, pf: Portfolio) -> float:
+        """가용현금 = 예수금 + SHV평가액. C그룹이 없으면 예수금만."""
+        if not self._cash_ticker:
+            return pf.total_cash
+        price = pf.current_prices.get(self._cash_ticker, 0.0)
+        if price <= 0:
+            return pf.total_cash
+        return pf.total_cash + pf.holdings.get(self._cash_ticker, 0) * price
+
+    def _apply_cash_reservoir(self, orders: List[Order], pf: Portfolio) -> List[Order]:
+        """QLD 주문 후 잔여 현금을 SHV로 스윕(매수)하거나, 부족분만큼 SHV를 매도한다.
+
+        브로커가 매도→매수 순으로 체결하므로, SHV 매도(자금확보)는 QLD 매수보다,
+        QLD 매도(자금유입)는 SHV 매수(스윕)보다 먼저 처리된다.
+        """
+        if not self._cash_ticker:
+            return orders
+        shv = self._cash_ticker
+        p_shv = pf.current_prices.get(shv, 0.0)
+        p_qld = pf.current_prices.get(self._ticker, 0.0)
+        if p_shv <= 0 or p_qld <= 0:
+            return orders
+
+        buy_cost = sum(o.quantity * p_qld for o in orders
+                       if o.ticker == self._ticker and o.action == OrderAction.BUY)
+        sell_proc = sum(o.quantity * p_qld for o in orders
+                        if o.ticker == self._ticker and o.action == OrderAction.SELL)
+        cash_after = pf.total_cash - buy_cost + sell_proc
+
+        if cash_after < 0:
+            # QLD 매수 자금 부족 → SHV 매도로 확보 (보유 수량 한도)
+            held = pf.holdings.get(shv, 0)
+            qty = min(math.ceil(-cash_after / p_shv), held)
+            if qty > 0:
+                orders.append(Order(shv, OrderAction.SELL, qty, p_shv))
+        elif cash_after > 0:
+            # 잔여 현금 → SHV 스윕 매수
+            qty = math.floor(cash_after / p_shv)
+            if qty > 0:
+                orders.append(Order(shv, OrderAction.BUY, qty, p_shv))
+        return orders

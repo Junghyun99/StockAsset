@@ -22,7 +22,10 @@
 
 - **백테스트 연구용 먼저.** 새 엔진으로 등록해 `run-compare-backtest`에서
   기존 전략들과 성과 비교가 가능해야 한다.
-- **대상: QLD 단일 종목**(변동성 큰 레버리지 ETF). 현금은 예수금으로 보유.
+- **대상: QLD(A그룹) + SHV(C그룹 현금 저수지)**. 유휴 현금은 SHV에 주차해 단기채
+  이자를 받고, 눌림 매수 시 SHV를 팔아 자금을 확보한다. 가용현금 = 예수금 + SHV평가액.
+  (백테스트상 이 효과는 강세장·잦은 거래 구간에선 수수료에 상쇄되어 중립이고,
+  유휴현금이 많은 구간·고금리에서 이득이 커진다.)
 - **현금 모델: 초기 일시불**(외부 적립 유입 없음). "근로소득 저축"은 후속 범위.
 - **라이브 영속성을 설계 단계에서 확정**하여, 백테스트만 배선해도 라이브 전환 시
   영속성 로직을 다시 짤 필요가 없게 한다.
@@ -197,11 +200,17 @@ status.json 스키마 불변(대시보드 무영향).
 ```python
 @register_engine(color="#...", backtest=True)
 class DipBuyEngine(TradingEngine):
-    ASSET_GROUPS = {'A': ['QLD']}      # 현금은 예수금으로 보유
+    ASSET_GROUPS = {'A': ['QLD'], 'C': ['SHV']}   # C = 현금 저수지
     BAND = 0.02
     SELL_TARGET_CASH_RATIO = 0.20
     STATE_KEY = "dip_buy"
 ```
+
+**현금 저수지(SHV) 관리** — 가용현금 = 예수금 + SHV평가액. 플래너는 이 가용현금을
+매수 캡·매도목표 판정에 쓴다(예수금만 보면 SHV에 현금이 들어간 순간 오작동). 엔진은
+플래너의 QLD 주문 뒤 잔여 현금을 SHV로 스윕(매수)하거나, QLD 매수 자금이 부족하면
+SHV를 매도해 충당한다(브로커 매도→매수 순서가 자금 흐름을 보장). C그룹이 없으면
+예수금만 쓰는 cash-only 모드로 동작한다(하위 호환).
 
 - `__init__`: super 호출 후 `self.dip_state = DipBuyState.from_dict(
   repo.load_strategy_state(STATE_KEY))` (국면 복원과 나란히)
