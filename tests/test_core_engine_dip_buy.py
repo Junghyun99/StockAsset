@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.core.engine.dip_buy import DipBuyEngine, DipBuyGatedEngine
+from src.core.engine.dip_buy import DipBuyEngine, DipBuyGatedEngine, DipBuyGatedSpyEngine
 from src.core.logic.dip_buy_indicators import DipBuySignals
 from src.core.models import Order, OrderAction, Portfolio
 from src.infra.broker.mock import MockBroker
@@ -142,6 +142,57 @@ def test_gated_risk_on_delegates_to_dipbuy(tmp_path):
                    current_prices={"QLD": 120.0, "SHV": 100.0})
     signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.5, [], "2024-01-01", "2024-01-01")
     assert "현금화" not in signal.reason       # risk-off 경로 아님
+
+
+def _make_gated_spy(tmp_path, holdings=None):
+    groups = {"A": ["QLD"], "B": ["SPY"], "C": ["SHV"]}
+    repo = JsonRepository(str(tmp_path), asset_groups=groups)
+    broker = MockBroker(initial_cash=10000.0, holdings=holdings or {})
+    logger = TradeLogger(log_dir=str(tmp_path / "gs"))
+    eng = DipBuyGatedSpyEngine(broker=broker, repo=repo, logger=logger,
+                               asset_groups=groups, trading_interval_days=1)
+    return eng, broker, repo
+
+
+def test_gated_spy_engine_registered():
+    from src.core.engine import _ENGINE_REGISTRY
+    assert "DipBuyGatedSpyEngine" in [n for n, _ in _ENGINE_REGISTRY]
+
+
+def test_gated_spy_risk_off_buys_spy(tmp_path):
+    eng, _, _ = _make_gated_spy(tmp_path)
+    # price(80) < ma200(100) → risk-off → QLD·SHV 청산 후 SPY 100%
+    eng.dip_signals = DipBuySignals("2024-01-01", 80.0, 85.0, 90.0, 95.0, 50.0, ma200=100.0)
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 50, "SHV": 10},
+                   current_prices={"QLD": 80.0, "SHV": 100.0, "SPY": 50.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.0, [], "2024-01-01", "2024-01-01")
+    spy_buys = [o for o in signal.orders if o.ticker == "SPY" and o.action == OrderAction.BUY]
+    # 가용현금 = 0 + 50*80 + 10*100 = 5000 → SPY 5000/50 = 100주
+    assert spy_buys and spy_buys[0].quantity == 100
+    assert {o.ticker for o in signal.orders if o.action == OrderAction.SELL} == {"QLD", "SHV"}
+    assert "SPY" in signal.reason
+
+
+def test_gated_spy_risk_on_liquidates_spy(tmp_path):
+    eng, _, _ = _make_gated_spy(tmp_path)
+    # price(120) >= ma200(90), SPY 보유 중 → 전환 사이클: SPY 청산 후 SHV 스윕
+    eng.dip_signals = DipBuySignals("2024-01-01", 120.0, 110.0, 105.0, 100.0, 50.0, ma200=90.0)
+    pf = Portfolio(total_cash=0.0, holdings={"SPY": 100, "QLD": 0, "SHV": 0},
+                   current_prices={"QLD": 120.0, "SPY": 50.0, "SHV": 100.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.5, [], "2024-01-01", "2024-01-01")
+    spy_sells = [o for o in signal.orders if o.ticker == "SPY" and o.action == OrderAction.SELL]
+    assert spy_sells and spy_sells[0].quantity == 100
+    assert "청산" in signal.reason
+
+
+def test_gated_spy_risk_on_no_spy_runs_dipbuy(tmp_path):
+    eng, _, _ = _make_gated_spy(tmp_path)
+    # risk-on이고 SPY 미보유 → 정상 DipBuy (전환/청산 reason 아님)
+    eng.dip_signals = DipBuySignals("2024-01-01", 120.0, 110.0, 105.0, 100.0, 50.0, ma200=90.0)
+    pf = Portfolio(total_cash=1000.0, holdings={"QLD": 0, "SPY": 0, "SHV": 0},
+                   current_prices={"QLD": 120.0, "SPY": 50.0, "SHV": 100.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.5, [], "2024-01-01", "2024-01-01")
+    assert "청산" not in signal.reason and "100% 보유" not in signal.reason
 
 
 def test_multi_day_cycle_executes_orders(tmp_path):

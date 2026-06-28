@@ -177,6 +177,9 @@ class DipBuyGatedEngine(DipBuyEngine):
     """
 
     TREND_GATE_MA: int = 200   # DipBuySignals.ma200 사용 (변경 시 지표 추가 필요)
+    # risk-off(추세 이탈) 때 보유할 자산. None이면 현금성(SHV)으로 대기.
+    # 예: "SPY"로 두면 추세 이탈 구간에 1x 광의시장을 보유(DipBuyGatedSpyEngine).
+    RISK_OFF_TICKER: Optional[str] = None
 
     def execute_cycle(
         self,
@@ -195,30 +198,85 @@ class DipBuyGatedEngine(DipBuyEngine):
         price = portfolio.current_prices.get(self._ticker, 0.0)
         ma = self.dip_signals.ma200 if self.dip_signals is not None else float("nan")
         risk_on = price > 0 and not math.isnan(ma) and ma > 0 and price >= ma
+        r = self.RISK_OFF_TICKER
 
         if risk_on:
-            # 추세 위 → 정상 DipBuy 위임
+            # risk-off 자산을 보유 중이면 먼저 청산(전환 사이클), 아니면 정상 DipBuy 위임
+            if r and portfolio.holdings.get(r, 0) > 0:
+                return self._finalize(self._exit_risk_off_asset(portfolio), portfolio,
+                                      f"추세 복귀 → {r} 청산 후 DipBuy 재개")
             return super().execute_cycle(market_data, portfolio, regime, exposure,
                                          nan_fields, sim_date, record_date)
 
-        # 추세 이탈(200MA 아래) → risk-off: 보유 QLD 전량 청산 후 SHV로 대기, 상태 리셋
+        # 추세 이탈(200MA 아래) → risk-off
+        if r:
+            return self._finalize(self._enter_risk_off_asset(portfolio), portfolio,
+                                  f"추세 이탈(200MA 아래) → {r} 100% 보유")
+        # 기본: 보유 QLD 전량 청산 후 현금성(SHV)으로 대기
         orders: List[Order] = []
         held = portfolio.holdings.get(self._ticker, 0)
         if held > 0 and price > 0:
             orders.append(Order(self._ticker, OrderAction.SELL, held, price))
         orders = self._apply_cash_reservoir(orders, portfolio)
+        return self._finalize(orders, portfolio, "추세 이탈(200MA 아래) → risk-off 현금화")
 
+    # ── risk-off 자산 전환 헬퍼 ─────────────────────────────────────────────
+    def _enter_risk_off_asset(self, portfolio: Portfolio) -> List[Order]:
+        """QLD·SHV 전량 청산 후 RISK_OFF_TICKER로 가용현금 전액 매수."""
+        r = self.RISK_OFF_TICKER
+        p_r = portfolio.current_prices.get(r, 0.0)
+        price = portfolio.current_prices.get(self._ticker, 0.0)
+        orders: List[Order] = []
+        cash_avail = portfolio.total_cash
+
+        qld_held = portfolio.holdings.get(self._ticker, 0)
+        if qld_held > 0 and price > 0:
+            orders.append(Order(self._ticker, OrderAction.SELL, qld_held, price))
+            cash_avail += qld_held * price
+        shv = self._cash_ticker
+        if shv:
+            p_shv = portfolio.current_prices.get(shv, 0.0)
+            shv_held = portfolio.holdings.get(shv, 0)
+            if shv_held > 0 and p_shv > 0:
+                orders.append(Order(shv, OrderAction.SELL, shv_held, p_shv))
+                cash_avail += shv_held * p_shv
+        if p_r > 0:
+            qty = math.floor(cash_avail / p_r)
+            if qty > 0:
+                orders.append(Order(r, OrderAction.BUY, qty, p_r))
+        return orders
+
+    def _exit_risk_off_asset(self, portfolio: Portfolio) -> List[Order]:
+        """RISK_OFF_TICKER 전량 청산 후 잔여 현금을 SHV로 스윕(다음 사이클 DipBuy 재개)."""
+        r = self.RISK_OFF_TICKER
+        p_r = portfolio.current_prices.get(r, 0.0)
+        orders: List[Order] = []
+        cash_avail = portfolio.total_cash
+        r_held = portfolio.holdings.get(r, 0)
+        if r_held > 0 and p_r > 0:
+            orders.append(Order(r, OrderAction.SELL, r_held, p_r))
+            cash_avail += r_held * p_r
+        shv = self._cash_ticker
+        if shv:
+            p_shv = portfolio.current_prices.get(shv, 0.0)
+            if p_shv > 0:
+                qty = math.floor(cash_avail / p_shv)
+                if qty > 0:
+                    orders.append(Order(shv, OrderAction.BUY, qty, p_shv))
+        return orders
+
+    def _finalize(self, orders: List[Order], portfolio: Portfolio, reason: str
+                  ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
+        """risk-off/전환 주문을 실행하고 결과 튜플 생성 (DipBuy 비활성 → 상태 리셋)."""
         new_state = DipBuyState()
         self.dip_state = new_state
         self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
-        reason = "추세 이탈(200MA 아래) → risk-off 현금화"
         signal = TradeSignal(0.0, orders, reason)
         self.logger.info(f">>> Step 5: DipBuyGated ({reason})")
 
         executions: List[TradeExecution] = []
         final_pf = portfolio
-        is_rebalancing = bool(orders)
         if orders:
             executions = self.broker.execute_orders(orders)
             try:
@@ -226,5 +284,17 @@ class DipBuyGatedEngine(DipBuyEngine):
             except RuntimeError as e:
                 self.logger.error(f"거래 후 포트폴리오 조회 실패 — 거래 전 포트폴리오로 대체: {e}")
                 final_pf = portfolio
+        return signal, executions, final_pf, bool(orders)
 
-        return signal, executions, final_pf, is_rebalancing
+
+@register_engine(color="#20c997")
+class DipBuyGatedSpyEngine(DipBuyGatedEngine):
+    """DipBuyGated 변형 — risk-off(추세 이탈) 때 현금(SHV) 대신 SPY(1x)를 100% 보유.
+
+    QLD가 200일선 위면 눌림목 분할매수(QLD+SHV), 아래로 깨지면 전량 SPY로 전환한다.
+    추세 이탈 구간에서도 1x 광의시장 수익을 노리는 변형 — 다만 SPY도 하락장엔 함께
+    빠지므로 효과는 국면 의존적(현금 버전 대비 비교는 run-compare-backtest로 검증).
+    """
+
+    ASSET_GROUPS: dict = {"A": ["QLD"], "B": ["SPY"], "C": ["SHV"]}
+    RISK_OFF_TICKER: str = "SPY"
