@@ -16,7 +16,7 @@ from src.core.engine.registry import register_engine
 from src.config import ticker_display
 
 
-@register_engine(color="#1f77b4")
+@register_engine(color="#1f77b4", backtest=False)
 class TradingEngine:
     """핵심 트레이딩 사이클 엔진 (Template Method 패턴).
 
@@ -443,7 +443,7 @@ class TradingEngine:
             self.notifier.send_alert(msg, detail=detail)
 
 
-@register_engine(color="#2ca02c")
+@register_engine(color="#2ca02c", backtest=True)
 class FullExposureEngine(TradingEngine):
     """항상 exposure=1.0을 유지하는 전략 엔진.
 

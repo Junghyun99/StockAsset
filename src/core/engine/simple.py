@@ -8,7 +8,7 @@ from src.core.engine.base import FullExposureEngine
 from src.core.engine.registry import register_engine
 
 
-@register_engine(color="#ff7f0e")
+@register_engine(color="#ff7f0e", backtest=False)
 class QldSHVEngine(FullExposureEngine):
     """QLD(A그룹) + SHV(B그룹)만으로 구성된 Full Exposure 전략 엔진.
 
@@ -25,7 +25,7 @@ class QldSHVEngine(FullExposureEngine):
 
 
 
-@register_engine(color="#d62728")
+@register_engine(color="#d62728", backtest=False)
 class QldSdyEngine(FullExposureEngine):
     """QLD(A그룹) + SDY(B그룹)으로 구성된 Full Exposure 전략 엔진.
 
@@ -42,7 +42,7 @@ class QldSdyEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.3
 
 
-@register_engine(color="#1f77b4")
+@register_engine(color="#1f77b4", backtest=False)
 class QqqSdyEngine(FullExposureEngine):
     """QQQ(A그룹) + SDY(B그룹)으로 구성된 Full Exposure 전략 엔진.
 
@@ -95,7 +95,7 @@ class QqqEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.999
 
 
-@register_engine(color="#9467bd")
+@register_engine(color="#9467bd", backtest=False)
 class Asset5Engine(FullExposureEngine):
     """자산5분법 — SPY/IEMG(A그룹) + TLT/EMB/GLD(B그룹) Full Exposure 전략 엔진.
 

@@ -11,7 +11,7 @@ from src.core.engine.base import TradingEngine
 from src.core.engine.registry import register_engine
 
 
-@register_engine(color="#e377c2")
+@register_engine(color="#e377c2", backtest=False)
 class QldSdyShvEngine(TradingEngine):
     """QLD/SDY/SHV 3-자산 국면 적응형 배당+레버리지 엔진.
 
@@ -84,7 +84,7 @@ class QldSdyShvEngine(TradingEngine):
         return regime, exposure, nan_fields
 
 
-@register_engine(color="#8c564b")
+@register_engine(color="#8c564b", backtest=False)
 class QldQqqShvRegimeEngine(TradingEngine):
     """QLD/QQQ/SHV 3-자산 국면 적응형 레버리지 엔진.
 

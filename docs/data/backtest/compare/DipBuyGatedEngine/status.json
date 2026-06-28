@@ -1,37 +1,37 @@
 {
-    "last_updated": "2026-04-30",
-    "last_rebalancing_date": "2026-04-30",
+    "last_updated": "2023-01-05",
+    "last_rebalancing_date": "2023-01-03",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 0.4952410143308467,
-        "trigger_reason": "분할매도 647102주",
+        "target_exposure": 1.0,
+        "trigger_reason": "대기(트리거 없음)",
         "market_score": {
-            "vix": 16.889999389648438,
+            "vix": 15.0,
             "spy_mdd": 0.0,
-            "spy_momentum": 0.3029728266635946,
-            "spy_price": 81.05000305175781,
-            "spy_ma180": 69.12427796257867,
-            "spy_volatility": 0.3028828300957162
+            "spy_momentum": 0.19739402765997863,
+            "spy_price": 190.0,
+            "spy_ma180": 168.1707317073171,
+            "spy_volatility": 0.00016701957528333187
         }
     },
     "portfolio": {
-        "total_value": 1529815862.7510366,
-        "cash_balance": 1411934.5789022073,
+        "total_value": 10003.332589634148,
+        "cash_balance": 123.3325896341488,
         "holdings": [
             {
-                "ticker": "SHV",
-                "qty": 1725780,
-                "price": 110.38999938964844,
-                "value": 190508853.14666748
+                "ticker": "QLD",
+                "qty": 5,
+                "price": 190.0,
+                "value": 950.0
             },
             {
-                "ticker": "QLD",
-                "qty": 16507033,
-                "price": 81.05000305175781,
-                "value": 1337895075.025467
+                "ticker": "SHV",
+                "qty": 47,
+                "price": 190.0,
+                "value": 8930.0
             }
         ]
     },
-    "initial_cash": 1000000000.0,
-    "backtest_start_date": "2006-01-01"
+    "initial_cash": 10000.0,
+    "backtest_start_date": "2023-01-02"
 }

@@ -62,11 +62,11 @@ def test_run_compare_single_data_download(mock_savefig, mock_download, mock_comp
     )
 
     mock_download.assert_called_once()
-    # 호출된 티커에 모든 엔진의 티커가 포함되어야 함
+    # 호출된 티커에 backtest=True 엔진의 티커가 포함되어야 함
+    # (SDY는 backtest=False 엔진만 사용하므로 제외)
     tickers_called = set(mock_download.call_args[0][0])
     assert "SPY" in tickers_called
     assert "QLD" in tickers_called
-    assert "SDY" in tickers_called
     assert "SSO" in tickers_called
     assert "SHV" in tickers_called
 
