@@ -112,7 +112,7 @@ class Asset5Engine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.4
 
 
-@register_engine(color="#bcbd22", market_type="domestic")
+@register_engine(color="#bcbd22", market_type="domestic",backtest=False)
 class DomesticAsset5Engine(FullExposureEngine):
     """국내 자산5분법 — KODEX200/TIGER MSCI Korea(A그룹) + ACE 미국S&P500/TIGER 미국채10년/ACE 미국30년국채(B그룹) Full Exposure 전략 엔진.
 
