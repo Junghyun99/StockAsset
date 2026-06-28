@@ -40,6 +40,11 @@ def test_moving_averages_computed():
     assert sig.date == "2024-07-18"
 
 
+def test_ma200_computed():
+    sig = DipBuyIndicatorCalculator().calculate(_df(list(range(1, 301))))
+    assert sig.ma200 == pytest.approx((101 + 300) / 2)   # 마지막 200개(101..300) 평균
+
+
 def test_rsi_all_gains_is_100():
     sig = DipBuyIndicatorCalculator().calculate(_df(list(range(1, 201))))
     assert sig.rsi == pytest.approx(100.0)

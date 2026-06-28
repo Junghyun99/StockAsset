@@ -20,6 +20,7 @@ class DipBuySignals:
     ma60: float
     ma120: float
     rsi: float        # RSI(14)
+    ma200: float = float("nan")   # 추세 게이트용(선택). 데이터 부족 시 NaN.
 
 
 class DipBuyIndicatorCalculator:
@@ -56,6 +57,7 @@ class DipBuyIndicatorCalculator:
             ma60=ma(60),
             ma120=ma(120),
             rsi=self._rsi(close),
+            ma200=ma(200),
         )
 
     @staticmethod

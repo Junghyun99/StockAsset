@@ -158,3 +158,69 @@ class DipBuyEngine(TradingEngine):
             if qty > 0:
                 orders.append(Order(shv, OrderAction.BUY, qty, p_shv))
         return orders
+
+
+@register_engine(color="#6f42c1")
+class DipBuyGatedEngine(DipBuyEngine):
+    """DipBuy + 200일선 추세 게이트.
+
+    대상(QLD)이 200일 이동평균 위(risk-on)일 때만 눌림목 분할매수를 가동하고,
+    아래로 깨지면(risk-off) 보유 QLD를 전량 청산해 현금성(SHV)으로 대기한다.
+    추세가 무너지는 폭락에서 자동으로 빠져 -84% 같은 꼬리 손실을 줄인다
+    (백테스트상 MDD -84%→-37%, Sharpe 0.66→0.81; 수익은 연 ~2%p 양보).
+
+    '강세장에만 가동'이라는 직관을 재량 타이밍이 아니라 규칙으로 자동화한 변형.
+    """
+
+    TREND_GATE_MA: int = 200   # DipBuySignals.ma200 사용 (변경 시 지표 추가 필요)
+
+    def execute_cycle(
+        self,
+        market_data: MarketData,
+        portfolio: Portfolio,
+        regime: MarketRegime,
+        exposure: float,
+        nan_fields: List[str],
+        sim_date: Optional[str],
+        record_date: str,
+    ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
+        if nan_fields:
+            return super().execute_cycle(market_data, portfolio, regime, exposure,
+                                         nan_fields, sim_date, record_date)
+
+        price = portfolio.current_prices.get(self._ticker, 0.0)
+        ma = self.dip_signals.ma200 if self.dip_signals is not None else float("nan")
+        risk_on = price > 0 and not math.isnan(ma) and ma > 0 and price >= ma
+
+        if risk_on:
+            # 추세 위 → 정상 DipBuy 위임
+            return super().execute_cycle(market_data, portfolio, regime, exposure,
+                                         nan_fields, sim_date, record_date)
+
+        # 추세 이탈(200MA 아래) → risk-off: 보유 QLD 전량 청산 후 SHV로 대기, 상태 리셋
+        orders: List[Order] = []
+        held = portfolio.holdings.get(self._ticker, 0)
+        if held > 0 and price > 0:
+            orders.append(Order(self._ticker, OrderAction.SELL, held, price))
+        orders = self._apply_cash_reservoir(orders, portfolio)
+
+        new_state = DipBuyState()
+        self.dip_state = new_state
+        self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
+
+        reason = "추세 이탈(200MA 아래) → risk-off 현금화"
+        signal = TradeSignal(0.0, orders, reason)
+        self.logger.info(f">>> Step 5: DipBuyGated ({reason})")
+
+        executions: List[TradeExecution] = []
+        final_pf = portfolio
+        is_rebalancing = bool(orders)
+        if orders:
+            executions = self.broker.execute_orders(orders)
+            try:
+                final_pf = self.broker.get_portfolio()
+            except RuntimeError as e:
+                self.logger.error(f"거래 후 포트폴리오 조회 실패 — 거래 전 포트폴리오로 대체: {e}")
+                final_pf = portfolio
+
+        return signal, executions, final_pf, is_rebalancing

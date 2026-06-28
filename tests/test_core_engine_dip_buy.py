@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.core.engine.dip_buy import DipBuyEngine
+from src.core.engine.dip_buy import DipBuyEngine, DipBuyGatedEngine
+from src.core.logic.dip_buy_indicators import DipBuySignals
 from src.core.models import Order, OrderAction, Portfolio
 from src.infra.broker.mock import MockBroker
 from src.infra.repo import JsonRepository
@@ -104,6 +105,43 @@ def test_reservoir_sweeps_qld_sell_proceeds_to_shv(tmp_path):
     orders = engine._apply_cash_reservoir(list(qld_sell), pf)
     shv_buys = [o for o in orders if o.ticker == "SHV" and o.action == OrderAction.BUY]
     assert shv_buys and shv_buys[0].quantity == 5         # floor(500/100)
+
+
+def _make_gated(tmp_path):
+    repo = JsonRepository(str(tmp_path), asset_groups={"A": ["QLD"], "C": ["SHV"]})
+    broker = MockBroker(initial_cash=10000.0, holdings={"QLD": 50})
+    logger = TradeLogger(log_dir=str(tmp_path / "g"))
+    eng = DipBuyGatedEngine(broker=broker, repo=repo, logger=logger,
+                            asset_groups={"A": ["QLD"], "C": ["SHV"]}, trading_interval_days=1)
+    return eng, broker, repo
+
+
+def test_gated_engine_registered():
+    from src.core.engine import _ENGINE_REGISTRY
+    assert "DipBuyGatedEngine" in [n for n, _ in _ENGINE_REGISTRY]
+
+
+def test_gated_risk_off_liquidates_below_ma200(tmp_path):
+    eng, _, _ = _make_gated(tmp_path)
+    # price(80) < ma200(100) → risk-off → 보유 QLD 전량 청산
+    eng.dip_signals = DipBuySignals("2024-01-01", 80.0, 85.0, 90.0, 95.0, 50.0, ma200=100.0)
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 50, "SHV": 0},
+                   current_prices={"QLD": 80.0, "SHV": 100.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.0, [], "2024-01-01", "2024-01-01")
+    sells = [o for o in signal.orders if o.ticker == "QLD" and o.action == OrderAction.SELL]
+    assert sells and sells[0].quantity == 50
+    assert "현금화" in signal.reason
+    assert eng.dip_state.queue == []          # 상태 리셋
+
+
+def test_gated_risk_on_delegates_to_dipbuy(tmp_path):
+    eng, _, _ = _make_gated(tmp_path)
+    # price(120) >= ma200(90) → risk-on → 정상 DipBuy (트리거 없으면 대기)
+    eng.dip_signals = DipBuySignals("2024-01-01", 120.0, 110.0, 105.0, 100.0, 50.0, ma200=90.0)
+    pf = Portfolio(total_cash=1000.0, holdings={"QLD": 0, "SHV": 0},
+                   current_prices={"QLD": 120.0, "SHV": 100.0})
+    signal, _, _, _ = eng.execute_cycle(None, pf, None, 0.5, [], "2024-01-01", "2024-01-01")
+    assert "현금화" not in signal.reason       # risk-off 경로 아님
 
 
 def test_multi_day_cycle_executes_orders(tmp_path):

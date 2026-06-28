@@ -212,6 +212,16 @@ class DipBuyEngine(TradingEngine):
 SHV를 매도해 충당한다(브로커 매도→매수 순서가 자금 흐름을 보장). C그룹이 없으면
 예수금만 쓰는 cash-only 모드로 동작한다(하위 호환).
 
+### DipBuyGatedEngine (200일선 추세 게이트 변형)
+
+`DipBuyEngine`을 상속하고 `execute_cycle`만 오버라이드한다. 대상이 200일
+이동평균(`DipBuySignals.ma200`) 위(risk-on)일 때만 눌림목 분할매수를 가동하고,
+아래로 깨지면(risk-off) 보유분을 전량 청산해 현금성(SHV)으로 대기한다.
+"강세장에만 가동"이라는 직관을 재량 타이밍이 아니라 규칙으로 자동화한 변형.
+백테스트(QLD 2006~2026)상 MDD -84%→-37%, Sharpe 0.66→0.81, CAGR는 연 ~2%p
+양보(2008 연중 현금, 2022 -7%). 단 휩쏘·늦은 재진입·바닥매수 포기가 비용이며
+성격은 순수 눌림매수가 아닌 추세추종 오버레이로 바뀐다. (평가: 이슈 #344)
+
 - `__init__`: super 호출 후 `self.dip_state = DipBuyState.from_dict(
   repo.load_strategy_state(STATE_KEY))` (국면 복원과 나란히)
 - `collect_data`: SPY 대신 `ASSET_GROUPS['A'][0]`(QLD) OHLCV(400일) + VIX
