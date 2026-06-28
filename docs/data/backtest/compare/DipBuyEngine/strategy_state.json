@@ -1,0 +1,23 @@
+{
+    "dip_buy": {
+        "queue": [
+            {
+                "side": "BUY",
+                "per_day_amount": 35486147.6166017,
+                "remaining_days": 15
+            },
+            {
+                "side": "SELL",
+                "per_day_amount": 76945821.58128318,
+                "remaining_days": 2
+            }
+        ],
+        "armed": {
+            "ma20": true,
+            "ma60": true,
+            "ma120": true,
+            "dip": true
+        },
+        "rsi_was_overbought": true
+    }
+}

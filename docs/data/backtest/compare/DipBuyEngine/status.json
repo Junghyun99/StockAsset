@@ -1,0 +1,37 @@
+{
+    "last_updated": "2026-04-30",
+    "last_rebalancing_date": "2026-04-30",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 0.4952410143308467,
+        "trigger_reason": "분할매도 949363주 / 분할매수 437830주",
+        "market_score": {
+            "vix": 16.889999389648438,
+            "spy_mdd": 0.0,
+            "spy_momentum": 0.3029728266635946,
+            "spy_price": 81.05000305175781,
+            "spy_ma180": 69.12427796257867,
+            "spy_volatility": 0.3028828300957162
+        }
+    },
+    "portfolio": {
+        "total_value": 1977194778.2537518,
+        "cash_balance": 1110093.845563829,
+        "holdings": [
+            {
+                "ticker": "SHV",
+                "qty": 1423771,
+                "price": 110.38999938964844,
+                "value": 157170079.82099915
+            },
+            {
+                "ticker": "QLD",
+                "qty": 22441882,
+                "price": 81.05000305175781,
+                "value": 1818914604.5871887
+            }
+        ]
+    },
+    "initial_cash": 1000000000.0,
+    "backtest_start_date": "2006-01-01"
+}
