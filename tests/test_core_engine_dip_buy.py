@@ -48,6 +48,16 @@ def test_engine_registered():
     assert "DipBuyEngine" in names
 
 
+def test_engine_included_in_backtest_compare_manifest():
+    """대시보드 compare 매니페스트(engines.json)는 run_compare_ci.py가 레지스트리에서
+    backtest=True 엔진만 추려 생성한다. DipBuyEngine이 항상 포함되도록 보장한다
+    (backtest=False로 바뀌면 대시보드에서 조용히 사라지므로 가드)."""
+    from src.core.engine import _ENGINE_BACKTEST, _ENGINE_COLORS, _ENGINE_MARKET_TYPES
+    assert _ENGINE_BACKTEST.get("DipBuyEngine") is True
+    assert _ENGINE_COLORS.get("DipBuyEngine")            # 차트 색상 메타 존재
+    assert _ENGINE_MARKET_TYPES.get("DipBuyEngine") == "overseas"
+
+
 def test_cycle_runs_and_persists_state(tmp_path):
     engine, broker, repo = _make_engine(tmp_path)
     result = engine.run_one_cycle(_Loader(_ramp_then_dip()), sim_date="2023-10-27")
