@@ -45,7 +45,10 @@ class VolTargetLeverageEngine(FullExposureEngine):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._lev = VolatilityTargeter(
+        # 부모(TradingEngine)가 만든 self.targeter를 '레버리지 모드'로 재할당한다.
+        # FullExposureEngine은 analyze_strategy에서 targeter를 쓰지 않으므로(exposure=1.0
+        # 고정) 이 슬롯을 안전하게 재사용 — 미사용 중복 인스턴스를 남기지 않는다.
+        self.targeter = VolatilityTargeter(
             target_vol=self.TARGET_VOL,
             min_exposure=self.MIN_LEVERAGE,
             max_exposure=self.MAX_LEVERAGE,
@@ -61,7 +64,7 @@ class VolTargetLeverageEngine(FullExposureEngine):
 
     def _set_leverage_ratio(self, regime: MarketRegime, current_vol: float) -> float:
         """변동성→레버리지→QLD 비중(ratio_a) 동적 설정. 반환: 실효 레버리지 L."""
-        L = self._lev.calculate_exposure(regime, current_vol)
+        L = self.targeter.calculate_exposure(regime, current_vol)
         w = min(max(L - 1.0, 0.0), 1.0)        # QLD 비중
         self.rebalancer.ratio_a = w
         self.rebalancer.ratio_b = round(1.0 - w, 10)
