@@ -14956,5 +14956,72 @@
                 "reason": ""
             }
         ]
+    },
+    {
+        "id": "tx_20260501",
+        "date": "2026-05-01",
+        "portfolio_value": 716061797.5061799,
+        "total_trade_amount": 1442.74,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 721.37,
+                "fee": 3.61,
+                "date": "2026-05-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260506",
+        "date": "2026-05-06",
+        "portfolio_value": 729145445.1765385,
+        "total_trade_amount": 114578.26000000001,
+        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "SELL",
+                "quantity": 79,
+                "price": 733.1,
+                "fee": 144.79,
+                "date": "2026-05-06",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 514,
+                "price": 110.24,
+                "fee": 141.66,
+                "date": "2026-05-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260507",
+        "date": "2026-05-07",
+        "portfolio_value": 726912104.3559281,
+        "total_trade_amount": 1464.62,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPY",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 732.31,
+                "fee": 3.66,
+                "date": "2026-05-07",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
     }
 ]

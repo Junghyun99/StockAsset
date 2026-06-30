@@ -1,34 +1,34 @@
 {
-    "last_updated": "2026-04-30",
-    "last_rebalancing_date": "2026-04-30",
+    "last_updated": "2026-05-29",
+    "last_rebalancing_date": "2026-05-29",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 16.889999389648438,
+            "vix": 15.319999694824219,
             "spy_mdd": 0.0,
-            "spy_momentum": 0.12304134026984548,
-            "spy_price": 718.6599731445312,
-            "spy_ma180": 674.7110544840494,
-            "spy_volatility": 0.11710956019265292
+            "spy_momentum": 0.13938556477778424,
+            "spy_price": 756.47998046875,
+            "spy_ma180": 685.2187215169271,
+            "spy_volatility": 0.09849767001053514
         }
     },
     "portfolio": {
-        "total_value": 1639246674.117438,
-        "cash_balance": 433.08644758728497,
+        "total_value": 1812319151.492497,
+        "cash_balance": 259.8734630942113,
         "holdings": [
             {
                 "ticker": "QQQ",
-                "qty": 2452482,
-                "price": 667.739990234375,
-                "value": 1637620306.7299805
+                "qty": 2452295,
+                "price": 738.3099975585938,
+                "value": 1810553915.4629517
             },
             {
                 "ticker": "SHV",
-                "qty": 14729,
-                "price": 110.38999938964844,
-                "value": 1625934.3010101318
+                "qty": 15990,
+                "price": 110.37999725341797,
+                "value": 1764976.1560821533
             }
         ]
     },
