@@ -27,6 +27,7 @@ from src.core.engine.simple import (
 )
 from src.core.engine.regime import QldSdyShvEngine, QldQqqShvRegimeEngine
 from src.core.engine.dip_buy import DipBuyEngine, DipBuyGatedEngine
+from src.core.engine.voltarget import VolTargetLeverageEngine
 
 __all__ = [
     "_ENGINE_REGISTRY",
@@ -47,4 +48,5 @@ __all__ = [
     "QldQqqShvRegimeEngine",
     "DipBuyEngine",
     "DipBuyGatedEngine",
+    "VolTargetLeverageEngine",
 ]
