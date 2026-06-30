@@ -182,5 +182,24 @@
                 "reason": "ODNO=0017938000"
             }
         ]
+    },
+    {
+        "id": "tx_20260630_100119",
+        "date": "2026-06-30 10:01:19",
+        "portfolio_value": 4388821.0,
+        "total_trade_amount": 27085.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "411060.KS",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 27085.0,
+                "fee": 4.062749999999999,
+                "date": "2026-06-30 10:01:15",
+                "status": "FILLED",
+                "reason": "ODNO=0016627300"
+            }
+        ]
     }
 ]
