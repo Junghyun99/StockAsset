@@ -176,7 +176,13 @@ class BacktestDataCache:
     ) -> Optional[pd.DataFrame]:
         try:
             df = yf.download("^VIX", start=start, end=end, progress=False)
-            return df if df is not None and not df.empty else None
+            if df is None or df.empty:
+                return None
+            # yfinance는 단일 티커도 MultiIndex 컬럼(('Close', '^VIX'))으로 반환하므로
+            # 단일 레벨('Close')로 평탄화한다 (fetch_vix의 스칼라 계약을 충족).
+            if isinstance(df.columns, pd.MultiIndex):
+                df = df.xs("^VIX", axis=1, level=1)
+            return df
         except Exception as e:
             self._logger.warning(f"VIX 다운로드 실패: {e}")
             return None
