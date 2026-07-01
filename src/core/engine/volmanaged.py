@@ -28,8 +28,17 @@ class VolManagedEngine(TradingEngine):
         L=0.5 → 현금50%+QQQ50% | L=1 → QQQ100% | L=1.5 → QLD50%+QQQ50% | L=2 → QLD100%
     - 핵심: 1x 미만 현금 이탈을 허용해 고변동성 구간을 회피 — 고정 1x 바닥(VolTarget)
       대비 MDD를 크게 줄이고 위험조정수익을 개선한다.
+    - 턴오버 억제: 목표 L이 LEVERAGE_DEADBAND(0.15) 이상 변할 때만 재조정한다.
+      vol-managed는 리밸런싱이 잦아 거래비용에 취약하므로 데드밴드가 필수다.
 
-    성과 수치는 프로덕션 엔진 경로 검증 후 반영한다(계획: docs/plans/2026-07-01-volmanaged-engine.md).
+    성과(2008~2026, 프로덕션 엔진 경로, 실제 SHV·거래비용 0.25%/거래 포함):
+    CAGR 16.3%, MDD -39.1%, Sharpe 0.76 — **QQQ 1x(15.1%/-49.5%/0.74)와 QLD 2x
+    (24.3%/-79.7%/0.71)를 Sharpe 기준 모두 능가**하며, 수익은 그 사이, MDD는 최저.
+    고변동성 구간 현금 이탈로 위험조정수익을 개선한 결과다.
+    단서: (1) 거래비용에 민감 — 무비용 이상화 시 Sharpe~0.91이나 repo의 0.25%
+    수수료(실제 ETF의 ~10배)로 0.76까지 하락, 데드밴드로 방어. 현실적 수수료
+    (~0.03%)면 더 높다. (2) 단일 표본·σ_target 파라미터 의존.
+    설계·검증: docs/plans/2026-07-01-volmanaged-engine.md
     """
 
     ASSET_GROUPS: dict = {"A": ["QLD"], "B": ["QQQ"], "C": ["SHV"]}
