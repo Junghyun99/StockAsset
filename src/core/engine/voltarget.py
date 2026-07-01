@@ -26,25 +26,30 @@ class VolTargetLeverageEngine(FullExposureEngine):
     """실현 변동성에 반비례해 QLD(2x)/QQQ(1x) 비중을 조절하는 변동성 타겟 엔진.
 
     - 자산군 A: [QLD] (2x), B: [QQQ] (1x). 항상 100% 투자(현금 미보유).
-    - 실효 레버리지 L = clamp(TARGET_VOL / σ, 1.0, 2.0); QLD 비중 = L − 1.
-      평온기 → 2x(QLD↑), 폭락기 → 1x(QQQ↑). CRASH도 현금화가 아니라 1x로 디레버리지.
-    - σ = max(실현변동성 21d, VIX/100): 후행하는 실현변동성과 선행하는 내재변동성
-      (VIX) 중 '더 무서운' 쪽을 채택. VIX는 패닉에 즉시 급등(후행 완화)하고,
-      VIX가 잠잠한 완만한 그라인드 약세장(예: 2022)에선 실현변동성이 가드를 유지
-      → 두 신호의 사각지대를 상호 보완. (VIX 과소평가 시 실현이 메우므로 별도
-      레벨 스케일링 불필요. YFinance 실패 시 VIX 기본 20.0 → σ 하한 0.20 효과.)
+    - 실효 레버리지 L = clamp(TARGET_VOL / 실현변동성21d, 1.0, 2.0); QLD 비중 = L − 1.
+      평온기 → 2x(QLD↑), 고변동성 → 1x(QQQ↑). CRASH도 현금화가 아니라 1x로 디레버리지.
+    - 레버리지 사이징은 **실현변동성(21일)만** 사용한다. VIX는 국면 CRASH 판정
+      (RegimeAnalyzer.is_risk_condition)에만 쓰이고 레버리지 크기 결정엔 쓰지 않는다.
+      한때 σ=max(실현, VIX/100)을 썼으나(PR #348), 실제 VIX로 재평가한 결과
+      realized 단독(Sharpe ~0.73)보다 오히려 나빴다(max: ~0.60). VIX는 내재변동성
+      리스크 프리미엄 때문에 실현보다 상시 높아 max가 σ를 과대평가 → 레버리지를
+      만성적으로 낮춰 수익만 깎았고, CRASH 방어 이득도 없었다(CRASH는 VIX로 별도
+      판정). → PR #350에서 realized 단독으로 롤백.
     - 변동성/국면은 QQQ(=나스닥100 1x) 기준으로 산출(레버리지로 왜곡되지 않음).
     - 주문 생성·턴오버 throttle은 기존 Rebalancer 재사용(ratio_a를 매 사이클 동적 설정).
 
-    백테스트(2008~2026, σ_target=0.30, 프로덕션 엔진 경로/실제 QLD·QQQ 가격):
-    CAGR 19.7%, MDD -54.2%, Sharpe 0.79, 평균레버리지 1.38. QQQ 고정 1x
-    (CAGR 15.1%, Sharpe 0.74)·QLD 고정 2x(CAGR 24.3%, MDD -79.7%, Sharpe 0.71)을
-    Sharpe 기준 모두 능가 — 더 적은 평균레버리지로 더 높은 위험조정수익.
-    실현변동성 단독(Sharpe 0.74, avgLev 1.62) 대비 max(실현,VIX)가 레버리지를
-    더 효율적으로 배분(타이밍 개선)한 결과다. 단 MDD(-54%대)는 거의 줄지 않는다:
-    최악 낙폭은 QQQ 자체의 ~-50% 폭락이라 ~1.1x에서도 대부분 흡수 — 꼬리 위험은
-    레버리지 신호로 못 푼다(주식 이탈 수단이 별도로 필요). 리밸런싱 임계치
-    0~5% 무관하게 결과 동일(신호 저빈도).
+    성과(2008~2026, σ_target=0.30, 실제 VIX, realized 단독 사이징):
+    CAGR ~19%, MDD ~-55%, Sharpe ~0.73, 평균레버리지 ~1.6. **1x QQQ(Sharpe ~0.74)를
+    위험조정수익 기준 넘지 못한다** — 평균 ~1.6x 레버리지를 써도 변동성이 커져
+    Sharpe 이득이 없다. QLD 단순보유(CAGR ~24%, MDD ~-80%, Sharpe ~0.71)보다
+    CAGR는 낮고 Sharpe는 비슷하다. 원인: 2x ETF 일간리셋 감쇠 + 후행 신호
+    미스타이밍. 장기 자동운용용으로는 부적합하며, 단기·목적성 레버리지 도구로만
+    제한 사용 권장.
+
+    이력: PR #348에서 σ=max(실현,VIX)로 도입됐으나, 당시 평가는 백테스트 하네스가
+    VIX를 상수 20.0으로 잘못 먹인 버그(BacktestDataLoader.fetch_vix)로 오측된
+    것이었다. 실제 VIX로 재평가 시 max는 realized 단독보다 나빠(0.60 vs 0.73)
+    PR #350에서 realized 단독으로 롤백했다.
     """
 
     ASSET_GROUPS: dict = {"A": ["QLD"], "B": ["QQQ"]}
@@ -73,16 +78,6 @@ class VolTargetLeverageEngine(FullExposureEngine):
         vix = data_provider.fetch_vix()
         return df, vix
 
-    @staticmethod
-    def _effective_vol(market_data: MarketData) -> float:
-        """레버리지 산정용 변동성 σ = max(실현변동성 21d, VIX/100).
-
-        후행하는 실현변동성과 선행하는 내재변동성(VIX) 중 더 큰(=더 무서운) 값을
-        채택한다. VIX는 패닉에 즉시 급등해 후행을 완화하고, VIX가 잠잠한 그라인드
-        약세장에선 실현변동성이 가드를 유지한다.
-        """
-        return max(market_data.spy_volatility, market_data.vix / 100.0)
-
     def _set_leverage_ratio(self, regime: MarketRegime, current_vol: float) -> float:
         """변동성→레버리지→QLD 비중(ratio_a) 동적 설정. 반환: 실효 레버리지 L."""
         L = self.targeter.calculate_exposure(regime, current_vol)
@@ -102,11 +97,10 @@ class VolTargetLeverageEngine(FullExposureEngine):
         record_date: str,
     ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
         if not nan_fields:
-            sigma = self._effective_vol(market_data)
-            L = self._set_leverage_ratio(regime, sigma)
+            # 레버리지 사이징은 실현변동성만 사용(VIX는 CRASH 판정 전용)
+            L = self._set_leverage_ratio(regime, market_data.spy_volatility)
             self.logger.info(
-                f">>> VolTarget: σ={sigma:.2%} "
-                f"(real={market_data.spy_volatility:.2%}, VIX={market_data.vix:.1f}) "
+                f">>> VolTarget: vol={market_data.spy_volatility:.2%} "
                 f"→ leverage={L:.2f}x (QLD {self.rebalancer.ratio_a:.0%})"
             )
         return super().execute_cycle(market_data, portfolio, regime, exposure,
