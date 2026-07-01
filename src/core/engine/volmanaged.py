@@ -5,7 +5,7 @@
 이탈한다. 고변동성 구간(위험조정수익이 나쁜 구간)의 노출을 줄여 Sharpe를 높이는
 변동성 관리(volatility-managed / Moreira-Muir) 방식.
 """
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import pandas as pd
 
@@ -49,7 +49,7 @@ class VolManagedEngine(TradingEngine):
     SIGNAL_TICKER: str = "QQQ"        # 변동성/국면 신호 기준(레버리지 대상 자산과 일치)
     LEVERAGE_DEADBAND: float = 0.15   # 목표 L이 이만큼 이상 변할 때만 재조정(턴오버 억제)
 
-    def collect_data(self, data_provider: IDataProvider):
+    def collect_data(self, data_provider: IDataProvider) -> Tuple[pd.DataFrame, float]:
         """Step 1 오버라이드: 변동성/국면 신호를 QQQ(레버리지 대상)에서 산출.
 
         base(TradingEngine)는 SPY로 신호를 뽑지만, 이 엔진은 QQQ/QLD를 운용하므로
@@ -70,7 +70,7 @@ class VolManagedEngine(TradingEngine):
             regime_max_exposures={},        # 국면 디리스크 캡 비활성(순수 vol)
             crash_exposure=self.MIN_LEV,
         )
-        self._applied_L = 1.0            # 데드밴드로 유지되는 현재 실효 레버리지
+        self._applied_L: Optional[float] = None   # 데드밴드로 유지되는 현재 실효 레버리지(첫 사이클엔 목표 그대로)
 
     @staticmethod
     def _lev_to_weights(L: float) -> Tuple[float, float]:
@@ -102,7 +102,7 @@ class VolManagedEngine(TradingEngine):
             regime = self.analyzer.analyze(market_data)
             # 데드밴드: 목표 L이 충분히 변했을 때만 실효 L을 갱신(턴오버·거래비용 억제)
             L_target = self.targeter.calculate_exposure(MarketRegime.BULL, market_data.spy_volatility)
-            if abs(L_target - self._applied_L) > self.LEVERAGE_DEADBAND:
+            if self._applied_L is None or abs(L_target - self._applied_L) > self.LEVERAGE_DEADBAND:
                 self._applied_L = L_target
             exposure, ratio_a = self._lev_to_weights(self._applied_L)
             self.rebalancer.ratio_a = ratio_a
