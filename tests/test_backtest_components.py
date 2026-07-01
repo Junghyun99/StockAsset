@@ -145,6 +145,44 @@ def test_fetch_vix_returns_default_on_empty_dataframe():
     assert vix == pytest.approx(20.0)
 
 
+def test_fetch_vix_raises_on_multiindex_close_instead_of_silent_default():
+    """
+    [Loader] MultiIndex 컬럼(('Close','^VIX')) VIX를 넘기면 조용히 20.0을
+    반환하지 않고 명시적으로 실패해야 한다.
+
+    과거 bare except 구현은 float(Series) 실패를 삼켜 매 사이클 상수 20.0을
+    반환했고, VIX≥30 국면 판정이 발동하지 않아 백테스트가 조용히 오염됐다.
+    """
+    dates = pd.date_range(start="2024-01-01", periods=5)
+    full_df = pd.DataFrame(
+        [[100.0]] * 5, index=dates,
+        columns=pd.MultiIndex.from_product([['Close'], ['SPY']]),
+    )
+    # yfinance 다운로드가 남기는 MultiIndex 컬럼 형태(평탄화 누락)
+    bad_vix = pd.DataFrame(
+        [[30.0]] * 5, index=dates,
+        columns=pd.MultiIndex.from_product([['Close'], ['^VIX']]),
+    )
+    loader = BacktestDataLoader(full_df, bad_vix)
+    loader.set_date(pd.Timestamp("2024-01-03"))
+
+    with pytest.raises(TypeError):
+        loader.fetch_vix()
+
+
+def test_fetch_vix_uses_first_value_when_date_before_data():
+    """[Loader] current_date가 VIX 데이터 시작 이전이면 첫 값을 쓴다(20.0 폴백 아님)."""
+    dates = pd.date_range(start="2024-01-10", periods=5)
+    full_df = pd.DataFrame(
+        [[100.0]] * 5, index=dates,
+        columns=pd.MultiIndex.from_product([['Close'], ['SPY']]),
+    )
+    vix = pd.DataFrame({'Close': [17.0, 18.0, 19.0, 20.0, 21.0]}, index=dates)
+    loader = BacktestDataLoader(full_df, vix)
+    loader.set_date(pd.Timestamp("2024-01-01"))  # 데이터 시작 이전
+    assert loader.fetch_vix() == pytest.approx(17.0)
+
+
 def test_broker_execute_orders_does_not_mutate_original_order():
     """
     [Broker] execute_orders 호출 후 원본 Order 객체의 price가 변경되지 않는지 확인

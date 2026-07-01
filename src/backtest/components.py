@@ -43,12 +43,29 @@ class BacktestDataLoader(IDataProvider):
 
     def fetch_vix(self) -> float:
         # current_date 시점의 VIX (없으면 직전 값)
-        try:
-            # asof: 인덱스에 딱 맞는 값이 없으면 직전 값을 가져옴
-            idx = self.full_vix.index.get_indexer([self.current_date], method='pad')[0]
-            return float(self.full_vix.iloc[idx]['Close'])
-        except (IndexError, KeyError, TypeError, ValueError):
+        # VIX 데이터가 아예 없을 때(빈 DF)만 기본값 20.0으로 폴백한다.
+        if self.full_vix is None or self.full_vix.empty:
             return 20.0
+
+        # asof: 인덱스에 딱 맞는 값이 없으면 직전 값을 가져옴
+        idx = self.full_vix.index.get_indexer([self.current_date], method='pad')[0]
+        if idx < 0:
+            # current_date가 VIX 데이터 시작 이전 → 직전 값이 없으므로 첫 값 사용
+            idx = 0
+
+        close = self.full_vix.iloc[idx]['Close']
+        # 포맷 계약 검증: 'Close'는 단일 레벨 스칼라여야 한다.
+        # MultiIndex 컬럼(예: ('Close','^VIX'))을 넘기면 close가 Series가 되고,
+        # 과거 구현은 이를 bare except로 삼켜 매 사이클 상수 VIX(20.0)를 반환 →
+        # VIX≥30 국면 판정이 영영 발동하지 않아 백테스트가 조용히 오염됐다.
+        # 조용히 폴백하지 말고 명시적으로 실패시켜 데이터 포맷 오류를 드러낸다.
+        if not pd.api.types.is_scalar(close):
+            raise TypeError(
+                f"VIX 'Close'가 스칼라가 아닙니다: {type(close).__name__}. "
+                "full_vix는 단일 레벨 'Close' 컬럼을 가져야 합니다 "
+                "(MultiIndex 컬럼이면 xs('^VIX', axis=1, level=1) 등으로 평탄화 필요)."
+            )
+        return float(close)
 
 class BacktestBroker(MockBroker):
     """
