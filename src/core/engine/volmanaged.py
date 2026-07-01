@@ -38,6 +38,7 @@ class VolManagedEngine(TradingEngine):
     MIN_LEV: float = 0.0
     MAX_LEV: float = 2.0
     SIGNAL_TICKER: str = "QQQ"        # 변동성/국면 신호 기준(레버리지 대상 자산과 일치)
+    LEVERAGE_DEADBAND: float = 0.15   # 목표 L이 이만큼 이상 변할 때만 재조정(턴오버 억제)
 
     def collect_data(self, data_provider: IDataProvider):
         """Step 1 오버라이드: 변동성/국면 신호를 QQQ(레버리지 대상)에서 산출.
@@ -60,17 +61,21 @@ class VolManagedEngine(TradingEngine):
             regime_max_exposures={},        # 국면 디리스크 캡 비활성(순수 vol)
             crash_exposure=self.MIN_LEV,
         )
+        self._applied_L = 1.0            # 데드밴드로 유지되는 현재 실효 레버리지
 
-    def _leverage_to_weights(self, current_vol: float) -> Tuple[float, float]:
-        """실현변동성 → (exposure, ratio_a). L=clamp(TARGET_VOL/vol). 순수 vol 기반.
+    @staticmethod
+    def _lev_to_weights(L: float) -> Tuple[float, float]:
+        """실효 레버리지 L → (exposure, ratio_a). 순수 함수.
 
         exposure = min(L,1): 위험자산(A+B) 비중, 나머지 1-exposure는 C(현금).
         ratio_a  = max(L-1,0): 위험자산 내 QLD(A) 비중.
         """
+        return min(L, 1.0), max(L - 1.0, 0.0)
+
+    def _leverage_to_weights(self, current_vol: float) -> Tuple[float, float]:
+        """실현변동성 → (exposure, ratio_a). L=clamp(TARGET_VOL/vol), 데드밴드 무시(raw)."""
         L = self.targeter.calculate_exposure(MarketRegime.BULL, current_vol)  # CRASH 우회
-        exposure = min(L, 1.0)
-        ratio_a = max(L - 1.0, 0.0)
-        return exposure, ratio_a
+        return self._lev_to_weights(L)
 
     def analyze_strategy(
         self, market_data: MarketData
@@ -86,7 +91,11 @@ class VolManagedEngine(TradingEngine):
             regime, exposure = MarketRegime.CRASH, 0.0
         else:
             regime = self.analyzer.analyze(market_data)
-            exposure, ratio_a = self._leverage_to_weights(market_data.spy_volatility)
+            # 데드밴드: 목표 L이 충분히 변했을 때만 실효 L을 갱신(턴오버·거래비용 억제)
+            L_target = self.targeter.calculate_exposure(MarketRegime.BULL, market_data.spy_volatility)
+            if abs(L_target - self._applied_L) > self.LEVERAGE_DEADBAND:
+                self._applied_L = L_target
+            exposure, ratio_a = self._lev_to_weights(self._applied_L)
             self.rebalancer.ratio_a = ratio_a
             self.rebalancer.ratio_b = round(1.0 - ratio_a, 10)
             self.logger.info(

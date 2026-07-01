@@ -69,6 +69,23 @@ def test_high_vol_moves_to_cash(tmp_path):
     assert res.exposure < 1.0                    # 고변동성 → 현금(SHV) 이탈
 
 
+def test_leverage_deadband_holds_small_changes(tmp_path):
+    """목표 L이 데드밴드(0.15) 이내로 변하면 실효 레버리지를 유지(턴오버 억제)."""
+    from src.core.models import MarketData
+    eng, _, _ = _make(tmp_path)
+
+    def md(vol):
+        return MarketData(date="2023-01-02", spy_price=300.0, spy_ma180=280.0,
+                          spy_volatility=vol, spy_momentum=0.1, spy_mdd=-0.02, vix=20.0)
+
+    eng.analyze_strategy(md(0.147))                 # L≈1.50 (init 1.0에서 0.5 이동 → 갱신)
+    assert abs(eng._applied_L - 1.50) < 0.05
+    eng.analyze_strategy(md(0.142))                 # L≈1.55, Δ0.05<0.15 → 유지
+    assert abs(eng._applied_L - 1.50) < 0.05
+    eng.analyze_strategy(md(0.110))                 # L=2.00, Δ0.5>0.15 → 갱신
+    assert abs(eng._applied_L - 2.00) < 0.05
+
+
 def test_nan_data_treated_as_crash(tmp_path):
     from src.core.models import MarketData
     eng, _, _ = _make(tmp_path)
