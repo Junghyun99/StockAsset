@@ -7,8 +7,11 @@
 """
 from typing import List, Tuple
 
+import pandas as pd
+
 from src.core.engine.base import TradingEngine
 from src.core.engine.registry import register_engine
+from src.core.interfaces import IDataProvider
 from src.core.logic.volatility_targeter import VolatilityTargeter
 from src.core.models import MarketData, MarketRegime
 
@@ -34,6 +37,17 @@ class VolManagedEngine(TradingEngine):
     TARGET_VOL: float = 0.22
     MIN_LEV: float = 0.0
     MAX_LEV: float = 2.0
+    SIGNAL_TICKER: str = "QQQ"        # 변동성/국면 신호 기준(레버리지 대상 자산과 일치)
+
+    def collect_data(self, data_provider: IDataProvider):
+        """Step 1 오버라이드: 변동성/국면 신호를 QQQ(레버리지 대상)에서 산출.
+
+        base(TradingEngine)는 SPY로 신호를 뽑지만, 이 엔진은 QQQ/QLD를 운용하므로
+        변동성 관리가 포트폴리오와 일치하도록 QQQ 기준으로 산출한다.
+        """
+        df = data_provider.fetch_ohlcv([self.SIGNAL_TICKER], days=400)
+        vix = data_provider.fetch_vix()
+        return df, vix
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
