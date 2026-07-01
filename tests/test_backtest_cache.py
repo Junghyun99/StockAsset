@@ -55,6 +55,16 @@ def _make_vix(start, end):
     return pd.DataFrame({"Close": np.random.rand(len(dates)) * 10 + 15}, index=dates)
 
 
+def _make_vix_multiindex(start, end):
+    """실제 yfinance 1.x가 반환하는 형식: 단일 티커도 MultiIndex 컬럼(('Close', '^VIX'))"""
+    dates = pd.bdate_range(start, end)
+    columns = pd.MultiIndex.from_product(
+        [["Close", "Open", "High", "Low", "Volume"], ["^VIX"]]
+    )
+    data = np.random.rand(len(dates), len(columns)) * 10 + 15
+    return pd.DataFrame(data, index=dates, columns=columns)
+
+
 # ── 항상 전체 재다운로드 ──────────────────────────────────────────────────────
 
 class TestAlwaysRedownloads:
@@ -266,6 +276,42 @@ class TestSingleTickerNormalization:
 
         assert isinstance(df.columns, pd.MultiIndex)
         assert "SPY" in df.columns.get_level_values(1).unique()
+
+
+# ── VIX MultiIndex 평탄화 ─────────────────────────────────────────────────────
+
+class TestVixMultiIndexFlattening:
+    """yfinance가 단일 티커 VIX도 MultiIndex 컬럼으로 반환하는 경우 평탄화 검증"""
+
+    @patch("src.backtest.cache.yf.download")
+    def test_vix_multiindex_columns_flattened_to_single_level(self, mock_download, cache):
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-03-31")
+        vix = _make_vix_multiindex("2023-01-01", "2023-03-31")
+        mock_download.side_effect = [combined, vix]
+
+        _, vix_df, _ = cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
+
+        assert not isinstance(vix_df.columns, pd.MultiIndex)
+        assert "Close" in vix_df.columns
+        assert pd.api.types.is_scalar(vix_df["Close"].iloc[0])
+
+    @patch("src.backtest.cache.yf.download")
+    def test_fetch_vix_returns_scalar_when_source_is_multiindex(self, mock_download, cache):
+        """cache.get_data가 반환한 vix를 BacktestDataLoader.fetch_vix()에 넘겨도
+        스칼라를 반환해야 한다 (회귀: 평탄화 누락 시 TypeError 발생)."""
+        from src.backtest.components import BacktestDataLoader
+
+        combined = _make_ohlcv_with_dividends(["SPY"], "2023-01-01", "2023-03-31")
+        vix = _make_vix_multiindex("2023-01-01", "2023-03-31")
+        mock_download.side_effect = [combined, vix]
+
+        df, vix_df, _ = cache.get_data(["SPY"], "2023-01-01", "2023-03-31")
+
+        loader = BacktestDataLoader(df, vix_df)
+        loader.set_date(vix_df.index[0])
+        result = loader.fetch_vix()
+
+        assert isinstance(result, float)
 
 
 # ── 다운로드 실패 처리 ────────────────────────────────────────────────────────
