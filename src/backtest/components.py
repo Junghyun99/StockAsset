@@ -53,7 +53,7 @@ class BacktestDataLoader(IDataProvider):
             # current_date가 VIX 데이터 시작 이전 → 직전 값이 없으므로 첫 값 사용
             idx = 0
 
-        close = self.full_vix.iloc[idx]['Close']
+        close = self.full_vix['Close'].iloc[idx]
         # 포맷 계약 검증: 'Close'는 단일 레벨 스칼라여야 한다.
         # MultiIndex 컬럼(예: ('Close','^VIX'))을 넘기면 close가 Series가 되고,
         # 과거 구현은 이를 bare except로 삼켜 매 사이클 상수 VIX(20.0)를 반환 →
