@@ -10,6 +10,8 @@ TICKER_ALIASES: dict[str, str] = {
     # 국내 ETF (yfinance 티커 기준)
     '226490.KS' : 'KODEX 코스피',
     '133690.KS' : 'TIGER 미국나스닥100',
+    '418660.KS' : 'TIGER 미국나스닥100레버리지(합성)',
+    '459580.KS' : 'KODEX CD금리액티브',
     '365780.KS' : 'ACE 국고채10년',
     '305080.KS' : 'TIGER 미국채10년선물',
     '411060.KS' : 'ACE KRX금현물',
