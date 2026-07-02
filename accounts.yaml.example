@@ -7,7 +7,8 @@
 #
 # engine 값은 src/core/engine 디렉토리에 @register_engine 으로 등록된 이름을 사용합니다.
 # 예: QldSHVEngine, QldSdyEngine, QqqSdyEngine, SpyEngine, QqqEngine, Asset5Engine,
-#     DomesticAsset5Engine, QldSdyShvEngine, QldQqqShvRegimeEngine
+#     DomesticAsset5Engine, QldSdyShvEngine, QldQqqShvRegimeEngine, VolManagedEngine,
+#     DomesticVolManagedEngine
 
 accounts:
   - id: my_pension

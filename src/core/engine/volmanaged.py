@@ -9,6 +9,7 @@ from typing import List, Optional, Tuple
 
 import pandas as pd
 
+from src.config import ticker_display
 from src.core.engine.base import TradingEngine
 from src.core.engine.registry import register_engine
 from src.core.interfaces import IDataProvider
@@ -107,10 +108,11 @@ class VolManagedEngine(TradingEngine):
             exposure, ratio_a = self._lev_to_weights(self._applied_L)
             self.rebalancer.ratio_a = ratio_a
             self.rebalancer.ratio_b = round(1.0 - ratio_a, 10)
+            leveraged_ticker = ticker_display(self.ASSET_GROUPS["A"][0])
             self.logger.info(
                 f">>> VolManaged: vol={market_data.spy_volatility:.2%} "
                 f"→ L={exposure + ratio_a:.2f}x "
-                f"(QLD {ratio_a:.0%}, 위험 {exposure:.0%}, 현금 {1.0 - exposure:.0%})"
+                f"({leveraged_ticker} {ratio_a:.0%}, 위험 {exposure:.0%}, 현금 {1.0 - exposure:.0%})"
             )
 
         if prev is not None and regime != prev:
@@ -122,3 +124,21 @@ class VolManagedEngine(TradingEngine):
             )
 
         return regime, exposure, nan_fields
+
+
+@register_engine(color="#d63384", market_type="domestic", backtest=False)
+class DomesticVolManagedEngine(VolManagedEngine):
+    """VolManagedEngine의 국내상장 ETF 버전 (실거래 전용).
+
+    - 자산군 A=[418660.KS](TIGER 미국나스닥100레버리지(합성), 2x)
+             B=[133690.KS](TIGER 미국나스닥100, 1x)
+             C=[459580.KS](KODEX CD금리액티브, 현금성)
+    - 레버리지 산출 로직은 VolManagedEngine과 완전히 동일(상속), 자산군과 신호
+      티커만 국내상장 ETF로 교체한다.
+    - 418660.KS(2022년 상장)/459580.KS(2023년 상장)는 상장 이력이 짧아 장기
+      비교 백테스트가 불가능하므로 backtest=False로 등록해 실거래(main.py)에서만
+      사용한다.
+    """
+
+    ASSET_GROUPS: dict = {"A": ["418660.KS"], "B": ["133690.KS"], "C": ["459580.KS"]}
+    SIGNAL_TICKER: str = "133690.KS"
