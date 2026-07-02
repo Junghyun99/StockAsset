@@ -1,0 +1,37 @@
+{
+    "last_updated": "2026-05-29",
+    "last_rebalancing_date": "2026-05-29",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 1.0,
+        "trigger_reason": "비율 유지, 추가 주문 없음",
+        "market_score": {
+            "vix": 15.319999694824219,
+            "spy_mdd": 0.0,
+            "spy_momentum": 0.23425474052270134,
+            "spy_price": 738.3099975585938,
+            "spy_ma180": 622.7396653917101,
+            "spy_volatility": 0.15756221618056518
+        }
+    },
+    "portfolio": {
+        "total_value": 193503236.73714128,
+        "cash_balance": 324.2833906788059,
+        "holdings": [
+            {
+                "ticker": "QQQ",
+                "qty": 183788,
+                "price": 738.3099975585938,
+                "value": 135692517.83129883
+            },
+            {
+                "ticker": "QLD",
+                "qty": 587146,
+                "price": 98.45999908447266,
+                "value": 57810394.62245178
+            }
+        ]
+    },
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2006-01-01"
+}
