@@ -1198,5 +1198,30 @@
         "target_exposure": 1.0,
         "target_ratio_a": 0.4,
         "rebalance_threshold": 0.075
+    },
+    {
+        "date": "2026-07-07",
+        "total_value": 4327436.0,
+        "cash_balance": 38261.0,
+        "group_a": 1675985.0,
+        "group_b": 2613190.0,
+        "group_c": 38261.0,
+        "daily_dividend": 0,
+        "spy_price": 751.280029296875,
+        "spy_ma180": 695.8465559217665,
+        "spy_volatility": 0.17787112482947245,
+        "spy_momentum": 0.10792870288364116,
+        "mdd": -0.010914040769655105,
+        "vix": 15.569999694824219,
+        "benchmarks": {
+            "KOSPI200": 124365.0,
+            "S&P500": 28600.0,
+            "NASDAQ100": 200415.0
+        },
+        "regime": "Bull",
+        "reason": "비율 유지, 추가 주문 없음",
+        "target_exposure": 1.0,
+        "target_ratio_a": 0.4,
+        "rebalance_threshold": 0.075
     }
 ]
