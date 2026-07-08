@@ -27,20 +27,34 @@ def _fake_two_accounts():
 
 
 @pytest.fixture
-def mock_multi_account_deps():
-    """acc1(overseas)/acc2(domestic) 2개 계좌로 TradingBot을 구성할 때 필요한 의존성을 mock."""
-    with patch('src.main.load_accounts', return_value=_fake_two_accounts()), \
+def mock_multi_account_deps(tmp_path):
+    """acc1(overseas)/acc2(domestic) 2개 계좌로 TradingBot을 구성할 때 필요한 의존성을 mock.
+
+    Config도 함께 mock하여 DATA_PATH/LOG_PATH를 tmp_path로 돌려,
+    테스트가 실제 docs/data, logs 디렉토리에 부작용을 남기지 않게 한다.
+    """
+    with patch('src.main.Config') as MockConfig, \
+         patch('src.main.load_accounts', return_value=_fake_two_accounts()), \
          patch('src.main._resolve_engine_class') as MockResolve, \
          patch('src.main.YFinanceLoader') as MockLoader, \
          patch('src.main.JsonRepository') as MockRepoCls, \
          patch('src.main.SlackNotifier') as MockNotifier, \
          patch('src.main.KisOverseasPaperBroker') as MockOverseasBrokerCls, \
          patch('src.main.KisDomesticPaperBroker') as MockDomesticBrokerCls, \
-         patch.object(TradingBot, '_save_accounts_meta'), \
          patch('src.core.engine.base.IndicatorCalculator'), \
          patch('src.core.engine.base.RegimeAnalyzer'), \
          patch('src.core.engine.base.VolatilityTargeter'), \
          patch('src.core.engine.base.Rebalancer'):
+
+        fake_config = MockConfig.return_value
+        fake_config.DATA_PATH = str(tmp_path)
+        fake_config.LOG_PATH = str(tmp_path / "logs")
+        fake_config.ACCOUNTS_CONFIG_PATH = "accounts.yaml"
+        fake_config.SLACK_WEBHOOK_URL = ""
+        fake_config.SLACK_BOT_TOKEN = ""
+        fake_config.SLACK_CHANNEL_ID = ""
+        fake_config.MAX_SUMMARY_RECORDS = 100
+        fake_config.MAX_HISTORY_RECORDS = 100
 
         from src.core.engine import TradingEngine as _TE
         MockResolve.return_value = _TE
@@ -71,6 +85,7 @@ def mock_multi_account_deps():
             'broker_acc2': domestic_broker,
             'repo_acc1': repo_acc1,
             'repo_acc2': repo_acc2,
+            'tmp_path': tmp_path,
         }
 
 
@@ -121,35 +136,11 @@ def test_multi_account_one_failure_does_not_block_other_account(mock_multi_accou
     assert "acc1" in alert_msg
 
 
-def test_multi_account_save_accounts_meta_writes_all_accounts(tmp_path):
+def test_multi_account_save_accounts_meta_writes_all_accounts(mock_multi_account_deps):
     """_save_accounts_meta()가 등록된 모든 계좌를 accounts.json / accounts_meta.json에 기록한다."""
-    from src.core.engine import TradingEngine as _TE
+    TradingBot()  # __init__ 내부에서 _save_accounts_meta()가 자동 호출된다
 
-    with patch('src.main.Config') as MockConfig, \
-         patch('src.main.load_accounts', return_value=_fake_two_accounts()), \
-         patch('src.main._resolve_engine_class', return_value=_TE), \
-         patch('src.main.YFinanceLoader'), \
-         patch('src.main.JsonRepository'), \
-         patch('src.main.SlackNotifier'), \
-         patch('src.main.KisOverseasPaperBroker'), \
-         patch('src.main.KisDomesticPaperBroker'), \
-         patch('src.core.engine.base.IndicatorCalculator'), \
-         patch('src.core.engine.base.RegimeAnalyzer'), \
-         patch('src.core.engine.base.VolatilityTargeter'), \
-         patch('src.core.engine.base.Rebalancer'):
-
-        fake_config = MockConfig.return_value
-        fake_config.DATA_PATH = str(tmp_path)
-        fake_config.LOG_PATH = str(tmp_path / "logs")
-        fake_config.ACCOUNTS_CONFIG_PATH = "accounts.yaml"
-        fake_config.SLACK_WEBHOOK_URL = ""
-        fake_config.SLACK_BOT_TOKEN = ""
-        fake_config.SLACK_CHANNEL_ID = ""
-        fake_config.MAX_SUMMARY_RECORDS = 100
-        fake_config.MAX_HISTORY_RECORDS = 100
-
-        TradingBot()  # __init__ 내부에서 _save_accounts_meta()가 자동 호출된다
-
+    tmp_path = mock_multi_account_deps['tmp_path']
     accounts_list = json.loads((tmp_path / "accounts.json").read_text(encoding="utf-8"))
     assert accounts_list == ["acc1", "acc2"]
 
