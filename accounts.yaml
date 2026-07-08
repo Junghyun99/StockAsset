@@ -4,3 +4,8 @@ accounts:
     is_live: true
     engine: DomesticAsset5RealEngine
     kis_env_prefix: MY_TEST
+  - id: my_isa
+    market_type: domestic
+    is_live: true
+    engine: VolManagedEngine
+    kis_env_prefix: MY_ISA
