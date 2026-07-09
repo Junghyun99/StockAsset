@@ -43,6 +43,7 @@ class TradingEngine:
         notifier: Optional[INotifier] = None,  # 백테스트는 None
         is_live_trading: bool = False,
         benchmarks: Optional[dict] = None,
+        account_label: Optional[str] = None,
     ):
         # 클래스 속성 우선, 없으면 파라미터 사용
         groups = getattr(type(self), 'ASSET_GROUPS', asset_groups)
@@ -70,6 +71,8 @@ class TradingEngine:
         self.trading_interval_days = trading_interval_days
         self.notifier = notifier
         self.is_live_trading = is_live_trading
+        # 멀티 계좌 Slack 알림에서 계좌를 구분하기 위한 라벨 (예: accounts.yaml의 id)
+        self.account_label = account_label
 
         # 벤치마크 {논리명: 티커}. 포트폴리오와 동일 브로커·동일 시점으로 현재가를 조회한다.
         # 백테스트는 BacktestBroker가 과거 종가를 서빙하므로 동일 경로로 동작한다.
@@ -436,11 +439,11 @@ class TradingEngine:
 
     def _notify_message(self, msg: str, detail: Optional[str] = None) -> None:
         if self.notifier:
-            self.notifier.send_message(msg, detail=detail)
+            self.notifier.send_message(msg, detail=detail, account_label=self.account_label)
 
     def _notify_alert(self, msg: str, detail: Optional[str] = None) -> None:
         if self.notifier:
-            self.notifier.send_alert(msg, detail=detail)
+            self.notifier.send_alert(msg, detail=detail, account_label=self.account_label)
 
 
 @register_engine(color="#2ca02c", backtest=True)

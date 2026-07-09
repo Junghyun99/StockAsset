@@ -29,6 +29,38 @@ def test_slack_send_success(mock_requests_post,mock_logger):
     assert args[0] == "https://hooks.slack.com/test"
     assert "Hello Slack" in kwargs['json']['text']
 
+def test_slack_send_message_with_account_label(mock_requests_post, mock_logger):
+    # 멀티 계좌 구분을 위해 account_label이 헤더에 표기되는지 확인
+    mock_requests_post.return_value.status_code = 200
+
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test", logger=mock_logger)
+    notifier.send_message("Bot Finished. Hold. (Bull)", account_label="acc1")
+
+    _, kwargs = mock_requests_post.call_args
+    assert kwargs['json']['text'] == "🤖 *[SolidQuant]* (acc1)\nBot Finished. Hold. (Bull)"
+
+
+def test_slack_send_message_without_account_label_unchanged(mock_requests_post, mock_logger):
+    # account_label 미지정 시 기존 포맷 그대로 유지 (하위 호환)
+    mock_requests_post.return_value.status_code = 200
+
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test", logger=mock_logger)
+    notifier.send_message("Summary")
+
+    _, kwargs = mock_requests_post.call_args
+    assert kwargs['json']['text'] == "🤖 *[SolidQuant]*\nSummary"
+
+
+def test_slack_alert_with_account_label(mock_requests_post, mock_logger):
+    mock_requests_post.return_value.status_code = 200
+
+    notifier = SlackNotifier(webhook_url="https://hooks.slack.com/test", logger=mock_logger)
+    notifier.send_alert("Emergency!", account_label="acc2")
+
+    _, kwargs = mock_requests_post.call_args
+    assert kwargs['json']['text'] == "🚨 *[WARNING]* (acc2) <!channel>\nEmergency!"
+
+
 def test_slack_alert_channel_mention(mock_requests_post,mock_logger):
     # 2. Alert 전송 시 <!channel> 멘션 포함 확인
     mock_requests_post.return_value.status_code = 200

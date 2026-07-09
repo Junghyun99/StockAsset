@@ -100,6 +100,7 @@ class TradingBot:
                 notifier=self.notifier,
                 is_live_trading=acc.is_live,
                 benchmarks=BENCHMARKS_BY_MARKET.get(acc.market_type, {}),
+                account_label=acc.id,
             )
             self.runners.append(AccountRunner(acc, engine, broker, repo))
 

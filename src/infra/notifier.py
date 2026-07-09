@@ -18,13 +18,17 @@ class SlackNotifier(INotifier):
         self.channel_id = channel_id
         self.logger = logger
 
-    def send_message(self, message: str, detail: Optional[str] = None) -> None:
-        # 일반 메시지
-        self._send_formatted(f"🤖 *[SolidQuant]*\n{message}", detail)
+    def send_message(self, message: str, detail: Optional[str] = None,
+                     account_label: Optional[str] = None) -> None:
+        # 일반 메시지 (멀티 계좌 구분을 위해 계좌명을 헤더에 함께 표기)
+        label_suffix = f" ({account_label})" if account_label else ""
+        self._send_formatted(f"🤖 *[SolidQuant]*{label_suffix}\n{message}", detail)
 
-    def send_alert(self, message: str, detail: Optional[str] = None) -> None:
+    def send_alert(self, message: str, detail: Optional[str] = None,
+                   account_label: Optional[str] = None) -> None:
         # 긴급 알림 (channel 전체 호출)
-        self._send_formatted(f"🚨 *[WARNING]* <!channel>\n{message}", detail)
+        label_suffix = f" ({account_label})" if account_label else ""
+        self._send_formatted(f"🚨 *[WARNING]*{label_suffix} <!channel>\n{message}", detail)
 
     def _send_formatted(self, summary: str, detail: Optional[str] = None):
         # 1. Bot Token 방식 (스레드 댓글 지원) 우선 시도

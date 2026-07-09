@@ -103,6 +103,10 @@ def test_multi_account_creates_separate_runners(mock_multi_account_deps):
     assert bot.runners[1].repo is mock_multi_account_deps['repo_acc2']
     assert bot.runners[0].engine is not bot.runners[1].engine
 
+    # 계좌별 Slack 알림 구분을 위해 엔진에 계좌 id가 account_label로 주입된다
+    assert bot.runners[0].engine.account_label == "acc1"
+    assert bot.runners[1].engine.account_label == "acc2"
+
 
 def test_multi_account_run_executes_all_accounts(mock_multi_account_deps):
     """run() 호출 시 등록된 모든 계좌의 run_one_cycle이 각각 실행된다."""
