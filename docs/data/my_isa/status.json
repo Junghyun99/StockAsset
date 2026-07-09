@@ -1,34 +1,34 @@
 {
-    "last_updated": "2026-07-09 10:01:42",
+    "last_updated": "2026-07-09 14:01:43",
     "last_rebalancing_date": "2026-07-09",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 0.870662212111946,
+        "target_exposure": 0.8685264925959775,
         "trigger_reason": "Bull (모니터링)",
         "market_score": {
             "vix": 16.899999618530273,
-            "spy_mdd": -0.061314852247569544,
-            "spy_momentum": 0.22633275918372117,
-            "spy_price": 195040.0,
-            "spy_ma180": 172648.16666666666,
-            "spy_volatility": 0.25268123152646177
+            "spy_mdd": -0.06003946481855809,
+            "spy_momentum": 0.22688176638593352,
+            "spy_price": 195305.0,
+            "spy_ma180": 172649.63888888888,
+            "spy_volatility": 0.25330257841926296
         }
     },
     "portfolio": {
-        "total_value": 49897803.0,
+        "total_value": 49952791.0,
         "cash_balance": 519791.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 220,
-                "price": 195145.0,
-                "value": 42931900.0
+                "price": 195395.0,
+                "value": 42986900.0
             },
             {
                 "ticker": "459580.KS",
                 "qty": 6,
-                "price": 1074352.0,
-                "value": 6446112.0
+                "price": 1074350.0,
+                "value": 6446100.0
             }
         ]
     }
