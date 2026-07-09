@@ -65,9 +65,11 @@ class ILogger(ABC):
 
 class INotifier(ABC):
     @abstractmethod
-    def send_message(self, message: str, detail: Optional[str] = None) -> None: ...
+    def send_message(self, message: str, detail: Optional[str] = None,
+                     account_label: Optional[str] = None) -> None: ...
     @abstractmethod
-    def send_alert(self, message: str, detail: Optional[str] = None) -> None: ...
+    def send_alert(self, message: str, detail: Optional[str] = None,
+                   account_label: Optional[str] = None) -> None: ...
 
 class IRepository(ABC):
     @abstractmethod

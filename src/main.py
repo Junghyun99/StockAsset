@@ -100,6 +100,7 @@ class TradingBot:
                 notifier=self.notifier,
                 is_live_trading=acc.is_live,
                 benchmarks=BENCHMARKS_BY_MARKET.get(acc.market_type, {}),
+                account_label=acc.id,
             )
             self.runners.append(AccountRunner(acc, engine, broker, repo))
 
@@ -148,6 +149,7 @@ class TradingBot:
 
     def _run_one_account(self, runner: AccountRunner):
         acc = runner.account
+        self.logger.info(f"===== [{acc.id}] 계좌 실행 시작 =====")
         try:
             daily_dividend = 0.0
             try:
