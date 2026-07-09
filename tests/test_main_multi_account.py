@@ -142,14 +142,21 @@ def test_multi_account_logs_account_marker_before_run(mock_multi_account_deps):
     실행 중인지 구분할 수 있어야 한다. (Step 1 로그보다 먼저, 계좌 순서대로 기록)"""
     bot = TradingBot()
     for runner in bot.runners:
-        runner.engine.run_one_cycle = MagicMock()
+        # run_one_cycle 내부에서 실제로 찍히는 Step 1 로그를 흉내내어 순서를 검증한다.
+        runner.engine.run_one_cycle = MagicMock(
+            side_effect=lambda *args, **kwargs: bot.logger.info(">>> Step 1: Data Collection")
+        )
 
     bot.run()
 
     log_content = Path(bot.logger.log_file).read_text(encoding="utf-8")
-    assert "[acc1] 계좌 실행 시작" in log_content
-    assert "[acc2] 계좌 실행 시작" in log_content
-    assert log_content.index("[acc1] 계좌 실행 시작") < log_content.index("[acc2] 계좌 실행 시작")
+    lines = [line for line in log_content.splitlines() if "계좌 실행 시작" in line or "Step 1" in line]
+
+    assert len(lines) == 4
+    assert "acc1" in lines[0]
+    assert "Step 1" in lines[1]
+    assert "acc2" in lines[2]
+    assert "Step 1" in lines[3]
 
 
 def test_multi_account_save_accounts_meta_writes_all_accounts(mock_multi_account_deps):
