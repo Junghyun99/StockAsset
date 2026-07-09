@@ -5,6 +5,7 @@ accounts.yaml만 다루므로, 계좌별 runner 분리·독립 실행·장애 �
 accounts.json 기록 등 멀티 계좌 고유 동작은 별도로 검증한다.
 """
 import json
+from pathlib import Path
 import pytest
 from unittest.mock import MagicMock, patch
 
@@ -134,6 +135,21 @@ def test_multi_account_one_failure_does_not_block_other_account(mock_multi_accou
     mock_multi_account_deps['notifier'].send_alert.assert_called_once()
     alert_msg = mock_multi_account_deps['notifier'].send_alert.call_args[0][0]
     assert "acc1" in alert_msg
+
+
+def test_multi_account_logs_account_marker_before_run(mock_multi_account_deps):
+    """계좌 실행 시작 시 로그에 계좌 id가 남아, 여러 계좌 로그가 섞여도 어떤 계좌가
+    실행 중인지 구분할 수 있어야 한다. (Step 1 로그보다 먼저, 계좌 순서대로 기록)"""
+    bot = TradingBot()
+    for runner in bot.runners:
+        runner.engine.run_one_cycle = MagicMock()
+
+    bot.run()
+
+    log_content = Path(bot.logger.log_file).read_text(encoding="utf-8")
+    assert "[acc1] 계좌 실행 시작" in log_content
+    assert "[acc2] 계좌 실행 시작" in log_content
+    assert log_content.index("[acc1] 계좌 실행 시작") < log_content.index("[acc2] 계좌 실행 시작")
 
 
 def test_multi_account_save_accounts_meta_writes_all_accounts(mock_multi_account_deps):

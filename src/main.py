@@ -148,6 +148,7 @@ class TradingBot:
 
     def _run_one_account(self, runner: AccountRunner):
         acc = runner.account
+        self.logger.info(f"===== [{acc.id}] 계좌 실행 시작 =====")
         try:
             daily_dividend = 0.0
             try:
