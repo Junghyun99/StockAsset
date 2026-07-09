@@ -1,0 +1,35 @@
+{
+    "last_updated": "2026-07-09 09:17:08",
+    "last_rebalancing_date": "2026-07-09",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 0.8606068967740517,
+        "trigger_reason": "첫 투자: 0:100 비율로 진입",
+        "market_score": {
+            "vix": 16.899999618530273,
+            "spy_mdd": -0.0692078159591876,
+            "spy_momentum": 0.23339518753316552,
+            "spy_price": 193400.0,
+            "spy_ma180": 172431.11111111112,
+            "spy_volatility": 0.25563355444240643
+        }
+    },
+    "portfolio": {
+        "total_value": 49812003.0,
+        "cash_balance": 519791.0,
+        "holdings": [
+            {
+                "ticker": "133690.KS",
+                "qty": 220,
+                "price": 194755.0,
+                "value": 42846100.0
+            },
+            {
+                "ticker": "459580.KS",
+                "qty": 6,
+                "price": 1074352.0,
+                "value": 6446112.0
+            }
+        ]
+    }
+}

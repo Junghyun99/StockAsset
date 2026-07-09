@@ -1,0 +1,31 @@
+[
+    {
+        "id": "tx_20260709_091708",
+        "date": "2026-07-09 09:17:08",
+        "portfolio_value": 49812003.0,
+        "total_trade_amount": 49287812.0,
+        "reason": "첫 투자: 0:100 비율로 진입",
+        "executions": [
+            {
+                "ticker": "133690.KS",
+                "action": "BUY",
+                "quantity": 220,
+                "price": 194735.0,
+                "fee": 6426.254999999999,
+                "date": "2026-07-09 09:17:00",
+                "status": "FILLED",
+                "reason": "ODNO=0005659500"
+            },
+            {
+                "ticker": "459580.KS",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 1074352.0,
+                "fee": 966.9168,
+                "date": "2026-07-09 09:17:03",
+                "status": "FILLED",
+                "reason": "ODNO=0005667600"
+            }
+        ]
+    }
+]
