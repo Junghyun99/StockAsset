@@ -48,5 +48,30 @@
         "target_exposure": 0.8478070062843615,
         "target_ratio_a": 0.0,
         "rebalance_threshold": 0.075
+    },
+    {
+        "date": "2026-07-13",
+        "total_value": 50414635.0,
+        "cash_balance": 124795.0,
+        "group_a": 0,
+        "group_b": 43842780.0,
+        "group_c": 6571855.0,
+        "daily_dividend": 0,
+        "spy_price": 197505.0,
+        "spy_ma180": 173120.47222222222,
+        "spy_volatility": 0.24891315747802176,
+        "spy_momentum": 0.2227785220731545,
+        "mdd": -0.049451342766387525,
+        "vix": 15.029999732971191,
+        "benchmarks": {
+            "KOSPI200": 116865.0,
+            "S&P500": 28215.0,
+            "NASDAQ100": 197490.0
+        },
+        "regime": "Bull",
+        "reason": "비율 유지, 현금 소진 매수",
+        "target_exposure": 0.8838423899685789,
+        "target_ratio_a": 0.0,
+        "rebalance_threshold": 0.075
     }
 ]
