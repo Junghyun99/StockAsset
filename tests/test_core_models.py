@@ -1,6 +1,8 @@
 import math
+from dataclasses import asdict
+
 import pytest
-from src.core.models import MarketData, Portfolio
+from src.core.models import DecisionFactor, MarketData, Portfolio
 
 # ==========================================
 # 1. MarketData 테스트 (경계값 검증)
@@ -140,3 +142,26 @@ def test_nan_fields_multiple_nan():
     assert 'spy_volatility' in result
     assert 'vix' in result
     assert len(result) == 3
+
+
+# ==========================================
+# 4. DecisionFactor 테스트
+# ==========================================
+
+def test_decision_factor_defaults():
+    """format 기본값 number, threshold 기본값 None"""
+    f = DecisionFactor(key="vix", label="VIX", value=17.2)
+    assert f.format == "number"
+    assert f.threshold is None
+
+def test_decision_factor_serialization():
+    """asdict로 JSON 저장 가능한 dict가 나와야 한다"""
+    f = DecisionFactor(key="mdd", label="SPY MDD", value=-0.07,
+                       format="percent", threshold=-0.20)
+    assert asdict(f) == {"key": "mdd", "label": "SPY MDD", "value": -0.07,
+                         "format": "percent", "threshold": -0.20}
+
+def test_decision_factor_text_value():
+    """국면 같은 텍스트 값도 담을 수 있어야 한다"""
+    f = DecisionFactor(key="regime", label="시장 국면", value="Bull", format="text")
+    assert f.value == "Bull"
