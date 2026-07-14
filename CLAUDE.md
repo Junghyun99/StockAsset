@@ -12,6 +12,8 @@
 - 테스트: `.claude/skills/test` 스킬 참조
 - 봇 실행: `python src/main.py`
 - 의존성 설치: `pip install -r requirements.txt`
+- 기간(월간) 결산: `python -m scripts.monthly_settlement --account my_test --start 2026-06-01 --end 2026-06-30`
+- 순입금 백필 (net_deposit 미기록 과거 구간): `python -m scripts.backfill_net_deposit --account my_test [--dry-run]`
 
 ## 프로젝트 구조
 ```
@@ -24,7 +26,8 @@ src/
 │   ├── engine/          # base, simple, regime, registry
 │   ├── logic/           # regime_analyzer, rebalancer, volatility_targeter
 │   ├── interfaces.py    # 추상 인터페이스 정의
-│   └── models.py        # 도메인 모델 및 Enum
+│   ├── models.py        # 도메인 모델 및 Enum
+│   └── settlement.py    # 기간 결산 순수 로직 (기초/기말자산, 순입금, 손익, TWR)
 ├── infra/
 │   ├── broker/          # KIS domestic/overseas/mock 브로커
 │   ├── data.py          # YFinanceLoader
@@ -32,6 +35,9 @@ src/
 │   └── notifier.py      # SlackNotifier
 ├── utils/               # IndicatorCalculator, TradeLogger
 └── backtest/            # 백테스트 프레임워크 (runner, components, cache, fetcher)
+scripts/
+├── monthly_settlement.py    # summary.json 기반 기간 결산 CLI (계정별)
+└── backfill_net_deposit.py  # 과거 summary 레코드 net_deposit 백필
 tests/                   # 테스트 (80% 커버리지 요구)
 docs/                    # 웹 대시보드 및 데이터 저장
 accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
@@ -65,14 +71,22 @@ accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
 - `engine` - 사용할 엔진 이름 (레지스트리 키)
 - `kis_env_prefix` - 환경변수 prefix (예: "ACC1" → `ACC1_KIS_APP_KEY`)
 
+## 기간 결산 (net_deposit)
+- 봇이 매 실행 시 summary.json 레코드에 `net_deposit`(순입금 역산치)을 기록한다:
+  `당일현금 - 직전현금 - 당일체결현금영향 - 당일배당` (배당은 손익으로 집계)
+- `scripts/monthly_settlement.py`가 기간의 기초/기말자산, 순입금, 기간손익, TWR을 출력
+  (결산 항등식: 기간손익 = 기말자산 - 기초자산 - 순입금액)
+- net_deposit 도입 이전 레코드는 `scripts/backfill_net_deposit.py`로 백필
+
 ## CI/CD
-GitHub Actions 워크플로우 6개:
+GitHub Actions 워크플로우 7개:
 - `python-test.yml` - main 브랜치 Push/PR 시 단위 테스트 (80% 커버리지 필수)
 - `broker-live-test.yml` - 수동 실행: KIS 브로커 라이브 API 테스트
 - `download-data.yml` - 수동 실행: 백테스트용 시장 데이터 다운로드
 - `gdrive-sync.yml` - main Push 또는 수동: Google Drive 백업
 - `run-compare-backtest.yml` - 수동 실행: 전략 엔진 비교 백테스트
 - `live-trading-domestic.yml` - 평일 KST 10:00 스케줄 + 수동 실행: 국내 계정 라이브 실거래. 한국 공휴일 자동 스킵, 실행 후 docs/data/**/*.json 자동 커밋
+- `monthly-settlement.yml` - 수동 실행: 계정/기간 지정 결산 리포트를 job summary에 출력
 
 테스트 시 `test_infra_broker_kis_domestic_live.py`는 CI에서 제외됨.
 

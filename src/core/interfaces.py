@@ -80,7 +80,9 @@ class IRepository(ABC):
     def save_daily_summary(self, market_data: MarketData, signal: TradeSignal,
                            portfolio: Portfolio, regime: MarketRegime,
                            daily_dividend: float = 0.0,
-                           date_override: Optional[str] = None) -> None: ...
+                           date_override: Optional[str] = None,
+                           benchmarks: Optional[dict] = None,
+                           executions: Optional[List[TradeExecution]] = None) -> None: ...
     @abstractmethod
     def save_trade_history(self, executions: List[TradeExecution], portfolio: Portfolio,
                            reason: str, sim_date: Optional[str] = None) -> None: ...

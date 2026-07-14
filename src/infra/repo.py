@@ -6,6 +6,7 @@ from typing import List, Dict, Optional
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
 from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
+from src.core.settlement import derive_net_deposit
 
 _KST = timezone(timedelta(hours=9))
 from src.core.interfaces import IRepository
@@ -62,7 +63,8 @@ class JsonRepository(IRepository):
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,
                            regime: MarketRegime, daily_dividend: float = 0.0,
                            date_override: Optional[str] = None,
-                           benchmarks: Optional[dict] = None):
+                           benchmarks: Optional[dict] = None,
+                           executions: Optional[List[TradeExecution]] = None):
         """일별 요약 저장 (Append 방식)"""
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(self.asset_groups.get('A', []))
@@ -72,12 +74,19 @@ class JsonRepository(IRepository):
         val_c_pure_stock = pf.get_group_value(self.asset_groups.get('C', []))
         val_c_total = val_c_pure_stock + pf.total_cash
 
+        record_date = date_override or market.date
+        data = self._load_json(self.summary_file, default=[])
+        net_deposit = self._derive_summary_net_deposit(
+            data, record_date, pf, executions, daily_dividend)
+
         record = {
-            "date": date_override or market.date,
+            "date": record_date,
 
             # [자산 정보]
             "total_value": pf.total_value,
             "cash_balance": pf.total_cash,  # [추가]
+            # [결산] 직전 레코드 이후 순입금 역산치 (기간 결산의 손익/TWR 산출용)
+            "net_deposit": net_deposit,
             "group_a": val_a,
             "group_b": val_b,
             "group_c": val_c_total,
@@ -104,8 +113,6 @@ class JsonRepository(IRepository):
             "rebalance_threshold": signal.rebalance_threshold,
         }
 
-        data = self._load_json(self.summary_file, default=[])
-
         # 같은 날짜 레코드가 있으면 덮어쓰고(upsert), 없으면 추가
         idx = next((i for i, r in enumerate(data) if r.get('date') == record['date']), None)
         if idx is not None:
@@ -117,6 +124,37 @@ class JsonRepository(IRepository):
             data = data[-self.max_summary_records:]
 
         self._save_json(self.summary_file, data)
+
+    @staticmethod
+    def _derive_summary_net_deposit(data: List[dict], record_date: str, pf: Portfolio,
+                                    executions: Optional[List[TradeExecution]],
+                                    daily_dividend: float) -> Optional[float]:
+        """직전 요약 레코드와 현금 차이로 이번 기록분 순입금을 역산한다.
+
+        같은 날짜 재실행(수동 재실행 등)은 그날 기존 net_deposit에 이번 실행의
+        변동분만 누적한다. 이때 배당은 첫 실행에서 이미 차감했으므로 다시 빼지
+        않는다. 마지막 레코드보다 과거 날짜를 덮어쓰는 경우(비정상 경로)는
+        역산 근거가 없으므로 기존 값을 보존한다.
+        """
+        prev = data[-1] if data else None
+        prev_cash = prev.get("cash_balance") if prev else None
+
+        if prev is not None and prev.get("date") == record_date:
+            run_nd = derive_net_deposit(pf.total_cash, prev_cash or 0.0, executions,
+                                        daily_dividend=0.0)
+            return round(float(prev.get("net_deposit") or 0.0) + run_nd, 2)
+
+        old = next((r for r in data if r.get("date") == record_date), None)
+        if old is not None:
+            return old.get("net_deposit")
+
+        return derive_net_deposit(pf.total_cash, prev_cash, executions,
+                                  daily_dividend=daily_dividend)
+
+    def load_summaries(self) -> List[dict]:
+        """일별 요약 레코드 목록을 로드한다 (기간 결산용, 날짜 오름차순 저장 순서)."""
+        return self._load_json(self.summary_file, default=[])
+
     def save_trade_history(self, executions: List[TradeExecution], pf: Portfolio, reason: str, sim_date: str = None):
         """매매 내역 저장 - Append"""
         if not executions:
