@@ -21,6 +21,7 @@ from src.core.logic.dip_buy_indicators import DipBuyIndicatorCalculator
 from src.core.logic.dip_buy_planner import DipBuyPlanner, DipBuyState
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, Order, OrderAction,
+    DecisionFactor,
 )
 
 
@@ -115,6 +116,37 @@ class DipBuyEngine(TradingEngine):
         self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
         return signal, executions, final_pf, is_rebalancing
+
+    def decision_factors(
+        self,
+        market_data: MarketData,
+        regime: MarketRegime,
+        exposure: float,
+        signal: TradeSignal,
+        portfolio: Portfolio,
+    ) -> List[DecisionFactor]:
+        """눌림목 분할매수: MA 이격·RSI·트리거 무장 상태가 결정요소다."""
+        factors: List[DecisionFactor] = []
+        s = self.dip_signals
+        price = portfolio.current_prices.get(self._ticker, 0.0)
+        if s is not None:
+            if price <= 0 and not math.isnan(s.price):
+                price = s.price
+            for key, ma, label in (("ma20", s.ma20, "MA20 이격"),
+                                   ("ma60", s.ma60, "MA60 이격"),
+                                   ("ma120", s.ma120, "MA120 이격")):
+                if price > 0 and not math.isnan(ma) and ma > 0:
+                    factors.append(DecisionFactor(f"gap_{key}", label,
+                                                  price / ma - 1.0, "percent",
+                                                  threshold=self.BAND))
+            if not math.isnan(s.rsi):
+                factors.append(DecisionFactor("rsi", "RSI(14)", s.rsi, "number",
+                                              threshold=70.0))
+        armed = self.dip_state.armed
+        armed_count = sum(1 for v in armed.values() if v)
+        factors.append(DecisionFactor("armed_triggers", "무장 트리거",
+                                      f"{armed_count}/{len(armed)}", "text"))
+        return factors
 
     # ── 현금 저수지(SHV) 관리 ──────────────────────────────────────────────
     def _deployable_cash(self, pf: Portfolio) -> float:

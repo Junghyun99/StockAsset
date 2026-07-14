@@ -153,3 +153,65 @@ def test_multi_day_cycle_executes_orders(tmp_path):
         engine.run_one_cycle(loader, sim_date=f"2023-10-{27 + i:02d}")
     # 적어도 한 번은 QLD를 보유하거나 현금이 변동했어야 함 (트리거 발동 시)
     assert broker.cash <= 10000.0
+
+
+# ─────────────────────────────────────────────────────────────────
+# 결정요소 (decision_factors)
+# ─────────────────────────────────────────────────────────────────
+
+def test_decision_factors_are_dip_indicator_centric(tmp_path):
+    """결정요소는 MA 이격·RSI·무장 트리거 (국면/이격도 아님)."""
+    from src.core.models import MarketData, MarketRegime, TradeSignal
+    engine, _, _ = _make_engine(tmp_path)
+    engine.dip_signals = DipBuySignals(date="2026-07-14", price=100.0,
+                                       ma20=98.0, ma60=95.0, ma120=90.0,
+                                       rsi=45.0, ma200=88.0)
+    pf = Portfolio(total_cash=0.0, holdings={"QLD": 1}, current_prices={"QLD": 100.0})
+    md = MarketData("2026-07-14", 100.0, 90.0, 0.2, 0.05, -0.05, 18.0)
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 1.0,
+                                      TradeSignal(1.0, [], "이유"), pf)
+
+    by_key = {f.key: f for f in factors}
+    assert factors[0].key == "gap_ma20"                     # 대표 요소
+    assert by_key["gap_ma20"].value == pytest.approx(100.0 / 98.0 - 1.0)
+    assert by_key["gap_ma20"].threshold == engine.BAND
+    assert by_key["gap_ma60"].value == pytest.approx(100.0 / 95.0 - 1.0)
+    assert by_key["gap_ma120"].value == pytest.approx(100.0 / 90.0 - 1.0)
+    assert by_key["rsi"].value == pytest.approx(45.0)
+    assert by_key["rsi"].threshold == 70.0
+    assert by_key["armed_triggers"].value == "4/4"
+    assert "regime" not in by_key
+
+
+def test_decision_factors_skip_nan_indicators(tmp_path):
+    """지표가 NaN이면 해당 요소는 생략하고 무장 상태만 반환."""
+    from src.core.models import MarketData, MarketRegime, TradeSignal
+    engine, _, _ = _make_engine(tmp_path)
+    engine.dip_signals = DipBuySignals(date="", price=float("nan"),
+                                       ma20=float("nan"), ma60=float("nan"),
+                                       ma120=float("nan"), rsi=float("nan"))
+    pf = Portfolio(total_cash=0.0, holdings={}, current_prices={})
+    md = MarketData("2026-07-14", 100.0, 90.0, 0.2, 0.05, -0.05, 18.0)
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 1.0,
+                                      TradeSignal(1.0, [], "이유"), pf)
+
+    assert [f.key for f in factors] == ["armed_triggers"]
+
+
+def test_decision_factors_price_falls_back_to_signals(tmp_path):
+    """포트폴리오에 현재가가 없으면 dip_signals의 종가로 이격을 계산."""
+    from src.core.models import MarketData, MarketRegime, TradeSignal
+    engine, _, _ = _make_engine(tmp_path)
+    engine.dip_signals = DipBuySignals(date="2026-07-14", price=110.0,
+                                       ma20=100.0, ma60=float("nan"),
+                                       ma120=float("nan"), rsi=float("nan"))
+    pf = Portfolio(total_cash=1000.0, holdings={}, current_prices={})
+    md = MarketData("2026-07-14", 100.0, 90.0, 0.2, 0.05, -0.05, 18.0)
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 1.0,
+                                      TradeSignal(1.0, [], "이유"), pf)
+
+    by_key = {f.key: f for f in factors}
+    assert by_key["gap_ma20"].value == pytest.approx(0.10)
