@@ -46,7 +46,7 @@ import {
     renderDividendSummaryCards,
     renderWinLossCards,
     initTooltips
-} from './ui.js?v=20260624-7';
+} from './ui.js?v=20260714-1';
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-5';
 

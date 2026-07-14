@@ -96,13 +96,8 @@ export function updateSummaryCards(statusData, summaryData, marketType = 'overse
         }
     }
 
-    // [2] 시장 국면 (Market Regime)
-    const regimeEl = document.getElementById('regime-text');
-    regimeEl.innerText = strategy.regime.replace('_', ' ');
-    regimeEl.className = 'fw-bold mb-0 ' + getRegimeColorClass(strategy.regime);
-
-    // [2-2] 모멘텀 점수
-    document.getElementById('momentum-score').innerText = (strategy.market_score.spy_momentum * 100).toFixed(2) + '%';
+    // [2] 전략 결정요소 (엔진별 self-describing; 구버전 status는 국면 폴백)
+    renderDecisionCard(strategy);
 
     // [2-3] 트리거 사유
     const triggerEl = document.getElementById('trigger-reason');
@@ -127,6 +122,56 @@ export function updateSummaryCards(statusData, summaryData, marketType = 'overse
     if (strategy.market_score.spy_volatility !== undefined) {
         volEl.innerText = (strategy.market_score.spy_volatility * 100).toFixed(1) + '%';
     }
+}
+
+/** DecisionFactor 값 포맷팅 (format: percent | number | text) */
+function formatFactorValue(f) {
+    if (typeof f.value === 'number') {
+        if (f.format === 'percent') return (f.value * 100).toFixed(2) + '%';
+        if (f.format === 'number') return f.value.toFixed(2);
+    }
+    return String(f.value ?? '-');
+}
+
+/** threshold 위반 여부: 음수 기준(MDD 등)은 이하, 양수 기준(VIX/이격도)은 이상 */
+function isFactorBreached(f) {
+    if (f.threshold == null || typeof f.value !== 'number') return false;
+    return f.threshold < 0 ? f.value <= f.threshold : f.value >= f.threshold;
+}
+
+/**
+ * 전략 결정요소 카드 렌더링.
+ * 엔진이 status.json에 자기서술한 decision_factors 배열을 그대로 그린다
+ * (첫 항목 = 대표 요소). 배열이 없는 구버전 status.json은 국면+모멘텀 폴백.
+ */
+export function renderDecisionCard(strategy) {
+    const container = document.getElementById('decision-factors');
+    if (!container) return;
+
+    const factors = strategy.decision_factors;
+    if (!Array.isArray(factors) || factors.length === 0) {
+        const regime = strategy.regime.replace('_', ' ');
+        container.innerHTML =
+            `<h3 class="fw-bold mb-0 ${getRegimeColorClass(strategy.regime)}">${regime}</h3>` +
+            `<div class="mt-1 text-muted small">모멘텀: ${(strategy.market_score.spy_momentum * 100).toFixed(2)}%</div>`;
+        return;
+    }
+
+    const [head, ...rest] = factors;
+    const headClass = head.key === 'regime'
+        ? getRegimeColorClass(String(head.value)) : 'text-dark';
+    const headValue = head.key === 'regime'
+        ? String(head.value).replace('_', ' ') : formatFactorValue(head);
+    const rows = rest.slice(0, 3).map(f =>
+        `<div class="d-flex justify-content-between align-items-center small">` +
+        `<span class="text-muted">${f.label}</span>` +
+        `<span class="fw-bold ${isFactorBreached(f) ? 'text-danger' : ''}">${formatFactorValue(f)}</span>` +
+        `</div>`
+    ).join('');
+    container.innerHTML =
+        `<div class="text-muted small">${head.label}</div>` +
+        `<h3 class="fw-bold mb-0 ${headClass}">${headValue}</h3>` +
+        (rows ? `<div class="mt-1">${rows}</div>` : '');
 }
 
 /**
