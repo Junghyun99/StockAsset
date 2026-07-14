@@ -8,7 +8,7 @@ import pandas as pd
 from src.core.interfaces import IDataProvider, IBrokerAdapter, IRepository, ILogger, INotifier
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, DayResult,
-    ExecutionStatus,
+    ExecutionStatus, DecisionFactor,
 )
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
@@ -212,6 +212,29 @@ class TradingEngine:
 
         return regime, exposure, nan_fields
 
+    def decision_factors(
+        self,
+        market_data: MarketData,
+        regime: MarketRegime,
+        exposure: float,
+        signal: TradeSignal,
+        portfolio: Portfolio,
+    ) -> List[DecisionFactor]:
+        """이 엔진의 의사결정 핵심 요소 목록 (Step 6에서 저장, 대시보드 표시용).
+
+        첫 항목이 대시보드 카드의 대표(헤드라인) 요소가 된다.
+        기본 전략은 국면 판단이 핵심이므로 국면 관련 지표를 반환하며,
+        서브클래스는 자기 전략의 실제 결정요소로 오버라이드한다.
+        """
+        return [
+            DecisionFactor("regime", "시장 국면", regime.value, "text"),
+            DecisionFactor("momentum", "SPY 모멘텀", market_data.spy_momentum, "percent"),
+            DecisionFactor("vix", "VIX", market_data.vix, "number", threshold=30.0),
+            DecisionFactor("mdd", "SPY MDD", market_data.spy_mdd, "percent", threshold=-0.20),
+            DecisionFactor("volatility", "실현변동성(21d)", market_data.spy_volatility,
+                           "percent", threshold=self.targeter.target_vol),
+        ]
+
     def get_portfolio(self) -> Portfolio:
         """Step 4: 포트폴리오 조회 후 실시간 가격 업데이트 + 벤치마크 현재가 수집."""
         portfolio = self.broker.get_portfolio()
@@ -382,14 +405,17 @@ class TradingEngine:
         """Step 6: 저장 3종 호출."""
         effective_record_date = record_date or sim_date or market_data.date
         rebalancing_date = effective_record_date if is_rebalancing else None
+        factors = self.decision_factors(market_data, regime, exposure, signal, final_pf)
         self.repo.save_daily_summary(market_data, signal, final_pf, regime,
                                      daily_dividend=daily_dividend, date_override=record_date,
-                                     benchmarks=benchmark_prices)
+                                     benchmarks=benchmark_prices,
+                                     decision_factors=factors)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,
             sim_date=sim_date,
             rebalancing_date=rebalancing_date,
+            decision_factors=factors,
         )
 
     # ── Private helpers (NOT part of template) ────────────────────────────────

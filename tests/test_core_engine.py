@@ -646,6 +646,49 @@ def test_run_one_cycle_day_result_contains_daily_dividend():
 
 
 # ─────────────────────────────────────────────────────────────────
+# 결정요소 (decision_factors)
+# ─────────────────────────────────────────────────────────────────
+
+def test_default_decision_factors_are_regime_centric():
+    """기본 엔진의 결정요소는 국면 중심 (대표 요소 = regime)."""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    mocks["targeter"].target_vol = 0.15
+    md = _make_market_data()
+    signal = TradeSignal(0.9, [], "Bull (모니터링)")
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 0.9, signal, _make_portfolio())
+
+    keys = [f.key for f in factors]
+    assert keys[0] == "regime"  # 대표(헤드라인) 요소
+    assert {"momentum", "vix", "mdd", "volatility"} <= set(keys)
+    assert factors[0].value == "Bull"
+    assert factors[0].format == "text"
+    by_key = {f.key: f for f in factors}
+    assert by_key["vix"].threshold == 30.0
+    assert by_key["mdd"].threshold == -0.20
+    assert by_key["volatility"].threshold == 0.15
+
+
+def test_persist_passes_decision_factors_to_repo():
+    """run_one_cycle 통합 경로: persist가 결정요소를 repo 저장 2종에 전달."""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    engine.run_one_cycle(mocks["data_provider"], sim_date="2026-07-14")
+
+    _, kwargs = mocks["repo"].update_status.call_args
+    factors = kwargs["decision_factors"]
+    assert factors and factors[0].key == "regime"
+    _, kwargs = mocks["repo"].save_daily_summary.call_args
+    assert kwargs["decision_factors"] == factors
+
+
+# ─────────────────────────────────────────────────────────────────
 # 거래 후 포트폴리오 조회 실패 → 거래 기록은 반드시 저장
 # ─────────────────────────────────────────────────────────────────
 
