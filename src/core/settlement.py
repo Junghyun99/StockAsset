@@ -109,8 +109,9 @@ def compute_settlement(records: List[dict], start: str, end: str) -> SettlementR
         contrib = in_range[1:]
         twr_seq = in_range
 
-    start_asset = float(base["total_value"])
-    end_asset = float(in_range[-1]["total_value"])
+    # total_value가 null(시세조회 실패 등)이어도 결산 전체가 중단되지 않도록 방어
+    start_asset = _finite(base.get("total_value")) or 0.0
+    end_asset = _finite(in_range[-1].get("total_value")) or 0.0
     net_deposit = round(sum(float(r.get("net_deposit") or 0.0) for r in contrib), 2)
     profit = round(end_asset - start_asset - net_deposit, 2)
     twr_pct = _twr_pct(twr_seq)
@@ -131,23 +132,44 @@ def _twr_pct(seq: List[dict]) -> Optional[float]:
 
     각 하위기간 수익률 = V_end / (V_start + CF) - 1, CF는 해당 레코드의 net_deposit
     (기초에 유입되었다고 가정). 시퀀스가 2개 미만이면 None.
+
+    비정상 레코드(total_value가 null이거나 0 이하 - 시세조회 실패 등)는 단순히
+    건너뛰지 않고 다음 정상 레코드까지 하위기간을 병합하며, 그 사이 발생한
+    순입금은 병합 구간 분모에 누적 반영한다. 단순 스킵은 비정상 레코드 전후의
+    수익률 변화를 통째로 누락시켜 TWR을 왜곡하기 때문이다.
+    유효한 하위기간이 하나도 없으면 None을 반환한다.
     """
     if len(seq) < 2:
         return None
     twr = 1.0
-    for i in range(1, len(seq)):
-        start_val = _finite(seq[i - 1].get("total_value"))
-        end_val = _finite(seq[i].get("total_value"))
-        # 기준/종료 자산이 없거나(시세조회 실패로 null) 0 이하이면 왜곡되므로 스킵.
-        # 특히 end_val이 0이면 곱셈이 전체 TWR을 0(-100%)으로 붕괴시키므로 반드시 가드.
-        if start_val is None or end_val is None or start_val <= 0 or end_val <= 0:
+    last_valid_val = None   # 직전 정상 레코드의 자산 (병합 구간의 기준값)
+    accumulated_cf = 0.0    # 병합 구간에 누적된 순입금
+    has_valid_period = False
+
+    for rec in seq:
+        val = _finite(rec.get("total_value"))
+        valid = val is not None and val > 0
+
+        if last_valid_val is None:
+            # 아직 기준값이 없으면 첫 정상 레코드를 기준으로 삼는다
+            # (기준 레코드의 net_deposit은 자산에 이미 반영되어 있으므로 미사용)
+            if valid:
+                last_valid_val = val
             continue
-        cf = float(seq[i].get("net_deposit") or 0.0)
-        denom = start_val + cf
-        if denom <= 0:
-            # 대규모 출금 등으로 분모가 0 이하가 되면 수익률이 왜곡되므로 스킵
-            continue
-        twr *= end_val / denom
+
+        accumulated_cf += float(rec.get("net_deposit") or 0.0)
+        if valid:
+            denom = last_valid_val + accumulated_cf
+            if denom > 0:
+                twr *= val / denom
+                has_valid_period = True
+            # 대규모 출금 등으로 분모가 0 이하이면 해당 병합 구간은 왜곡 방지를
+            # 위해 반영하지 않고, 이번 정상값을 새 기준으로 삼는다
+            last_valid_val = val
+            accumulated_cf = 0.0
+
+    if not has_valid_period:
+        return None
     return round((twr - 1) * 100, 4)
 
 

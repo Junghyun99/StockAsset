@@ -136,28 +136,60 @@ class TestComputeSettlement:
             _rec("2026-06-28", 1200.0),
         ]
         r = compute_settlement(recs, "2026-06-01", "2026-06-28")
-        # 0 구간은 스킵되고 정상 구간만 반영 (1200/1100-1 = +9.09%)
-        assert r.twr_pct == pytest.approx(9.0909, abs=1e-3)
+        # 0 구간은 다음 정상 레코드까지 병합되어 전체 변화가 반영됨 (1200/1000-1 = +20%)
+        assert r.twr_pct == pytest.approx(20.0)
 
-    def test_twr_skips_null_total_value(self):
-        """total_value가 None(null)인 구간도 예외 없이 스킵된다."""
+    def test_twr_merges_null_total_value_period(self):
+        """total_value가 None(null)인 구간은 병합되어 전체 수익률이 유지된다."""
         recs = [
             _rec("2026-06-01", 1000.0),
             {"date": "2026-06-10", "total_value": None, "net_deposit": 0.0},
             _rec("2026-06-28", 1100.0),
         ]
         r = compute_settlement(recs, "2026-06-01", "2026-06-28")
-        assert r.twr_pct is not None
+        assert r.twr_pct == pytest.approx(10.0)
+
+    def test_twr_merged_period_accumulates_cash_flow(self):
+        """병합된 비정상 구간의 순입금도 분모에 누적 반영된다."""
+        recs = [
+            _rec("2026-06-01", 1000.0),
+            # 비정상 레코드에 1000 입금 -> 다음 정상 구간 분모는 1000+1000
+            {"date": "2026-06-10", "total_value": None, "net_deposit": 1000.0},
+            _rec("2026-06-28", 2200.0),
+        ]
+        r = compute_settlement(recs, "2026-06-01", "2026-06-28")
+        assert r.twr_pct == pytest.approx(10.0)  # 2200/(1000+1000)-1
 
     def test_twr_skips_nonpositive_start_value(self):
-        """기준 자산이 0 이하인 구간도 스킵된다 (예외 없이 처리)."""
+        """기준 자산이 0 이하이면 다음 정상 레코드가 기준이 된다 (예외 없이 처리)."""
         recs = [
             _rec("2026-06-01", 0.0),
             _rec("2026-06-15", 100.0, net_deposit=100.0),
             _rec("2026-06-28", 150.0),
         ]
         r = compute_settlement(recs, "2026-06-01", "2026-06-28")
-        assert r.twr_pct is not None
+        assert r.twr_pct == pytest.approx(50.0)  # 150/100-1
+
+    def test_twr_none_when_no_valid_period(self):
+        """유효한 하위기간이 하나도 없으면 0%가 아니라 None을 반환한다."""
+        recs = [
+            _rec("2026-06-01", 1000.0),
+            {"date": "2026-06-10", "total_value": None, "net_deposit": 0.0},
+            {"date": "2026-06-28", "total_value": None, "net_deposit": 0.0},
+        ]
+        r = compute_settlement(recs, "2026-06-01", "2026-06-28")
+        assert r.twr_pct is None
+
+    def test_null_total_value_at_boundaries_does_not_crash(self):
+        """기초/기말 레코드의 total_value가 null이어도 결산이 중단되지 않는다."""
+        recs = [
+            {"date": "2026-06-01", "total_value": None, "net_deposit": 0.0},
+            _rec("2026-06-15", 1000.0),
+            {"date": "2026-06-28", "total_value": None, "net_deposit": 0.0},
+        ]
+        r = compute_settlement(recs, "2026-06-01", "2026-06-30")
+        assert r.start_asset == 0.0
+        assert r.end_asset == 0.0
 
     def test_records_sorted_defensively(self):
         """저장 순서가 뒤섞여 있어도 날짜순으로 정렬해 계산한다"""
