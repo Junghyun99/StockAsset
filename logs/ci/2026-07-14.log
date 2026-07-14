@@ -1,0 +1,82 @@
+2026-07-14 14:01:19,869 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-07-14 14:01:19,871 [INFO] Loaded 2 account(s) from accounts.yaml
+2026-07-14 14:01:19,871 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-07-14 14:01:19,871 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-14 14:01:19,871 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-14 14:01:19,872 [INFO] Restored previous regime: Bull
+2026-07-14 14:01:19,872 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE
+2026-07-14 14:01:19,872 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-14 14:01:19,872 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-14 14:01:19,873 [INFO] Restored previous regime: Bull
+2026-07-14 14:01:19,873 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-07-14 14:01:21,034 [INFO] >>> Step 1: Data Collection
+2026-07-14 14:01:21,034 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-07-14 14:01:21,342 [INFO] [Data] VIX fetched: 17.16
+2026-07-14 14:01:21,343 [INFO] >>> Step 2: Indicator Calculation
+2026-07-14 14:01:21,346 [INFO] Market Data: Price=749.17, VIX=17.16, MDD=-1.37%
+2026-07-14 14:01:21,346 [INFO] >>> Step 3: Strategy Analysis
+2026-07-14 14:01:21,346 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-07-14 14:01:21,346 [INFO] >>> Step 4: Portfolio Status
+2026-07-14 14:01:21,997 [INFO] Fetching Real-time prices from Broker...
+2026-07-14 14:01:26,493 [INFO] Current Portfolio: Cash=$38,261, Value=$4,100,466
+2026-07-14 14:01:26,494 [INFO] >>> Step 5: Rebalancing
+2026-07-14 14:01:26,494 [INFO] [입력] Regime=Bull | TargetExposure=1.00 | TotalValue=$4,100,466.00 | Cash=$38,261.00
+2026-07-14 14:01:26,494 [INFO] [포트폴리오 현황]
+2026-07-14 14:01:26,494 [INFO]   A그룹(성장): $1,544,495.00 ( 37.7%)
+2026-07-14 14:01:26,494 [INFO]   B그룹(안전): $2,517,710.00 ( 61.4%)
+2026-07-14 14:01:26,494 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-07-14 14:01:26,494 [INFO]   현금(예수금): $  38,261.00 (  0.9%)
+2026-07-14 14:01:26,494 [INFO] [비중 판정] ratio_A=0.380  ratio_B=0.620
+2026-07-14 14:01:26,494 [INFO]   A 상대이탈: 4.9% | B 상대이탈: 3.3% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-07-14 14:01:26,494 [INFO] [목표 금액]
+2026-07-14 14:01:26,494 [INFO]   A그룹: 현재 $1,544,495.00 → 목표 $1,559,042.25  (exposure 1.00 × ratio 0.38)
+2026-07-14 14:01:26,495 [INFO]   B그룹: 현재 $2,517,710.00 → 목표 $2,541,423.75  (exposure 1.00 × ratio 0.62)
+2026-07-14 14:01:26,495 [INFO]   C그룹: 현재 $      0.00 → 목표 $      0.00  (잔여)
+2026-07-14 14:01:26,495 [INFO] [A그룹(성장) 종목별]
+2026-07-14 14:01:26,495 [INFO]   KODEX 코스피: 보유 11주 $772,035.00 → 목표 $779,521.13 | diff=+7,486.13 → 주문 없음 (수량 미달)
+2026-07-14 14:01:26,495 [INFO]   TIGER 미국나스닥100: 보유 4주 $772,460.00 → 목표 $779,521.13 | diff=+7,061.13 → 주문 없음 (수량 미달)
+2026-07-14 14:01:26,495 [INFO] [B그룹(안전) 종목별]
+2026-07-14 14:01:26,495 [INFO]   ACE 국고채10년: 보유 10주 $820,750.00 → 목표 $847,141.25 | diff=+26,391.25 → 주문 없음 (수량 미달)
+2026-07-14 14:01:26,495 [INFO]   TIGER 미국채10년선물: 보유 64주 $849,280.00 → 목표 $847,141.25 | diff=-2,138.75 → SELL 1주 @$13270.00
+2026-07-14 14:01:26,495 [INFO]   ACE KRX금현물: 보유 32주 $847,680.00 → 목표 $847,141.25 | diff=-538.75 → SELL 1주 @$26490.00
+2026-07-14 14:01:26,495 [INFO] [최종 주문] 주문 없음
+2026-07-14 14:01:26,495 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-07-14 14:01:26,495 [INFO] No Rebalance Needed.
+2026-07-14 14:01:26,950 [INFO] >>> Step 6: Archiving Data
+2026-07-14 14:01:26,954 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
+2026-07-14 14:01:26,954 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-07-14 14:01:27,753 [INFO] >>> Step 1: Data Collection
+2026-07-14 14:01:27,754 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-14 14:01:27,905 [INFO] [Data] VIX fetched: 17.16
+2026-07-14 14:01:27,906 [INFO] >>> Step 2: Indicator Calculation
+2026-07-14 14:01:27,909 [INFO] Market Data: Price=192915.00, VIX=17.16, MDD=-7.15%
+2026-07-14 14:01:27,909 [INFO] >>> Step 3: Strategy Analysis
+2026-07-14 14:01:27,909 [INFO] >>> VolManaged: vol=24.07% → L=0.91x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 91%, 현금 9%)
+2026-07-14 14:01:27,909 [INFO] Regime: Bull | Target Exposure: 0.91
+2026-07-14 14:01:27,910 [INFO] >>> Step 4: Portfolio Status
+2026-07-14 14:01:28,561 [INFO] Fetching Real-time prices from Broker...
+2026-07-14 14:01:31,860 [INFO] Current Portfolio: Cash=$433,424, Value=$49,418,354
+2026-07-14 14:01:31,861 [INFO] >>> Step 5: Rebalancing
+2026-07-14 14:01:31,861 [INFO] [입력] Regime=Bull | TargetExposure=0.91 | TotalValue=$49,418,354.00 | Cash=$433,424.00
+2026-07-14 14:01:31,861 [INFO] [포트폴리오 현황]
+2026-07-14 14:01:31,861 [INFO]   A그룹(성장): $        0.00 (  0.0%)
+2026-07-14 14:01:31,861 [INFO]   B그룹(안전): $45,761,145.00 ( 92.6%)
+2026-07-14 14:01:31,861 [INFO]   C그룹(현금): $3,223,785.00 (  6.5%)
+2026-07-14 14:01:31,861 [INFO]   현금(예수금): $ 433,424.00 (  0.9%)
+2026-07-14 14:01:31,861 [INFO] [비중 판정] ratio_A=0.000  ratio_B=1.000
+2026-07-14 14:01:31,861 [INFO]   A 상대이탈: 0.0% | B 상대이탈: 0.0% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-07-14 14:01:31,861 [INFO] [목표 금액]
+2026-07-14 14:01:31,861 [INFO]   A그룹: 현재 $      0.00 → 목표 $      0.00  (exposure 0.91 × ratio 0.00)
+2026-07-14 14:01:31,861 [INFO]   B그룹: 현재 $45,761,145.00 → 목표 $45,176,017.15  (exposure 0.91 × ratio 1.00)
+2026-07-14 14:01:31,861 [INFO]   C그룹: 현재 $3,223,785.00 → 목표 $4,242,336.85  (잔여)
+2026-07-14 14:01:31,862 [INFO] [A그룹(성장) 종목별]
+2026-07-14 14:01:31,862 [INFO]   TIGER 미국나스닥100레버리지(합성): 보유 0주 $0.00 → 목표 $0.00 | diff=+0.00 → 주문 없음
+2026-07-14 14:01:31,862 [INFO] [B그룹(안전) 종목별]
+2026-07-14 14:01:31,862 [INFO]   TIGER 미국나스닥100: 보유 237주 $45,761,145.00 → 목표 $45,176,017.15 | diff=-585,127.85 → SELL 4주 @$193085.00
+2026-07-14 14:01:31,862 [INFO] [C그룹(현금) 종목별]
+2026-07-14 14:01:31,862 [INFO]   KODEX CD금리액티브: 보유 3주 $3,223,785.00 → 목표 $4,242,336.85 | diff=+1,018,551.85 → 주문 없음 (수량 미달)
+2026-07-14 14:01:31,862 [INFO] [최종 주문] 주문 없음
+2026-07-14 14:01:31,862 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-07-14 14:01:31,862 [INFO] No Rebalance Needed.
+2026-07-14 14:01:32,349 [INFO] >>> Step 6: Archiving Data
+2026-07-14 14:01:32,350 [INFO] Cycle Completed: regime=Bull exposure=0.91 orders=0 executions=0
