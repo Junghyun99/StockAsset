@@ -215,3 +215,63 @@ def test_full_exposure_nan_end_to_end():
     assert result.is_rebalancing is False
     assert result.executions == []
     mocks["rebalancer"].generate_signal.assert_not_called()
+
+
+# ─────────────────────────────────────────────────────────────────
+# 결정요소 (decision_factors)
+# ─────────────────────────────────────────────────────────────────
+
+def test_decision_factors_are_ratio_deviation_centric():
+    """Full Exposure 결정요소는 국면이 아니라 목표 비율 대비 이격도."""
+    engine, mocks = _make_engine()
+    mocks["rebalancer"].groups = {'A': ['SSO', 'QLD'], 'B': ['IEF', 'GLD'], 'C': ['SHV']}
+    md = _make_market_data()
+    # A=600 (SSO 6주), B=400 (IEF 4주) → 현재 A비율 0.6, 목표 0.5 → 상대이탈 0.2
+    pf = Portfolio(total_cash=0.0, holdings={"SSO": 6, "IEF": 4},
+                   current_prices={"SSO": 100.0, "IEF": 100.0})
+    signal = TradeSignal(1.0, [], "이유", target_ratio_a=0.5, rebalance_threshold=0.075)
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 1.0, signal, pf)
+
+    by_key = {f.key: f for f in factors}
+    assert factors[0].key == "target_ratio_a"          # 대표 요소
+    assert by_key["target_ratio_a"].value == 0.5
+    assert by_key["current_ratio_a"].value == pytest.approx(0.6)
+    assert by_key["group_deviation"].value == pytest.approx(0.2)
+    assert by_key["group_deviation"].threshold == 0.075
+    assert by_key["rebalance_threshold"].value == 0.075
+    assert "regime" not in by_key                       # 국면은 결정요소 아님
+
+
+def test_decision_factors_skip_deviation_when_no_risky_assets():
+    """위험자산 평가액 0이면 현재비율/이격도 요소는 생략."""
+    engine, mocks = _make_engine()
+    mocks["rebalancer"].groups = {'A': ['SSO'], 'B': ['IEF']}
+    md = _make_market_data()
+    pf = Portfolio(total_cash=1000.0, holdings={}, current_prices={})
+    signal = TradeSignal(1.0, [], "이유", target_ratio_a=0.5, rebalance_threshold=0.075)
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 1.0, signal, pf)
+
+    keys = [f.key for f in factors]
+    assert "target_ratio_a" in keys
+    assert "current_ratio_a" not in keys
+    assert "group_deviation" not in keys
+
+
+def test_decision_factors_fallback_to_rebalancer_params():
+    """signal에 진단값이 없으면(모니터링 외 경로) rebalancer 목표 파라미터 사용."""
+    engine, mocks = _make_engine()
+    mocks["rebalancer"].groups = {'A': ['SSO'], 'B': ['IEF']}
+    mocks["rebalancer"].get_target_params.return_value = (0.3, 0.05)
+    md = _make_market_data()
+    pf = Portfolio(total_cash=0.0, holdings={"SSO": 3, "IEF": 7},
+                   current_prices={"SSO": 100.0, "IEF": 100.0})
+    signal = TradeSignal(1.0, [], "이유")  # target_ratio_a=None
+
+    factors = engine.decision_factors(md, MarketRegime.BULL, 1.0, signal, pf)
+
+    by_key = {f.key: f for f in factors}
+    assert by_key["target_ratio_a"].value == 0.3
+    assert by_key["group_deviation"].value == pytest.approx(0.0)
+    assert by_key["group_deviation"].threshold == 0.05

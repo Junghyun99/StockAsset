@@ -509,3 +509,38 @@ class FullExposureEngine(TradingEngine):
             )
 
         return regime, exposure, nan_fields
+
+    def decision_factors(
+        self,
+        market_data: MarketData,
+        regime: MarketRegime,
+        exposure: float,
+        signal: TradeSignal,
+        portfolio: Portfolio,
+    ) -> List[DecisionFactor]:
+        """Full Exposure 계열: 국면이 아니라 목표 비율 대비 이격도가 결정요소다."""
+        groups = self.rebalancer.groups
+        val_a = portfolio.get_group_value(groups.get('A', []))
+        val_b = portfolio.get_group_value(groups.get('B', []))
+        val_risky = val_a + val_b
+        # 신호에 담긴 진단값 우선 (그 시점의 실제 판단 기준), 없으면 현재 설정값
+        eff_a, threshold = self.rebalancer.get_target_params(regime)
+        target_a = signal.target_ratio_a if signal.target_ratio_a is not None else eff_a
+        rebalance_threshold = signal.rebalance_threshold \
+            if signal.rebalance_threshold is not None else threshold
+
+        factors = [
+            DecisionFactor("target_ratio_a", "목표 A그룹 비율", target_a, "percent"),
+        ]
+        if val_risky > 0:
+            current_a = val_a / val_risky
+            factors.append(DecisionFactor("current_ratio_a", "현재 A그룹 비율",
+                                          current_a, "percent"))
+            if target_a > 0:
+                rel_dev = abs(current_a - target_a) / target_a
+                factors.append(DecisionFactor("group_deviation", "A그룹 상대이탈",
+                                              rel_dev, "percent",
+                                              threshold=rebalance_threshold))
+        factors.append(DecisionFactor("rebalance_threshold", "리밸런싱 임계치",
+                                      rebalance_threshold, "percent"))
+        return factors
