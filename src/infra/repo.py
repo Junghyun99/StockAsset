@@ -5,7 +5,7 @@ import os
 from typing import List, Dict, Optional
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
-from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution
+from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution, DecisionFactor
 
 _KST = timezone(timedelta(hours=9))
 from src.core.interfaces import IRepository
@@ -62,7 +62,8 @@ class JsonRepository(IRepository):
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,
                            regime: MarketRegime, daily_dividend: float = 0.0,
                            date_override: Optional[str] = None,
-                           benchmarks: Optional[dict] = None):
+                           benchmarks: Optional[dict] = None,
+                           decision_factors: Optional[List[DecisionFactor]] = None):
         """일별 요약 저장 (Append 방식)"""
         # 각 그룹 순수 주식 평가액
         val_a = pf.get_group_value(self.asset_groups.get('A', []))
@@ -102,6 +103,9 @@ class JsonRepository(IRepository):
             # 이격도 시계열이 설정 변경과 무관하게 불변이 되도록 한다.
             "target_ratio_a": signal.target_ratio_a,
             "rebalance_threshold": signal.rebalance_threshold,
+
+            # [결정요소 시계열] 엔진이 선언한 key:value 축약본 (라벨/포맷은 status.json에만)
+            "factors": {f.key: f.value for f in (decision_factors or [])},
         }
 
         data = self._load_json(self.summary_file, default=[])
@@ -158,7 +162,8 @@ class JsonRepository(IRepository):
                       market_data: MarketData, # [필수] 데이터 매핑을 위해 필요
                       reason: str,
                       sim_date: str = None,          # [백테스트] 시뮬레이션 날짜 (없으면 현재 시각)
-                      rebalancing_date: str = None): # 리밸런싱 실행일 (None이면 기존 값 유지)
+                      rebalancing_date: str = None,  # 리밸런싱 실행일 (None이면 기존 값 유지)
+                      decision_factors: Optional[List[DecisionFactor]] = None):
 
         last_updated = sim_date if sim_date else datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S")
 
@@ -184,7 +189,9 @@ class JsonRepository(IRepository):
                     "spy_price": market_data.spy_price,
                     "spy_ma180": market_data.spy_ma180,
                     "spy_volatility": market_data.spy_volatility
-                }
+                },
+                # [결정요소] 엔진이 자기서술한 핵심 요소 목록 (프론트가 그대로 렌더링)
+                "decision_factors": [asdict(f) for f in (decision_factors or [])],
             },
 
             "portfolio": {
