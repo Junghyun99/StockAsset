@@ -18,6 +18,7 @@ from src.core.interfaces import IDataProvider
 from src.core.logic.volatility_targeter import VolatilityTargeter
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution,
+    DecisionFactor,
 )
 
 
@@ -105,3 +106,21 @@ class VolTargetLeverageEngine(FullExposureEngine):
             )
         return super().execute_cycle(market_data, portfolio, regime, exposure,
                                      nan_fields, sim_date, record_date)
+
+    def decision_factors(
+        self,
+        market_data: MarketData,
+        regime: MarketRegime,
+        exposure: float,
+        signal: TradeSignal,
+        portfolio: Portfolio,
+    ) -> List[DecisionFactor]:
+        """변동성 타겟: 실현변동성 → QLD/QQQ 블렌드 레버리지가 결정요소다."""
+        w = self.rebalancer.ratio_a          # QLD 비중 = L - 1
+        return [
+            DecisionFactor("realized_vol", "실현변동성(21d)", market_data.spy_volatility,
+                           "percent", threshold=self.TARGET_VOL),
+            DecisionFactor("target_vol", "목표 변동성", self.TARGET_VOL, "percent"),
+            DecisionFactor("effective_leverage", "실효 레버리지(x)", 1.0 + w, "number"),
+            DecisionFactor("leveraged_weight", "QLD 비중", w, "percent"),
+        ]

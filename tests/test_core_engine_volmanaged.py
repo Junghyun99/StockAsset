@@ -94,3 +94,40 @@ def test_nan_data_treated_as_crash(tmp_path):
     regime, exposure, nan_fields = eng.analyze_strategy(md)
     assert exposure == 0.0
     assert nan_fields
+
+
+def test_decision_factors_are_vol_leverage_centric(tmp_path):
+    """결정요소는 실현변동성 → 실효 레버리지 사이징 (국면 아님)."""
+    from src.core.models import MarketData, MarketRegime, Portfolio, TradeSignal
+    eng, _, _ = _make(tmp_path)
+    eng._applied_L = 1.3
+    md = MarketData("2026-07-14", 100.0, 90.0, 0.20, 0.05, -0.05, 18.0)
+    pf = Portfolio(0.0, {}, {})
+    signal = TradeSignal(1.0, [], "이유")
+
+    factors = eng.decision_factors(md, MarketRegime.BULL, 1.0, signal, pf)
+
+    by_key = {f.key: f for f in factors}
+    assert factors[0].key == "realized_vol"                 # 대표 요소
+    assert by_key["realized_vol"].value == pytest.approx(0.20)
+    assert by_key["realized_vol"].threshold == eng.TARGET_VOL
+    assert by_key["target_vol"].value == eng.TARGET_VOL
+    assert by_key["effective_leverage"].value == pytest.approx(1.3)
+    assert by_key["cash_weight"].value == pytest.approx(0.0)
+    assert "regime" not in by_key
+
+
+def test_decision_factors_before_first_cycle_uses_current_weights(tmp_path):
+    """_applied_L 미설정(첫 사이클 전)이면 현재 exposure+ratio_a로 L 산출."""
+    from src.core.models import MarketData, MarketRegime, Portfolio, TradeSignal
+    eng, _, _ = _make(tmp_path)
+    assert eng._applied_L is None
+    eng.rebalancer.ratio_a = 0.5
+    md = MarketData("2026-07-14", 100.0, 90.0, 0.20, 0.05, -0.05, 18.0)
+
+    factors = eng.decision_factors(md, MarketRegime.BULL, 0.8,
+                                   TradeSignal(0.8, [], "이유"), Portfolio(0.0, {}, {}))
+
+    by_key = {f.key: f for f in factors}
+    assert by_key["effective_leverage"].value == pytest.approx(1.3)  # 0.8 + 0.5
+    assert by_key["cash_weight"].value == pytest.approx(0.2)

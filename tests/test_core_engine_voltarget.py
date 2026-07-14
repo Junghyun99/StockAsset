@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 import pandas as pd
 
 from src.core.engine.voltarget import VolTargetLeverageEngine
@@ -89,3 +90,24 @@ def test_cycle_runs_and_invests(tmp_path):
     assert res.signal is not None
     # 첫 투자 → QLD/QQQ 매수 발생
     assert any(o.ticker in ("QLD", "QQQ") for o in res.signal.orders)
+
+
+def test_decision_factors_are_vol_leverage_centric(tmp_path):
+    """결정요소는 실현변동성 → QLD/QQQ 블렌드 레버리지 (이격도 아님)."""
+    from src.core.models import MarketData, Portfolio, TradeSignal
+    eng, _, _ = _make(tmp_path)
+    eng.rebalancer.ratio_a = 0.4   # L = 1.4
+    md = MarketData("2026-07-14", 100.0, 90.0, 0.25, 0.05, -0.05, 18.0)
+    pf = Portfolio(0.0, {}, {})
+    signal = TradeSignal(1.0, [], "이유")
+
+    factors = eng.decision_factors(md, MarketRegime.BULL, 1.0, signal, pf)
+
+    by_key = {f.key: f for f in factors}
+    assert factors[0].key == "realized_vol"                 # 대표 요소
+    assert by_key["realized_vol"].value == pytest.approx(0.25)
+    assert by_key["realized_vol"].threshold == eng.TARGET_VOL
+    assert by_key["target_vol"].value == eng.TARGET_VOL
+    assert by_key["effective_leverage"].value == pytest.approx(1.4)
+    assert by_key["leveraged_weight"].value == pytest.approx(0.4)
+    assert "group_deviation" not in by_key
