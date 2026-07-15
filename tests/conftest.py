@@ -37,9 +37,12 @@ def isolate_backtest_filesystem(tmp_path, monkeypatch):
     #      docs/data 하위 상대 경로는 삭제를 건너뛴다. (tmp_path 등 절대 경로는 통과)
     import shutil as _shutil
     _real_rmtree = _shutil.rmtree
+    # 절대 경로로 docs/data를 가리키는 경우까지 차단하기 위해 abspath로 비교
+    _protected_root = os.path.abspath("docs/data")
 
     def _guarded_rmtree(path, *args, **kwargs):
-        if str(path).replace(os.sep, "/").startswith("docs/data"):
+        abs_path = os.path.abspath(str(path))
+        if abs_path == _protected_root or abs_path.startswith(_protected_root + os.sep):
             return
         return _real_rmtree(path, *args, **kwargs)
 
@@ -52,11 +55,14 @@ def isolate_backtest_filesystem(tmp_path, monkeypatch):
         def __init__(self, root_path=None, **kwargs):
             if root_path is None:
                 root_path = backtest_tmp
-            elif root_path.startswith("docs/data/backtest"):
-                # 하위 경로(compare/<엔진> 등)도 디렉토리 구조를 유지한 채 임시
-                # 경로로 리다이렉트한다. 기존의 정확 일치(==) 조건은 compare
-                # 하위 경로를 놓쳐 실제 커밋 데이터가 테스트로 덮어써졌다.
-                root_path = backtest_tmp + root_path[len("docs/data/backtest"):]
+            else:
+                # Path 객체/Windows 구분자(\)가 와도 판정되도록 정규화
+                norm = str(root_path).replace(os.sep, "/")
+                if norm.startswith("docs/data/backtest"):
+                    # 하위 경로(compare/<엔진> 등)도 디렉토리 구조를 유지한 채 임시
+                    # 경로로 리다이렉트한다. 기존의 정확 일치(==) 조건은 compare
+                    # 하위 경로를 놓쳐 실제 커밋 데이터가 테스트로 덮어써졌다.
+                    root_path = backtest_tmp + norm[len("docs/data/backtest"):]
             super().__init__(root_path, **kwargs)
 
     monkeypatch.setattr(runner_mod, "JsonRepository", _TmpBacktestRepo)
