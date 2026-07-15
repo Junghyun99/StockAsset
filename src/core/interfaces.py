@@ -81,6 +81,8 @@ class IRepository(ABC):
                            portfolio: Portfolio, regime: MarketRegime,
                            daily_dividend: float = 0.0,
                            date_override: Optional[str] = None,
+                           benchmarks: Optional[dict] = None,
+                           executions: Optional[List[TradeExecution]] = None,
                            decision_factors: Optional[List[DecisionFactor]] = None) -> None: ...
     @abstractmethod
     def save_trade_history(self, executions: List[TradeExecution], portfolio: Portfolio,

@@ -1,0 +1,65 @@
+name: Monthly Settlement
+
+on:
+  workflow_dispatch:
+    inputs:
+      account:
+        description: 'Account id (docs/data/<account>)'
+        required: true
+        type: choice
+        options:
+          - my_test
+          - my_isa
+      start:
+        description: 'Start date (YYYY-MM-DD, e.g. 2026-06-01)'
+        required: true
+        type: string
+      end:
+        description: 'End date (YYYY-MM-DD, e.g. 2026-06-30)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  settlement:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul
+      PYTHONUTF8: '1'
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Run monthly settlement
+      env:
+        # 입력값은 셸 인젝션 방지를 위해 env 경유로만 전달한다 (run 내 직접 보간 금지)
+        ACCOUNT: ${{ github.event.inputs.account }}
+        START: ${{ github.event.inputs.start }}
+        END: ${{ github.event.inputs.end }}
+      run: |
+        python -m scripts.monthly_settlement \
+          --account "$ACCOUNT" \
+          --start "$START" \
+          --end "$END" | tee settlement_report.txt
+
+    - name: Publish report to job summary
+      if: always()
+      run: |
+        {
+          echo '## 기간 결산 결과'
+          echo '```'
+          cat settlement_report.txt 2>/dev/null || echo '(리포트 없음 - 실행 로그 확인)'
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"

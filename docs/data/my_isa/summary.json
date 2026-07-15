@@ -22,7 +22,8 @@
         "reason": "Bull (모니터링)",
         "target_exposure": 0.8685264925959775,
         "target_ratio_a": 0.0,
-        "rebalance_threshold": 0.075
+        "rebalance_threshold": 0.075,
+        "net_deposit": 49814996.17
     },
     {
         "date": "2026-07-10",
@@ -47,7 +48,8 @@
         "reason": "Bull (모니터링)",
         "target_exposure": 0.8478070062843615,
         "target_ratio_a": 0.0,
-        "rebalance_threshold": 0.075
+        "rebalance_threshold": 0.075,
+        "net_deposit": 0.0
     },
     {
         "date": "2026-07-13",
@@ -72,7 +74,8 @@
         "reason": "Bull (모니터링)",
         "target_exposure": 0.8843243786376392,
         "target_ratio_a": 0.0,
-        "rebalance_threshold": 0.075
+        "rebalance_threshold": 0.075,
+        "net_deposit": 43.25
     },
     {
         "date": "2026-07-14",
@@ -97,6 +100,33 @@
         "reason": "비율 유지, 추가 주문 없음",
         "target_exposure": 0.9141546307107415,
         "target_ratio_a": 0.0,
-        "rebalance_threshold": 0.075
+        "rebalance_threshold": 0.075,
+        "net_deposit": 543.78
+    },
+    {
+        "date": "2026-07-15",
+        "total_value": 50397644.0,
+        "cash_balance": 236859.0,
+        "group_a": 0.0,
+        "group_b": 46935980.0,
+        "group_c": 3461664.0,
+        "daily_dividend": 0,
+        "spy_price": 196995.0,
+        "spy_ma180": 173530.33333333334,
+        "spy_volatility": 0.2378858556328982,
+        "spy_momentum": 0.20635587528640814,
+        "mdd": -0.051905861969390704,
+        "vix": 17.15999984741211,
+        "benchmarks": {
+            "KOSPI200": 118475.0,
+            "S&P500": 28040.0,
+            "NASDAQ100": 197175.0
+        },
+        "regime": "Bull",
+        "reason": "비율 유지, 추가 주문 없음",
+        "target_exposure": 0.9248132866693033,
+        "target_ratio_a": 0.0,
+        "rebalance_threshold": 0.075,
+        "net_deposit": 21.48
     }
 ]

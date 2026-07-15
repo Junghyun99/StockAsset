@@ -37,12 +37,13 @@ def mock_compare_fetcher():
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
-def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, mock_compare_fetcher):
+def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
     """[Compare] 비교 백테스트가 4개 엔진 모두의 결과를 반환해야 한다."""
     mock_download.return_value = mock_compare_fetcher
 
     result = run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+        output_dir=str(tmp_path / "compare"),
     )
 
     assert result is not None
@@ -53,12 +54,13 @@ def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, m
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
-def test_run_compare_single_data_download(mock_savefig, mock_download, mock_compare_fetcher):
+def test_run_compare_single_data_download(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
     """[Compare] 데이터 다운로드가 정확히 1회만 호출되어야 한다."""
     mock_download.return_value = mock_compare_fetcher
 
     run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+        output_dir=str(tmp_path / "compare"),
     )
 
     mock_download.assert_called_once()
@@ -73,12 +75,13 @@ def test_run_compare_single_data_download(mock_savefig, mock_download, mock_comp
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
-def test_run_compare_independent_portfolios(mock_savefig, mock_download, mock_compare_fetcher):
+def test_run_compare_independent_portfolios(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
     """[Compare] 각 엔진의 BacktestResult가 독립적이어야 한다."""
     mock_download.return_value = mock_compare_fetcher
 
     result = run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+        output_dir=str(tmp_path / "compare"),
     )
 
     assert result is not None
@@ -92,12 +95,13 @@ def test_run_compare_independent_portfolios(mock_savefig, mock_download, mock_co
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
-def test_run_compare_chart_saved(mock_savefig, mock_download, mock_compare_fetcher):
+def test_run_compare_chart_saved(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
     """[Compare] 비교 차트가 저장되어야 한다."""
     mock_download.return_value = mock_compare_fetcher
 
     result = run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+        output_dir=str(tmp_path / "compare"),
     )
 
     assert result is not None
@@ -107,7 +111,7 @@ def test_run_compare_chart_saved(mock_savefig, mock_download, mock_compare_fetch
 
 
 @patch("src.backtest.runner.download_historical_data")
-def test_run_compare_returns_none_on_missing_tickers(mock_download):
+def test_run_compare_returns_none_on_missing_tickers(mock_download, tmp_path):
     """[Compare] 티커 누락 시 None을 반환해야 한다."""
     # SPY만 있는 데이터 → 다른 티커 누락
     dates = pd.date_range(start="2022-01-01", end="2023-02-15")
@@ -122,6 +126,7 @@ def test_run_compare_returns_none_on_missing_tickers(mock_download):
 
     result = run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+        output_dir=str(tmp_path / "compare"),
     )
 
     assert result is None
@@ -129,12 +134,13 @@ def test_run_compare_returns_none_on_missing_tickers(mock_download):
 
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
-def test_run_compare_spy_cagr_present(mock_savefig, mock_download, mock_compare_fetcher):
+def test_run_compare_spy_cagr_present(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
     """[Compare] SPY 데이터가 있으면 spy_cagr이 계산되어야 한다."""
     mock_download.return_value = mock_compare_fetcher
 
     result = run_compare_backtest(
         start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+        output_dir=str(tmp_path / "compare"),
     )
 
     assert result is not None
@@ -184,3 +190,37 @@ def test_stale_status_json_does_not_block_rebalancing(mock_savefig, mock_downloa
         assert br.final_value != br.initial_cash, (
             f"{name}: final_value가 initial_cash와 같음 — 리밸런싱이 실행되지 않았음"
         )
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_default_output_dir_isolated_from_real_data(mock_savefig, mock_download, mock_compare_fetcher):
+    """[격리] output_dir 기본값으로 실행해도 실제 docs/data/backtest 파일은 변하지 않는다.
+
+    conftest의 isolate_backtest_filesystem 픽스처가 compare 하위 경로까지
+    임시 디렉토리로 리다이렉트하는지 검증하는 회귀 가드.
+    (pathlib.Path.iterdir가 픽스처에서 no-op 처리되므로 os.walk로 스냅샷을 뜬다.)
+    """
+    import hashlib
+    import os
+
+    def snapshot(root):
+        state = {}
+        for dirpath, _, files in os.walk(root):
+            for fn in files:
+                path = os.path.join(dirpath, fn)
+                with open(path, "rb") as f:
+                    state[path] = hashlib.md5(f.read()).hexdigest()
+        return state
+
+    real_root = "docs/data/backtest"
+    before = snapshot(real_root)
+    mock_download.return_value = mock_compare_fetcher
+
+    run_compare_backtest(
+        start_date="2023-01-02", end_date="2023-01-05", initial_cash=10000.0,
+    )
+
+    assert snapshot(real_root) == before, (
+        "output_dir 기본값 실행이 실제 docs/data/backtest 파일을 수정했습니다"
+    )

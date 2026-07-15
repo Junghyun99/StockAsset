@@ -46,5 +46,53 @@
                 "reason": "ODNO=0009901200"
             }
         ]
+    },
+    {
+        "id": "tx_20260714_100200",
+        "date": "2026-07-14 10:02:00",
+        "portfolio_value": 49718150.0,
+        "total_trade_amount": 6138546.0,
+        "reason": "비율 유지, exposure 조정으로 주문 발생",
+        "executions": [
+            {
+                "ticker": "459580.KS",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 1074592.0,
+                "fee": 483.5664,
+                "date": "2026-07-14 10:02:00",
+                "status": "FILLED",
+                "reason": "ODNO=0009297900"
+            },
+            {
+                "ticker": "133690.KS",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 194318.0,
+                "fee": 437.217,
+                "date": "2026-07-14 10:02:00",
+                "status": "FILLED",
+                "reason": "ODNO=0009306300"
+            }
+        ]
+    },
+    {
+        "id": "tx_20260715_100200",
+        "date": "2026-07-15 10:02:00",
+        "portfolio_value": 50248900.0,
+        "total_trade_amount": 196557.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "133690.KS",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 196557.0,
+                "fee": 29.483549999999997,
+                "date": "2026-07-15 10:02:00",
+                "status": "FILLED",
+                "reason": "ODNO=0012314900"
+            }
+        ]
     }
 ]

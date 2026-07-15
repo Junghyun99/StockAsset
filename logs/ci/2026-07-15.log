@@ -1,0 +1,82 @@
+2026-07-15 14:01:17,265 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-07-15 14:01:17,267 [INFO] Loaded 2 account(s) from accounts.yaml
+2026-07-15 14:01:17,267 [INFO] [my_test] engine=DomesticAsset5RealEngine market=domestic mode=LIVE
+2026-07-15 14:01:18,015 [INFO] [KisBroker] 새 토큰 발급 완료 (expires_at=2026-07-16 05:01:18)
+2026-07-15 14:01:18,016 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-15 14:01:18,017 [INFO] Restored previous regime: Bull
+2026-07-15 14:01:18,017 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE
+2026-07-15 14:01:18,778 [INFO] [KisBroker] 새 토큰 발급 완료 (expires_at=2026-07-16 05:01:18)
+2026-07-15 14:01:18,779 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-15 14:01:18,780 [INFO] Restored previous regime: Bull
+2026-07-15 14:01:18,780 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-07-15 14:01:20,023 [INFO] >>> Step 1: Data Collection
+2026-07-15 14:01:20,023 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-07-15 14:01:20,479 [INFO] [Data] VIX fetched: 17.16
+2026-07-15 14:01:20,479 [INFO] >>> Step 2: Indicator Calculation
+2026-07-15 14:01:20,482 [INFO] Market Data: Price=749.17, VIX=17.16, MDD=-1.37%
+2026-07-15 14:01:20,482 [INFO] >>> Step 3: Strategy Analysis
+2026-07-15 14:01:20,482 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-07-15 14:01:20,483 [INFO] >>> Step 4: Portfolio Status
+2026-07-15 14:01:21,253 [INFO] Fetching Real-time prices from Broker...
+2026-07-15 14:01:26,772 [INFO] Current Portfolio: Cash=$38,261, Value=$4,192,141
+2026-07-15 14:01:26,773 [INFO] >>> Step 5: Rebalancing
+2026-07-15 14:01:26,773 [INFO] [입력] Regime=Bull | TargetExposure=1.00 | TotalValue=$4,192,141.00 | Cash=$38,261.00
+2026-07-15 14:01:26,773 [INFO] [포트폴리오 현황]
+2026-07-15 14:01:26,773 [INFO]   A그룹(성장): $1,622,910.00 ( 38.7%)
+2026-07-15 14:01:26,773 [INFO]   B그룹(안전): $2,530,970.00 ( 60.4%)
+2026-07-15 14:01:26,773 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-07-15 14:01:26,773 [INFO]   현금(예수금): $  38,261.00 (  0.9%)
+2026-07-15 14:01:26,773 [INFO] [비중 판정] ratio_A=0.391  ratio_B=0.609
+2026-07-15 14:01:26,773 [INFO]   A 상대이탈: 2.3% | B 상대이탈: 1.6% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-07-15 14:01:26,773 [INFO] [목표 금액]
+2026-07-15 14:01:26,773 [INFO]   A그룹: 현재 $1,622,910.00 → 목표 $1,637,858.47  (exposure 1.00 × ratio 0.39)
+2026-07-15 14:01:26,774 [INFO]   B그룹: 현재 $2,530,970.00 → 목표 $2,554,282.53  (exposure 1.00 × ratio 0.61)
+2026-07-15 14:01:26,774 [INFO]   C그룹: 현재 $      0.00 → 목표 $      0.00  (잔여)
+2026-07-15 14:01:26,774 [INFO] [A그룹(성장) 종목별]
+2026-07-15 14:01:26,774 [INFO]   KODEX 코스피: 보유 11주 $834,130.00 → 목표 $818,929.24 | diff=-15,200.76 → SELL 1주 @$75830.00
+2026-07-15 14:01:26,774 [INFO]   TIGER 미국나스닥100: 보유 4주 $788,780.00 → 목표 $818,929.24 | diff=+30,149.24 → 주문 없음 (수량 미달)
+2026-07-15 14:01:26,774 [INFO] [B그룹(안전) 종목별]
+2026-07-15 14:01:26,774 [INFO]   ACE 국고채10년: 보유 10주 $820,250.00 → 목표 $851,427.51 | diff=+31,177.51 → 주문 없음 (수량 미달)
+2026-07-15 14:01:26,774 [INFO]   TIGER 미국채10년선물: 보유 64주 $852,480.00 → 목표 $851,427.51 | diff=-1,052.49 → SELL 1주 @$13320.00
+2026-07-15 14:01:26,774 [INFO]   ACE KRX금현물: 보유 32주 $858,240.00 → 목표 $851,427.51 | diff=-6,812.49 → SELL 1주 @$26820.00
+2026-07-15 14:01:26,774 [INFO] [최종 주문] 주문 없음
+2026-07-15 14:01:26,774 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-07-15 14:01:26,775 [INFO] No Rebalance Needed.
+2026-07-15 14:01:27,231 [INFO] >>> Step 6: Archiving Data
+2026-07-15 14:01:27,282 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
+2026-07-15 14:01:27,283 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-07-15 14:01:28,356 [INFO] >>> Step 1: Data Collection
+2026-07-15 14:01:28,356 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-15 14:01:28,561 [INFO] [Data] VIX fetched: 17.16
+2026-07-15 14:01:28,561 [INFO] >>> Step 2: Indicator Calculation
+2026-07-15 14:01:28,564 [INFO] Market Data: Price=196995.00, VIX=17.16, MDD=-5.19%
+2026-07-15 14:01:28,564 [INFO] >>> Step 3: Strategy Analysis
+2026-07-15 14:01:28,564 [INFO] >>> VolManaged: vol=23.79% → L=0.92x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 92%, 현금 8%)
+2026-07-15 14:01:28,565 [INFO] Regime: Bull | Target Exposure: 0.92
+2026-07-15 14:01:28,565 [INFO] >>> Step 4: Portfolio Status
+2026-07-15 14:01:29,324 [INFO] Fetching Real-time prices from Broker...
+2026-07-15 14:01:33,285 [INFO] Current Portfolio: Cash=$236,859, Value=$50,397,644
+2026-07-15 14:01:33,286 [INFO] >>> Step 5: Rebalancing
+2026-07-15 14:01:33,286 [INFO] [입력] Regime=Bull | TargetExposure=0.92 | TotalValue=$50,397,644.00 | Cash=$236,859.00
+2026-07-15 14:01:33,286 [INFO] [포트폴리오 현황]
+2026-07-15 14:01:33,286 [INFO]   A그룹(성장): $        0.00 (  0.0%)
+2026-07-15 14:01:33,286 [INFO]   B그룹(안전): $46,935,980.00 ( 93.1%)
+2026-07-15 14:01:33,286 [INFO]   C그룹(현금): $3,224,805.00 (  6.4%)
+2026-07-15 14:01:33,286 [INFO]   현금(예수금): $ 236,859.00 (  0.5%)
+2026-07-15 14:01:33,286 [INFO] [비중 판정] ratio_A=0.000  ratio_B=1.000
+2026-07-15 14:01:33,286 [INFO]   A 상대이탈: 0.0% | B 상대이탈: 0.0% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-07-15 14:01:33,286 [INFO] [목표 금액]
+2026-07-15 14:01:33,287 [INFO]   A그룹: 현재 $      0.00 → 목표 $      0.00  (exposure 0.92 × ratio 0.00)
+2026-07-15 14:01:33,287 [INFO]   B그룹: 현재 $46,935,980.00 → 목표 $46,608,410.79  (exposure 0.92 × ratio 1.00)
+2026-07-15 14:01:33,287 [INFO]   C그룹: 현재 $3,224,805.00 → 목표 $3,789,233.21  (잔여)
+2026-07-15 14:01:33,287 [INFO] [A그룹(성장) 종목별]
+2026-07-15 14:01:33,287 [INFO]   TIGER 미국나스닥100레버리지(합성): 보유 0주 $0.00 → 목표 $0.00 | diff=+0.00 → 주문 없음
+2026-07-15 14:01:33,287 [INFO] [B그룹(안전) 종목별]
+2026-07-15 14:01:33,287 [INFO]   TIGER 미국나스닥100: 보유 238주 $46,935,980.00 → 목표 $46,608,410.79 | diff=-327,569.21 → SELL 2주 @$197210.00
+2026-07-15 14:01:33,287 [INFO] [C그룹(현금) 종목별]
+2026-07-15 14:01:33,287 [INFO]   KODEX CD금리액티브: 보유 3주 $3,224,805.00 → 목표 $3,789,233.21 | diff=+564,428.21 → 주문 없음 (수량 미달)
+2026-07-15 14:01:33,287 [INFO] [최종 주문] 주문 없음
+2026-07-15 14:01:33,287 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-07-15 14:01:33,287 [INFO] No Rebalance Needed.
+2026-07-15 14:01:33,719 [INFO] >>> Step 6: Archiving Data
+2026-07-15 14:01:33,721 [INFO] Cycle Completed: regime=Bull exposure=0.92 orders=0 executions=0

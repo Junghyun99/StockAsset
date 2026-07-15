@@ -1,6 +1,6 @@
 {
-    "last_updated": "2026-07-14 14:01:26",
-    "last_rebalancing_date": "2026-07-14",
+    "last_updated": "2026-07-15 14:01:27",
+    "last_rebalancing_date": "2026-07-15",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
@@ -8,45 +8,45 @@
         "market_score": {
             "vix": 17.15999984741211,
             "spy_mdd": -0.013691989301551372,
-            "spy_momentum": 0.10666128654623444,
+            "spy_momentum": 0.10344938791986374,
             "spy_price": 749.1699829101562,
-            "spy_ma180": 698.1585008409288,
-            "spy_volatility": 0.14624800543256122
+            "spy_ma180": 698.6105563693576,
+            "spy_volatility": 0.13509126985863187
         }
     },
     "portfolio": {
-        "total_value": 4100466.0,
+        "total_value": 4192141.0,
         "cash_balance": 38261.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 193115.0,
-                "value": 772460.0
+                "price": 197195.0,
+                "value": 788780.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 11,
-                "price": 70185.0,
-                "value": 772035.0
+                "price": 75830.0,
+                "value": 834130.0
             },
             {
                 "ticker": "305080.KS",
                 "qty": 64,
-                "price": 13270.0,
-                "value": 849280.0
+                "price": 13320.0,
+                "value": 852480.0
             },
             {
                 "ticker": "365780.KS",
                 "qty": 10,
-                "price": 82075.0,
-                "value": 820750.0
+                "price": 82025.0,
+                "value": 820250.0
             },
             {
                 "ticker": "411060.KS",
                 "qty": 32,
-                "price": 26490.0,
-                "value": 847680.0
+                "price": 26820.0,
+                "value": 858240.0
             }
         ]
     }

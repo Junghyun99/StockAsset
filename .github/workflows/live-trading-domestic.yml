@@ -138,8 +138,11 @@ jobs:
         path: .kis_token_cache.enc
         key: kis-token-domestic-${{ github.run_id }}
 
+    # always(): 일부 계좌만 실패해도 성공한 계좌의 데이터/로그는 보존해야 한다.
+    # (계좌별 저장은 사이클 완주 시에만 이뤄지므로 실패 계좌의 부분 데이터가 섞일 위험 없음.
+    #  success() 조건이었을 때 my_test KIS 오류로 my_isa 정상 매매 기록이 유실된 사례 있음)
     - name: Commit and push updated dashboard data
-      if: ${{ success() && steps.holiday.outputs.is_holiday != 'true' }}
+      if: ${{ always() && steps.holiday.outputs.is_holiday != 'true' }}
       uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
       with:
         commit_message: "chore(live): update domestic trading data [skip ci]"

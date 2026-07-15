@@ -408,7 +408,7 @@ class TradingEngine:
         factors = self.decision_factors(market_data, regime, exposure, signal, final_pf)
         self.repo.save_daily_summary(market_data, signal, final_pf, regime,
                                      daily_dividend=daily_dividend, date_override=record_date,
-                                     benchmarks=benchmark_prices,
+                                     benchmarks=benchmark_prices, executions=executions,
                                      decision_factors=factors)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
