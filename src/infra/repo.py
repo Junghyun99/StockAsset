@@ -76,8 +76,7 @@ class JsonRepository(IRepository):
 
         record_date = date_override or market.date
         data = self._load_json(self.summary_file, default=[])
-        net_deposit = self._derive_summary_net_deposit(
-            data, record_date, pf, executions, daily_dividend)
+        net_deposit = self._derive_summary_net_deposit(data, record_date, pf, executions)
 
         record = {
             "date": record_date,
@@ -127,29 +126,26 @@ class JsonRepository(IRepository):
 
     @staticmethod
     def _derive_summary_net_deposit(data: List[dict], record_date: str, pf: Portfolio,
-                                    executions: Optional[List[TradeExecution]],
-                                    daily_dividend: float) -> Optional[float]:
+                                    executions: Optional[List[TradeExecution]]
+                                    ) -> Optional[float]:
         """직전 요약 레코드와 현금 차이로 이번 기록분 순입금을 역산한다.
 
         같은 날짜 재실행(수동 재실행 등)은 그날 기존 net_deposit에 이번 실행의
-        변동분만 누적한다. 이때 배당은 첫 실행에서 이미 차감했으므로 다시 빼지
-        않는다. 마지막 레코드보다 과거 날짜를 덮어쓰는 경우(비정상 경로)는
-        역산 근거가 없으므로 기존 값을 보존한다.
+        변동분만 누적한다. 마지막 레코드보다 과거 날짜를 덮어쓰는 경우(비정상
+        경로)는 역산 근거가 없으므로 기존 값을 보존한다.
         """
         prev = data[-1] if data else None
         prev_cash = prev.get("cash_balance") if prev else None
 
         if prev is not None and prev.get("date") == record_date:
-            run_nd = derive_net_deposit(pf.total_cash, prev_cash or 0.0, executions,
-                                        daily_dividend=0.0)
+            run_nd = derive_net_deposit(pf.total_cash, prev_cash or 0.0, executions)
             return round(float(prev.get("net_deposit") or 0.0) + run_nd, 2)
 
         old = next((r for r in data if r.get("date") == record_date), None)
         if old is not None:
             return old.get("net_deposit")
 
-        return derive_net_deposit(pf.total_cash, prev_cash, executions,
-                                  daily_dividend=daily_dividend)
+        return derive_net_deposit(pf.total_cash, prev_cash, executions)
 
     def load_summaries(self) -> List[dict]:
         """일별 요약 레코드 목록을 로드한다 (기간 결산용, 날짜 오름차순 저장 순서)."""

@@ -73,7 +73,9 @@ accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
 
 ## 기간 결산 (net_deposit)
 - 봇이 매 실행 시 summary.json 레코드에 `net_deposit`(순입금 역산치)을 기록한다:
-  `당일현금 - 직전현금 - 당일체결현금영향 - 당일배당` (배당은 손익으로 집계)
+  `당일현금 - 직전현금 - 당일체결현금영향`
+- 배당/이자 유입은 순입금에 포함된다 (yfinance 배당 추정치는 정확도/시점 문제로
+  차감하지 않음 - `daily_dividend` 필드는 참고용 기록일 뿐 순입금 계산에 미사용)
 - `scripts/monthly_settlement.py`가 기간의 기초/기말자산, 순입금, 기간손익, TWR을 출력
   (결산 항등식: 기간손익 = 기말자산 - 기초자산 - 순입금액)
 - net_deposit 도입 이전 레코드는 `scripts/backfill_net_deposit.py`로 백필

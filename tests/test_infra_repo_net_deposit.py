@@ -73,29 +73,28 @@ def test_deposit_detected_and_trades_excluded(repo):
     assert data[1]["net_deposit"] == 500.0
 
 
-def test_dividend_not_counted_as_deposit(repo):
-    """배당 유입은 순입금이 아니라 손익으로 남는다."""
+def test_dividend_inflow_counted_as_deposit(repo):
+    """배당 유입도 순입금으로 집계된다 (yfinance 추정치 차감은 하지 않음)."""
     repo.save_daily_summary(_market("2026-06-01"), _signal(),
                             Portfolio(1000.0, {}, {}), MarketRegime.BULL)
     repo.save_daily_summary(_market("2026-06-02"), _signal(),
                             Portfolio(1010.0, {}, {}), MarketRegime.BULL,
                             daily_dividend=10.0)
     data = _load_summary(repo)
-    assert data[1]["net_deposit"] == 0.0
+    assert data[1]["net_deposit"] == 10.0
+    assert data[1]["daily_dividend"] == 10.0  # 배당 추정치는 참고용으로만 기록
 
 
 def test_same_day_rerun_accumulates_net_deposit(repo):
-    """같은 날 재실행 시 net_deposit은 변동분만 누적된다 (배당 중복 차감 없음)."""
+    """같은 날 재실행 시 net_deposit은 변동분만 누적된다."""
     repo.save_daily_summary(_market("2026-06-01"), _signal(),
                             Portfolio(1000.0, {}, {}), MarketRegime.BULL)
     # 1차 실행: 300 입금
     repo.save_daily_summary(_market("2026-06-02"), _signal(),
-                            Portfolio(1300.0, {}, {}), MarketRegime.BULL,
-                            daily_dividend=0.0)
-    # 같은 날 2차 실행: 추가 200 입금 (배당 인자가 다시 와도 중복 차감 금지)
+                            Portfolio(1300.0, {}, {}), MarketRegime.BULL)
+    # 같은 날 2차 실행: 추가 200 입금
     repo.save_daily_summary(_market("2026-06-02"), _signal(),
-                            Portfolio(1500.0, {}, {}), MarketRegime.BULL,
-                            daily_dividend=0.0)
+                            Portfolio(1500.0, {}, {}), MarketRegime.BULL)
     data = _load_summary(repo)
     assert len(data) == 2  # upsert 유지
     assert data[1]["net_deposit"] == 500.0

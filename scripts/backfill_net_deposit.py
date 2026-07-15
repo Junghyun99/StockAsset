@@ -2,10 +2,13 @@
 """summary.json 과거 레코드의 net_deposit(순입금) 백필 스크립트.
 
 net_deposit 기록 기능 도입 이전에 쌓인 일별 요약 레코드에 대해,
-현금 잔고 변화(cash_balance)와 history.json 체결 내역, daily_dividend로
+현금 잔고 변화(cash_balance)와 history.json 체결 내역으로
 일별 순입금을 역산해 채워 넣는다.
 
-    순입금 = 당일현금 - 직전현금 - (직전기록일, 당일] 체결현금영향 - 당일배당
+    순입금 = 당일현금 - 직전현금 - (직전기록일, 당일] 체결현금영향
+
+배당/이자 유입은 순입금에 포함된다 (yfinance 배당 추정치의 정확도/시점
+문제로 차감하지 않는다 - src/core/settlement.py docstring 참고).
 
 이미 net_deposit이 있는 레코드는 건드리지 않는다 (멱등).
 첫 레코드는 직전 현금이 없으므로 '체결 전 현금 = 초기 입금'으로 간주한다
@@ -81,7 +84,7 @@ def backfill(summaries: list, history: list) -> list:
     """net_deposit이 없는 레코드를 역산해 채운다.
 
     Returns:
-        변경 내역 리스트 [{date, cash, prev_cash, trade_impact, dividend, net_deposit}]
+        변경 내역 리스트 [{date, cash, prev_cash, trade_impact, net_deposit}]
     """
     impacts = collect_executions_by_date(history)
     ordered = sorted(range(len(summaries)), key=lambda i: summaries[i].get("date") or "")
@@ -93,17 +96,16 @@ def backfill(summaries: list, history: list) -> list:
         date = (rec.get("date") or "")[:10]
         cash = rec.get("cash_balance")
         if rec.get("net_deposit") is None and cash is not None:
-            dividend = float(rec.get("daily_dividend") or 0.0)
             impact = _impact_in_window(impacts, prev_date, date)
             if prev_cash is None:
-                # 첫 레코드: 체결 전 현금 = 초기 입금 (배당 차감 없음)
+                # 첫 레코드: 체결 전 현금 = 초기 입금
                 nd = round(float(cash) - impact, 2)
             else:
-                nd = round(float(cash) - float(prev_cash) - impact - dividend, 2)
+                nd = round(float(cash) - float(prev_cash) - impact, 2)
             rec["net_deposit"] = nd
             changes.append({
                 "date": date, "cash": cash, "prev_cash": prev_cash,
-                "trade_impact": round(impact, 2), "dividend": dividend,
+                "trade_impact": round(impact, 2),
                 "net_deposit": nd,
             })
         if cash is not None:
@@ -147,11 +149,11 @@ def main(argv=None) -> int:
         return 0
 
     print(f"[{args.account}] net_deposit 백필 대상: {len(changes)}건")
-    print(f"{'date':<12}{'prev_cash':>14}{'cash':>14}{'trade':>12}{'div':>8}{'net_deposit':>14}")
+    print(f"{'date':<12}{'prev_cash':>14}{'cash':>14}{'trade':>12}{'net_deposit':>14}")
     for c in changes:
         prev = "-" if c["prev_cash"] is None else f"{c['prev_cash']:,.0f}"
         print(f"{c['date']:<12}{prev:>14}{c['cash']:>14,.0f}"
-              f"{c['trade_impact']:>12,.0f}{c['dividend']:>8,.0f}{c['net_deposit']:>14,.0f}")
+              f"{c['trade_impact']:>12,.0f}{c['net_deposit']:>14,.0f}")
 
     if args.dry_run:
         print("(dry-run: 파일을 수정하지 않았습니다)")

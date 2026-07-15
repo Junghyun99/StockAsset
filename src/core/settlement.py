@@ -8,9 +8,10 @@
     기간손익 = 기말자산 - 기초자산 - 순입금액합계
 
 순입금(net_deposit) 역산도 이 모듈의 순수 함수로 제공한다:
-    순입금 = 당일현금 - 직전현금 - 당일체결현금영향 - 당일배당
-(시세 재평가는 현금에 영향을 주지 않으므로 외부 입출금만 남는다.
- 배당 유입은 손익으로 집계해야 하므로 입금에서 제외한다.)
+    순입금 = 당일현금 - 직전현금 - 당일체결현금영향
+(시세 재평가는 현금에 영향을 주지 않으므로 입출금과 배당/이자 유입만 남는다.
+ 배당/이자는 yfinance 추정치의 정확도/시점 문제로 차감하지 않고 순입금으로
+ 집계한다 - 현금이 들어오지 않은 날 추정치를 차감하면 가짜 출금이 생긴다.)
 """
 from dataclasses import dataclass, asdict
 from typing import List, Optional
@@ -53,19 +54,16 @@ def trade_cash_impact(executions: List[TradeExecution]) -> float:
 
 def derive_net_deposit(current_cash: float,
                        prev_cash: Optional[float],
-                       executions: Optional[List[TradeExecution]] = None,
-                       daily_dividend: float = 0.0) -> float:
+                       executions: Optional[List[TradeExecution]] = None) -> float:
     """직전 기록 이후 발생한 순입금(외부 입출금)을 역산한다.
 
     prev_cash가 None(첫 기록)이면 체결 전 현금 전액을 초기 입금으로 간주한다.
-    daily_dividend는 배당 유입 추정치로, 현금 증가 중 배당분을 입금이 아닌
-    손익으로 남기기 위해 차감한다. (배당 추정일과 실제 입금일이 어긋나면
-    일 단위 노이즈가 생기지만 기간 합산에서는 상쇄된다.)
+    배당/이자 유입도 순입금에 포함된다 (모듈 docstring 참고).
     """
     impact = trade_cash_impact(executions or [])
     if prev_cash is None:
         return round(current_cash - impact, 2)
-    return round(current_cash - prev_cash - impact - daily_dividend, 2)
+    return round(current_cash - prev_cash - impact, 2)
 
 
 def compute_settlement(records: List[dict], start: str, end: str) -> SettlementResult:

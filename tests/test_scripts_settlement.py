@@ -122,7 +122,8 @@ class TestBackfillNetDeposit:
         assert data[1]["net_deposit"] == 500.0    # 매수 현금흐름 제외
         assert data[2]["net_deposit"] == 123.0    # 기존 값 보존
 
-    def test_dividend_subtracted(self, tmp_path):
+    def test_dividend_inflow_counted_as_deposit(self, tmp_path):
+        """배당 유입일도 현금 증가분 그대로 순입금으로 백필된다 (추정 차감 없음)."""
         summaries = [
             {"date": "2026-06-01", "total_value": 1000.0, "cash_balance": 1000.0},
             {"date": "2026-06-02", "total_value": 1010.0, "cash_balance": 1010.0,
@@ -132,7 +133,7 @@ class TestBackfillNetDeposit:
         backfill_net_deposit.main(["--account", "acc1", "--data-root", str(tmp_path)])
         with open(os.path.join(acc_dir, "summary.json"), encoding="utf-8") as f:
             data = json.load(f)
-        assert data[1]["net_deposit"] == 0.0
+        assert data[1]["net_deposit"] == 10.0
 
     def test_dry_run_does_not_write(self, tmp_path, capsys):
         summaries = [{"date": "2026-06-01", "total_value": 1000.0, "cash_balance": 1000.0}]

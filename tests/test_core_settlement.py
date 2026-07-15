@@ -250,9 +250,9 @@ class TestDeriveNetDeposit:
         execs = [_exec(OrderAction.BUY, 10, 100.0, fee=5.0)]  # 현금 -1005
         assert derive_net_deposit(495.0, 1500.0, execs) == 0.0
 
-    def test_dividend_excluded_from_deposit(self):
-        """배당 유입은 입금이 아니라 손익으로 남긴다"""
-        assert derive_net_deposit(1010.0, 1000.0, daily_dividend=10.0) == 0.0
+    def test_non_trade_cash_inflow_counted_as_deposit(self):
+        """배당/이자 등 거래 외 현금 유입은 순입금으로 집계된다 (추정 차감 없음)"""
+        assert derive_net_deposit(1010.0, 1000.0) == 10.0
 
     def test_first_record_counts_pretrade_cash_as_initial_deposit(self):
         """첫 기록: 체결 전 현금 = 초기 입금"""
