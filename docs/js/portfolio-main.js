@@ -1,6 +1,7 @@
 // docs/js/portfolio-main.js
 import { loadAccountsMeta } from './utils.js?v=20260624-5';
 import { renderCurrencySummary, renderAccountSections } from './portfolio-cards.js?v=20260621-1';
+import { renderAllocationSections } from './portfolio-allocation.js?v=20260715-1';
 import { renderComparisonChart, updateChartRange } from './portfolio-charts.js?v=2';
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -32,6 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         // 렌더링
         renderCurrencySummary(accountsData);
+        renderAllocationSections(accountsData);
         renderAccountSections(accountsData);
         renderComparisonChart(accountsData);
         setupRangeSelector(accountsData);
