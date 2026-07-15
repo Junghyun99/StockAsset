@@ -122,7 +122,7 @@ function buildCard(id, data, marketType) {
         <div class="col-sm-6 col-lg-4 col-xl-3">
             <div class="card h-100 border-0 shadow-sm" style="border-top: 3px solid ${color} !important;">
                 <div class="card-body d-flex flex-column">
-                    <div class="d-flex align-items-center mb-2 flex-wrap">
+                    <div class="d-flex align-items-center mb-2 flex-wrap row-gap-1">
                         <span class="fw-bold">${id}</span>
                         ${inactiveBadge}
                         ${dailyBadge}
