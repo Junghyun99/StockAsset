@@ -7,7 +7,7 @@ summary.json(일별 요약)을 기반으로 지정한 기간의
 결산 항등식: 기간손익 = 기말자산 - 기초자산 - 순입금액
 
 net_deposit(순입금) 기록이 없는 과거 레코드는 0으로 간주되며, 해당 건수를
-리포트에 경고로 표시한다 (scripts/backfill_net_deposit.py로 백필 가능).
+리포트에 경고로 표시한다.
 
 사용법:
     python -m scripts.monthly_settlement --account my_test --start 2026-06-01 --end 2026-06-30
@@ -103,7 +103,6 @@ def build_report(result, account: str) -> str:
             "-" * 40,
             f"주의: 순입금 미기록 레코드 {result.missing_net_deposit_count}건을 0으로 간주했습니다.",
             "  기간 중 입출금이 있었다면 손익이 왜곡될 수 있습니다.",
-            "  (scripts/backfill_net_deposit.py 로 과거 구간을 백필할 수 있습니다.)",
         ]
     return "\n".join(lines)
 

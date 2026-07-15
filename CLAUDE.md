@@ -13,7 +13,6 @@
 - 봇 실행: `python src/main.py`
 - 의존성 설치: `pip install -r requirements.txt`
 - 기간(월간) 결산: `python -m scripts.monthly_settlement --account my_test --start 2026-06-01 --end 2026-06-30`
-- 순입금 백필 (net_deposit 미기록 과거 구간): `python -m scripts.backfill_net_deposit --account my_test [--dry-run]`
 
 ## 프로젝트 구조
 ```
@@ -36,8 +35,7 @@ src/
 ├── utils/               # IndicatorCalculator, TradeLogger
 └── backtest/            # 백테스트 프레임워크 (runner, components, cache, fetcher)
 scripts/
-├── monthly_settlement.py    # summary.json 기반 기간 결산 CLI (계정별)
-└── backfill_net_deposit.py  # 과거 summary 레코드 net_deposit 백필
+└── monthly_settlement.py    # summary.json 기반 기간 결산 CLI (계정별)
 tests/                   # 테스트 (80% 커버리지 요구)
 docs/                    # 웹 대시보드 및 데이터 저장
 accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
@@ -78,7 +76,7 @@ accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
   차감하지 않음 - `daily_dividend` 필드는 참고용 기록일 뿐 순입금 계산에 미사용)
 - `scripts/monthly_settlement.py`가 기간의 기초/기말자산, 순입금, 기간손익, TWR을 출력
   (결산 항등식: 기간손익 = 기말자산 - 기초자산 - 순입금액)
-- net_deposit 도입 이전 레코드는 `scripts/backfill_net_deposit.py`로 백필
+- net_deposit 도입 이전 과거 레코드는 일회성 마이그레이션으로 역산해 채워져 있음
 
 ## CI/CD
 GitHub Actions 워크플로우 7개:
