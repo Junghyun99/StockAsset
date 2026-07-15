@@ -39,12 +39,15 @@ export function buildAllocation(accountsData) {
         }
         entry.value += addValue;
         // 아직 한글명 미해석(name === ticker)이면 이 계좌 설정으로 시도
+        // (헬퍼가 유효값을 반환할 때만 덮어써 방어)
         if (entry.name === ticker) {
-            entry.name = getTickerAlias(ticker, groupConfig);
+            const alias = getTickerAlias(ticker, groupConfig);
+            if (alias) entry.name = alias;
         }
         // 아직 그룹색 미해석이면 이 계좌 설정으로 시도
         if (entry.color === FALLBACK_COLOR) {
-            entry.color = getAssetGroup(ticker, groupConfig).color;
+            const group = getAssetGroup(ticker, groupConfig);
+            if (group && group.color) entry.color = group.color;
         }
     };
 
@@ -147,6 +150,9 @@ function buildTable(rowsHtml) {
 
 function buildRow(name, value, pct, color, marketType) {
     const pctStr = pct.toFixed(1);
+    // 음수(미수금 등)/100 초과 값이 CSS width를 깨뜨리지 않도록 바 너비만 [0,100]으로 제한.
+    // 텍스트 라벨(pctStr)은 실제 값을 그대로 표시한다.
+    const widthPct = Math.max(0, Math.min(100, pct));
     return `
         <tr>
             <td style="min-width: 120px;">
@@ -157,7 +163,7 @@ function buildRow(name, value, pct, color, marketType) {
             <td style="width: 38%;">
                 <div class="d-flex align-items-center gap-2">
                     <div class="progress flex-grow-1" style="height: 6px;">
-                        <div class="progress-bar" style="width: ${pctStr}%; background-color: ${color};"></div>
+                        <div class="progress-bar" style="width: ${widthPct}%; background-color: ${color};"></div>
                     </div>
                     <span class="small fw-semibold text-nowrap" style="min-width: 44px; text-align: right;">${pctStr}%</span>
                 </div>
