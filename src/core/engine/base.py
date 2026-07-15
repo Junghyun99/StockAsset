@@ -384,7 +384,7 @@ class TradingEngine:
         rebalancing_date = effective_record_date if is_rebalancing else None
         self.repo.save_daily_summary(market_data, signal, final_pf, regime,
                                      daily_dividend=daily_dividend, date_override=record_date,
-                                     benchmarks=benchmark_prices)
+                                     benchmarks=benchmark_prices, executions=executions)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,
