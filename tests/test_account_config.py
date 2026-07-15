@@ -45,6 +45,44 @@ def test_load_accounts_happy(yaml_file, monkeypatch):
     assert accounts[1].is_live is False
 
 
+def test_load_accounts_is_active_defaults_true(yaml_file, monkeypatch):
+    """is_active 필드를 생략하면 기본값 True (하위 호환)."""
+    _set_env(monkeypatch, "ACC1")
+    _set_env(monkeypatch, "ACC2")
+    accounts = load_accounts(yaml_file)
+    assert accounts[0].is_active is True
+    assert accounts[1].is_active is True
+
+
+def test_load_accounts_is_active_false(tmp_path, monkeypatch):
+    """is_active: false를 명시하면 False로 파싱된다."""
+    p = tmp_path / "irp.yaml"
+    p.write_text(
+        """
+accounts:
+  - id: irp
+    market_type: domestic
+    is_live: true
+    is_active: false
+    engine: DomesticAsset5Engine
+    kis_env_prefix: IRP
+""",
+        encoding="utf-8",
+    )
+    _set_env(monkeypatch, "IRP")
+    accounts = load_accounts(str(p))
+    assert accounts[0].is_active is False
+
+
+def test_account_config_is_active_default():
+    """AccountConfig dataclass 기본값도 True."""
+    acc = AccountConfig(
+        id="x", market_type="overseas", is_live=False,
+        engine_name="SpyEngine", app_key="k", app_secret="s", acc_no="n",
+    )
+    assert acc.is_active is True
+
+
 def test_load_accounts_missing_file():
     with pytest.raises(FileNotFoundError):
         load_accounts("/nonexistent/accounts.yaml")

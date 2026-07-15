@@ -43,6 +43,7 @@ def _make_engine(
     notifier=None,
     trading_interval_days=5,
     is_live_trading=False,
+    is_active=True,
 ):
     """공통 TradingEngine Mock 조립."""
     broker = MagicMock()
@@ -75,6 +76,7 @@ def _make_engine(
             trading_interval_days=trading_interval_days,
             notifier=notifier,
             is_live_trading=is_live_trading,
+            is_active=is_active,
         )
 
     return engine, {
@@ -276,6 +278,132 @@ def test_zero_price_non_holding_does_not_abort():
     # 보유 종목(SSO)은 가격 정상 → 리밸런싱 실행돼야 함
     assert result.is_rebalancing is True
     mocks["rebalancer"].generate_signal.assert_called_once()
+
+
+# ─────────────────────────────────────────────────────────────────
+# 시나리오 5b: 비활성 계좌 (is_active=False) → 조회만, 매매 스킵
+# ─────────────────────────────────────────────────────────────────
+
+def test_inactive_account_skips_trading():
+    """is_active=False → 인터벌 충족·BULL이어도 매매/신호생성 스킵, 저장은 수행."""
+    engine, mocks = _make_engine(repo_last_reb=None, is_active=False)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    # 매매·신호 생성 모두 스킵
+    mocks["rebalancer"].generate_signal.assert_not_called()
+    mocks["broker"].execute_orders.assert_not_called()
+    assert result.is_rebalancing is False
+    assert result.executions == []
+    assert result.signal.orders == []
+    assert "비활성" in result.signal.reason
+
+
+def test_inactive_account_still_queries_and_persists_summary():
+    """비활성이어도 포트폴리오 조회는 하고 summary/status는 저장(최신 자산평가 유지).
+    단, 매매 내역(save_trade_history)은 executions가 비어 실질적으로 기록 안 됨."""
+    engine, mocks = _make_engine(repo_last_reb=None, is_active=False)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    engine.run_one_cycle(mocks["data_provider"])
+
+    # 조회는 수행
+    mocks["broker"].get_portfolio.assert_called()
+    # 저장(자산평가/상태) 수행
+    mocks["repo"].save_daily_summary.assert_called_once()
+    mocks["repo"].update_status.assert_called_once()
+    # save_trade_history는 빈 executions로 호출되어 실제 기록은 남지 않음
+    _, s_kwargs = mocks["repo"].save_daily_summary.call_args
+    assert s_kwargs.get("executions") == []
+
+
+def test_inactive_account_persists_target_ratio_for_factors():
+    """비활성 신호에도 target_ratio_a/rebalance_threshold가 채워져 결정요소가 비지 않는다."""
+    engine, mocks = _make_engine(repo_last_reb=None, is_active=False)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    # _make_engine의 rebalancer.get_target_params → (0.5, 0.075)
+    assert result.signal.target_ratio_a == 0.5
+    assert result.signal.rebalance_threshold == 0.075
+
+
+def test_inactive_account_sends_notification():
+    """비활성 계좌도 매 실행 시 조회 완료 알림을 보낸다."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier, is_active=False)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    engine.run_one_cycle(mocks["data_provider"])
+
+    calls = [str(c) for c in notifier.send_message.call_args_list]
+    assert any("비활성" in c for c in calls)
+
+
+def test_inactive_account_nan_sends_alert_and_skips_persist():
+    """비활성 계좌라도 NaN 데이터 시 alert 발송 + Step 6 저장 스킵(활성 경로와 동일)."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier, is_active=False)
+    md = _make_market_data(nan_vol=True)  # spy_volatility = NaN
+
+    mocks["calculator"].calculate.return_value = md
+
+    engine.run_one_cycle(mocks["data_provider"])
+
+    notifier.send_alert.assert_called_once()
+    msg = notifier.send_alert.call_args[0][0]
+    assert "Data Quality Alert (비활성)" in msg
+    assert "spy_volatility" in msg
+    # NaN → 저장 스킵
+    mocks["repo"].save_daily_summary.assert_not_called()
+    mocks["repo"].update_status.assert_not_called()
+
+
+def test_inactive_account_zero_price_holding_sends_alert():
+    """비활성 계좌에서 보유 종목 가격 조회 실패(0가격) 시 왜곡 경고 alert 발송."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier, is_active=False)
+    md = _make_market_data()
+
+    # SSO 보유 중인데 가격이 0.0 (fetch 실패)
+    portfolio_with_zero = Portfolio(
+        total_cash=10000.0,
+        holdings={"SSO": 10},
+        current_prices={"SSO": 0.0},
+    )
+    mocks["broker"].get_portfolio.return_value = portfolio_with_zero
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 0.0}
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    notifier.send_alert.assert_called_once()
+    msg = notifier.send_alert.call_args[0][0]
+    assert "Price Data Alert (비활성)" in msg
+    assert "SSO" in result.signal.reason
+    # 매매는 여전히 없음
+    mocks["broker"].execute_orders.assert_not_called()
 
 
 # ─────────────────────────────────────────────────────────────────
