@@ -362,7 +362,13 @@ export const ACCOUNT_COLORS = {};
 export const ACCOUNT_MARKET_TYPES = {};
 
 /**
- * accounts_meta.json을 fetch하여 ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES를 채운다.
+ * 계좌별 매매 활성화 여부 런타임 맵. false면 조회 전용(비활성) 계좌.
+ * accounts_meta.json에 값이 없으면(구버전 데이터) 기본 활성(true)으로 간주한다.
+ */
+export const ACCOUNT_IS_ACTIVE = {};
+
+/**
+ * accounts_meta.json을 fetch하여 ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES, ACCOUNT_IS_ACTIVE를 채운다.
  * loadLiveMode() 시작 시 먼저 호출된다.
  * @param {string} basePath - accounts_meta.json이 있는 경로 (예: 'data/')
  */
@@ -374,6 +380,8 @@ export async function loadAccountsMeta(basePath) {
         for (const [id, info] of Object.entries(meta)) {
             ACCOUNT_COLORS[id] = info.color;
             ACCOUNT_MARKET_TYPES[id] = info.market_type || 'overseas';
+            // is_active 미기재(구버전 데이터)는 활성으로 간주
+            ACCOUNT_IS_ACTIVE[id] = info.is_active !== false;
         }
     } catch (e) {
         console.warn('accounts_meta.json 로드 실패 — 폴백 색상(#6c757d) 사용');

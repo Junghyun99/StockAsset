@@ -1,9 +1,9 @@
 // docs/js/portfolio-cards.js
 import {
     formatAmount,
-    ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES,
+    ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES, ACCOUNT_IS_ACTIVE,
     getRegimeColorClass
-} from './utils.js?v=20260624-5';
+} from './utils.js?v=20260715-3';
 
 /**
  * 통화별 합산 배너 렌더링
@@ -111,12 +111,20 @@ function buildCard(id, data, marketType) {
 
     const regimeClass = getRegimeColorClass(regime);
 
+    // 비활성(조회 전용) 계좌 배지 — is_active === false 일 때만 표시
+    const inactiveBadge = ACCOUNT_IS_ACTIVE[id] === false
+        ? `<span class="badge rounded-pill bg-secondary ms-2" title="비활성 계좌 — 매매 없이 조회만 수행(자산평가는 계속 갱신)">
+               <i class="fas fa-lock me-1"></i>조회 전용
+           </span>`
+        : '';
+
     return `
         <div class="col-sm-6 col-lg-4 col-xl-3">
             <div class="card h-100 border-0 shadow-sm" style="border-top: 3px solid ${color} !important;">
                 <div class="card-body d-flex flex-column">
-                    <div class="d-flex align-items-center mb-2">
+                    <div class="d-flex align-items-center mb-2 flex-wrap row-gap-1">
                         <span class="fw-bold">${id}</span>
+                        ${inactiveBadge}
                         ${dailyBadge}
                     </div>
                     <div class="fs-5 fw-bold mb-1">${formatAmount(totalValue, marketType)}</div>
