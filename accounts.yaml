@@ -2,6 +2,7 @@ accounts:
   - id: my_test
     market_type: domestic
     is_live: true
+    is_active: false         
     engine: DomesticAsset5RealEngine
     kis_env_prefix: MY_TEST
   - id: my_isa
