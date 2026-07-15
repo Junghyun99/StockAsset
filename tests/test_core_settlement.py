@@ -180,16 +180,48 @@ class TestComputeSettlement:
         r = compute_settlement(recs, "2026-06-01", "2026-06-28")
         assert r.twr_pct is None
 
-    def test_null_total_value_at_boundaries_does_not_crash(self):
-        """기초/기말 레코드의 total_value가 null이어도 결산이 중단되지 않는다."""
+    def test_null_boundaries_resolve_to_nearest_valid_record(self):
+        """기초/기말 레코드가 null이면 가장 가까운 유효 레코드를 기초/기말로 쓴다."""
         recs = [
             {"date": "2026-06-01", "total_value": None, "net_deposit": 0.0},
             _rec("2026-06-15", 1000.0),
             {"date": "2026-06-28", "total_value": None, "net_deposit": 0.0},
         ]
         r = compute_settlement(recs, "2026-06-01", "2026-06-30")
-        assert r.start_asset == 0.0
-        assert r.end_asset == 0.0
+        assert r.start_asset == 1000.0
+        assert r.end_asset == 1000.0
+        assert r.base_date == "2026-06-15"
+        assert r.last_date == "2026-06-15"
+        assert r.profit == 0.0
+
+    def test_null_end_record_uses_last_valid_and_excludes_later_deposits(self):
+        """기말이 null이면 마지막 유효 레코드가 기말이 되고, 그 이후 순입금은 제외된다."""
+        recs = [
+            _rec("2026-05-31", 1000.0),
+            _rec("2026-06-15", 1200.0, net_deposit=100.0),
+            # 마지막 날 시세조회 실패 + 입금 500: 기말은 6/15, 500은 합산 제외
+            {"date": "2026-06-28", "total_value": None, "net_deposit": 500.0},
+        ]
+        r = compute_settlement(recs, "2026-06-01", "2026-06-30")
+        assert r.last_date == "2026-06-15"
+        assert r.end_asset == 1200.0
+        assert r.net_deposit == 100.0
+        assert r.profit == 100.0  # 1200 - 1000 - 100
+
+    def test_null_prior_base_walks_back_and_keeps_identity(self):
+        """직전 레코드가 null이면 그 이전 유효 레코드가 기초가 되고,
+        그 사이(기간 밖) 순입금도 합산해 항등식이 유지된다."""
+        recs = [
+            _rec("2026-05-28", 1000.0),
+            # start 직전 레코드가 비정상이지만 200 입금이 기록됨
+            {"date": "2026-05-31", "total_value": None, "net_deposit": 200.0},
+            _rec("2026-06-15", 1300.0),
+        ]
+        r = compute_settlement(recs, "2026-06-01", "2026-06-30")
+        assert r.base_date == "2026-05-28"
+        assert r.start_asset == 1000.0
+        assert r.net_deposit == 200.0
+        assert r.profit == 100.0  # 1300 - 1000 - 200
 
     def test_records_sorted_defensively(self):
         """저장 순서가 뒤섞여 있어도 날짜순으로 정렬해 계산한다"""
