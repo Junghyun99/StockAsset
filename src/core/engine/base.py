@@ -44,6 +44,7 @@ class TradingEngine:
         is_live_trading: bool = False,
         benchmarks: Optional[dict] = None,
         account_label: Optional[str] = None,
+        is_active: bool = True,
     ):
         # 클래스 속성 우선, 없으면 파라미터 사용
         groups = getattr(type(self), 'ASSET_GROUPS', asset_groups)
@@ -71,6 +72,9 @@ class TradingEngine:
         self.trading_interval_days = trading_interval_days
         self.notifier = notifier
         self.is_live_trading = is_live_trading
+        # 비활성(False) 계좌는 조회·국면분석·저장까지만 수행하고 매매(execute_orders)는 스킵한다.
+        # IRP처럼 주문 API가 불가하거나 일시 정지하려는 계좌에 사용. 조회는 계속되어 최신 자산평가 유지.
+        self.is_active = is_active
         # 멀티 계좌 Slack 알림에서 계좌를 구분하기 위한 라벨 (예: accounts.yaml의 id)
         self.account_label = account_label
 
@@ -143,9 +147,16 @@ class TradingEngine:
         )
 
         # Step 5: 조건 분기 & 실행
-        signal, executions, final_pf, is_rebalancing = self.execute_cycle(
-            market_data, portfolio, regime, exposure, nan_fields, sim_date, record_date
-        )
+        # 비활성 계좌는 매매를 하지 않는다. execute_cycle이 엔진별로 오버라이드되어 있어
+        # 게이트를 각 구현에 넣지 않고 상속 공통 지점인 이곳에서 한 번만 분기한다.
+        if self.is_active:
+            signal, executions, final_pf, is_rebalancing = self.execute_cycle(
+                market_data, portfolio, regime, exposure, nan_fields, sim_date, record_date
+            )
+        else:
+            signal, executions, final_pf, is_rebalancing = self.deactivated_cycle(
+                portfolio, regime, exposure, record_date
+            )
 
         # Step 6: 저장 (NaN 데이터 품질 이상 시 전체 스킵 — step 4 API 오류와 동일 처리)
         self.logger.info(">>> Step 6: Archiving Data")
@@ -387,6 +398,32 @@ class TradingEngine:
                 )
 
         return signal, executions, final_pf, is_rebalancing
+
+    def deactivated_cycle(
+        self,
+        portfolio: Portfolio,
+        regime: MarketRegime,
+        exposure: float,
+        record_date: str,
+    ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
+        """비활성 계좌용 Step 5: 매매 없이 조회 결과만 확정한다.
+
+        신호 생성(rebalancer)·주문 실행을 모두 건너뛰되, decision_factors 렌더링에
+        필요한 target_ratio_a/rebalance_threshold는 활성 분기와 동일하게 채워
+        대시보드 결정요소가 비지 않도록 한다. 반환 후 Step 6 persist가 조회한
+        포트폴리오를 그대로 저장하므로 최신 자산평가·국면이 갱신된다.
+        """
+        target_ratio_a, rebalance_threshold = self.rebalancer.get_target_params(regime)
+        signal = TradeSignal(
+            exposure, [], f"{regime.value} (비활성 — 조회 전용)",
+            target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold,
+        )
+        self.logger.info(">>> Step 5: Deactivated (조회 전용, 매매 스킵)")
+        self._notify_message(
+            f"🔒 비활성 계좌 — 조회만 수행. {regime.value} | ${portfolio.total_value:,.0f}",
+            detail=self._cycle_detail(),
+        )
+        return signal, [], portfolio, False
 
     def persist(
         self,

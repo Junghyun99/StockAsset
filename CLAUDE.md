@@ -68,6 +68,10 @@ accounts.yaml            # 멀티 계정 설정 (accounts.yaml.example 참고)
 - `is_live` - 실거래 여부 (true/false)
 - `engine` - 사용할 엔진 이름 (레지스트리 키)
 - `kis_env_prefix` - 환경변수 prefix (예: "ACC1" → `ACC1_KIS_APP_KEY`)
+- `is_active` - 매매 활성화 여부 (선택, 기본값 true). false면 조회·국면분석·요약 저장까지만
+  하고 매매(주문 실행)는 스킵한다. 조회는 계속되어 최신 자산평가가 유지되므로 IRP(주문 API
+  불가) 계좌나 일시 정지에 사용. 비활성 시 history.json(매매 내역)은 기록되지 않고
+  summary.json/status.json만 갱신된다.
 
 ## 기간 결산 (net_deposit)
 - 봇이 매 실행 시 summary.json 레코드에 `net_deposit`(순입금 역산치)을 기록한다:

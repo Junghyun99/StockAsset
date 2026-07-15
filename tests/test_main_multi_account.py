@@ -175,4 +175,5 @@ def test_multi_account_save_accounts_meta_writes_all_accounts(mock_multi_account
     assert set(accounts_meta.keys()) == {"acc1", "acc2"}
     assert accounts_meta["acc1"]["market_type"] == "overseas"
     assert accounts_meta["acc1"]["is_live"] is False
+    assert accounts_meta["acc1"]["is_active"] is True  # 기본값 True
     assert accounts_meta["acc2"]["market_type"] == "domestic"

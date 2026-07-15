@@ -25,6 +25,7 @@ class AccountConfig:
     app_key: str
     app_secret: str
     acc_no: str
+    is_active: bool = True     # False면 조회만 수행하고 매매는 스킵 (IRP/일시정지)
 
     def __post_init__(self):
         mt = (self.market_type or "").lower()
@@ -88,6 +89,7 @@ def load_accounts(path: str = "accounts.yaml") -> List[AccountConfig]:
                 id=acc_id,
                 market_type=raw.get("market_type", "overseas"),
                 is_live=bool(raw.get("is_live", False)),
+                is_active=bool(raw.get("is_active", True)),
                 engine_name=engine_name,
                 app_key=app_key,
                 app_secret=app_secret,

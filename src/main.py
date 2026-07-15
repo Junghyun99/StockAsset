@@ -77,7 +77,8 @@ class TradingBot:
         for acc in accounts:
             self.logger.info(
                 f"[{acc.id}] engine={acc.engine_name} market={acc.market_type} "
-                f"mode={'LIVE' if acc.is_live else 'PAPER'}"
+                f"mode={'LIVE' if acc.is_live else 'PAPER'} "
+                f"state={'ACTIVE' if acc.is_active else 'INACTIVE(조회전용)'}"
             )
             engine_cls = _resolve_engine_class(acc.engine_name)
             asset_groups = getattr(engine_cls, "ASSET_GROUPS", self.strategy.ASSET_GROUPS)
@@ -101,6 +102,7 @@ class TradingBot:
                 is_live_trading=acc.is_live,
                 benchmarks=BENCHMARKS_BY_MARKET.get(acc.market_type, {}),
                 account_label=acc.id,
+                is_active=acc.is_active,
             )
             self.runners.append(AccountRunner(acc, engine, broker, repo))
 
@@ -121,6 +123,7 @@ class TradingBot:
                 "engine_name": r.account.engine_name,
                 "color": _ENGINE_COLORS.get(r.account.engine_name, "#6c757d"),
                 "is_live": r.account.is_live,
+                "is_active": r.account.is_active,
             }
             for r in self.runners
         }
