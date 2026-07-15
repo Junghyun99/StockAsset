@@ -31,13 +31,32 @@ def isolate_backtest_filesystem(tmp_path, monkeypatch):
     # 1. Path.iterdir no-op → 실제 backtest JSON 삭제 방지
     monkeypatch.setattr("pathlib.Path.iterdir", lambda self: iter([]))
 
+    # 1-b. shutil.rmtree 가드: run_compare_backtest는 실행 전 엔진 출력 디렉토리를
+    #      통째로 삭제한다 (runner.py의 shutil.rmtree(eng_path)). output_dir 기본값
+    #      ("docs/data/backtest/compare")으로 실행되면 실제 커밋 데이터가 삭제되므로
+    #      docs/data 하위 상대 경로는 삭제를 건너뛴다. (tmp_path 등 절대 경로는 통과)
+    import shutil as _shutil
+    _real_rmtree = _shutil.rmtree
+
+    def _guarded_rmtree(path, *args, **kwargs):
+        if str(path).replace(os.sep, "/").startswith("docs/data"):
+            return
+        return _real_rmtree(path, *args, **kwargs)
+
+    monkeypatch.setattr(_shutil, "rmtree", _guarded_rmtree)
+
     # 2. JsonRepository가 backtest 경로 요청 시 임시 경로로 리다이렉트
     backtest_tmp = str(tmp_path / "backtest")
 
     class _TmpBacktestRepo(JsonRepository):
         def __init__(self, root_path=None, **kwargs):
-            if root_path is None or root_path == "docs/data/backtest":
+            if root_path is None:
                 root_path = backtest_tmp
+            elif root_path.startswith("docs/data/backtest"):
+                # 하위 경로(compare/<엔진> 등)도 디렉토리 구조를 유지한 채 임시
+                # 경로로 리다이렉트한다. 기존의 정확 일치(==) 조건은 compare
+                # 하위 경로를 놓쳐 실제 커밋 데이터가 테스트로 덮어써졌다.
+                root_path = backtest_tmp + root_path[len("docs/data/backtest"):]
             super().__init__(root_path, **kwargs)
 
     monkeypatch.setattr(runner_mod, "JsonRepository", _TmpBacktestRepo)
