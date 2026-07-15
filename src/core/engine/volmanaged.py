@@ -14,7 +14,7 @@ from src.core.engine.base import TradingEngine
 from src.core.engine.registry import register_engine
 from src.core.interfaces import IDataProvider
 from src.core.logic.volatility_targeter import VolatilityTargeter
-from src.core.models import MarketData, MarketRegime
+from src.core.models import DecisionFactor, MarketData, MarketRegime, Portfolio, TradeSignal
 
 
 @register_engine(color="#6f42c1")
@@ -124,6 +124,25 @@ class VolManagedEngine(TradingEngine):
             )
 
         return regime, exposure, nan_fields
+
+    def decision_factors(
+        self,
+        market_data: MarketData,
+        regime: MarketRegime,
+        exposure: float,
+        signal: TradeSignal,
+        portfolio: Portfolio,
+    ) -> List[DecisionFactor]:
+        """변동성 관리: 실현변동성 → 실효 레버리지 사이징이 결정요소다."""
+        L = self._applied_L if self._applied_L is not None \
+            else exposure + self.rebalancer.ratio_a
+        return [
+            DecisionFactor("realized_vol", "실현변동성(21d)", market_data.spy_volatility,
+                           "percent", threshold=self.TARGET_VOL),
+            DecisionFactor("target_vol", "목표 변동성", self.TARGET_VOL, "percent"),
+            DecisionFactor("effective_leverage", "실효 레버리지(x)", L, "number"),
+            DecisionFactor("cash_weight", "현금 비중", max(1.0 - exposure, 0.0), "percent"),
+        ]
 
 
 @register_engine(color="#d63384", market_type="domestic", backtest=False)

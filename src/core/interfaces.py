@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Optional
 import pandas as pd
-from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution
+from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution, DecisionFactor
 
 class IDataProvider(ABC):
     @abstractmethod
@@ -82,7 +82,8 @@ class IRepository(ABC):
                            daily_dividend: float = 0.0,
                            date_override: Optional[str] = None,
                            benchmarks: Optional[dict] = None,
-                           executions: Optional[List[TradeExecution]] = None) -> None: ...
+                           executions: Optional[List[TradeExecution]] = None,
+                           decision_factors: Optional[List[DecisionFactor]] = None) -> None: ...
     @abstractmethod
     def save_trade_history(self, executions: List[TradeExecution], portfolio: Portfolio,
                            reason: str, sim_date: Optional[str] = None) -> None: ...
@@ -90,7 +91,8 @@ class IRepository(ABC):
     def update_status(self, regime: MarketRegime, exposure: float, portfolio: Portfolio,
                       market_data: MarketData, reason: str,
                       sim_date: Optional[str] = None,
-                      rebalancing_date: Optional[str] = None) -> None: ...
+                      rebalancing_date: Optional[str] = None,
+                      decision_factors: Optional[List[DecisionFactor]] = None) -> None: ...
 
     # ── 전략 상태 영속화 (선택적 기능, 기본 안전 degrade) ──────────────
     # 상태형 엔진(예: DipBuyEngine의 트랜치 큐)이 프로세스 수명을 넘는 상태를

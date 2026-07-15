@@ -97,6 +97,22 @@ class TradeExecution:
     status: ExecutionStatus
     reason: str = "" # 거부 사유 등
 
+@dataclass(frozen=True)
+class DecisionFactor:
+    """엔진의 의사결정 핵심 요소 한 항목 (자기서술적 — 프론트가 그대로 렌더링).
+
+    key: 안정적 식별자 (summary.json 시계열 키로도 사용)
+    label: 표시명
+    value: 요소 값 (수치 또는 텍스트)
+    format: "number" | "percent" | "text" — 프론트 표시 형식
+    threshold: 판단 기준값 (있으면 프론트가 기준 대비 강조 표시)
+    """
+    key: str
+    label: str
+    value: float | str
+    format: str = "number"
+    threshold: Optional[float] = None
+
 @dataclass
 class DayResult:
     """하루치 트레이딩 사이클 실행 결과"""

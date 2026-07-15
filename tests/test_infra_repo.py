@@ -2,7 +2,7 @@ import pytest
 import json
 import os
 from src.infra.repo import JsonRepository
-from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, Order, TradeExecution, OrderAction, ExecutionStatus
+from src.core.models import DecisionFactor, MarketData, Portfolio, TradeSignal, MarketRegime, Order, TradeExecution, OrderAction, ExecutionStatus
 
 @pytest.fixture
 def repo(tmp_path):
@@ -71,6 +71,51 @@ def test_load_last_regime_returns_none_on_missing_key(repo):
     with open(repo.status_file, 'w') as f:
         json.dump(incomplete_status, f)
     assert repo.load_last_regime() is None
+
+
+def test_update_status_decision_factors_저장(repo, dummy_portfolio, dummy_market_data):
+    """엔진이 넘긴 결정요소가 status.json strategy.decision_factors에 그대로 직렬화됨."""
+    factors = [DecisionFactor("vix", "VIX", 17.2, "number", threshold=30.0),
+               DecisionFactor("regime", "시장 국면", "Bull", "text")]
+    repo.update_status(MarketRegime.BULL, 0.9, dummy_portfolio, dummy_market_data, "이유",
+                       decision_factors=factors)
+    with open(repo.status_file) as f:
+        status = json.load(f)
+    saved = status["strategy"]["decision_factors"]
+    assert len(saved) == 2
+    assert saved[0] == {"key": "vix", "label": "VIX", "value": 17.2,
+                        "format": "number", "threshold": 30.0}
+    assert saved[1]["value"] == "Bull"
+
+
+def test_update_status_decision_factors_미전달시_빈배열(repo, dummy_portfolio, dummy_market_data):
+    """decision_factors 미전달(구버전 호출) 시 빈 배열로 저장 (프론트 폴백 경로)."""
+    repo.update_status(MarketRegime.BULL, 0.9, dummy_portfolio, dummy_market_data, "이유")
+    with open(repo.status_file) as f:
+        status = json.load(f)
+    assert status["strategy"]["decision_factors"] == []
+
+
+def test_save_daily_summary_factors_시계열(repo, dummy_portfolio, dummy_market_data):
+    """summary.json에는 key:value 축약본만 저장 (시계열용)."""
+    signal = TradeSignal(1.0, [], "test")
+    factors = [DecisionFactor("group_deviation", "A그룹 상대이탈", 0.03, "percent", 0.075)]
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL,
+                            decision_factors=factors)
+    with open(repo.summary_file) as f:
+        data = json.load(f)
+    assert data[-1]["factors"] == {"group_deviation": 0.03}
+
+
+def test_save_daily_summary_factors_NaN은_null로(repo, dummy_portfolio, dummy_market_data):
+    """NaN 값은 _sanitize_for_json에 의해 null로 저장되어야 한다."""
+    signal = TradeSignal(1.0, [], "test")
+    factors = [DecisionFactor("x", "X", float("nan"), "number")]
+    repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL,
+                            decision_factors=factors)
+    with open(repo.summary_file) as f:
+        data = json.load(f)
+    assert data[-1]["factors"]["x"] is None
 
 
 def test_save_daily_summary_date_override(repo, dummy_portfolio):
