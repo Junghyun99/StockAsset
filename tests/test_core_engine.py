@@ -358,6 +358,54 @@ def test_inactive_account_sends_notification():
     assert any("비활성" in c for c in calls)
 
 
+def test_inactive_account_nan_sends_alert_and_skips_persist():
+    """비활성 계좌라도 NaN 데이터 시 alert 발송 + Step 6 저장 스킵(활성 경로와 동일)."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier, is_active=False)
+    md = _make_market_data(nan_vol=True)  # spy_volatility = NaN
+
+    mocks["calculator"].calculate.return_value = md
+
+    engine.run_one_cycle(mocks["data_provider"])
+
+    notifier.send_alert.assert_called_once()
+    msg = notifier.send_alert.call_args[0][0]
+    assert "Data Quality Alert (비활성)" in msg
+    assert "spy_volatility" in msg
+    # NaN → 저장 스킵
+    mocks["repo"].save_daily_summary.assert_not_called()
+    mocks["repo"].update_status.assert_not_called()
+
+
+def test_inactive_account_zero_price_holding_sends_alert():
+    """비활성 계좌에서 보유 종목 가격 조회 실패(0가격) 시 왜곡 경고 alert 발송."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier, is_active=False)
+    md = _make_market_data()
+
+    # SSO 보유 중인데 가격이 0.0 (fetch 실패)
+    portfolio_with_zero = Portfolio(
+        total_cash=10000.0,
+        holdings={"SSO": 10},
+        current_prices={"SSO": 0.0},
+    )
+    mocks["broker"].get_portfolio.return_value = portfolio_with_zero
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 0.0}
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    notifier.send_alert.assert_called_once()
+    msg = notifier.send_alert.call_args[0][0]
+    assert "Price Data Alert (비활성)" in msg
+    assert "SSO" in result.signal.reason
+    # 매매는 여전히 없음
+    mocks["broker"].execute_orders.assert_not_called()
+
+
 # ─────────────────────────────────────────────────────────────────
 # 시나리오 6: 최초 실행 (last_rebalancing_date=None → is_due=True)
 # ─────────────────────────────────────────────────────────────────
