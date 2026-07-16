@@ -3,12 +3,14 @@
     "market_type": "domestic",
     "engine_name": "DomesticAsset5RealEngine",
     "color": "#bdbd42",
-    "is_live": true
+    "is_live": true,
+    "is_active": false
   },
   "my_isa": {
     "market_type": "domestic",
     "engine_name": "DomesticVolManagedEngine",
     "color": "#d63384",
-    "is_live": true
+    "is_live": true,
+    "is_active": true
   }
 }
