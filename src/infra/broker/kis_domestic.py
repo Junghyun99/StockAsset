@@ -361,10 +361,8 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             "FID_INPUT_ISCD": _to_kis_code(ticker)
         }
         try:
-            # 토큰 갱신(_ensure_token)도 try 안에서 수행 — 매도 체결 후 매수 단계에서
-            # 토큰 재발급이 실패하면 예외가 그대로 전파되어 사이클 전체가 중단되고
-            # 이미 체결된 매도 내역까지 저장되지 않는 위험이 있었음
-            self._ensure_token()
+            # 헤더 생성 과정에서 토큰 갱신(_ensure_token)이 함께 수행되므로,
+            # 이를 try 블록 내부로 이동하여 토큰 재발급 실패 예외도 함께 처리합니다.
             headers = self._get_header(self.ASKING_PRICE_TR_ID)
             time.sleep(0.1)
             res = _pkg.requests.get(url, headers=headers, params=params, timeout=_pkg.KIS_HTTP_TIMEOUT)
