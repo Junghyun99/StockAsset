@@ -1,26 +1,28 @@
 {
     "A": {
         "tickers": [
-            "226490.KS",
-            "133690.KS"
+            "418660.KS"
         ],
         "label": "Growth",
         "color": "#0d6efd"
     },
     "B": {
         "tickers": [
-            "365780.KS",
-            "305080.KS",
-            "411060.KS"
+            "133690.KS"
         ],
         "label": "Safety",
         "color": "#198754"
     },
+    "C": {
+        "tickers": [
+            "459580.KS"
+        ],
+        "label": "Cash",
+        "color": "#ffc107"
+    },
     "aliases": {
-        "226490.KS": "KODEX 코스피",
+        "418660.KS": "TIGER 미국나스닥100레버리지(합성)",
         "133690.KS": "TIGER 미국나스닥100",
-        "365780.KS": "ACE 국고채10년",
-        "305080.KS": "TIGER 미국채10년선물",
-        "411060.KS": "ACE KRX금현물"
+        "459580.KS": "KODEX CD금리액티브"
     }
 }

@@ -1,82 +1,82 @@
 {
-    "last_updated": "2026-07-16 10:01:32",
-    "last_rebalancing_date": "2026-07-15",
+    "last_updated": "2026-07-16 14:01:23",
+    "last_rebalancing_date": "2026-07-16",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 1.0,
-        "trigger_reason": "Bull (비활성 — 조회 전용)",
+        "target_exposure": 0.926948527526322,
+        "trigger_reason": "비율 유지, exposure 조정으로 주문 발생",
         "market_score": {
             "vix": 15.670000076293945,
-            "spy_mdd": -0.006266716325982067,
-            "spy_momentum": 0.10303017109671797,
-            "spy_price": 754.8099975585938,
-            "spy_ma180": 699.0867231580946,
-            "spy_volatility": 0.13488744798501995
+            "spy_mdd": -0.06668110501491963,
+            "spy_momentum": 0.19551263916991685,
+            "spy_price": 193925.0,
+            "spy_ma180": 173717.86111111112,
+            "spy_volatility": 0.237337881734488
         },
         "decision_factors": [
             {
-                "key": "target_ratio_a",
-                "label": "목표 A그룹 비율",
-                "value": 0.4,
+                "key": "realized_vol",
+                "label": "실현변동성(21d)",
+                "value": 0.237337881734488,
+                "format": "percent",
+                "threshold": 0.22
+            },
+            {
+                "key": "target_vol",
+                "label": "목표 변동성",
+                "value": 0.22,
                 "format": "percent",
                 "threshold": null
             },
             {
-                "key": "current_ratio_a",
-                "label": "현재 A그룹 비율",
-                "value": 0.38039297453760484,
-                "format": "percent",
+                "key": "effective_leverage",
+                "label": "실효 레버리지(x)",
+                "value": 0.926948527526322,
+                "format": "number",
                 "threshold": null
             },
             {
-                "key": "group_deviation",
-                "label": "A그룹 상대이탈",
-                "value": 0.049017563655987945,
-                "format": "percent",
-                "threshold": 0.075
-            },
-            {
-                "key": "rebalance_threshold",
-                "label": "리밸런싱 임계치",
-                "value": 0.075,
+                "key": "cash_weight",
+                "label": "현금 비중",
+                "value": 0.07305147247367805,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 4114861.0,
+        "total_value": 4106641.0,
         "cash_balance": 38261.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 4,
-                "price": 194215.0,
-                "value": 776860.0
+                "price": 193935.0,
+                "value": 775740.0
             },
             {
                 "ticker": "226490.KS",
                 "qty": 11,
-                "price": 70350.0,
-                "value": 773850.0
+                "price": 70140.0,
+                "value": 771540.0
             },
             {
                 "ticker": "305080.KS",
                 "qty": 64,
-                "price": 13335.0,
-                "value": 853440.0
+                "price": 13280.0,
+                "value": 849920.0
             },
             {
                 "ticker": "365780.KS",
                 "qty": 10,
-                "price": 82125.0,
-                "value": 821250.0
+                "price": 82350.0,
+                "value": 823500.0
             },
             {
                 "ticker": "411060.KS",
                 "qty": 32,
-                "price": 26600.0,
-                "value": 851200.0
+                "price": 26490.0,
+                "value": 847680.0
             }
         ]
     }

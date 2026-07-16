@@ -1,16 +1,16 @@
 {
   "my_test": {
     "market_type": "domestic",
-    "engine_name": "DomesticAsset5RealEngine",
-    "color": "#bdbd42",
+    "engine_name": "DomesticVolManagedEngine",
+    "color": "#d63384",
     "is_live": true,
-    "is_active": false
+    "is_active": true
   },
   "my_isa": {
     "market_type": "domestic",
     "engine_name": "DomesticVolManagedEngine",
     "color": "#d63384",
     "is_live": true,
-    "is_active": true
+    "is_active": false
   }
 }
