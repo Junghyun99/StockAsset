@@ -355,14 +355,15 @@ class KisDomesticBrokerBase(KisBrokerCommon):
 
     def _fetch_asking_price(self, ticker: str) -> tuple:
         """국내주식 호가 조회: (best_bid, best_ask) 반환. 실패 시 (0.0, 0.0)"""
-        self._ensure_token()
         url = f"{self.base_url}/uapi/domestic-stock/v1/quotations/inquire-asking-price-exp-ccn"
         params = {
             "FID_COND_MRKT_DIV_CODE": "J",
             "FID_INPUT_ISCD": _to_kis_code(ticker)
         }
-        headers = self._get_header(self.ASKING_PRICE_TR_ID)
         try:
+            # 헤더 생성 과정에서 토큰 갱신(_ensure_token)이 함께 수행되므로,
+            # 이를 try 블록 내부로 이동하여 토큰 재발급 실패 예외도 함께 처리합니다.
+            headers = self._get_header(self.ASKING_PRICE_TR_ID)
             time.sleep(0.1)
             res = _pkg.requests.get(url, headers=headers, params=params, timeout=_pkg.KIS_HTTP_TIMEOUT)
             res.raise_for_status()
