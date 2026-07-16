@@ -423,12 +423,15 @@ class KisOverseasBrokerBase(KisBrokerCommon):
 
     def _fetch_asking_price(self, ticker: str) -> tuple:
         """호가 조회: (best_bid, best_ask) 반환. 실패 시 (0.0, 0.0)"""
-        self._ensure_token()
         url = f"{self.base_url}/uapi/overseas-price/v1/quotations/inquire-asking-price"
         exch = self._get_exchange_code(ticker)
         params = {"AUTH": "", "EXCD": exch, "SYMB": ticker}
-        headers = self._get_header(self.ASKING_PRICE_TR_ID)
         try:
+            # 토큰 갱신(_ensure_token)도 try 안에서 수행 — 매도 체결 후 매수 단계에서
+            # 토큰 재발급이 실패하면 예외가 그대로 전파되어 사이클 전체가 중단되고
+            # 이미 체결된 매도 내역까지 저장되지 않는 위험이 있었음
+            self._ensure_token()
+            headers = self._get_header(self.ASKING_PRICE_TR_ID)
             time.sleep(0.1)
             res = _pkg.requests.get(url, headers=headers, params=params, timeout=_pkg.KIS_HTTP_TIMEOUT)
             res.raise_for_status()
