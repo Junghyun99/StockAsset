@@ -170,6 +170,7 @@ def test_end_to_end_rebalancing():
     mocks["calculator"].calculate.return_value = md
     mocks["analyzer"].analyze.return_value = MarketRegime.BULL
     engine.rebalancer = MagicMock()
+    engine.rebalancer.groups = SsoSpyiEngine.ASSET_GROUPS
     engine.rebalancer.generate_signal.return_value = TradeSignal(1.0, [], "Hold")
     engine.rebalancer.get_target_params.return_value = (0.4, 0.075)
 
