@@ -1,37 +1,61 @@
 {
-    "last_updated": "2026-05-29",
-    "last_rebalancing_date": "2026-05-29",
+    "last_updated": "2025-12-31",
+    "last_rebalancing_date": "2025-12-31",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "비율 유지, 현금 소진 매수",
+        "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 15.319999694824219,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.23425474052270134,
-            "spy_price": 738.3099975585938,
-            "spy_ma180": 622.7396653917101,
-            "spy_volatility": 0.15756221618056518
-        }
+            "vix": 14.949999809265137,
+            "spy_mdd": -0.03375437864855379,
+            "spy_momentum": 0.08701529026669913,
+            "spy_price": 614.3099975585938,
+            "spy_ma180": 568.1669438680013,
+            "spy_volatility": 0.13159690411031175
+        },
+        "decision_factors": [
+            {
+                "key": "realized_vol",
+                "label": "실현변동성(21d)",
+                "value": 0.13159690411031175,
+                "format": "percent",
+                "threshold": 0.3
+            },
+            {
+                "key": "target_vol",
+                "label": "목표 변동성",
+                "value": 0.3,
+                "format": "percent",
+                "threshold": null
+            },
+            {
+                "key": "effective_leverage",
+                "label": "실효 레버리지(x)",
+                "value": 2.0,
+                "format": "number",
+                "threshold": null
+            },
+            {
+                "key": "leveraged_weight",
+                "label": "QLD 비중",
+                "value": 1.0,
+                "format": "percent",
+                "threshold": null
+            }
+        ]
     },
     "portfolio": {
-        "total_value": 319717202.9380435,
-        "cash_balance": 2420.758966330104,
+        "total_value": 16816407.01688082,
+        "cash_balance": 33.79224093017547,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 2938760,
-                "price": 98.45999908447266,
-                "value": 289350306.90948486
-            },
-            {
-                "ticker": "QQQ",
-                "qty": 41127,
-                "price": 738.3099975585938,
-                "value": 30364475.269592285
+                "qty": 238835,
+                "price": 70.41000366210938,
+                "value": 16816373.224639893
             }
         ]
     },
     "initial_cash": 10000000.0,
-    "backtest_start_date": "2006-01-01"
+    "backtest_start_date": "2020-01-01"
 }

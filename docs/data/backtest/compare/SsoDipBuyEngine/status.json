@@ -1,0 +1,67 @@
+{
+    "last_updated": "2025-12-31",
+    "last_rebalancing_date": "2025-12-31",
+    "strategy": {
+        "regime": "Bull",
+        "target_exposure": 1.0,
+        "trigger_reason": "BUY_STAGE_1 분할매수 SSO 31주",
+        "market_score": {
+            "vix": 14.949999809265137,
+            "spy_mdd": -0.012254152659146441,
+            "spy_momentum": 0.07608782763080724,
+            "spy_price": 681.9199829101562,
+            "spy_ma180": 635.6075002034505,
+            "spy_volatility": 0.08400779725987907
+        },
+        "decision_factors": [
+            {
+                "key": "weekly_rsi",
+                "label": "주봉 RSI(14)",
+                "value": 61.26165830024822,
+                "format": "number",
+                "threshold": 48.0
+            },
+            {
+                "key": "ma200_deviation",
+                "label": "200일선 괴리율",
+                "value": 0.08774937579692517,
+                "format": "percent",
+                "threshold": -0.1
+            },
+            {
+                "key": "signal_level",
+                "label": "신호 단계",
+                "value": "BUY_STAGE_1",
+                "format": "text",
+                "threshold": null
+            },
+            {
+                "key": "sso_ratio",
+                "label": "SSO 비중",
+                "value": 0.39864285245244224,
+                "format": "percent",
+                "threshold": null
+            }
+        ]
+    },
+    "portfolio": {
+        "total_value": 12135594.097070381,
+        "cash_balance": 6403975.790780709,
+        "holdings": [
+            {
+                "ticker": "SSO",
+                "qty": 83525,
+                "price": 57.91999816894531,
+                "value": 4837767.847061157
+            },
+            {
+                "ticker": "SPYI",
+                "qty": 17016,
+                "price": 52.529998779296875,
+                "value": 893850.4592285156
+            }
+        ]
+    },
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2020-01-01"
+}

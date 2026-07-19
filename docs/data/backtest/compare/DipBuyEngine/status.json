@@ -1,37 +1,68 @@
 {
-    "last_updated": "2026-05-29",
-    "last_rebalancing_date": "2026-05-29",
+    "last_updated": "2025-12-31",
+    "last_rebalancing_date": "2025-12-29",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 0.4788958603044122,
+        "target_exposure": 0.5635750644669785,
         "trigger_reason": "대기(트리거 없음)",
         "market_score": {
-            "vix": 15.319999694824219,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.477559831193739,
-            "spy_price": 98.45999908447266,
-            "spy_ma180": 72.19852799309625,
-            "spy_volatility": 0.31322049830343457
-        }
+            "vix": 14.949999809265137,
+            "spy_mdd": -0.07822214187367377,
+            "spy_momentum": 0.13469660117020416,
+            "spy_price": 70.41000366210938,
+            "spy_ma180": 62.05133349100749,
+            "spy_volatility": 0.2661579786924532
+        },
+        "decision_factors": [
+            {
+                "key": "gap_ma20",
+                "label": "MA20 이격",
+                "value": -0.01683976622451211,
+                "format": "percent",
+                "threshold": 0.02
+            },
+            {
+                "key": "gap_ma60",
+                "label": "MA60 이격",
+                "value": -0.007782258881560367,
+                "format": "percent",
+                "threshold": 0.02
+            },
+            {
+                "key": "gap_ma120",
+                "label": "MA120 이격",
+                "value": 0.04476020575812023,
+                "format": "percent",
+                "threshold": 0.02
+            },
+            {
+                "key": "rsi",
+                "label": "RSI(14)",
+                "value": 46.98150492672451,
+                "format": "number",
+                "threshold": 70.0
+            },
+            {
+                "key": "armed_triggers",
+                "label": "무장 트리거",
+                "value": "2/4",
+                "format": "text",
+                "threshold": null
+            }
+        ]
     },
     "portfolio": {
-        "total_value": 671192068.9048538,
-        "cash_balance": 7.398841825498593,
+        "total_value": 21908901.778914135,
+        "cash_balance": 54.62940851851178,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 5974300,
-                "price": 98.45999908447266,
-                "value": 588229572.530365
-            },
-            {
-                "ticker": "SHV",
-                "qty": 751608,
-                "price": 110.37999725341797,
-                "value": 82962488.97564697
+                "qty": 311161,
+                "price": 70.41000366210938,
+                "value": 21908847.149505615
             }
         ]
     },
     "initial_cash": 10000000.0,
-    "backtest_start_date": "2006-01-01"
+    "backtest_start_date": "2020-01-01"
 }

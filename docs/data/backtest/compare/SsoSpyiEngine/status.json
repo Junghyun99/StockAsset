@@ -17,21 +17,21 @@
             {
                 "key": "target_ratio_a",
                 "label": "목표 A그룹 비율",
-                "value": 0.999,
+                "value": 0.4,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.998995567872011,
+                "value": 0.4213951308186442,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 4.436564553504934e-06,
+                "value": 0.05348782704661048,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -45,20 +45,20 @@
         ]
     },
     "portfolio": {
-        "total_value": 15572301.809523605,
-        "cash_balance": 19.93917753496578,
+        "total_value": 16302664.782019025,
+        "cash_balance": 72.36839902927466,
         "holdings": [
             {
-                "ticker": "SPY",
-                "qty": 22813,
-                "price": 681.9199829101562,
-                "value": 15556640.570129395
+                "ticker": "SSO",
+                "qty": 118609,
+                "price": 57.91999816894531,
+                "value": 6869833.062820435
             },
             {
-                "ticker": "SHV",
-                "qty": 142,
-                "price": 110.1500015258789,
-                "value": 15641.300216674805
+                "ticker": "SPYI",
+                "qty": 179569,
+                "price": 52.529998779296875,
+                "value": 9432759.35079956
             }
         ]
     },

@@ -1,55 +1,85 @@
 {
-    "last_updated": "2026-05-29",
-    "last_rebalancing_date": "2026-05-29",
+    "last_updated": "2025-12-31",
+    "last_rebalancing_date": "2025-12-31",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "비율 유지, 현금 소진 매수",
+        "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 15.319999694824219,
-            "spy_mdd": 0.0,
-            "spy_momentum": 0.13938556477778424,
-            "spy_price": 756.47998046875,
-            "spy_ma180": 685.2187215169271,
-            "spy_volatility": 0.09849767001053514
-        }
+            "vix": 14.949999809265137,
+            "spy_mdd": -0.012254152659146441,
+            "spy_momentum": 0.07608782763080724,
+            "spy_price": 681.9199829101562,
+            "spy_ma180": 635.6075002034505,
+            "spy_volatility": 0.08400779725987907
+        },
+        "decision_factors": [
+            {
+                "key": "target_ratio_a",
+                "label": "목표 A그룹 비율",
+                "value": 0.5,
+                "format": "percent",
+                "threshold": null
+            },
+            {
+                "key": "current_ratio_a",
+                "label": "현재 A그룹 비율",
+                "value": 0.4987794592127649,
+                "format": "percent",
+                "threshold": null
+            },
+            {
+                "key": "group_deviation",
+                "label": "A그룹 상대이탈",
+                "value": 0.0024410815744702052,
+                "format": "percent",
+                "threshold": 0.075
+            },
+            {
+                "key": "rebalance_threshold",
+                "label": "리밸런싱 임계치",
+                "value": 0.075,
+                "format": "percent",
+                "threshold": null
+            }
+        ]
     },
     "portfolio": {
-        "total_value": 130839494.8826878,
-        "cash_balance": 71.75439190972475,
+        "total_value": 17524963.854167543,
+        "cash_balance": 1.3352771630006366,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 472420,
-                "price": 69.44000244140625,
-                "value": 32804845.95336914
+                "qty": 75717,
+                "price": 57.91999816894531,
+                "value": 4385528.501358032
             },
             {
                 "ticker": "QLD",
-                "qty": 333418,
-                "price": 98.45999908447266,
-                "value": 32828335.974746704
+                "qty": 61860,
+                "price": 70.41000366210938,
+                "value": 4355562.826538086
             },
             {
                 "ticker": "IEF",
-                "qty": 229920,
-                "price": 94.6500015258789,
-                "value": 21761928.350830078
+                "qty": 29041,
+                "price": 96.16000366210938,
+                "value": 2792582.6663513184
             },
             {
                 "ticker": "GLD",
-                "qty": 52660,
-                "price": 417.1199951171875,
-                "value": 21965538.942871094
+                "qty": 8213,
+                "price": 396.30999755859375,
+                "value": 3254894.0099487305
             },
             {
                 "ticker": "DBC",
-                "qty": 728588,
-                "price": 29.479999542236328,
-                "value": 21478773.90647888
+                "qty": 122379,
+                "price": 22.360000610351562,
+                "value": 2736394.514694214
             }
         ]
     },
     "initial_cash": 10000000.0,
-    "backtest_start_date": "2006-01-01"
+    "backtest_start_date": "2020-01-01"
 }
