@@ -185,7 +185,11 @@ def test_stale_status_json_does_not_block_rebalancing(mock_savefig, mock_downloa
     )
 
     assert result is not None
+    # 신호 기반 엔진은 mock 데이터에서 매수 신호가 없을 수 있어 제외
+    signal_based_engines = {"SsoDipBuyEngine"}
     for name, br in result.engine_results.items():
+        if name in signal_based_engines:
+            continue
         # 가격이 선형 증가(100->200)하므로 total_value는 10000과 달라야 함
         assert br.final_value != br.initial_cash, (
             f"{name}: final_value가 initial_cash와 같음 — 리밸런싱이 실행되지 않았음"
