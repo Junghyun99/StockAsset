@@ -4,6 +4,7 @@ from src.core.logic.rebalancer import Rebalancer
 from src.core.logic.dip_buy_indicators import DipBuySignals, DipBuyIndicatorCalculator
 from src.core.logic.dip_buy_planner import Tranche, DipBuyState, DipBuyPlanner
 from src.core.logic.sso_dip_signals import SsoDipSignals, SsoDipIndicatorCalculator
+from src.core.logic.sso_dip_planner import SsoDipPlanner, SsoDipState, SignalLevel
 
 __all__ = [
     "RegimeAnalyzer",
@@ -16,4 +17,7 @@ __all__ = [
     "DipBuyPlanner",
     "SsoDipSignals",
     "SsoDipIndicatorCalculator",
+    "SsoDipPlanner",
+    "SsoDipState",
+    "SignalLevel",
 ]
