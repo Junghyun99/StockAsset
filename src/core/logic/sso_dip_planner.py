@@ -134,6 +134,19 @@ class SsoDipPlanner:
                 if spyi_qty > 0:
                     orders.append(Order(self.SPYI_TICKER, OrderAction.BUY, spyi_qty, spyi_price))
 
+        # SPYI 스윕: SSO 주문 후 잔여 현금 전액을 SPYI로 투입
+        estimated_cash = portfolio.total_cash
+        for o in orders:
+            if o.action == OrderAction.SELL:
+                estimated_cash += o.quantity * o.price
+            else:
+                estimated_cash -= o.quantity * o.price
+        if estimated_cash >= spyi_price:
+            sweep_qty = math.floor(estimated_cash / spyi_price)
+            if sweep_qty > 0:
+                orders.append(Order(self.SPYI_TICKER, OrderAction.BUY, sweep_qty, spyi_price))
+                reasons.append(f"SPYI 스윕 {sweep_qty}주")
+
         reason = " / ".join(reasons) if reasons else f"대기({new_level.value})"
         return orders, reason, SsoDipState(level=new_level)
 
