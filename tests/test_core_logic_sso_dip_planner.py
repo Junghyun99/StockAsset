@@ -182,6 +182,62 @@ class TestDCA:
         assert len(sso_orders) == 0
 
 
+class TestSpyiSweep:
+    """잔여 현금 → SPYI 스윕 테스트."""
+
+    def test_idle_cash_sweeps_to_spyi(self):
+        """IDLE + 현금만 → SPYI 전량 매수."""
+        planner = SsoDipPlanner()
+        state = SsoDipState()
+        orders, reason, _ = planner.plan(
+            _sig(rsi=55, dev=0.02),
+            _pf(cash=10000, sso=0, spyi=0),
+            state,
+        )
+        spyi_buy = [o for o in orders if o.ticker == "SPYI" and o.action.value == "BUY"]
+        assert len(spyi_buy) == 1
+        assert spyi_buy[0].quantity == 181  # floor(10000 / 55)
+        assert "SPYI 스윕" in reason
+
+    def test_remaining_cash_after_sso_buy(self):
+        """SSO 매수 후 남은 현금도 SPYI로 스윕."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
+        # delta = (0.4 - 0.0) × 0.1 × 10000 = $400 → SSO 5주 × $80 = $400
+        # 남은 현금 = 10000 - 400 = $9600 → SPYI floor(9600/55) = 174주
+        orders, _, _ = planner.plan(
+            _sig(rsi=45, dev=-0.12),
+            _pf(cash=10000, sso=0, spyi=0),
+            state,
+        )
+        spyi_buy = [o for o in orders if o.ticker == "SPYI" and o.action.value == "BUY"]
+        assert len(spyi_buy) == 1
+        assert spyi_buy[0].quantity == 174
+
+    def test_no_sweep_when_fully_invested(self):
+        """현금 0 + 전액 투자 → 스윕 주문 없음."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
+        orders, _, _ = planner.plan(
+            _sig(rsi=45, dev=-0.12),
+            _pf(cash=0, sso=50, spyi=109, sso_price=80.0, spyi_price=55.05),
+            state,
+        )
+        spyi_buy = [o for o in orders if o.ticker == "SPYI" and o.action.value == "BUY"]
+        assert len(spyi_buy) == 0
+
+    def test_idle_already_in_spyi_no_sweep(self):
+        """IDLE + 전액 SPYI → 스윕 주문 없음."""
+        planner = SsoDipPlanner()
+        state = SsoDipState()
+        orders, _, _ = planner.plan(
+            _sig(rsi=55, dev=0.02),
+            _pf(cash=0, sso=0, spyi=200),
+            state,
+        )
+        assert len(orders) == 0
+
+
 class TestStateSerialize:
     """상태 직렬화/역직렬화."""
 
