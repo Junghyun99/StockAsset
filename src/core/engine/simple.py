@@ -112,6 +112,23 @@ class Asset5Engine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.4
 
 
+@register_engine(color="#e377c2")
+class SsoSpyiEngine(FullExposureEngine):
+    """SSO(A그룹) + SPYI(B그룹) Full Exposure 전략 엔진.
+
+    - 자산군 A: [SSO]  (S&P500 2x 레버리지 ETF)
+    - 자산군 B: [SPYI] (S&P500 High Income ETF — 커버드콜)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - A:B 비율 = 0.4:0.6 (인컴 비중 강조)
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['SSO'],
+        'B': ['SPYI'],
+    }
+    REBALANCE_RATIO_A: float = 0.4
+
+
 @register_engine(color="#bcbd22", market_type="domestic",backtest=False)
 class DomesticAsset5Engine(FullExposureEngine):
     """국내 자산5분법 — KODEX200/TIGER MSCI Korea(A그룹) + ACE 미국S&P500/TIGER 미국채10년/ACE 미국30년국채(B그룹) Full Exposure 전략 엔진.
