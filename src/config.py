@@ -33,6 +33,7 @@ TICKER_EXCHANGE_MAP: dict[str, str] = {
     'SPY': 'AMS',
     'QLD': 'AMS',
     'SSO': 'AMS',
+    'SPYI': 'AMS',
     'IEF': 'NAS',
     'GLD': 'NYS',
     'PDBC': 'NAS',

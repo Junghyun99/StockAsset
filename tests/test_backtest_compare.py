@@ -10,7 +10,7 @@ from src.backtest.runner import (
 
 
 # 모든 엔진의 티커 합집합 + SPY + 벤치마크 티커(EWY, 360750.KS, 133690.KS)
-ALL_COMPARE_TICKERS = ["SPY", "SSO", "QLD", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
+ALL_COMPARE_TICKERS = ["SPY", "SSO", "SPYI", "QLD", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
                         "069500.KS", "143850.KS", "132030.KS", "305080.KS", "148070.KS",
                         "EWY", "360750.KS", "133690.KS"]
 
