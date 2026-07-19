@@ -144,7 +144,14 @@ class SsoDipPlanner:
         if estimated_cash >= spyi_price:
             sweep_qty = math.floor(estimated_cash / spyi_price)
             if sweep_qty > 0:
-                orders.append(Order(self.SPYI_TICKER, OrderAction.BUY, sweep_qty, spyi_price))
+                existing = next(
+                    (o for o in orders if o.ticker == self.SPYI_TICKER and o.action == OrderAction.BUY),
+                    None,
+                )
+                if existing:
+                    existing.quantity += sweep_qty
+                else:
+                    orders.append(Order(self.SPYI_TICKER, OrderAction.BUY, sweep_qty, spyi_price))
                 reasons.append(f"SPYI 스윕 {sweep_qty}주")
 
         reason = " / ".join(reasons) if reasons else f"대기({new_level.value})"
