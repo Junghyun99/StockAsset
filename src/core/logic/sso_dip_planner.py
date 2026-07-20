@@ -23,15 +23,19 @@ class SignalLevel(str, Enum):
     SELL = "SELL"
 
 
+# IDLE 기본 SSO 비중 (상승장에서도 SSO 수익에 참여)
+IDLE_TARGET = 0.20
+IDLE_SPEED = 0.10
+
 # 매수 단계 정의: (level, rsi_threshold, deviation_threshold, target_ratio, speed)
 BUY_STAGES = [
     (SignalLevel.BUY_STAGE_3, 36.0, -0.26, 0.80, 0.40),
-    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, 0.50, 0.20),
+    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, 0.60, 0.20),
     (SignalLevel.BUY_STAGE_1, 48.0, -0.10, 0.40, 0.10),
 ]
 
 SELL_CONDITION = {"rsi": 75.0, "deviation": 0.15}
-SELL_TARGET = 0.40
+SELL_TARGET = 0.20
 SELL_SPEED = 0.10
 
 _LEVEL_ORDER = {
@@ -174,7 +178,7 @@ class SsoDipPlanner:
         for lv, _, _, target, speed in BUY_STAGES:
             if lv == level:
                 return target, speed
-        return 0.0, 0.0
+        return IDLE_TARGET, IDLE_SPEED
 
     def _sso_ratio(self, pf: Portfolio) -> float:
         total = pf.total_value
