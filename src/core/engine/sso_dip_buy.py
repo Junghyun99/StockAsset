@@ -1,7 +1,7 @@
 # src/core/engine/sso_dip_buy.py
 """SSO/SPYI 신호 기반 분할매수 엔진.
 
-SPY 주봉 RSI + 200일선 괴리율로 매수/매도 신호를 감지하고,
+SSO 주봉 RSI + 200일선 괴리율로 매수/매도 신호를 감지하고,
 SSO(S&P500 2x 레버리지)를 단계적으로 분할매수/매도한다.
 나머지 자산은 SPYI(S&P500 커버드콜)에 배분하여 인컴을 확보한다.
 
@@ -37,19 +37,21 @@ class SsoDipBuyEngine(TradingEngine):
         self.dip_state = SsoDipState.from_dict(
             self.repo.load_strategy_state(self.STATE_KEY)
         )
+        self._sso_df = None
         self.sso_signals = None
 
     def collect_data(
         self, data_provider: IDataProvider
     ) -> Tuple[pd.DataFrame, float]:
         spy_df = data_provider.fetch_ohlcv(["SPY"], days=400)
+        self._sso_df = data_provider.fetch_ohlcv(["SSO"], days=400)
         vix = data_provider.fetch_vix()
         return spy_df, vix
 
     def calculate_indicators(
         self, spy_df: pd.DataFrame, vix: float
     ) -> MarketData:
-        self.sso_signals = self._sso_calc.calculate(spy_df)
+        self.sso_signals = self._sso_calc.calculate(self._sso_df)
         return self.calculator.calculate(spy_df, vix)
 
     def execute_cycle(

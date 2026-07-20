@@ -13,7 +13,7 @@ def _sig(rsi: float = 50.0, dev: float = 0.0) -> SsoDipSignals:
     """지표 스냅샷 헬퍼."""
     return SsoDipSignals(
         date="2024-06-01", weekly_rsi=rsi, ma200_deviation=dev,
-        spy_price=500.0, spy_ma200=500.0,
+        price=500.0, ma200=500.0,
     )
 
 
@@ -66,7 +66,7 @@ class TestSignalDetection:
         assert new_state.level == SignalLevel.BUY_STAGE_2
 
     def test_sell_signal(self):
-        """RSI≥72 AND 괴리율≥+13% → SELL."""
+        """RSI≥75 AND 괴리율≥+15% → SELL."""
         planner = SsoDipPlanner()
         state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
         # SSO 비중이 40% 초과여야 매도 상태 유지 (100주×$80=$8000, total=$8000)

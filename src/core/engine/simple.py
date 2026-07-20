@@ -129,6 +129,40 @@ class SsoSpyiEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.4
 
 
+@register_engine(color="#ff4444")
+class SsoEngine(FullExposureEngine):
+    """SSO Buy&Hold 벤치마크 시뮬레이션 엔진.
+
+    - 자산군 A: [SSO]  (S&P500 2x 레버리지 ETF — 벤치마크 자산)
+    - 자산군 B: [SHV]  (초단기 국채 ETF — 잔여 현금 대용)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - REBALANCE_RATIO_A=0.999 → 사실상 100% SSO 투자
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['SSO'],
+        'B': ['SHV'],
+    }
+    REBALANCE_RATIO_A: float = 0.999
+
+
+@register_engine(color="#4488ff")
+class SpyiEngine(FullExposureEngine):
+    """SPYI Buy&Hold 벤치마크 시뮬레이션 엔진.
+
+    - 자산군 A: [SPYI]  (S&P500 High Income ETF — 벤치마크 자산)
+    - 자산군 B: [SHV]   (초단기 국채 ETF — 잔여 현금 대용)
+    - exposure=1.0 항상 유지 (FullExposureEngine 상속)
+    - REBALANCE_RATIO_A=0.999 → 사실상 100% SPYI 투자
+    """
+
+    ASSET_GROUPS: dict = {
+        'A': ['SPYI'],
+        'B': ['SHV'],
+    }
+    REBALANCE_RATIO_A: float = 0.999
+
+
 @register_engine(color="#bcbd22", market_type="domestic",backtest=False)
 class DomesticAsset5Engine(FullExposureEngine):
     """국내 자산5분법 — KODEX200/TIGER MSCI Korea(A그룹) + ACE 미국S&P500/TIGER 미국채10년/ACE 미국30년국채(B그룹) Full Exposure 전략 엔진.
