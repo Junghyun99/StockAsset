@@ -66,7 +66,7 @@ class TestSignalDetection:
         assert new_state.level == SignalLevel.BUY_STAGE_2
 
     def test_sell_signal(self):
-        """RSI≥75 AND 괴리율≥+15% → SELL."""
+        """RSI≥72 AND 괴리율≥+13% → SELL."""
         planner = SsoDipPlanner()
         state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
         # SSO 비중이 40% 초과여야 매도 상태 유지 (100주×$80=$8000, total=$8000)
