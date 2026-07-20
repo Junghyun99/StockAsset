@@ -162,6 +162,9 @@ class SsoDipPlanner:
             return SignalLevel.SELL
 
         if current == SignalLevel.SELL:
+            for level, rsi_th, dev_th, _, _ in BUY_STAGES:
+                if rsi <= rsi_th and dev <= dev_th:
+                    return level
             return SignalLevel.SELL
 
         current_order = _LEVEL_ORDER.get(current, 0)
