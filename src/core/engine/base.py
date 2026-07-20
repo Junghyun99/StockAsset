@@ -561,16 +561,21 @@ class TradingEngine:
             time.sleep(3)
         try:
             updated_pf = self.broker.get_portfolio()
+        except Exception as e:
+            self.logger.error(f"고아 청산 후 포트폴리오 조회 실패: {e}")
+            return executions, portfolio
+
+        try:
             all_fetch = self.all_tickers + orphan_tickers
             real_time_prices = self.broker.fetch_current_prices(all_fetch)
             for t, p in real_time_prices.items():
                 if p > 0:
                     updated_pf.current_prices[t] = p
             self._benchmark_prices = self._fetch_benchmark_prices()
-            return executions, updated_pf
-        except RuntimeError as e:
-            self.logger.error(f"고아 청산 후 포트폴리오 조회 실패: {e}")
-            return executions, portfolio
+        except Exception as e:
+            self.logger.warning(f"고아 청산 후 실시간 가격 조회 실패: {e}")
+
+        return executions, updated_pf
 
     def _build_crash_alert(self, market_data: MarketData, portfolio: Portfolio) -> str:
         """CRASH 알림 메시지 생성 (포지션 정보 포함)."""
