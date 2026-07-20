@@ -1,68 +1,68 @@
 {
-    "last_updated": "2025-12-31",
-    "last_rebalancing_date": "2025-12-29",
+    "last_updated": "2026-07-14",
+    "last_rebalancing_date": "2026-07-07",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 0.5635750644669785,
+        "target_exposure": 0.2694781381834105,
         "trigger_reason": "대기(트리거 없음)",
         "market_score": {
-            "vix": 14.949999809265137,
-            "spy_mdd": -0.07822214187367377,
-            "spy_momentum": 0.13469660117020416,
-            "spy_price": 70.41000366210938,
-            "spy_ma180": 62.05133349100749,
-            "spy_volatility": 0.2661579786924532
+            "vix": 16.5,
+            "spy_mdd": -0.08355716331321393,
+            "spy_momentum": 0.2983495273217868,
+            "spy_price": 92.12999725341797,
+            "spy_ma180": 76.39033351474338,
+            "spy_volatility": 0.5566314247648095
         },
         "decision_factors": [
             {
                 "key": "gap_ma20",
                 "label": "MA20 이격",
-                "value": -0.01683976622451211,
+                "value": -0.01110404490820105,
                 "format": "percent",
                 "threshold": 0.02
             },
             {
                 "key": "gap_ma60",
                 "label": "MA60 이격",
-                "value": -0.007782258881560367,
+                "value": 0.021185533001357504,
                 "format": "percent",
                 "threshold": 0.02
             },
             {
                 "key": "gap_ma120",
                 "label": "MA120 이격",
-                "value": 0.04476020575812023,
+                "value": 0.16843706798524472,
                 "format": "percent",
                 "threshold": 0.02
             },
             {
                 "key": "rsi",
                 "label": "RSI(14)",
-                "value": 46.98150492672451,
+                "value": 49.82014214063895,
                 "format": "number",
                 "threshold": 70.0
             },
             {
                 "key": "armed_triggers",
                 "label": "무장 트리거",
-                "value": "2/4",
+                "value": "3/4",
                 "format": "text",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 21908901.778914135,
-        "cash_balance": 54.62940851851178,
+        "total_value": 280293647.3291833,
+        "cash_balance": 15.455304825812973,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 311161,
-                "price": 70.41000366210938,
-                "value": 21908847.149505615
+                "qty": 3042371,
+                "price": 92.12999725341797,
+                "value": 280293631.8738785
             }
         ]
     },
-    "initial_cash": 10000000.0,
-    "backtest_start_date": "2020-01-01"
+    "initial_cash": 100000000.0,
+    "backtest_start_date": "2006-01-01"
 }

@@ -1,0 +1,3921 @@
+[
+    {
+        "id": "tx_20230831",
+        "date": "2023-08-31",
+        "portfolio_value": 99659803.711539,
+        "total_trade_amount": 97218078.24,
+        "reason": "첫 투자: 100:0 비율로 진입",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1964760,
+                "price": 49.43,
+                "fee": 242816.75,
+                "date": "2023-08-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 904,
+                "price": 110.61,
+                "fee": 249.98,
+                "date": "2023-08-31",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230901",
+        "date": "2023-09-01",
+        "portfolio_value": 99837877.27065486,
+        "total_trade_amount": 2460460.39,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 49625,
+                "price": 49.53,
+                "fee": 6144.75,
+                "date": "2023-09-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 23,
+                "price": 110.18,
+                "fee": 6.34,
+                "date": "2023-09-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230905",
+        "date": "2023-09-05",
+        "portfolio_value": 99656364.69378524,
+        "total_trade_amount": 62195.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1258,
+                "price": 49.44,
+                "fee": 155.49,
+                "date": "2023-09-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230906",
+        "date": "2023-09-06",
+        "portfolio_value": 99071839.06822376,
+        "total_trade_amount": 1671.1,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 34,
+                "price": 49.15,
+                "fee": 4.18,
+                "date": "2023-09-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230920",
+        "date": "2023-09-20",
+        "portfolio_value": 97980219.716179,
+        "total_trade_amount": 960362.22,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 19937,
+                "price": 48.12,
+                "fee": 2398.32,
+                "date": "2023-09-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 110.42,
+                "fee": 2.48,
+                "date": "2023-09-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230921",
+        "date": "2023-09-21",
+        "portfolio_value": 96575610.68891755,
+        "total_trade_amount": 24284.16,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 512,
+                "price": 47.43,
+                "fee": 60.71,
+                "date": "2023-09-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230922",
+        "date": "2023-09-22",
+        "portfolio_value": 96372009.99267635,
+        "total_trade_amount": 615.29,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 13,
+                "price": 47.33,
+                "fee": 1.54,
+                "date": "2023-09-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230926",
+        "date": "2023-09-26",
+        "portfolio_value": 95292822.0002511,
+        "total_trade_amount": 15866.77,
+        "reason": "비율 재조정: 상대이탈 8.4% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 73,
+                "price": 110.29,
+                "fee": 20.13,
+                "date": "2023-09-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 167,
+                "price": 46.8,
+                "fee": 19.54,
+                "date": "2023-09-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230927",
+        "date": "2023-09-27",
+        "portfolio_value": 95333565.49044134,
+        "total_trade_amount": 234.1,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 46.82,
+                "fee": 0.59,
+                "date": "2023-09-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231002",
+        "date": "2023-10-02",
+        "portfolio_value": 95679798.04211251,
+        "total_trade_amount": 375.92,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 46.99,
+                "fee": 0.94,
+                "date": "2023-10-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231025",
+        "date": "2023-10-25",
+        "portfolio_value": 94302382.26412885,
+        "total_trade_amount": 920635.08,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 20060,
+                "price": 45.85,
+                "fee": 2299.17,
+                "date": "2023-10-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 110.51,
+                "fee": 2.21,
+                "date": "2023-10-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231026",
+        "date": "2023-10-26",
+        "portfolio_value": 93253611.7018894,
+        "total_trade_amount": 23350.100000000002,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 515,
+                "price": 45.34,
+                "fee": 58.37,
+                "date": "2023-10-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231027",
+        "date": "2023-10-27",
+        "portfolio_value": 92821681.05161032,
+        "total_trade_amount": 631.82,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 45.13,
+                "fee": 1.58,
+                "date": "2023-10-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231101",
+        "date": "2023-11-01",
+        "portfolio_value": 95248865.62421155,
+        "total_trade_amount": 416.79,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 46.31,
+                "fee": 1.04,
+                "date": "2023-11-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231122",
+        "date": "2023-11-22",
+        "portfolio_value": 98717951.38836065,
+        "total_trade_amount": 955894.0800000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 20097,
+                "price": 47.52,
+                "fee": 2387.4,
+                "date": "2023-11-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 110.58,
+                "fee": 2.21,
+                "date": "2023-11-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231124",
+        "date": "2023-11-24",
+        "portfolio_value": 98697100.82664795,
+        "total_trade_amount": 24230.1,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 510,
+                "price": 47.51,
+                "fee": 60.57,
+                "date": "2023-11-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231127",
+        "date": "2023-11-27",
+        "portfolio_value": 98676344.32404147,
+        "total_trade_amount": 665.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 47.5,
+                "fee": 1.66,
+                "date": "2023-11-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231201",
+        "date": "2023-12-01",
+        "portfolio_value": 99216609.08748797,
+        "total_trade_amount": 429.84,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 47.76,
+                "fee": 1.07,
+                "date": "2023-12-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231214",
+        "date": "2023-12-14",
+        "portfolio_value": 100691860.9261905,
+        "total_trade_amount": 436.23,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 48.47,
+                "fee": 1.09,
+                "date": "2023-12-14",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231220",
+        "date": "2023-12-20",
+        "portfolio_value": 100594998.79579802,
+        "total_trade_amount": 979575.34,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 20415,
+                "price": 47.94,
+                "fee": 2446.63,
+                "date": "2023-12-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 110.03,
+                "fee": 2.2,
+                "date": "2023-12-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231221",
+        "date": "2023-12-21",
+        "portfolio_value": 100972609.09261717,
+        "total_trade_amount": 24926.16,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 518,
+                "price": 48.12,
+                "fee": 62.31,
+                "date": "2023-12-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231222",
+        "date": "2023-12-22",
+        "portfolio_value": 100993614.0200603,
+        "total_trade_amount": 625.69,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 13,
+                "price": 48.13,
+                "fee": 1.56,
+                "date": "2023-12-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231226",
+        "date": "2023-12-26",
+        "portfolio_value": 101182489.08342342,
+        "total_trade_amount": 48.22,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 48.22,
+                "fee": 0.12,
+                "date": "2023-12-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240124",
+        "date": "2024-01-24",
+        "portfolio_value": 103109987.45033887,
+        "total_trade_amount": 999620.33,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 20529,
+                "price": 48.65,
+                "fee": 2496.77,
+                "date": "2024-01-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 110.56,
+                "fee": 2.21,
+                "date": "2024-01-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240125",
+        "date": "2024-01-25",
+        "portfolio_value": 103406623.4842163,
+        "total_trade_amount": 25419.59,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 521,
+                "price": 48.79,
+                "fee": 63.55,
+                "date": "2024-01-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240126",
+        "date": "2024-01-26",
+        "portfolio_value": 103449014.15393662,
+        "total_trade_amount": 634.53,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 13,
+                "price": 48.81,
+                "fee": 1.59,
+                "date": "2024-01-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240129",
+        "date": "2024-01-29",
+        "portfolio_value": 103788153.17108615,
+        "total_trade_amount": 48.97,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 48.97,
+                "fee": 0.12,
+                "date": "2024-01-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240201",
+        "date": "2024-02-01",
+        "portfolio_value": 103957822.17360297,
+        "total_trade_amount": 392.4,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 49.05,
+                "fee": 0.98,
+                "date": "2024-02-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240221",
+        "date": "2024-02-21",
+        "portfolio_value": 104626331.21095869,
+        "total_trade_amount": 1024185.6,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 20937,
+                "price": 48.87,
+                "fee": 2557.92,
+                "date": "2024-02-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 110.49,
+                "fee": 2.49,
+                "date": "2024-02-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240222",
+        "date": "2024-02-22",
+        "portfolio_value": 106210259.06018242,
+        "total_trade_amount": 25946.03,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 523,
+                "price": 49.61,
+                "fee": 64.86,
+                "date": "2024-02-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240223",
+        "date": "2024-02-23",
+        "portfolio_value": 106210274.71387006,
+        "total_trade_amount": 694.54,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 49.61,
+                "fee": 1.74,
+                "date": "2024-02-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240301",
+        "date": "2024-03-01",
+        "portfolio_value": 107045387.78782317,
+        "total_trade_amount": 400.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 50.0,
+                "fee": 1.0,
+                "date": "2024-03-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240319",
+        "date": "2024-03-19",
+        "portfolio_value": 107880550.84176071,
+        "total_trade_amount": 15938.64,
+        "reason": "비율 재조정: 상대이탈 7.5% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "SELL",
+                "quantity": 161,
+                "price": 50.29,
+                "fee": 20.24,
+                "date": "2024-03-19",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 71,
+                "price": 110.45,
+                "fee": 19.6,
+                "date": "2024-03-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240320",
+        "date": "2024-03-20",
+        "portfolio_value": 108457114.36439793,
+        "total_trade_amount": 1043018.1599999999,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 20774,
+                "price": 50.16,
+                "fee": 2605.07,
+                "date": "2024-03-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 110.48,
+                "fee": 2.49,
+                "date": "2024-03-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240321",
+        "date": "2024-03-21",
+        "portfolio_value": 108651611.87092906,
+        "total_trade_amount": 26431.5,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 526,
+                "price": 50.25,
+                "fee": 66.08,
+                "date": "2024-03-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240322",
+        "date": "2024-03-22",
+        "portfolio_value": 108694883.8369649,
+        "total_trade_amount": 703.7800000000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 50.27,
+                "fee": 1.76,
+                "date": "2024-03-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240401",
+        "date": "2024-04-01",
+        "portfolio_value": 108867964.96762873,
+        "total_trade_amount": 453.15000000000003,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 50.35,
+                "fee": 1.13,
+                "date": "2024-04-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240424",
+        "date": "2024-04-24",
+        "portfolio_value": 106116516.12959786,
+        "total_trade_amount": 1027992.8300000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 21136,
+                "price": 48.59,
+                "fee": 2567.42,
+                "date": "2024-04-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 110.51,
+                "fee": 2.49,
+                "date": "2024-04-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240425",
+        "date": "2024-04-25",
+        "portfolio_value": 105592445.87066402,
+        "total_trade_amount": 26060.65,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 539,
+                "price": 48.35,
+                "fee": 65.15,
+                "date": "2024-04-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240426",
+        "date": "2024-04-26",
+        "portfolio_value": 106684410.33442262,
+        "total_trade_amount": 683.9,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 48.85,
+                "fee": 1.71,
+                "date": "2024-04-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240501",
+        "date": "2024-05-01",
+        "portfolio_value": 105177568.92295587,
+        "total_trade_amount": 433.43999999999994,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 48.16,
+                "fee": 1.08,
+                "date": "2024-05-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240502",
+        "date": "2024-05-02",
+        "portfolio_value": 105963829.85160126,
+        "total_trade_amount": 48.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 48.52,
+                "fee": 0.12,
+                "date": "2024-05-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240522",
+        "date": "2024-05-22",
+        "portfolio_value": 109345464.43592323,
+        "total_trade_amount": 1061654.95,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 21395,
+                "price": 49.57,
+                "fee": 2651.35,
+                "date": "2024-05-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.48,
+                "fee": 2.76,
+                "date": "2024-05-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240523",
+        "date": "2024-05-23",
+        "portfolio_value": 109102844.86667949,
+        "total_trade_amount": 26856.78,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 543,
+                "price": 49.46,
+                "fee": 67.14,
+                "date": "2024-05-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240524",
+        "date": "2024-05-24",
+        "portfolio_value": 109411670.96279025,
+        "total_trade_amount": 694.4,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 49.6,
+                "fee": 1.74,
+                "date": "2024-05-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240603",
+        "date": "2024-06-03",
+        "portfolio_value": 109433824.91030045,
+        "total_trade_amount": 496.1,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 49.61,
+                "fee": 1.24,
+                "date": "2024-06-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240626",
+        "date": "2024-06-26",
+        "portfolio_value": 111867890.31287335,
+        "total_trade_amount": 1083080.59,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 21549,
+                "price": 50.21,
+                "fee": 2704.95,
+                "date": "2024-06-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.53,
+                "fee": 2.76,
+                "date": "2024-06-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240627",
+        "date": "2024-06-27",
+        "portfolio_value": 111934645.04680099,
+        "total_trade_amount": 27380.8,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 545,
+                "price": 50.24,
+                "fee": 68.45,
+                "date": "2024-06-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240628",
+        "date": "2024-06-28",
+        "portfolio_value": 111845580.7400623,
+        "total_trade_amount": 702.8000000000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 14,
+                "price": 50.2,
+                "fee": 1.76,
+                "date": "2024-06-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240701",
+        "date": "2024-07-01",
+        "portfolio_value": 112135227.68685067,
+        "total_trade_amount": 452.96999999999997,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 50.33,
+                "fee": 1.13,
+                "date": "2024-07-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240702",
+        "date": "2024-07-02",
+        "portfolio_value": 112647686.05664273,
+        "total_trade_amount": 50.56,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 50.56,
+                "fee": 0.13,
+                "date": "2024-07-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240724",
+        "date": "2024-07-24",
+        "portfolio_value": 111683928.79826647,
+        "total_trade_amount": 1102570.16,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 22198,
+                "price": 49.62,
+                "fee": 2753.64,
+                "date": "2024-07-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.54,
+                "fee": 2.76,
+                "date": "2024-07-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240725",
+        "date": "2024-07-25",
+        "portfolio_value": 111076287.52000912,
+        "total_trade_amount": 27882.75,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 565,
+                "price": 49.35,
+                "fee": 69.71,
+                "date": "2024-07-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240726",
+        "date": "2024-07-26",
+        "portfolio_value": 112156710.53187825,
+        "total_trade_amount": 747.4499999999999,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 49.83,
+                "fee": 1.87,
+                "date": "2024-07-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240801",
+        "date": "2024-08-01",
+        "portfolio_value": 111864183.66070102,
+        "total_trade_amount": 497.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 49.7,
+                "fee": 1.24,
+                "date": "2024-08-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240821",
+        "date": "2024-08-21",
+        "portfolio_value": 115114919.64187533,
+        "total_trade_amount": 1216691.28,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 24026,
+                "price": 50.59,
+                "fee": 3038.72,
+                "date": "2024-08-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.54,
+                "fee": 3.04,
+                "date": "2024-08-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240822",
+        "date": "2024-08-22",
+        "portfolio_value": 114409637.62898389,
+        "total_trade_amount": 30821.64,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 613,
+                "price": 50.28,
+                "fee": 77.05,
+                "date": "2024-08-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240823",
+        "date": "2024-08-23",
+        "portfolio_value": 115410870.36777198,
+        "total_trade_amount": 811.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 50.72,
+                "fee": 2.03,
+                "date": "2024-08-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240903",
+        "date": "2024-09-03",
+        "portfolio_value": 113977486.80385804,
+        "total_trade_amount": 450.81000000000006,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 50.09,
+                "fee": 1.13,
+                "date": "2024-09-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240904",
+        "date": "2024-09-04",
+        "portfolio_value": 113818236.84198815,
+        "total_trade_amount": 50.02,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 50.02,
+                "fee": 0.13,
+                "date": "2024-09-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240925",
+        "date": "2024-09-25",
+        "portfolio_value": 117375732.8536261,
+        "total_trade_amount": 1139252.92,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 22286,
+                "price": 51.07,
+                "fee": 2845.42,
+                "date": "2024-09-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.69,
+                "fee": 2.77,
+                "date": "2024-09-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240926",
+        "date": "2024-09-26",
+        "portfolio_value": 117559456.7465543,
+        "total_trade_amount": 28848.6,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 564,
+                "price": 51.15,
+                "fee": 72.12,
+                "date": "2024-09-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240927",
+        "date": "2024-09-27",
+        "portfolio_value": 117513537.51913835,
+        "total_trade_amount": 766.95,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 51.13,
+                "fee": 1.92,
+                "date": "2024-09-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240930",
+        "date": "2024-09-30",
+        "portfolio_value": 117858279.47927743,
+        "total_trade_amount": 51.28,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 51.28,
+                "fee": 0.13,
+                "date": "2024-09-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241001",
+        "date": "2024-10-01",
+        "portfolio_value": 117076874.80008347,
+        "total_trade_amount": 458.46,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 50.94,
+                "fee": 1.15,
+                "date": "2024-10-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241023",
+        "date": "2024-10-23",
+        "portfolio_value": 118911707.50042261,
+        "total_trade_amount": 1161853.0399999998,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 22662,
+                "price": 51.22,
+                "fee": 2901.94,
+                "date": "2024-10-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.54,
+                "fee": 2.76,
+                "date": "2024-10-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241024",
+        "date": "2024-10-24",
+        "portfolio_value": 119097308.83194661,
+        "total_trade_amount": 29446.199999999997,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 574,
+                "price": 51.3,
+                "fee": 73.62,
+                "date": "2024-10-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241025",
+        "date": "2024-10-25",
+        "portfolio_value": 119050915.99868873,
+        "total_trade_amount": 769.2,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 51.28,
+                "fee": 1.92,
+                "date": "2024-10-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241028",
+        "date": "2024-10-28",
+        "portfolio_value": 119283110.45128684,
+        "total_trade_amount": 51.38,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 51.38,
+                "fee": 0.13,
+                "date": "2024-10-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241101",
+        "date": "2024-11-01",
+        "portfolio_value": 117983124.22583377,
+        "total_trade_amount": 457.38,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 50.82,
+                "fee": 1.14,
+                "date": "2024-11-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241104",
+        "date": "2024-11-04",
+        "portfolio_value": 117797413.91380109,
+        "total_trade_amount": 50.74,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 50.74,
+                "fee": 0.13,
+                "date": "2024-11-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241120",
+        "date": "2024-11-20",
+        "portfolio_value": 121231788.90794498,
+        "total_trade_amount": 1175832.2000000002,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 22722,
+                "price": 51.7,
+                "fee": 2936.91,
+                "date": "2024-11-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.48,
+                "fee": 2.76,
+                "date": "2024-11-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241121",
+        "date": "2024-11-21",
+        "portfolio_value": 121512999.16108203,
+        "total_trade_amount": 29848.32,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 576,
+                "price": 51.82,
+                "fee": 74.62,
+                "date": "2024-11-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241122",
+        "date": "2024-11-22",
+        "portfolio_value": 121958564.11199683,
+        "total_trade_amount": 780.15,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 52.01,
+                "fee": 1.95,
+                "date": "2024-11-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241202",
+        "date": "2024-12-02",
+        "portfolio_value": 122920095.11753888,
+        "total_trade_amount": 419.36,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 52.42,
+                "fee": 1.05,
+                "date": "2024-12-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241203",
+        "date": "2024-12-03",
+        "portfolio_value": 122990480.20538926,
+        "total_trade_amount": 52.45,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 52.45,
+                "fee": 0.13,
+                "date": "2024-12-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241218",
+        "date": "2024-12-18",
+        "portfolio_value": 120036107.40987946,
+        "total_trade_amount": 409.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 51.19,
+                "fee": 1.02,
+                "date": "2024-12-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241224",
+        "date": "2024-12-24",
+        "portfolio_value": 123352505.22506802,
+        "total_trade_amount": 1176303.79,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 22561,
+                "price": 52.09,
+                "fee": 2938.12,
+                "date": "2024-12-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.13,
+                "fee": 2.75,
+                "date": "2024-12-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241226",
+        "date": "2024-12-26",
+        "portfolio_value": 123328742.44148034,
+        "total_trade_amount": 29841.84,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 573,
+                "price": 52.08,
+                "fee": 74.61,
+                "date": "2024-12-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20241227",
+        "date": "2024-12-27",
+        "portfolio_value": 122192108.0758694,
+        "total_trade_amount": 774.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 51.6,
+                "fee": 1.94,
+                "date": "2024-12-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250122",
+        "date": "2025-01-22",
+        "portfolio_value": 123649357.63557096,
+        "total_trade_amount": 1190204.7,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 23000,
+                "price": 51.7,
+                "fee": 2972.84,
+                "date": "2025-01-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.47,
+                "fee": 2.76,
+                "date": "2025-01-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250123",
+        "date": "2025-01-23",
+        "portfolio_value": 124007928.29724655,
+        "total_trade_amount": 30176.7,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 582,
+                "price": 51.85,
+                "fee": 75.44,
+                "date": "2025-01-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250124",
+        "date": "2025-01-24",
+        "portfolio_value": 123888388.13285236,
+        "total_trade_amount": 828.8,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 51.8,
+                "fee": 2.07,
+                "date": "2025-01-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250203",
+        "date": "2025-02-03",
+        "portfolio_value": 122620918.82414302,
+        "total_trade_amount": 410.16,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 51.27,
+                "fee": 1.03,
+                "date": "2025-02-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250204",
+        "date": "2025-02-04",
+        "portfolio_value": 123314507.71390824,
+        "total_trade_amount": 51.56,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 51.56,
+                "fee": 0.13,
+                "date": "2025-02-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250226",
+        "date": "2025-02-26",
+        "portfolio_value": 122578767.28344272,
+        "total_trade_amount": 1195068.04,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 23531,
+                "price": 50.74,
+                "fee": 2984.95,
+                "date": "2025-02-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 10,
+                "price": 110.51,
+                "fee": 2.76,
+                "date": "2025-02-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250227",
+        "date": "2025-02-27",
+        "portfolio_value": 120791425.49063852,
+        "total_trade_amount": 30350.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 607,
+                "price": 50.0,
+                "fee": 75.87,
+                "date": "2025-02-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250228",
+        "date": "2025-02-28",
+        "portfolio_value": 122651642.92446245,
+        "total_trade_amount": 761.5500000000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 50.77,
+                "fee": 1.9,
+                "date": "2025-02-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250303",
+        "date": "2025-03-03",
+        "portfolio_value": 120888108.6156268,
+        "total_trade_amount": 400.32,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 50.04,
+                "fee": 1.0,
+                "date": "2025-03-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250304",
+        "date": "2025-03-04",
+        "portfolio_value": 119728510.47475739,
+        "total_trade_amount": 49.56,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 49.56,
+                "fee": 0.12,
+                "date": "2025-03-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250326",
+        "date": "2025-03-26",
+        "portfolio_value": 119014404.32422931,
+        "total_trade_amount": 1188521.61,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 24350,
+                "price": 48.76,
+                "fee": 2968.19,
+                "date": "2025-03-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.51,
+                "fee": 3.04,
+                "date": "2025-03-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250327",
+        "date": "2025-03-27",
+        "portfolio_value": 118623891.94420464,
+        "total_trade_amount": 30034.8,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 618,
+                "price": 48.6,
+                "fee": 75.08,
+                "date": "2025-03-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250328",
+        "date": "2025-03-28",
+        "portfolio_value": 116329569.8499715,
+        "total_trade_amount": 810.2199999999999,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 47.66,
+                "fee": 2.03,
+                "date": "2025-03-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250401",
+        "date": "2025-04-01",
+        "portfolio_value": 117257120.49597086,
+        "total_trade_amount": 432.36,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 48.04,
+                "fee": 1.08,
+                "date": "2025-04-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250403",
+        "date": "2025-04-03",
+        "portfolio_value": 113229710.99200274,
+        "total_trade_amount": 16681.800000000003,
+        "reason": "비율 재조정: 상대이탈 7.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 77,
+                "price": 110.01,
+                "fee": 21.18,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 177,
+                "price": 46.39,
+                "fee": 20.53,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250404",
+        "date": "2025-04-04",
+        "portfolio_value": 106516945.4303435,
+        "total_trade_amount": 13630.0,
+        "reason": "비율 재조정: 상대이탈 6.3% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 62,
+                "price": 110.06,
+                "fee": 17.06,
+                "date": "2025-04-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 156,
+                "price": 43.63,
+                "fee": 17.02,
+                "date": "2025-04-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250407",
+        "date": "2025-04-07",
+        "portfolio_value": 106272841.75570756,
+        "total_trade_amount": 217.65,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 43.53,
+                "fee": 0.54,
+                "date": "2025-04-07",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250409",
+        "date": "2025-04-09",
+        "portfolio_value": 114108955.47049749,
+        "total_trade_amount": 15041.369999999999,
+        "reason": "비율 재조정: 상대이탈 6.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "SELL",
+                "quantity": 164,
+                "price": 46.65,
+                "fee": 19.13,
+                "date": "2025-04-09",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 67,
+                "price": 110.31,
+                "fee": 18.48,
+                "date": "2025-04-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250410",
+        "date": "2025-04-10",
+        "portfolio_value": 110349806.44299999,
+        "total_trade_amount": 180.84,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 45.21,
+                "fee": 0.45,
+                "date": "2025-04-10",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250411",
+        "date": "2025-04-11",
+        "portfolio_value": 112253841.19550152,
+        "total_trade_amount": 45.99,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 45.99,
+                "fee": 0.11,
+                "date": "2025-04-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250421",
+        "date": "2025-04-21",
+        "portfolio_value": 108421522.46593462,
+        "total_trade_amount": 11040.259999999998,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 51,
+                "price": 110.24,
+                "fee": 14.06,
+                "date": "2025-04-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 122,
+                "price": 44.41,
+                "fee": 13.55,
+                "date": "2025-04-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250422",
+        "date": "2025-04-22",
+        "portfolio_value": 111106781.4975618,
+        "total_trade_amount": 136.56,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 45.52,
+                "fee": 0.34,
+                "date": "2025-04-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250423",
+        "date": "2025-04-23",
+        "portfolio_value": 112767802.03638111,
+        "total_trade_amount": 1096513.06,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 23951,
+                "price": 45.74,
+                "fee": 2738.54,
+                "date": "2025-04-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 110.48,
+                "fee": 2.49,
+                "date": "2025-04-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250424",
+        "date": "2025-04-24",
+        "portfolio_value": 114936991.99641214,
+        "total_trade_amount": 27832.14,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 597,
+                "price": 46.62,
+                "fee": 69.58,
+                "date": "2025-04-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250425",
+        "date": "2025-04-25",
+        "portfolio_value": 115799975.77573434,
+        "total_trade_amount": 11656.68,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "SELL",
+                "quantity": 119,
+                "price": 46.87,
+                "fee": 13.94,
+                "date": "2025-04-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 55,
+                "price": 110.53,
+                "fee": 15.2,
+                "date": "2025-04-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250428",
+        "date": "2025-04-28",
+        "portfolio_value": 115923271.08970784,
+        "total_trade_amount": 235.10000000000002,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 47.02,
+                "fee": 0.59,
+                "date": "2025-04-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250501",
+        "date": "2025-05-01",
+        "portfolio_value": 117230061.71911599,
+        "total_trade_amount": 380.4,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 47.55,
+                "fee": 0.95,
+                "date": "2025-05-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250512",
+        "date": "2025-05-12",
+        "portfolio_value": 121027126.7089944,
+        "total_trade_amount": 11247.83,
+        "reason": "비율 재조정: 상대이탈 4.7% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "SELL",
+                "quantity": 117,
+                "price": 48.99,
+                "fee": 14.33,
+                "date": "2025-05-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 50,
+                "price": 110.32,
+                "fee": 13.79,
+                "date": "2025-05-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250513",
+        "date": "2025-05-13",
+        "portfolio_value": 121569531.56581692,
+        "total_trade_amount": 197.24,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 49.31,
+                "fee": 0.49,
+                "date": "2025-05-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250521",
+        "date": "2025-05-21",
+        "portfolio_value": 121161054.8487539,
+        "total_trade_amount": 1212934.3,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 24912,
+                "price": 48.64,
+                "fee": 3029.21,
+                "date": "2025-05-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.42,
+                "fee": 3.04,
+                "date": "2025-05-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250522",
+        "date": "2025-05-22",
+        "portfolio_value": 121210778.20161809,
+        "total_trade_amount": 30704.46,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 631,
+                "price": 48.66,
+                "fee": 76.76,
+                "date": "2025-05-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250523",
+        "date": "2025-05-23",
+        "portfolio_value": 120687721.85479867,
+        "total_trade_amount": 775.2,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 48.45,
+                "fee": 1.94,
+                "date": "2025-05-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250527",
+        "date": "2025-05-27",
+        "portfolio_value": 122281974.24263689,
+        "total_trade_amount": 49.09,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 49.09,
+                "fee": 0.12,
+                "date": "2025-05-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250602",
+        "date": "2025-06-02",
+        "portfolio_value": 122755349.05165063,
+        "total_trade_amount": 394.24,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 49.28,
+                "fee": 0.99,
+                "date": "2025-06-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250603",
+        "date": "2025-06-03",
+        "portfolio_value": 123303400.88399094,
+        "total_trade_amount": 49.5,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 49.5,
+                "fee": 0.12,
+                "date": "2025-06-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250625",
+        "date": "2025-06-25",
+        "portfolio_value": 125603631.58932482,
+        "total_trade_amount": 1223007.17,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 24475,
+                "price": 49.92,
+                "fee": 3054.47,
+                "date": "2025-06-25",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.47,
+                "fee": 3.04,
+                "date": "2025-06-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250626",
+        "date": "2025-06-26",
+        "portfolio_value": 126156960.13419965,
+        "total_trade_amount": 30986.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 618,
+                "price": 50.14,
+                "fee": 77.47,
+                "date": "2025-06-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250627",
+        "date": "2025-06-27",
+        "portfolio_value": 126509258.0046132,
+        "total_trade_amount": 804.48,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 50.28,
+                "fee": 2.01,
+                "date": "2025-06-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250701",
+        "date": "2025-07-01",
+        "portfolio_value": 126710564.77943636,
+        "total_trade_amount": 402.88,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 50.36,
+                "fee": 1.01,
+                "date": "2025-07-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250702",
+        "date": "2025-07-02",
+        "portfolio_value": 127163483.37285118,
+        "total_trade_amount": 50.54,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 50.54,
+                "fee": 0.13,
+                "date": "2025-07-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250723",
+        "date": "2025-07-23",
+        "portfolio_value": 129577412.83503622,
+        "total_trade_amount": 1249959.9400000002,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 24490,
+                "price": 50.99,
+                "fee": 3121.92,
+                "date": "2025-07-23",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.44,
+                "fee": 3.04,
+                "date": "2025-07-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250724",
+        "date": "2025-07-24",
+        "portfolio_value": 129628127.24117371,
+        "total_trade_amount": 31677.21,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 621,
+                "price": 51.01,
+                "fee": 79.19,
+                "date": "2025-07-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250725",
+        "date": "2025-07-25",
+        "portfolio_value": 129933127.66055813,
+        "total_trade_amount": 869.21,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 51.13,
+                "fee": 2.17,
+                "date": "2025-07-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250801",
+        "date": "2025-08-01",
+        "portfolio_value": 127798593.47626683,
+        "total_trade_amount": 402.32,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 50.29,
+                "fee": 1.01,
+                "date": "2025-08-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250804",
+        "date": "2025-08-04",
+        "portfolio_value": 129425037.36319177,
+        "total_trade_amount": 50.93,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 50.93,
+                "fee": 0.13,
+                "date": "2025-08-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250820",
+        "date": "2025-08-20",
+        "portfolio_value": 130940469.8855038,
+        "total_trade_amount": 1279729.5899999999,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 25064,
+                "price": 51.01,
+                "fee": 3196.35,
+                "date": "2025-08-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.45,
+                "fee": 3.04,
+                "date": "2025-08-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250821",
+        "date": "2025-08-21",
+        "portfolio_value": 130504070.02581294,
+        "total_trade_amount": 32435.920000000002,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 638,
+                "price": 50.84,
+                "fee": 81.09,
+                "date": "2025-08-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250822",
+        "date": "2025-08-22",
+        "portfolio_value": 132044336.24866162,
+        "total_trade_amount": 874.48,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 51.44,
+                "fee": 2.19,
+                "date": "2025-08-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250902",
+        "date": "2025-09-02",
+        "portfolio_value": 131454058.94618201,
+        "total_trade_amount": 460.89,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 51.21,
+                "fee": 1.15,
+                "date": "2025-09-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250924",
+        "date": "2025-09-24",
+        "portfolio_value": 134958897.68212464,
+        "total_trade_amount": 1315113.98,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 25243,
+                "price": 52.05,
+                "fee": 3284.87,
+                "date": "2025-09-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.53,
+                "fee": 3.04,
+                "date": "2025-09-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250925",
+        "date": "2025-09-25",
+        "portfolio_value": 134647724.1640742,
+        "total_trade_amount": 33390.99,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 643,
+                "price": 51.93,
+                "fee": 83.48,
+                "date": "2025-09-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250926",
+        "date": "2025-09-26",
+        "portfolio_value": 135218198.77947405,
+        "total_trade_amount": 834.4,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 52.15,
+                "fee": 2.09,
+                "date": "2025-09-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250929",
+        "date": "2025-09-29",
+        "portfolio_value": 135451573.03478512,
+        "total_trade_amount": 52.24,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 52.24,
+                "fee": 0.13,
+                "date": "2025-09-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251001",
+        "date": "2025-10-01",
+        "portfolio_value": 135996134.4487394,
+        "total_trade_amount": 419.6,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 52.45,
+                "fee": 1.05,
+                "date": "2025-10-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251022",
+        "date": "2025-10-22",
+        "portfolio_value": 136321071.64007226,
+        "total_trade_amount": 1328386.51,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 25498,
+                "price": 52.05,
+                "fee": 3318.05,
+                "date": "2025-10-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 110.51,
+                "fee": 3.04,
+                "date": "2025-10-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251023",
+        "date": "2025-10-23",
+        "portfolio_value": 136949391.40145153,
+        "total_trade_amount": 33727.05,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 645,
+                "price": 52.29,
+                "fee": 84.32,
+                "date": "2025-10-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251024",
+        "date": "2025-10-24",
+        "portfolio_value": 137735130.2109967,
+        "total_trade_amount": 894.0300000000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 52.59,
+                "fee": 2.24,
+                "date": "2025-10-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251028",
+        "date": "2025-10-28",
+        "portfolio_value": 138887498.46433264,
+        "total_trade_amount": 20706.43,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "SELL",
+                "quantity": 199,
+                "price": 52.93,
+                "fee": 26.33,
+                "date": "2025-10-28",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 92,
+                "price": 110.58,
+                "fee": 25.43,
+                "date": "2025-10-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251029",
+        "date": "2025-10-29",
+        "portfolio_value": 138913679.2726151,
+        "total_trade_amount": 318.24,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 53.04,
+                "fee": 0.8,
+                "date": "2025-10-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251103",
+        "date": "2025-11-03",
+        "portfolio_value": 138651858.9935285,
+        "total_trade_amount": 423.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 52.94,
+                "fee": 1.06,
+                "date": "2025-11-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251104",
+        "date": "2025-11-04",
+        "portfolio_value": 137420984.68570563,
+        "total_trade_amount": 52.47,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 52.47,
+                "fee": 0.13,
+                "date": "2025-11-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251126",
+        "date": "2025-11-26",
+        "portfolio_value": 138731357.7694755,
+        "total_trade_amount": 1329045.6600000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 25314,
+                "price": 52.45,
+                "fee": 3319.45,
+                "date": "2025-11-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.53,
+                "fee": 3.32,
+                "date": "2025-11-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251128",
+        "date": "2025-11-28",
+        "portfolio_value": 139445207.49535802,
+        "total_trade_amount": 33635.36,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 638,
+                "price": 52.72,
+                "fee": 84.09,
+                "date": "2025-11-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251201",
+        "date": "2025-12-01",
+        "portfolio_value": 138955939.22614393,
+        "total_trade_amount": 1313.5,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 25,
+                "price": 52.54,
+                "fee": 3.28,
+                "date": "2025-12-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251219",
+        "date": "2025-12-19",
+        "portfolio_value": 139921638.0993817,
+        "total_trade_amount": 476.09999999999997,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 52.9,
+                "fee": 1.19,
+                "date": "2025-12-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251224",
+        "date": "2025-12-24",
+        "portfolio_value": 141667833.51375312,
+        "total_trade_amount": 1367905.26,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 25770,
+                "price": 53.03,
+                "fee": 3416.65,
+                "date": "2025-12-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.18,
+                "fee": 3.31,
+                "date": "2025-12-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251226",
+        "date": "2025-12-26",
+        "portfolio_value": 141721177.79943088,
+        "total_trade_amount": 34641.65,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 653,
+                "price": 53.05,
+                "fee": 86.61,
+                "date": "2025-12-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251229",
+        "date": "2025-12-29",
+        "portfolio_value": 141373901.36815098,
+        "total_trade_amount": 899.64,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 52.92,
+                "fee": 2.25,
+                "date": "2025-12-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20251230",
+        "date": "2025-12-30",
+        "portfolio_value": 141240349.60394055,
+        "total_trade_amount": 52.87,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 52.87,
+                "fee": 0.13,
+                "date": "2025-12-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260121",
+        "date": "2026-01-21",
+        "portfolio_value": 141104915.75253966,
+        "total_trade_amount": 1378957.74,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 26346,
+                "price": 52.29,
+                "fee": 3444.23,
+                "date": "2026-01-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.45,
+                "fee": 3.31,
+                "date": "2026-01-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260122",
+        "date": "2026-01-22",
+        "portfolio_value": 141738738.32666406,
+        "total_trade_amount": 34984.98,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 666,
+                "price": 52.53,
+                "fee": 87.46,
+                "date": "2026-01-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260123",
+        "date": "2026-01-23",
+        "portfolio_value": 141860204.60530323,
+        "total_trade_amount": 893.69,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 52.57,
+                "fee": 2.23,
+                "date": "2026-01-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260126",
+        "date": "2026-01-26",
+        "portfolio_value": 142372901.62796947,
+        "total_trade_amount": 52.76,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 52.76,
+                "fee": 0.13,
+                "date": "2026-01-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260202",
+        "date": "2026-02-02",
+        "portfolio_value": 143074585.03515294,
+        "total_trade_amount": 424.16,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 53.02,
+                "fee": 1.06,
+                "date": "2026-02-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260218",
+        "date": "2026-02-18",
+        "portfolio_value": 141861128.16227177,
+        "total_trade_amount": 1369354.8299999998,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 26283,
+                "price": 52.05,
+                "fee": 3420.21,
+                "date": "2026-02-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.39,
+                "fee": 3.31,
+                "date": "2026-02-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260219",
+        "date": "2026-02-19",
+        "portfolio_value": 141615813.83981657,
+        "total_trade_amount": 34709.28,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 668,
+                "price": 51.96,
+                "fee": 86.78,
+                "date": "2026-02-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260220",
+        "date": "2026-02-20",
+        "portfolio_value": 142487937.69384006,
+        "total_trade_amount": 888.76,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 52.28,
+                "fee": 2.22,
+                "date": "2026-02-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260223",
+        "date": "2026-02-23",
+        "portfolio_value": 141234298.93041572,
+        "total_trade_amount": 51.82,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 51.82,
+                "fee": 0.13,
+                "date": "2026-02-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260302",
+        "date": "2026-03-02",
+        "portfolio_value": 142051992.7181524,
+        "total_trade_amount": 364.84,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 52.12,
+                "fee": 0.91,
+                "date": "2026-03-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260316",
+        "date": "2026-03-16",
+        "portfolio_value": 139272294.19096836,
+        "total_trade_amount": 8485.27,
+        "reason": "비율 재조정: 상대이탈 3.1% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 39,
+                "price": 110.13,
+                "fee": 10.74,
+                "date": "2026-03-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 82,
+                "price": 51.1,
+                "fee": 10.48,
+                "date": "2026-03-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260317",
+        "date": "2026-03-17",
+        "portfolio_value": 139681124.37367895,
+        "total_trade_amount": 102.5,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 51.25,
+                "fee": 0.26,
+                "date": "2026-03-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260318",
+        "date": "2026-03-18",
+        "portfolio_value": 137877608.8365819,
+        "total_trade_amount": 1351330.8800000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 26957,
+                "price": 50.08,
+                "fee": 3375.02,
+                "date": "2026-03-18",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.36,
+                "fee": 3.31,
+                "date": "2026-03-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260319",
+        "date": "2026-03-19",
+        "portfolio_value": 137533441.103885,
+        "total_trade_amount": 34215.75,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 685,
+                "price": 49.95,
+                "fee": 85.55,
+                "date": "2026-03-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260320",
+        "date": "2026-03-20",
+        "portfolio_value": 135785281.87946814,
+        "total_trade_amount": 937.08,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 19,
+                "price": 49.32,
+                "fee": 2.34,
+                "date": "2026-03-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260327",
+        "date": "2026-03-27",
+        "portfolio_value": 132674336.0094717,
+        "total_trade_amount": 15855.029999999999,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 73,
+                "price": 110.25,
+                "fee": 20.12,
+                "date": "2026-03-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 162,
+                "price": 48.19,
+                "fee": 19.52,
+                "date": "2026-03-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260330",
+        "date": "2026-03-30",
+        "portfolio_value": 132220070.60263129,
+        "total_trade_amount": 192.08,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 4,
+                "price": 48.02,
+                "fee": 0.48,
+                "date": "2026-03-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260401",
+        "date": "2026-04-01",
+        "portfolio_value": 136818037.70655257,
+        "total_trade_amount": 397.52,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 49.69,
+                "fee": 0.99,
+                "date": "2026-04-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260408",
+        "date": "2026-04-08",
+        "portfolio_value": 140190810.1391888,
+        "total_trade_amount": 15273.14,
+        "reason": "비율 재조정: 상대이탈 5.6% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "SELL",
+                "quantity": 153,
+                "price": 50.82,
+                "fee": 19.44,
+                "date": "2026-04-08",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 68,
+                "price": 110.26,
+                "fee": 18.74,
+                "date": "2026-04-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260409",
+        "date": "2026-04-09",
+        "portfolio_value": 140892880.3752366,
+        "total_trade_amount": 255.9,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 5,
+                "price": 51.18,
+                "fee": 0.64,
+                "date": "2026-04-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260422",
+        "date": "2026-04-22",
+        "portfolio_value": 144962755.17478606,
+        "total_trade_amount": 1405133.81,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 26929,
+                "price": 52.13,
+                "fee": 3509.66,
+                "date": "2026-04-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.42,
+                "fee": 3.31,
+                "date": "2026-04-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260423",
+        "date": "2026-04-23",
+        "portfolio_value": 144656836.88364455,
+        "total_trade_amount": 35633.700000000004,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 685,
+                "price": 52.02,
+                "fee": 89.09,
+                "date": "2026-04-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260424",
+        "date": "2026-04-24",
+        "portfolio_value": 145296438.2182143,
+        "total_trade_amount": 940.5,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 52.25,
+                "fee": 2.35,
+                "date": "2026-04-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260501",
+        "date": "2026-05-01",
+        "portfolio_value": 146172455.09123188,
+        "total_trade_amount": 420.56,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 52.57,
+                "fee": 1.05,
+                "date": "2026-05-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260520",
+        "date": "2026-05-20",
+        "portfolio_value": 149448929.15022948,
+        "total_trade_amount": 1446189.02,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 27154,
+                "price": 53.21,
+                "fee": 3612.38,
+                "date": "2026-05-20",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.39,
+                "fee": 3.31,
+                "date": "2026-05-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260521",
+        "date": "2026-05-21",
+        "portfolio_value": 149729600.0802399,
+        "total_trade_amount": 36730.590000000004,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 689,
+                "price": 53.31,
+                "fee": 91.83,
+                "date": "2026-05-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260522",
+        "date": "2026-05-22",
+        "portfolio_value": 150066661.9445959,
+        "total_trade_amount": 961.74,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 53.43,
+                "fee": 2.4,
+                "date": "2026-05-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260601",
+        "date": "2026-06-01",
+        "portfolio_value": 151794057.47080708,
+        "total_trade_amount": 432.4,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 54.05,
+                "fee": 1.08,
+                "date": "2026-06-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260616",
+        "date": "2026-06-16",
+        "portfolio_value": 150851130.2690177,
+        "total_trade_amount": 1449787.74,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 27237,
+                "price": 53.18,
+                "fee": 3621.37,
+                "date": "2026-06-16",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 12,
+                "price": 110.34,
+                "fee": 3.31,
+                "date": "2026-06-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260617",
+        "date": "2026-06-17",
+        "portfolio_value": 149206158.2485726,
+        "total_trade_amount": 36820.0,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 700,
+                "price": 52.6,
+                "fee": 92.05,
+                "date": "2026-06-17",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260618",
+        "date": "2026-06-18",
+        "portfolio_value": 150624513.27081087,
+        "total_trade_amount": 955.8000000000001,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 53.1,
+                "fee": 2.39,
+                "date": "2026-06-18",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20260701",
+        "date": "2026-07-01",
+        "portfolio_value": 150738106.79259956,
+        "total_trade_amount": 425.12,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 53.14,
+                "fee": 1.06,
+                "date": "2026-07-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    }
+]

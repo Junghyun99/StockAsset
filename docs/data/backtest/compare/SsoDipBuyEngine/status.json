@@ -1,67 +1,67 @@
 {
-    "last_updated": "2025-12-31",
-    "last_rebalancing_date": "2025-12-31",
+    "last_updated": "2026-07-14",
+    "last_rebalancing_date": "2026-07-14",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "BUY_STAGE_1 분할매수 SSO 31주",
+        "trigger_reason": "분할매도 SSO 214주 / SPYI 스윕 25주",
         "market_score": {
-            "vix": 14.949999809265137,
-            "spy_mdd": -0.012254152659146441,
-            "spy_momentum": 0.07608782763080724,
-            "spy_price": 681.9199829101562,
-            "spy_ma180": 635.6075002034505,
-            "spy_volatility": 0.08400779725987907
+            "vix": 16.5,
+            "spy_mdd": -0.010189962952382904,
+            "spy_momentum": 0.10474776952160693,
+            "spy_price": 751.8300170898438,
+            "spy_ma180": 698.6253343370225,
+            "spy_volatility": 0.13539734538122544
         },
         "decision_factors": [
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 61.26165830024822,
+                "value": 62.094846297607525,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.08774937579692517,
+                "value": 0.14075571994279445,
                 "format": "percent",
                 "threshold": -0.1
             },
             {
                 "key": "signal_level",
                 "label": "신호 단계",
-                "value": "BUY_STAGE_1",
+                "value": "BUY_STAGE_3",
                 "format": "text",
                 "threshold": null
             },
             {
                 "key": "sso_ratio",
                 "label": "SSO 비중",
-                "value": 0.39864285245244224,
+                "value": 0.8001071790461545,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 12135594.097070381,
-        "cash_balance": 6403975.790780709,
+        "total_value": 204661962.1156418,
+        "cash_balance": 470.9403030548092,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 83525,
-                "price": 57.91999816894531,
-                "value": 4837767.847061157
+                "qty": 2402810,
+                "price": 68.1500015258789,
+                "value": 163751505.1663971
             },
             {
                 "ticker": "SPYI",
-                "qty": 17016,
-                "price": 52.529998779296875,
-                "value": 893850.4592285156
+                "qty": 763816,
+                "price": 53.560001373291016,
+                "value": 40909986.00894165
             }
         ]
     },
-    "initial_cash": 10000000.0,
-    "backtest_start_date": "2020-01-01"
+    "initial_cash": 100000000.0,
+    "backtest_start_date": "2006-01-01"
 }

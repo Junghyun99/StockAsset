@@ -24,14 +24,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.9990016397230782,
+                "value": 0.9990536807834085,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 1.6413644426487945e-06,
+                "value": 5.373451792643156e-05,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -45,20 +45,20 @@
         ]
     },
     "portfolio": {
-        "total_value": 192929130.19516966,
-        "cash_balance": 656.6570837243379,
+        "total_value": 152071501.57722175,
+        "cash_balance": 43.378575212117426,
         "holdings": [
             {
-                "ticker": "QQQ",
-                "qty": 267804,
-                "price": 719.6900024414062,
-                "value": 192735861.41381836
+                "ticker": "SPYI",
+                "qty": 2836586,
+                "price": 53.560001373291016,
+                "value": 151927550.05545807
             },
             {
                 "ticker": "SHV",
-                "qty": 1748,
+                "qty": 1306,
                 "price": 110.19000244140625,
-                "value": 192612.12426757812
+                "value": 143908.14318847656
             }
         ]
     },
