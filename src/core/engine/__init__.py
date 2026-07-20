@@ -24,6 +24,8 @@ from src.core.engine.simple import (
     QqqEngine,
     Asset5Engine,
     SsoSpyiEngine,
+    SsoEngine,
+    SpyiEngine,
     DomesticAsset5Engine,
 )
 from src.core.engine.regime import QldSdyShvEngine, QldQqqShvRegimeEngine
@@ -47,6 +49,8 @@ __all__ = [
     "QqqEngine",
     "Asset5Engine",
     "SsoSpyiEngine",
+    "SsoEngine",
+    "SpyiEngine",
     "DomesticAsset5Engine",
     "QldSdyShvEngine",
     "QldQqqShvRegimeEngine",
