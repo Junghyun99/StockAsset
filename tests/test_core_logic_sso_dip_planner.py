@@ -4,7 +4,7 @@ import pytest
 from src.core.logic.sso_dip_signals import SsoDipSignals
 from src.core.logic.sso_dip_planner import (
     SsoDipPlanner, SsoDipState, SignalLevel,
-    BUY_STAGES, SELL_CONDITION,
+    BUY_STAGES, SELL_CONDITION, IDLE_TARGET, SELL_TARGET,
 )
 from src.core.models import Portfolio
 
@@ -76,13 +76,13 @@ class TestSignalDetection:
         assert new_state.level == SignalLevel.SELL
 
     def test_sell_completes_to_idle(self):
-        """매도 완료(40% 도달) → IDLE 복귀."""
+        """매도 완료(SELL_TARGET 이하 도달) → IDLE 복귀."""
         planner = SsoDipPlanner()
-        # SSO 40%, SPYI 60% → 정확히 디폴트 비중
+        # SSO 20% = $2000 / $10000 (25주×$80=$2000, 145주×$55.17=$8000)
         state = SsoDipState(level=SignalLevel.SELL)
         _, _, new_state = planner.plan(
             _sig(rsi=65, dev=0.05),
-            _pf(cash=0, sso=50, spyi=109, sso_price=80.0, spyi_price=55.05),
+            _pf(cash=0, sso=25, spyi=145, sso_price=80.0, spyi_price=55.17),
             state,
         )
         assert new_state.level == SignalLevel.IDLE
@@ -153,9 +153,9 @@ class TestDCA:
     def test_sell_speed(self):
         """매도 속도계수 10% 검증."""
         planner = SsoDipPlanner()
-        # SSO 80%, 목표 40%
-        # 총자산 = 100주×$80 + 0 = $8000
-        # delta = |0.4 - 1.0| × 0.1 × 8000 = $480 → 6주
+        # SSO 100%, 목표 20%
+        # 총자산 = 100주×$80 = $8000
+        # delta = (0.2 - 1.0) × 0.1 × 8000 ≈ -$640 → ceil(640.x/80) = 9주 (부동소수점)
         state = SsoDipState(level=SignalLevel.SELL)
         orders, _, _ = planner.plan(
             _sig(rsi=65, dev=0.05),
@@ -164,7 +164,7 @@ class TestDCA:
         )
         sso_sell = [o for o in orders if o.ticker == "SSO" and o.action.value == "SELL"]
         assert len(sso_sell) == 1
-        assert sso_sell[0].quantity == 6
+        assert sso_sell[0].quantity == 9
 
     def test_spyi_counterpart_on_buy(self):
         """SSO 매수 시 SPYI 매도로 자금 확보."""
@@ -208,17 +208,22 @@ class TestSpyiSweep:
     """잔여 현금 → SPYI 스윕 테스트."""
 
     def test_idle_cash_sweeps_to_spyi(self):
-        """IDLE + 현금만 → SPYI 전량 매수."""
+        """IDLE + 현금만 → SSO 20% 매수 + 잔여 SPYI 스윕."""
         planner = SsoDipPlanner()
         state = SsoDipState()
+        # IDLE 목표 20%, speed 10%: delta = (0.2 - 0.0) × 0.1 × 10000 = $200
+        # SSO 매수: floor(200/80) = 2주 × $80 = $160
+        # 잔여 현금: 10000 - 160 = $9840 → SPYI floor(9840/55) = 178주
         orders, reason, _ = planner.plan(
             _sig(rsi=55, dev=0.02),
             _pf(cash=10000, sso=0, spyi=0),
             state,
         )
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
+        assert len(sso_buy) == 1
+        assert sso_buy[0].quantity == 2
         spyi_buy = [o for o in orders if o.ticker == "SPYI" and o.action.value == "BUY"]
         assert len(spyi_buy) == 1
-        assert spyi_buy[0].quantity == 181  # floor(10000 / 55)
         assert "SPYI 스윕" in reason
 
     def test_remaining_cash_after_sso_buy(self):
@@ -248,16 +253,18 @@ class TestSpyiSweep:
         spyi_buy = [o for o in orders if o.ticker == "SPYI" and o.action.value == "BUY"]
         assert len(spyi_buy) == 0
 
-    def test_idle_already_in_spyi_no_sweep(self):
-        """IDLE + 전액 SPYI → 스윕 주문 없음."""
+    def test_idle_with_target_ratio_reached(self):
+        """IDLE + SSO 20% 도달 → SSO 주문 없음."""
         planner = SsoDipPlanner()
         state = SsoDipState()
+        # SSO 19.99% = 25주×$80=$2000, SPYI 146주×$54.795=$7999.07, total≈$9999
         orders, _, _ = planner.plan(
             _sig(rsi=55, dev=0.02),
-            _pf(cash=0, sso=0, spyi=200),
+            _pf(cash=0, sso=25, spyi=146, sso_price=80.0, spyi_price=54.795),
             state,
         )
-        assert len(orders) == 0
+        sso_orders = [o for o in orders if o.ticker == "SSO"]
+        assert len(sso_orders) == 0
 
 
 class TestStateSerialize:
