@@ -201,5 +201,24 @@
                 "reason": "ODNO=0016627300"
             }
         ]
+    },
+    {
+        "id": "tx_20260720_140116",
+        "date": "2026-07-20 14:01:16",
+        "portfolio_value": 4093782.0,
+        "total_trade_amount": 3386844.0,
+        "reason": "첫 투자: 0:100 비율로 진입",
+        "executions": [
+            {
+                "ticker": "133690.KS",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 188158.0,
+                "fee": 508.02899999999994,
+                "date": "2026-07-20 14:01:12",
+                "status": "FILLED",
+                "reason": "ODNO=0030691300"
+            }
+        ]
     }
 ]

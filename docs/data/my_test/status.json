@@ -1,23 +1,23 @@
 {
-    "last_updated": "2026-07-16 14:12:42",
-    "last_rebalancing_date": "2026-07-16",
+    "last_updated": "2026-07-20 14:01:16",
+    "last_rebalancing_date": "2026-07-20",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 0.9270077210799145,
-        "trigger_reason": "Bull (모니터링)",
+        "target_exposure": 0.872542570841058,
+        "trigger_reason": "첫 투자: 0:100 비율로 진입",
         "market_score": {
-            "vix": 15.670000076293945,
-            "spy_mdd": -0.06665704110116469,
-            "spy_momentum": 0.1955227447623395,
-            "spy_price": 193930.0,
-            "spy_ma180": 173717.88888888888,
-            "spy_volatility": 0.23732272665831927
+            "vix": 18.770000457763672,
+            "spy_mdd": -0.09344017711040524,
+            "spy_momentum": 0.17485080788077653,
+            "spy_price": 188365.0,
+            "spy_ma180": 173877.36111111112,
+            "spy_volatility": 0.2521366949327623
         },
         "decision_factors": [
             {
                 "key": "realized_vol",
                 "label": "실현변동성(21d)",
-                "value": 0.23732272665831927,
+                "value": 0.2521366949327623,
                 "format": "percent",
                 "threshold": 0.22
             },
@@ -31,22 +31,29 @@
             {
                 "key": "effective_leverage",
                 "label": "실효 레버리지(x)",
-                "value": 0.9270077210799145,
+                "value": 0.872542570841058,
                 "format": "number",
                 "threshold": null
             },
             {
                 "key": "cash_weight",
                 "label": "현금 비중",
-                "value": 0.07299227892008553,
+                "value": 0.12745742915894198,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 4095026.0,
-        "cash_balance": 4095026.0,
-        "holdings": []
+        "total_value": 4093782.0,
+        "cash_balance": 707676.0,
+        "holdings": [
+            {
+                "ticker": "133690.KS",
+                "qty": 18,
+                "price": 188117.0,
+                "value": 3386106.0
+            }
+        ]
     }
 }
