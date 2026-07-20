@@ -86,8 +86,12 @@ class TestStateManagement:
 
 
 class TestCollectData:
-    def test_fetches_spy_ohlcv(self):
-        """SPY OHLCV를 수집한다 (SSO 아님)."""
+    def test_fetches_sso_and_spy_ohlcv(self):
+        """SSO OHLCV(신호용)와 SPY OHLCV(국면분석용)를 모두 수집한다."""
         engine, mocks = _build_engine()
         engine.collect_data(mocks["data_provider"])
-        mocks["data_provider"].fetch_ohlcv.assert_called_once_with(["SPY"], days=400)
+        calls = mocks["data_provider"].fetch_ohlcv.call_args_list
+        tickers_called = [c[0][0] for c in calls]
+        assert ["SPY"] in tickers_called
+        assert ["SSO"] in tickers_called
+        assert len(calls) == 2

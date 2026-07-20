@@ -1,9 +1,12 @@
 # src/core/logic/sso_dip_signals.py
 """SSO DipBuy 전략용 지표 계산기 (순수 로직).
 
-SPY 일봉 OHLCV에서 주봉 RSI와 200일선 괴리율을 계산한다.
+SSO 일봉 OHLCV에서 주봉 RSI와 200일선 괴리율을 계산한다.
 주봉 RSI: 일봉을 주봉으로 리샘플링 후 Wilder RSI(14) 계산.
 200일선 괴리율: (현재가 - MA200) / MA200.
+
+SSO(2x 레버리지)를 직접 사용하면 괴리율이 ~2배 증폭되어
+깊은 하락을 더 민감하게 감지하고 STAGE_1 고착 문제를 해소한다.
 """
 import math
 from dataclasses import dataclass
@@ -21,12 +24,12 @@ class SsoDipSignals:
     date: str
     weekly_rsi: float
     ma200_deviation: float
-    spy_price: float
-    spy_ma200: float
+    price: float
+    ma200: float
 
 
 class SsoDipIndicatorCalculator:
-    """SPY 일봉 OHLCV에서 주봉 RSI와 200일선 괴리율을 계산한다."""
+    """SSO 일봉 OHLCV에서 주봉 RSI와 200일선 괴리율을 계산한다."""
 
     def calculate(self, df: pd.DataFrame) -> SsoDipSignals:
         if df is None or df.empty:
@@ -44,8 +47,8 @@ class SsoDipIndicatorCalculator:
                 date=close.index[-1].strftime("%Y-%m-%d") if len(close) > 0 else "",
                 weekly_rsi=float("nan"),
                 ma200_deviation=float("nan"),
-                spy_price=float(close.iloc[-1]) if len(close) > 0 else float("nan"),
-                spy_ma200=float("nan"),
+                price=float(close.iloc[-1]) if len(close) > 0 else float("nan"),
+                ma200=float("nan"),
             )
 
         date = close.index[-1].strftime("%Y-%m-%d")
@@ -64,8 +67,8 @@ class SsoDipIndicatorCalculator:
             date=date,
             weekly_rsi=weekly_rsi,
             ma200_deviation=deviation,
-            spy_price=price,
-            spy_ma200=ma200,
+            price=price,
+            ma200=ma200,
         )
 
     @staticmethod
@@ -86,5 +89,5 @@ class SsoDipIndicatorCalculator:
     def _nan_signals() -> SsoDipSignals:
         return SsoDipSignals(
             date="", weekly_rsi=float("nan"), ma200_deviation=float("nan"),
-            spy_price=float("nan"), spy_ma200=float("nan"),
+            price=float("nan"), ma200=float("nan"),
         )

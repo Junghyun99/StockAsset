@@ -28,18 +28,18 @@ class TestSsoDipSignals:
     def test_fields_present(self):
         sig = SsoDipSignals(
             date="2024-06-01", weekly_rsi=50.0,
-            ma200_deviation=0.05, spy_price=500.0, spy_ma200=476.19,
+            ma200_deviation=0.05, price=500.0, ma200=476.19,
         )
         assert sig.date == "2024-06-01"
         assert sig.weekly_rsi == 50.0
         assert sig.ma200_deviation == 0.05
-        assert sig.spy_price == 500.0
-        assert sig.spy_ma200 == pytest.approx(476.19)
+        assert sig.price == 500.0
+        assert sig.ma200 == pytest.approx(476.19)
 
     def test_frozen(self):
         sig = SsoDipSignals(
             date="2024-06-01", weekly_rsi=50.0,
-            ma200_deviation=0.0, spy_price=500.0, spy_ma200=500.0,
+            ma200_deviation=0.0, price=500.0, ma200=500.0,
         )
         with pytest.raises(AttributeError):
             sig.weekly_rsi = 99.0  # type: ignore[misc]
@@ -69,7 +69,7 @@ class TestMa200Deviation:
         """괴리율 = (price - ma200) / ma200 공식 검증."""
         df = _make_spy_df(n_days=300, base_price=400.0, trend=0.5)
         sig = SsoDipIndicatorCalculator().calculate(df)
-        expected = (sig.spy_price - sig.spy_ma200) / sig.spy_ma200
+        expected = (sig.price - sig.ma200) / sig.ma200
         assert sig.ma200_deviation == pytest.approx(expected)
 
 
@@ -108,7 +108,7 @@ class TestInsufficientData:
         sig = SsoDipIndicatorCalculator().calculate(df)
         assert math.isnan(sig.weekly_rsi)
         assert math.isnan(sig.ma200_deviation)
-        assert sig.spy_price == pytest.approx(500.0)
+        assert sig.price == pytest.approx(500.0)
 
     def test_empty_dataframe_yields_nan(self):
         """빈 DataFrame → 모든 값 NaN, date 빈 문자열."""
@@ -116,8 +116,8 @@ class TestInsufficientData:
         assert sig.date == ""
         assert math.isnan(sig.weekly_rsi)
         assert math.isnan(sig.ma200_deviation)
-        assert math.isnan(sig.spy_price)
-        assert math.isnan(sig.spy_ma200)
+        assert math.isnan(sig.price)
+        assert math.isnan(sig.ma200)
 
     def test_none_input_yields_nan(self):
         """None 입력 → 모든 값 NaN."""
@@ -140,7 +140,7 @@ class TestMultiIndex:
         sig = SsoDipIndicatorCalculator().calculate(df_mi)
         assert not math.isnan(sig.weekly_rsi)
         assert not math.isnan(sig.ma200_deviation)
-        assert sig.spy_price > 0
+        assert sig.price > 0
 
 
 # ── 날짜 매핑 ────────────────────────────────────────────────────────
@@ -152,8 +152,8 @@ class TestDateMapping:
         expected_date = df.index[-1].strftime("%Y-%m-%d")
         assert sig.date == expected_date
 
-    def test_spy_price_matches_last_close(self):
-        """결과의 spy_price는 마지막 종가와 일치."""
+    def test_price_matches_last_close(self):
+        """결과의 price는 마지막 종가와 일치."""
         df = _make_spy_df(n_days=300, base_price=500.0, trend=0.0)
         sig = SsoDipIndicatorCalculator().calculate(df)
-        assert sig.spy_price == pytest.approx(float(df["Close"].iloc[-1]))
+        assert sig.price == pytest.approx(float(df["Close"].iloc[-1]))

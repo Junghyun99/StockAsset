@@ -34,7 +34,7 @@ BUY_STAGES = [
     (SignalLevel.BUY_STAGE_1, 48.0, -0.10, 0.40, 0.10),
 ]
 
-SELL_CONDITION = {"rsi": 72.0, "deviation": 0.13}
+SELL_CONDITION = {"rsi": 75.0, "deviation": 0.15}
 SELL_TARGET = 0.20
 SELL_SPEED = 0.10
 
