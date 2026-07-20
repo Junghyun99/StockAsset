@@ -94,6 +94,28 @@ class TestSignalDetection:
         _, _, new_state = planner.plan(_sig(rsi=34, dev=-0.28), _pf(), state)
         assert new_state.level == SignalLevel.BUY_STAGE_3
 
+    def test_sell_overridden_by_buy_signal(self):
+        """SELL 중 급락(매수 조건 충족) → BUY_STAGE로 전환."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(level=SignalLevel.SELL)
+        _, _, new_state = planner.plan(
+            _sig(rsi=34, dev=-0.28),
+            _pf(cash=0, sso=100, spyi=0),
+            state,
+        )
+        assert new_state.level == SignalLevel.BUY_STAGE_3
+
+    def test_sell_persists_without_buy_signal(self):
+        """SELL 중 매수 조건 미충족 → SELL 유지."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(level=SignalLevel.SELL)
+        _, _, new_state = planner.plan(
+            _sig(rsi=55, dev=0.0),
+            _pf(cash=0, sso=100, spyi=0),
+            state,
+        )
+        assert new_state.level == SignalLevel.SELL
+
 
 class TestDCA:
     """분할매수/매도 금액 계산 테스트."""
