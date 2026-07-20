@@ -8,7 +8,7 @@ import pandas as pd
 from src.core.interfaces import IDataProvider, IBrokerAdapter, IRepository, ILogger, INotifier
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, DayResult,
-    ExecutionStatus, DecisionFactor,
+    ExecutionStatus, DecisionFactor, Order, OrderAction,
 )
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
 from src.utils.calculator import IndicatorCalculator
@@ -250,11 +250,15 @@ class TradingEngine:
         """Step 4: 포트폴리오 조회 후 실시간 가격 업데이트 + 벤치마크 현재가 수집."""
         portfolio = self.broker.get_portfolio()
         self.logger.info("Fetching Real-time prices from Broker...")
-        real_time_prices = self.broker.fetch_current_prices(self.all_tickers)
+        orphan_tickers = [
+            t for t in portfolio.holdings
+            if portfolio.holdings[t] > 0 and t not in self.all_tickers
+        ]
+        fetch_tickers = self.all_tickers + orphan_tickers
+        real_time_prices = self.broker.fetch_current_prices(fetch_tickers)
         for ticker, price in real_time_prices.items():
             if price > 0:
                 portfolio.current_prices[ticker] = price
-        # 보유 종목과 같은 브로커·같은 시점으로 벤치마크 현재가도 조회한다.
         self._benchmark_prices = self._fetch_benchmark_prices()
         return portfolio
 
@@ -288,9 +292,22 @@ class TradingEngine:
         record_date: str,
     ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
         """Step 5: 3-way 조건 분기: NaN이상 / 모니터링 / 리밸런싱."""
+        orphan_executions: List[TradeExecution] = []
         executions: List[TradeExecution] = []
         final_pf = portfolio
         is_rebalancing = False
+
+        # ── 고아 종목 청산 (NaN 이상이 아닌 경우에만) ──
+        if not nan_fields:
+            orphan_tickers = self._detect_orphan_holdings(portfolio)
+            if orphan_tickers:
+                self.logger.info(">>> Step 4.5: Orphan Holdings Liquidation")
+                self._notify_alert(
+                    f"⚠️ 엔진 변경 감지: 이전 엔진 종목 {len(orphan_tickers)}건 자동 청산",
+                    detail=self._cycle_detail(),
+                )
+                orphan_executions, portfolio = self._liquidate_orphans(portfolio, orphan_tickers)
+                final_pf = portfolio
 
         # 보유 종목 중 가격 조회 실패(0.0 또는 누락) 종목 감지
         zero_price_tickers = [
@@ -397,7 +414,7 @@ class TradingEngine:
                     detail=self._cycle_detail(),
                 )
 
-        return signal, executions, final_pf, is_rebalancing
+        return signal, orphan_executions + executions, final_pf, is_rebalancing
 
     def deactivated_cycle(
         self,
@@ -510,6 +527,55 @@ class TradingEngine:
             return diff_days >= self.trading_interval_days
         except Exception:
             return True  # 파싱 실패 시 안전하게 리밸런싱 실행
+
+    def _detect_orphan_holdings(self, portfolio: Portfolio) -> List[str]:
+        """현재 엔진의 어떤 그룹에도 속하지 않는 보유 종목 티커 목록."""
+        managed = set(self.all_tickers)
+        return [t for t, q in portfolio.holdings.items() if q > 0 and t not in managed]
+
+    def _liquidate_orphans(
+        self, portfolio: Portfolio, orphan_tickers: List[str]
+    ) -> Tuple[List[TradeExecution], Portfolio]:
+        """고아 종목 전량 매도 → 체결 결과 + 갱신된 포트폴리오 반환."""
+        orders = []
+        for ticker in orphan_tickers:
+            qty = portfolio.holdings.get(ticker, 0)
+            price = portfolio.current_prices.get(ticker, 0)
+            if qty > 0 and price > 0:
+                orders.append(Order(ticker, OrderAction.SELL, qty, price))
+                self.logger.info(
+                    f"[고아 종목] {ticker_display(ticker)}: {qty}주 @${price:,.0f} → 전량 매도"
+                )
+            elif qty > 0:
+                self.logger.warning(
+                    f"[고아 종목] {ticker_display(ticker)}: {qty}주 보유 중이나 가격 조회 실패 → 매도 스킵"
+                )
+
+        if not orders:
+            return [], portfolio
+
+        self.logger.info(f">>> 고아 종목 청산: {len(orders)}건 매도 실행")
+        executions = self.broker.execute_orders(orders)
+
+        if executions and self.is_live_trading:
+            time.sleep(3)
+        try:
+            updated_pf = self.broker.get_portfolio()
+        except Exception as e:
+            self.logger.error(f"고아 청산 후 포트폴리오 조회 실패: {e}")
+            return executions, portfolio
+
+        try:
+            all_fetch = self.all_tickers + orphan_tickers
+            real_time_prices = self.broker.fetch_current_prices(all_fetch)
+            for t, p in real_time_prices.items():
+                if p > 0:
+                    updated_pf.current_prices[t] = p
+            self._benchmark_prices = self._fetch_benchmark_prices()
+        except Exception as e:
+            self.logger.warning(f"고아 청산 후 실시간 가격 조회 실패: {e}")
+
+        return executions, updated_pf
 
     def _build_crash_alert(self, market_data: MarketData, portfolio: Portfolio) -> str:
         """CRASH 알림 메시지 생성 (포지션 정보 포함)."""

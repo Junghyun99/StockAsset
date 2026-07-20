@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch, call
 from src.core.engine import TradingEngine
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution,
-    Order, OrderAction, ExecutionStatus, DayResult
+    Order, OrderAction, ExecutionStatus, DayResult,
 )
 
 
@@ -920,3 +920,191 @@ def test_get_portfolio_stashes_benchmark_prices():
     assert engine._benchmark_prices == {
         'KOSPI200': 80.0, 'S&P500': 500.0, 'NASDAQ100': 400.0,
     }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 고아 종목 자동 청산 (Orphan Holdings Liquidation)
+# ─────────────────────────────────────────────────────────────────
+
+def test_get_portfolio_fetches_orphan_prices():
+    """get_portfolio는 엔진 그룹 외 보유 종목의 가격도 조회한다"""
+    engine, mocks = _make_engine()
+    pf_with_orphan = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 5},
+        current_prices={"SSO": 100.0, "AAPL": 150.0},
+    )
+    mocks["broker"].get_portfolio.return_value = pf_with_orphan
+
+    def fake_fetch(tickers):
+        prices = {"SSO": 101.0, "QLD": 50.0, "IEF": 90.0, "GLD": 180.0, "SHV": 110.0, "AAPL": 155.0}
+        return {t: prices[t] for t in tickers if t in prices}
+    mocks["broker"].fetch_current_prices.side_effect = fake_fetch
+
+    result = engine.get_portfolio()
+
+    assert result.current_prices["AAPL"] == 155.0
+    assert result.current_prices["SSO"] == 101.0
+
+
+def test_detect_orphan_holdings_finds_unknown_tickers():
+    """엔진 그룹에 없는 보유 종목을 고아로 감지한다"""
+    engine, mocks = _make_engine()
+    pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 5, "TSLA": 3, "IEF": 2},
+        current_prices={"SSO": 100.0, "AAPL": 150.0, "TSLA": 200.0, "IEF": 90.0},
+    )
+    orphans = engine._detect_orphan_holdings(pf)
+    assert sorted(orphans) == ["AAPL", "TSLA"]
+
+
+def test_detect_orphan_holdings_ignores_zero_qty():
+    """보유 수량이 0인 종목은 고아로 감지하지 않는다"""
+    engine, mocks = _make_engine()
+    pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 0},
+        current_prices={"SSO": 100.0},
+    )
+    orphans = engine._detect_orphan_holdings(pf)
+    assert orphans == []
+
+
+def test_detect_orphan_holdings_empty_when_all_managed():
+    """모든 보유 종목이 엔진 그룹에 속하면 빈 리스트"""
+    engine, mocks = _make_engine()
+    pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "IEF": 5},
+        current_prices={"SSO": 100.0, "IEF": 90.0},
+    )
+    orphans = engine._detect_orphan_holdings(pf)
+    assert orphans == []
+
+
+def test_liquidate_orphans_sells_all_and_refreshes_portfolio():
+    """고아 종목을 전량 매도하고 포트폴리오를 갱신한다"""
+    engine, mocks = _make_engine(is_live_trading=False)
+    orphan_pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 5},
+        current_prices={"SSO": 100.0, "AAPL": 150.0},
+    )
+    updated_pf = Portfolio(
+        total_cash=5750.0,
+        holdings={"SSO": 10},
+        current_prices={"SSO": 100.0},
+    )
+
+    fake_exec = TradeExecution("AAPL", OrderAction.SELL, 5, 150.0, 0.5, "2024-01-10", ExecutionStatus.FILLED)
+    mocks["broker"].execute_orders.return_value = [fake_exec]
+    mocks["broker"].get_portfolio.return_value = updated_pf
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 101.0}
+
+    execs, result_pf = engine._liquidate_orphans(orphan_pf, ["AAPL"])
+
+    sell_orders = mocks["broker"].execute_orders.call_args[0][0]
+    assert len(sell_orders) == 1
+    assert sell_orders[0].ticker == "AAPL"
+    assert sell_orders[0].action == OrderAction.SELL
+    assert sell_orders[0].quantity == 5
+    assert sell_orders[0].price == 150.0
+    assert execs == [fake_exec]
+    assert result_pf.total_cash == 5750.0
+
+
+def test_liquidate_orphans_skips_zero_price():
+    """가격 조회 실패(0원) 종목은 매도하지 않는다"""
+    engine, mocks = _make_engine()
+    pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"AAPL": 5},
+        current_prices={"AAPL": 0.0},
+    )
+
+    execs, result_pf = engine._liquidate_orphans(pf, ["AAPL"])
+
+    mocks["broker"].execute_orders.assert_not_called()
+    assert execs == []
+    assert result_pf is pf
+
+
+def test_execute_cycle_liquidates_orphans_before_rebalancing():
+    """execute_cycle은 고아 종목을 먼저 매도한 뒤 리밸런싱을 진행한다"""
+    engine, mocks = _make_engine(repo_last_reb=None)
+    pf_before = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 5},
+        current_prices={"SSO": 100.0, "AAPL": 150.0},
+    )
+    pf_after_orphan_sell = Portfolio(
+        total_cash=5750.0,
+        holdings={"SSO": 10},
+        current_prices={"SSO": 100.0},
+    )
+    orphan_exec = TradeExecution("AAPL", OrderAction.SELL, 5, 150.0, 0.5, "2024-01-10", ExecutionStatus.FILLED)
+    rebal_order = Order("SSO", OrderAction.BUY, 3, 100.0)
+    rebal_exec = TradeExecution("SSO", OrderAction.BUY, 3, 100.0, 0.1, "2024-01-10", ExecutionStatus.FILLED)
+
+    mocks["broker"].execute_orders.side_effect = [[orphan_exec], [rebal_exec]]
+    mocks["broker"].get_portfolio.return_value = pf_after_orphan_sell
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 100.0}
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [rebal_order], "첫 투자: 50:50 비율로 진입")
+    mocks["rebalancer"].get_target_params.return_value = (0.5, 0.075)
+
+    md = _make_market_data()
+    signal, execs, final_pf, is_rebal = engine.execute_cycle(
+        md, pf_before, MarketRegime.BULL, 1.0, [], None, "2024-01-10"
+    )
+
+    assert len(execs) == 2
+    assert execs[0].ticker == "AAPL"
+    assert execs[1].ticker == "SSO"
+    assert is_rebal is True
+
+
+def test_execute_cycle_orphan_only_on_monitoring_day():
+    """모니터링 날에도 고아 매도는 실행하되, is_rebalancing은 False"""
+    engine, mocks = _make_engine(repo_last_reb="2024-01-10", trading_interval_days=5)
+    pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 5},
+        current_prices={"SSO": 100.0, "AAPL": 150.0},
+    )
+    pf_after = Portfolio(total_cash=5750.0, holdings={"SSO": 10}, current_prices={"SSO": 100.0})
+    orphan_exec = TradeExecution("AAPL", OrderAction.SELL, 5, 150.0, 0.5, "2024-01-10", ExecutionStatus.FILLED)
+    mocks["broker"].execute_orders.return_value = [orphan_exec]
+    mocks["broker"].get_portfolio.return_value = pf_after
+    mocks["broker"].fetch_current_prices.return_value = {"SSO": 100.0}
+    mocks["rebalancer"].get_target_params.return_value = (0.5, 0.075)
+
+    md = _make_market_data()
+    signal, execs, final_pf, is_rebal = engine.execute_cycle(
+        md, pf, MarketRegime.BULL, 1.0, [], "2024-01-11", "2024-01-11"
+    )
+
+    assert len(execs) == 1
+    assert execs[0].ticker == "AAPL"
+    assert is_rebal is False
+    assert "모니터링" in signal.reason
+
+
+def test_execute_cycle_skips_orphan_on_nan():
+    """NaN 데이터 이상 시 고아 매도도 스킵한다"""
+    engine, mocks = _make_engine()
+    pf = Portfolio(
+        total_cash=5000.0,
+        holdings={"SSO": 10, "AAPL": 5},
+        current_prices={"SSO": 100.0, "AAPL": 150.0},
+    )
+    mocks["rebalancer"].get_target_params.return_value = (0.5, 0.075)
+
+    md = _make_market_data()
+    signal, execs, final_pf, is_rebal = engine.execute_cycle(
+        md, pf, MarketRegime.BULL, 1.0, ["spy_volatility"], None, "2024-01-10"
+    )
+
+    mocks["broker"].execute_orders.assert_not_called()
+    assert execs == []
+    assert "NaN" in signal.reason
