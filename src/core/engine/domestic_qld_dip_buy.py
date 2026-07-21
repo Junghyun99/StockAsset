@@ -30,6 +30,7 @@ class DomesticQldDipPlanner(SsoDipPlanner):
 
     SSO_TICKER = LEVER_TICKER
     SPYI_TICKER = INCOME_TICKER
+    _sell_condition = {"rsi": 80.0, "deviation": 0.35}
 
 
 @register_engine(color="#8e44ad", market_type="domestic", backtest=False)

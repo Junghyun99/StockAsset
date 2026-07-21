@@ -81,6 +81,16 @@ class TestDomesticQldDipPlanner:
         assert planner.SSO_TICKER == LEVER_TICKER
         assert planner.SPYI_TICKER == INCOME_TICKER
 
+    def test_sell_condition_overridden(self):
+        planner = DomesticQldDipPlanner()
+        assert planner._sell_condition == {"rsi": 80.0, "deviation": 0.35}
+
+    def test_sell_condition_differs_from_base(self):
+        base = SsoDipPlanner()
+        domestic = DomesticQldDipPlanner()
+        assert domestic._sell_condition["rsi"] > base._sell_condition["rsi"]
+        assert domestic._sell_condition["deviation"] > base._sell_condition["deviation"]
+
 
 class TestStateManagement:
     def test_loads_state_on_init(self):
