@@ -1,23 +1,23 @@
 {
-    "last_updated": "2026-07-20 14:01:16",
-    "last_rebalancing_date": "2026-07-20",
+    "last_updated": "2026-07-21 10:01:05",
+    "last_rebalancing_date": "2026-07-21",
     "strategy": {
         "regime": "Bull",
-        "target_exposure": 0.872542570841058,
-        "trigger_reason": "첫 투자: 0:100 비율로 진입",
+        "target_exposure": 0.8541778825427752,
+        "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 18.770000457763672,
-            "spy_mdd": -0.09344017711040524,
-            "spy_momentum": 0.17485080788077653,
-            "spy_price": 188365.0,
-            "spy_ma180": 173877.36111111112,
-            "spy_volatility": 0.2521366949327623
+            "vix": 18.649999618530273,
+            "spy_mdd": -0.09601501588218307,
+            "spy_momentum": 0.15579267985276518,
+            "spy_price": 187830.0,
+            "spy_ma180": 174021.58333333334,
+            "spy_volatility": 0.25755759367719633
         },
         "decision_factors": [
             {
                 "key": "realized_vol",
                 "label": "실현변동성(21d)",
-                "value": 0.2521366949327623,
+                "value": 0.25755759367719633,
                 "format": "percent",
                 "threshold": 0.22
             },
@@ -31,14 +31,14 @@
             {
                 "key": "effective_leverage",
                 "label": "실효 레버리지(x)",
-                "value": 0.872542570841058,
+                "value": 0.8541778825427752,
                 "format": "number",
                 "threshold": null
             },
             {
                 "key": "cash_weight",
                 "label": "현금 비중",
-                "value": 0.12745742915894198,
+                "value": 0.14582211745722484,
                 "format": "percent",
                 "threshold": null
             }

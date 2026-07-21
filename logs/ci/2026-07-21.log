@@ -1,0 +1,81 @@
+2026-07-21 10:00:58,295 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-07-21 10:00:58,297 [INFO] Loaded 2 account(s) from accounts.yaml
+2026-07-21 10:00:58,297 [INFO] [my_test] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=ACTIVE
+2026-07-21 10:00:58,297 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-21 10:00:58,297 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-21 10:00:58,298 [INFO] Restored previous regime: Bull
+2026-07-21 10:00:58,298 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-07-21 10:00:58,298 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-21 10:00:58,298 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-21 10:00:58,299 [INFO] Restored previous regime: Bull
+2026-07-21 10:00:58,299 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-07-21 10:00:59,516 [INFO] >>> Step 1: Data Collection
+2026-07-21 10:00:59,516 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-21 10:00:59,736 [INFO] [Data] VIX fetched: 18.65
+2026-07-21 10:00:59,736 [INFO] >>> Step 2: Indicator Calculation
+2026-07-21 10:00:59,739 [INFO] Market Data: Price=187830.00, VIX=18.65, MDD=-9.60%
+2026-07-21 10:00:59,739 [INFO] >>> Step 3: Strategy Analysis
+2026-07-21 10:00:59,739 [INFO] >>> VolManaged: vol=25.76% → L=0.85x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 85%, 현금 15%)
+2026-07-21 10:00:59,739 [INFO] Regime: Bull | Target Exposure: 0.85
+2026-07-21 10:00:59,739 [INFO] >>> Step 4: Portfolio Status
+2026-07-21 10:01:00,586 [INFO] Fetching Real-time prices from Broker...
+2026-07-21 10:01:04,933 [INFO] Current Portfolio: Cash=$707,676, Value=$4,093,782
+2026-07-21 10:01:04,933 [INFO] >>> Step 5: Rebalancing
+2026-07-21 10:01:04,933 [INFO] [입력] Regime=Bull | TargetExposure=0.85 | TotalValue=$4,093,782.00 | Cash=$707,676.00
+2026-07-21 10:01:04,933 [INFO] [포트폴리오 현황]
+2026-07-21 10:01:04,933 [INFO]   A그룹(성장): $        0.00 (  0.0%)
+2026-07-21 10:01:04,934 [INFO]   B그룹(안전): $3,386,106.00 ( 82.7%)
+2026-07-21 10:01:04,934 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-07-21 10:01:04,934 [INFO]   현금(예수금): $ 707,676.00 ( 17.3%)
+2026-07-21 10:01:04,934 [INFO] [비중 판정] ratio_A=0.000  ratio_B=1.000
+2026-07-21 10:01:04,934 [INFO]   A 상대이탈: 0.0% | B 상대이탈: 0.0% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-07-21 10:01:04,934 [INFO] [목표 금액]
+2026-07-21 10:01:04,934 [INFO]   A그룹: 현재 $      0.00 → 목표 $      0.00  (exposure 0.85 × ratio 0.00)
+2026-07-21 10:01:04,934 [INFO]   B그룹: 현재 $3,386,106.00 → 목표 $3,496,818.04  (exposure 0.85 × ratio 1.00)
+2026-07-21 10:01:04,934 [INFO]   C그룹: 현재 $      0.00 → 목표 $596,963.96  (잔여)
+2026-07-21 10:01:04,934 [INFO] [A그룹(성장) 종목별]
+2026-07-21 10:01:04,934 [INFO]   TIGER 미국나스닥100레버리지(합성): 보유 0주 $0.00 → 목표 $0.00 | diff=+0.00 → 주문 없음
+2026-07-21 10:01:04,934 [INFO] [B그룹(안전) 종목별]
+2026-07-21 10:01:04,934 [INFO]   TIGER 미국나스닥100: 보유 18주 $3,386,106.00 → 목표 $3,496,818.04 | diff=+110,712.04 → 주문 없음 (수량 미달)
+2026-07-21 10:01:04,934 [INFO] [C그룹(현금) 종목별]
+2026-07-21 10:01:04,934 [INFO]   KODEX CD금리액티브: 보유 0주 $0.00 → 목표 $596,963.96 | diff=+596,963.96 → 주문 없음 (수량 미달)
+2026-07-21 10:01:04,934 [INFO] [최종 주문] 주문 없음
+2026-07-21 10:01:04,934 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-07-21 10:01:04,934 [INFO] No Rebalance Needed.
+2026-07-21 10:01:05,202 [INFO] >>> Step 6: Archiving Data
+2026-07-21 10:01:05,206 [INFO] Cycle Completed: regime=Bull exposure=0.85 orders=0 executions=0
+2026-07-21 10:01:05,206 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-07-21 10:01:06,007 [WARNING] [my_isa] 배당 조회 실패, 0.0으로 처리: [KisDomestic] Error getting portfolio: 500 Server Error: Internal Server Error for url: https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100=
+2026-07-21 10:01:06,008 [INFO] >>> Step 1: Data Collection
+2026-07-21 10:01:06,008 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-21 10:01:06,177 [INFO] [Data] VIX fetched: 18.65
+2026-07-21 10:01:06,178 [INFO] >>> Step 2: Indicator Calculation
+2026-07-21 10:01:06,180 [INFO] Market Data: Price=187835.00, VIX=18.65, MDD=-9.60%
+2026-07-21 10:01:06,180 [INFO] >>> Step 3: Strategy Analysis
+2026-07-21 10:01:06,180 [INFO] >>> VolManaged: vol=25.76% → L=0.85x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 85%, 현금 15%)
+2026-07-21 10:01:06,180 [INFO] Regime: Bull | Target Exposure: 0.85
+2026-07-21 10:01:06,180 [INFO] >>> Step 4: Portfolio Status
+2026-07-21 10:01:07,071 [ERROR] ⚠️ Portfolio API Error — 사이클 중단
+날짜: today
+[KisDomestic] Error getting portfolio: 500 Server Error: Internal Server Error for url: https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100=
+2026-07-21 10:01:07,332 [ERROR] [my_isa] Critical Error:
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 95, in get_portfolio
+    res.raise_for_status()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 500 Server Error: Internal Server Error for url: https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100=
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/main.py", line 168, in _run_one_account
+    runner.engine.run_one_cycle(
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 138, in run_one_cycle
+    portfolio = self.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 251, in get_portfolio
+    portfolio = self.broker.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 115, in get_portfolio
+    raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
+RuntimeError: [KisDomestic] Error getting portfolio: 500 Server Error: Internal Server Error for url: https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100=
+
