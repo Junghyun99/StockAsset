@@ -122,7 +122,7 @@ class SsoDipPlanner:
                     if spyi_sell_qty > 0:
                         orders.append(Order(self.SPYI_TICKER, OrderAction.SELL, spyi_sell_qty, spyi_price))
                 orders.append(Order(self.SSO_TICKER, OrderAction.BUY, qty, sso_price))
-                reasons.append(f"{new_level.value} 분할매수 SSO {qty}주")
+                reasons.append(f"{new_level.value} 분할매수 {self.SSO_TICKER} {qty}주")
 
         elif delta_amount < 0:
             sell_amount = abs(delta_amount)
@@ -132,7 +132,7 @@ class SsoDipPlanner:
             )
             if qty > 0:
                 orders.append(Order(self.SSO_TICKER, OrderAction.SELL, qty, sso_price))
-                reasons.append(f"분할매도 SSO {qty}주")
+                reasons.append(f"분할매도 {self.SSO_TICKER} {qty}주")
                 proceeds = qty * sso_price
                 spyi_qty = math.floor(proceeds / spyi_price)
                 if spyi_qty > 0:
@@ -156,7 +156,7 @@ class SsoDipPlanner:
                     existing.quantity += sweep_qty
                 else:
                     orders.append(Order(self.SPYI_TICKER, OrderAction.BUY, sweep_qty, spyi_price))
-                reasons.append(f"SPYI 스윕 {sweep_qty}주")
+                reasons.append(f"{self.SPYI_TICKER} 스윕 {sweep_qty}주")
 
         reason = " / ".join(reasons) if reasons else f"대기({new_level.value})"
         return orders, reason, SsoDipState(level=new_level)
