@@ -22,6 +22,7 @@ from src.infra.broker import (
 )
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
+from src.infra.dividend import NoOpDividendSettlement
 
 
 def _resolve_engine_class(engine_name: str):
@@ -103,6 +104,8 @@ class TradingBot:
                 benchmarks=BENCHMARKS_BY_MARKET.get(acc.market_type, {}),
                 account_label=acc.id,
                 is_active=acc.is_active,
+                dividend_rate_provider=self.data_loader,
+                dividend_settlement=NoOpDividendSettlement(),
             )
             self.runners.append(AccountRunner(acc, engine, broker, repo))
 
@@ -154,21 +157,7 @@ class TradingBot:
         acc = runner.account
         self.logger.info(f"===== [{acc.id}] 계좌 실행 시작 =====")
         try:
-            daily_dividend = 0.0
-            try:
-                portfolio = runner.broker.get_portfolio()
-                divs = self.data_loader.fetch_daily_dividends(runner.engine.all_tickers)
-                daily_dividend = sum(
-                    portfolio.holdings.get(t, 0) * div
-                    for t, div in divs.items()
-                )
-            except Exception as e:
-                self.logger.warning(f"[{acc.id}] 배당 조회 실패, 0.0으로 처리: {e}")
-
-            runner.engine.run_one_cycle(
-                self.data_loader,
-                daily_dividend=daily_dividend,
-            )
+            runner.engine.run_one_cycle(self.data_loader)
         except Exception as e:
             error_msg = f"[{acc.id}] Critical Error:\n{traceback.format_exc()}"
             self.logger.error(error_msg)

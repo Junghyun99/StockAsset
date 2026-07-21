@@ -217,6 +217,9 @@ __marimo__/
 .claude/settings.local.json
 CLAUDE.local.md
 
+# Local Git worktrees
+.worktrees/
+
 # 인증서 / 개인키 파일 (민감 정보)
 *.pem
 *.key

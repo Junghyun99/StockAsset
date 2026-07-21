@@ -19,7 +19,8 @@ from src.core.engine import (
 from src.infra.repo import JsonRepository
 from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
-from src.backtest.components import BacktestDataLoader, BacktestBroker
+from src.backtest.components import BacktestDataLoader, BacktestBroker, BacktestDividendSettlement
+from src.infra.dividend import NoOpDividendSettlement
 
 # 국내(domestic) 엔진 백테스트 시 USD → KRW 환산에 사용하는 고정 환율
 # 백테스트 기간(2019~2025) 평균 환율 근사치. 실시간 환율 사용 시 백테스트 재현성 저하.
@@ -48,28 +49,6 @@ class CompareBacktestResult:
     engine_results: Dict[str, BacktestResult]  # {엔진명: BacktestResult}
     spy_cagr: Optional[float]
     chart_path: Optional[str]
-
-
-def _calculate_dividend_income(
-    today: pd.Timestamp,
-    dividends_df: pd.DataFrame,
-    broker: "BacktestBroker",
-) -> float:
-    """오늘 날짜의 배당금 × 보유 주수를 합산해 반환. 오류 시 0.0."""
-    try:
-        if dividends_df is None or dividends_df.empty:
-            return 0.0
-        if today not in dividends_df.index:
-            return 0.0
-        row = dividends_df.loc[today]
-        total = 0.0
-        for ticker, div_per_share in row.items():
-            if div_per_share > 0:
-                shares = broker.holdings.get(ticker, 0)
-                total += shares * float(div_per_share)
-        return total
-    except Exception:
-        return 0.0
 
 
 def _validate_tickers(full_df: pd.DataFrame, required: List[str], logger: TradeLogger) -> List[str]:
@@ -201,7 +180,7 @@ def run_compare_backtest(
         market_type = _ENGINE_MARKET_TYPES.get(name, "overseas")
         eff_cash = initial_cash * KRW_PER_USD if market_type == "domestic" else initial_cash
 
-        loader = BacktestDataLoader(full_df, full_vix)
+        loader = BacktestDataLoader(full_df, full_vix, full_dividends)
         broker = BacktestBroker(eff_cash, logger=logger)
         _cfg = Config()
         repo = JsonRepository(
@@ -220,6 +199,11 @@ def run_compare_backtest(
             notifier=None,
             is_live_trading=False,
             benchmarks=BENCHMARKS_BY_MARKET.get(market_type, {}),
+            dividend_rate_provider=loader,
+            dividend_settlement=(
+                BacktestDividendSettlement(broker)
+                if reinvest_dividends else NoOpDividendSettlement()
+            ),
         )
         engines[name] = {
             "engine": engine,
@@ -261,19 +245,13 @@ def run_compare_backtest(
             ctx["broker"].set_date(today)
             ctx["broker"].set_prices(current_prices)
 
-            div_income = 0.0
-            if reinvest_dividends:
-                div_income = _calculate_dividend_income(today, full_dividends, ctx["broker"])
-                if div_income > 0:
-                    ctx["broker"].receive_dividends(div_income)
-                    ctx["dividend_income"] += div_income
-
             try:
                 result = ctx["engine"].run_one_cycle(
                     ctx["loader"],
                     sim_date=sim_date,
-                    daily_dividend=div_income,
                 )
+                if reinvest_dividends:
+                    ctx["dividend_income"] += result.expected_dividend
                 ctx["executions"].extend(result.executions)
                 if result.signal.has_orders:
                     ctx["reason_counter"][result.signal.reason] = (

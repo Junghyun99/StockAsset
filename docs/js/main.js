@@ -22,7 +22,7 @@ import {
     renderHistoricalAllocationChart,
     renderTargetVsActualChart,
     renderDeviationTrendChart
-} from './charts.js?v=20260624-1';
+} from './charts.js?v=20260721-2';
 
 import {
     updateModeUI,
@@ -48,7 +48,7 @@ import {
     initTooltips
 } from './ui.js?v=20260714-1';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260624-5';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260721-1';
 
 import {
     renderCompareOverview,
@@ -76,7 +76,7 @@ import {
     renderCompareYearlyDividendChart,
     updateCompareChartRange,
     resizeCompareCharts,
-} from './compare-charts.js?v=3';
+} from './compare-charts.js?v=20260721-2';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 1. URL 파라미터에서 모드 확인 (?mode=backtest)

@@ -38,6 +38,27 @@ class IBrokerAdapter(ABC):
     @abstractmethod
     def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]: ...
 
+
+class IDividendRateProvider(ABC):
+    """Provides per-share dividend rates for a given trading date."""
+
+    @abstractmethod
+    def get_dividend_rates(self, tickers: List[str], date: str) -> Dict[str, float]: ...
+
+
+class IDividendSettlement(ABC):
+    """Credits an expected dividend amount to the active portfolio context."""
+
+    @abstractmethod
+    def receive_dividend(self, amount: float) -> float: ...
+
+
+class NoOpDividendSettlement(IDividendSettlement):
+    """Default settlement for live cycles where no local cash credit is available."""
+
+    def receive_dividend(self, amount: float) -> float:
+        return 0.0
+
 class ILogger(ABC):
     @abstractmethod
     def debug(self, msg: str) -> None: ...
@@ -79,7 +100,7 @@ class IRepository(ABC):
     @abstractmethod
     def save_daily_summary(self, market_data: MarketData, signal: TradeSignal,
                            portfolio: Portfolio, regime: MarketRegime,
-                           daily_dividend: float = 0.0,
+                           expected_dividend: float = 0.0,
                            date_override: Optional[str] = None,
                            benchmarks: Optional[dict] = None,
                            executions: Optional[List[TradeExecution]] = None,

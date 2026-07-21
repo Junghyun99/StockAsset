@@ -61,7 +61,7 @@ class JsonRepository(IRepository):
         self._save_json(os.path.join(self.root, "asset_groups.json"), config)
 
     def save_daily_summary(self, market: MarketData, signal: TradeSignal, pf: Portfolio,
-                           regime: MarketRegime, daily_dividend: float = 0.0,
+                           regime: MarketRegime, expected_dividend: float = 0.0,
                            date_override: Optional[str] = None,
                            benchmarks: Optional[dict] = None,
                            executions: Optional[List[TradeExecution]] = None,
@@ -90,7 +90,7 @@ class JsonRepository(IRepository):
             "group_a": val_a,
             "group_b": val_b,
             "group_c": val_c_total,
-            "daily_dividend": daily_dividend,
+            "expected_dividend": expected_dividend,
             # [시장 지표]
             "spy_price": market.spy_price,
             "spy_ma180": market.spy_ma180,          # [추가]

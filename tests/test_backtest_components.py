@@ -38,6 +38,19 @@ def test_loader_time_travel_slicing(mock_full_data):
     # 3. 검증
     # 1월 5일 포함, 그 전 3개 행이 나와야 함 (3, 4, 5일)
     assert len(df) == 3
+    assert df.iloc[-1].item() == 140.0
+
+
+def test_loader_returns_dividend_rates_for_current_simulation_date(mock_full_data):
+    full_df, full_vix = mock_full_data
+    date = pd.Timestamp("2024-01-05")
+    dividends = pd.DataFrame({"SPY": [0.0, 0.42]}, index=[pd.Timestamp("2024-01-04"), date])
+    loader = BacktestDataLoader(full_df, full_vix, dividends)
+    loader.set_date(date)
+    df = loader.fetch_ohlcv(["SPY"], days=3)
+    target_date = date
+
+    assert loader.get_dividend_rates(["SPY", "MISSING"], date.strftime("%Y-%m-%d")) == {"SPY": 0.42}
     assert df.index[-1] == target_date
     assert df.iloc[-1].item() == 140.0 # 5번째 값 (100, 110, 120, 130, 140)
 

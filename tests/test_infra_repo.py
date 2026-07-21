@@ -638,17 +638,17 @@ def test_load_json_propagates_system_exit(repo, monkeypatch):
 
 
 def test_save_daily_summary_records_dividend(repo, dummy_market_data, dummy_portfolio):
-    """daily_dividend가 summary.json 레코드에 저장되는지 확인"""
+    """expected_dividend가 summary.json 레코드에 저장되는지 확인"""
     import json
     signal = TradeSignal(1.0, [], "test")
 
     repo.save_daily_summary(dummy_market_data, signal, dummy_portfolio, MarketRegime.BULL,
-                            daily_dividend=55.25)
+                            expected_dividend=55.25)
 
     with open(repo.summary_file, 'r') as f:
         data = json.load(f)
 
-    assert data[0]['daily_dividend'] == 55.25
+    assert data[0]['expected_dividend'] == 55.25
 
 
 def test_save_daily_summary_persists_rebalance_diagnostics(repo, dummy_market_data, dummy_portfolio):
@@ -678,7 +678,7 @@ def test_save_daily_summary_rebalance_diagnostics_default_none(repo, dummy_marke
 
 
 def test_save_daily_summary_default_dividend_zero(repo, dummy_market_data, dummy_portfolio):
-    """daily_dividend 미전달 시 기본값 0.0으로 저장되는지 확인"""
+    """expected_dividend 미전달 시 기본값 0.0으로 저장되는지 확인"""
     import json
     signal = TradeSignal(1.0, [], "test")
 
@@ -687,7 +687,7 @@ def test_save_daily_summary_default_dividend_zero(repo, dummy_market_data, dummy
     with open(repo.summary_file, 'r') as f:
         data = json.load(f)
 
-    assert data[0]['daily_dividend'] == 0.0
+    assert data[0]['expected_dividend'] == 0.0
 
 
 def test_repo_simulation_week_trading(repo, dummy_portfolio, dummy_market_data):
