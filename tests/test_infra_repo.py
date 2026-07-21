@@ -479,7 +479,7 @@ def test_repo_recover_from_corruption(repo, dummy_market_data, dummy_portfolio):
         assert data['strategy']['trigger_reason'] == "Recover"
 
 @pytest.mark.skipif(
-    os.name == "nt" or os.geteuid() == 0,
+    os.name == "nt" or getattr(os, "geteuid", lambda: 0)() == 0,
     reason="Windows와 root 사용자는 읽기 전용 파일 쓰기 차단을 신뢰성 있게 검증할 수 없음",
 )
 def test_repo_read_only_file(repo, dummy_market_data, dummy_portfolio):
