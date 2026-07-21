@@ -66,7 +66,14 @@ class YFinanceLoader(IDataProvider, IDividendRateProvider):
         배당락일이 아니거나 오류 시 {} 반환.
         """
         try:
-            df = yf.download(tickers, period="5d", auto_adjust=False, actions=True, progress=False)
+            df = yf.download(
+                tickers,
+                period="5d",
+                auto_adjust=False,
+                actions=True,
+                progress=False,
+                threads=False,
+            )
             if df is None or df.empty:
                 return {}
             if not isinstance(df.columns, pd.MultiIndex) and len(tickers) == 1:

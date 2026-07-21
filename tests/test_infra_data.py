@@ -197,6 +197,14 @@ def test_get_dividend_rates_returns_dividend_on_requested_date(mock_yf_download,
     result = loader.get_dividend_rates(['IEF', 'GLD'], today.strftime("%Y-%m-%d"))
 
     assert result == {'IEF': 0.35}   # GLD는 0이므로 제외
+    mock_yf_download.assert_called_once_with(
+        ['IEF', 'GLD'],
+        period="5d",
+        auto_adjust=False,
+        actions=True,
+        progress=False,
+        threads=False,
+    )
 
 
 def test_get_dividend_rates_returns_empty_when_no_dividend(mock_yf_download, mock_logger):
