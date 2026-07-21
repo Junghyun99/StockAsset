@@ -2,14 +2,16 @@
 import pandas as pd
 from dataclasses import replace
 from typing import List, Dict, Optional
-from src.core.interfaces import IDataProvider, IBrokerAdapter, ILogger
+from src.core.interfaces import IDataProvider, IBrokerAdapter, ILogger, IDividendRateProvider, IDividendSettlement
 from src.core.models import Portfolio, Order, TradeExecution
 from src.infra.broker import MockBroker # 기능 재사용
 
-class BacktestDataLoader(IDataProvider):
-    def __init__(self, full_df: pd.DataFrame, full_vix: pd.DataFrame):
+class BacktestDataLoader(IDataProvider, IDividendRateProvider):
+    def __init__(self, full_df: pd.DataFrame, full_vix: pd.DataFrame,
+                 dividends: Optional[pd.DataFrame] = None):
         self.full_df = full_df
         self.full_vix = full_vix
+        self.dividends = dividends if dividends is not None else pd.DataFrame()
         self.current_date = None # 시뮬레이션 상의 '오늘'
 
     def set_date(self, date):
@@ -66,6 +68,17 @@ class BacktestDataLoader(IDataProvider):
                 "(MultiIndex 컬럼이면 xs('^VIX', axis=1, level=1) 등으로 평탄화 필요)."
             )
         return float(close)
+
+    def get_dividend_rates(self, tickers: List[str], date: str) -> Dict[str, float]:
+        target_date = pd.Timestamp(date)
+        if self.dividends.empty or target_date not in self.dividends.index:
+            return {}
+        row = self.dividends.loc[target_date]
+        return {
+            ticker: float(row[ticker])
+            for ticker in tickers
+            if ticker in row.index and float(row[ticker]) > 0
+        }
 
 class BacktestBroker(MockBroker):
     """
@@ -128,3 +141,14 @@ class BacktestBroker(MockBroker):
     def _refresh_balance_from_api(self):
         # 백테스트에서는 API 갱신 및 딜레이 불필요
         pass
+
+
+class BacktestDividendSettlement(IDividendSettlement):
+    """Credits an engine-calculated dividend to the simulated broker."""
+
+    def __init__(self, broker: BacktestBroker):
+        self.broker = broker
+
+    def receive_dividend(self, amount: float) -> float:
+        self.broker.receive_dividends(amount)
+        return amount if amount > 0 else 0.0

@@ -76,7 +76,7 @@ def mock_multi_account_deps(tmp_path):
             )
 
         loader = MockLoader.return_value
-        loader.fetch_daily_dividends.return_value = {}
+        loader.get_dividend_rates.return_value = {}
         notifier = MockNotifier.return_value
 
         yield {
@@ -103,6 +103,14 @@ def test_multi_account_creates_separate_runners(mock_multi_account_deps):
     assert bot.runners[1].repo is mock_multi_account_deps['repo_acc2']
     assert bot.runners[0].engine is not bot.runners[1].engine
 
+
+def test_multi_account_injects_live_dividend_dependencies(mock_multi_account_deps):
+    bot = TradingBot()
+
+    for runner in bot.runners:
+        assert runner.engine.dividend_rate_provider is mock_multi_account_deps['loader']
+        assert runner.engine.dividend_settlement is not None
+
     # 계좌별 Slack 알림 구분을 위해 엔진에 계좌 id가 account_label로 주입된다
     assert bot.runners[0].engine.account_label == "acc1"
     assert bot.runners[1].engine.account_label == "acc2"
@@ -118,6 +126,19 @@ def test_multi_account_run_executes_all_accounts(mock_multi_account_deps):
 
     for runner in bot.runners:
         runner.engine.run_one_cycle.assert_called_once()
+
+
+def test_multi_account_run_delegates_dividend_handling_to_engine(mock_multi_account_deps):
+    """진입점은 배당/잔고를 선조회하지 않고 엔진에 실행만 위임한다."""
+    bot = TradingBot()
+    for runner in bot.runners:
+        runner.engine.run_one_cycle = MagicMock()
+
+    bot.run()
+
+    for runner in bot.runners:
+        runner.broker.get_portfolio.assert_not_called()
+        runner.engine.run_one_cycle.assert_called_once_with(bot.data_loader)
 
 
 def test_multi_account_one_failure_does_not_block_other_account(mock_multi_account_deps):

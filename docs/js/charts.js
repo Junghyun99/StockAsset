@@ -16,7 +16,7 @@ import {
     computeMonthlyTradeFrequency,
     computeTickerContribution,
     computeAnnualReturns
-} from './utils.js?v=20260624-5';
+} from './utils.js?v=20260721-1';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
 let stratChart = null;
@@ -240,7 +240,7 @@ export function renderCumulativeDividendChart(summaryData, marketType = 'oversea
     const cumulativeData = [];
 
     summaryData.forEach(d => {
-        const div = d.daily_dividend || 0;
+        const div = d.expected_dividend || 0;
         if (div > 0) {
             cumulative += div;
             labels.push(d.date);
@@ -309,7 +309,7 @@ export function renderYearlyDividendChart(summaryData, marketType = 'overseas') 
     // 전체 기간 연도별 집계
     const yearlyMap = {};
     summaryData.forEach(d => {
-        const div = d.daily_dividend || 0;
+        const div = d.expected_dividend || 0;
         if (div > 0) {
             const year = d.date.slice(0, 4); // "YYYY"
             yearlyMap[year] = (yearlyMap[year] || 0) + div;

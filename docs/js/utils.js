@@ -977,7 +977,7 @@ export function computeDividendYield(summaryData) {
         return { totalDividend: 0, annualizedYield: 0, ytdDividend: 0 };
     }
 
-    const totalDividend = summaryData.reduce((s, d) => s + (d.daily_dividend || 0), 0);
+    const totalDividend = summaryData.reduce((s, d) => s + (d.expected_dividend || 0), 0);
 
     const avgValue = summaryData.reduce((s, d) => s + (d.total_value || 0), 0) / summaryData.length;
 
@@ -996,7 +996,7 @@ export function computeDividendYield(summaryData) {
     const dataYear = last.date.slice(0, 4);
     const ytdDividend = summaryData
         .filter(d => d.date && d.date.startsWith(dataYear))
-        .reduce((s, d) => s + (d.daily_dividend || 0), 0);
+        .reduce((s, d) => s + (d.expected_dividend || 0), 0);
 
     return { totalDividend, annualizedYield, ytdDividend };
 }

@@ -175,7 +175,7 @@ def test_fetch_ohlcv_datetime_index(mock_yf_download, mock_logger):
     assert len(df) == 3
 
 
-def test_fetch_daily_dividends_returns_dividend_on_ex_date(mock_yf_download, mock_logger):
+def test_get_dividend_rates_returns_dividend_on_requested_date(mock_yf_download, mock_logger):
     """오늘 배당락일인 종목의 주당 배당금을 반환하는지 확인"""
     from datetime import datetime, timezone, timedelta
     import pandas as pd
@@ -194,12 +194,12 @@ def test_fetch_daily_dividends_returns_dividend_on_ex_date(mock_yf_download, moc
     mock_yf_download.return_value = mock_df
 
     loader = YFinanceLoader(mock_logger)
-    result = loader.fetch_daily_dividends(['IEF', 'GLD'])
+    result = loader.get_dividend_rates(['IEF', 'GLD'], today.strftime("%Y-%m-%d"))
 
     assert result == {'IEF': 0.35}   # GLD는 0이므로 제외
 
 
-def test_fetch_daily_dividends_returns_empty_when_no_dividend(mock_yf_download, mock_logger):
+def test_get_dividend_rates_returns_empty_when_no_dividend(mock_yf_download, mock_logger):
     """오늘 배당이 없으면 빈 dict 반환"""
     from datetime import date, timedelta
     import pandas as pd
@@ -211,17 +211,17 @@ def test_fetch_daily_dividends_returns_empty_when_no_dividend(mock_yf_download, 
     mock_yf_download.return_value = mock_df
 
     loader = YFinanceLoader(mock_logger)
-    result = loader.fetch_daily_dividends(['IEF'])
+    result = loader.get_dividend_rates(['IEF'], pd.Timestamp.today().strftime("%Y-%m-%d"))
 
     assert result == {}
 
 
-def test_fetch_daily_dividends_returns_empty_on_error(mock_yf_download, mock_logger):
+def test_get_dividend_rates_returns_empty_on_error(mock_yf_download, mock_logger):
     """yfinance 오류 시 빈 dict 반환 (봇 중단 없음)"""
     mock_yf_download.side_effect = Exception("Network Error")
 
     loader = YFinanceLoader(mock_logger)
-    result = loader.fetch_daily_dividends(['IEF'])
+    result = loader.get_dividend_rates(['IEF'], "2026-07-21")
 
     assert result == {}
     mock_logger.error.assert_called_once()

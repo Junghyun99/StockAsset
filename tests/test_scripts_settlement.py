@@ -21,7 +21,7 @@ def _write_account(root, account, summaries, history=None):
 
 def _rec(date, value, cash, net_deposit=0.0, dividend=0.0):
     return {"date": date, "total_value": value, "cash_balance": cash,
-            "net_deposit": net_deposit, "daily_dividend": dividend}
+            "net_deposit": net_deposit, "expected_dividend": dividend}
 
 
 class TestMonthlySettlementCli:

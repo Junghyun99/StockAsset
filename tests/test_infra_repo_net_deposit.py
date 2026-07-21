@@ -79,10 +79,10 @@ def test_dividend_inflow_counted_as_deposit(repo):
                             Portfolio(1000.0, {}, {}), MarketRegime.BULL)
     repo.save_daily_summary(_market("2026-06-02"), _signal(),
                             Portfolio(1010.0, {}, {}), MarketRegime.BULL,
-                            daily_dividend=10.0)
+                            expected_dividend=10.0)
     data = _load_summary(repo)
     assert data[1]["net_deposit"] == 10.0
-    assert data[1]["daily_dividend"] == 10.0  # 배당 추정치는 참고용으로만 기록
+    assert data[1]["expected_dividend"] == 10.0  # 예상 배당은 참고용으로만 기록
 
 
 def test_same_day_rerun_accumulates_net_deposit(repo):

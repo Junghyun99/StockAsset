@@ -44,6 +44,8 @@ def _make_engine(
     trading_interval_days=5,
     is_live_trading=False,
     is_active=True,
+    dividend_rate_provider=None,
+    dividend_settlement=None,
 ):
     """공통 TradingEngine Mock 조립."""
     broker = MagicMock()
@@ -77,6 +79,8 @@ def _make_engine(
             notifier=notifier,
             is_live_trading=is_live_trading,
             is_active=is_active,
+            dividend_rate_provider=dividend_rate_provider,
+            dividend_settlement=dividend_settlement,
         )
 
     return engine, {
@@ -708,7 +712,7 @@ def test_step_methods_called_in_order():
     ]
 
 
-def test_day_result_daily_dividend_default_zero():
+def test_day_result_expected_dividend_default_zero():
     """DayResult 생성 시 daily_dividend 기본값이 0.0인지 확인"""
     result = DayResult(
         market_data=MarketData("2024-01-01", 100.0, 90.0, 0.12, 0.05, -0.05, 18.0),
@@ -720,10 +724,10 @@ def test_day_result_daily_dividend_default_zero():
         is_rebalancing=False,
         nan_fields=[],
     )
-    assert result.daily_dividend == 0.0
+    assert result.expected_dividend == 0.0
 
 
-def test_day_result_daily_dividend_set():
+def test_day_result_expected_dividend_set():
     """DayResult에 daily_dividend 값을 설정할 수 있는지 확인"""
     result = DayResult(
         market_data=MarketData("2024-01-01", 100.0, 90.0, 0.12, 0.05, -0.05, 18.0),
@@ -734,12 +738,12 @@ def test_day_result_daily_dividend_set():
         final_pf=Portfolio(1000.0, {}, {}),
         is_rebalancing=False,
         nan_fields=[],
-        daily_dividend=42.5,
+        expected_dividend=42.5,
     )
-    assert result.daily_dividend == 42.5
+    assert result.expected_dividend == 42.5
 
 
-def test_run_one_cycle_passes_daily_dividend_to_repo():
+def test_run_one_cycle_calculates_settles_and_persists_expected_dividend():
     """run_one_cycle(daily_dividend=X) 전달 시 repo.save_daily_summary에 X가 전달되는지 확인"""
     engine, mocks = _make_engine(repo_last_reb=None)
     md = _make_market_data()
@@ -750,14 +754,13 @@ def test_run_one_cycle_passes_daily_dividend_to_repo():
     mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
     mocks["broker"].execute_orders.return_value = []
 
-    engine.run_one_cycle(mocks["data_provider"], daily_dividend=99.9)
+    result = engine.run_one_cycle(mocks["data_provider"])
 
-    call_kwargs = mocks["repo"].save_daily_summary.call_args
-    assert call_kwargs.kwargs.get("daily_dividend") == 99.9 \
-        or (len(call_kwargs.args) >= 5 and call_kwargs.args[4] == 99.9)
+    assert mocks["repo"].save_daily_summary.call_args.kwargs["expected_dividend"] == 0.0
+    assert result.expected_dividend == 0.0
 
 
-def test_run_one_cycle_day_result_contains_daily_dividend():
+def test_run_one_cycle_uses_zero_expected_dividend_without_ports():
     """DayResult.daily_dividend에 전달된 값이 반영되는지 확인"""
     engine, mocks = _make_engine(repo_last_reb=None)
     md = _make_market_data()
@@ -768,14 +771,102 @@ def test_run_one_cycle_day_result_contains_daily_dividend():
     mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
     mocks["broker"].execute_orders.return_value = []
 
-    result = engine.run_one_cycle(mocks["data_provider"], daily_dividend=77.3)
+    result = engine.run_one_cycle(mocks["data_provider"])
 
-    assert result.daily_dividend == 77.3
+    assert result.expected_dividend == 0.0
 
 
 # ─────────────────────────────────────────────────────────────────
 # 결정요소 (decision_factors)
 # ─────────────────────────────────────────────────────────────────
+
+def test_run_one_cycle_calculates_settles_and_persists_expected_dividend_from_holdings():
+    """Holdings times per-share rates are settled before the trading step."""
+    rate_provider = MagicMock()
+    settlement = MagicMock()
+    rate_provider.get_dividend_rates.return_value = {"SSO": 1.25}
+    engine, mocks = _make_engine(
+        repo_last_reb=None,
+        dividend_rate_provider=rate_provider,
+        dividend_settlement=settlement,
+    )
+    md = _make_market_data()
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    call_order = []
+    original_execute_cycle = engine.execute_cycle
+    settlement.receive_dividend.side_effect = lambda amount: call_order.append("settle")
+
+    def execute_cycle(*args, **kwargs):
+        call_order.append("execute")
+        return original_execute_cycle(*args, **kwargs)
+
+    engine.execute_cycle = execute_cycle
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    rate_provider.get_dividend_rates.assert_called_once()
+    assert rate_provider.get_dividend_rates.call_args.args[0] == ["SSO"]
+    settlement.receive_dividend.assert_called_once_with(12.5)
+    assert call_order == ["settle", "execute"]
+    assert mocks["repo"].save_daily_summary.call_args.kwargs["expected_dividend"] == 12.5
+    assert result.expected_dividend == 12.5
+
+
+def test_run_one_cycle_continues_with_zero_expected_dividend_when_rate_provider_fails():
+    """Rate-provider failures warn and do not abort the cycle."""
+    rate_provider = MagicMock()
+    settlement = MagicMock()
+    rate_provider.get_dividend_rates.side_effect = RuntimeError("provider unavailable")
+    engine, mocks = _make_engine(
+        repo_last_reb=None,
+        dividend_rate_provider=rate_provider,
+        dividend_settlement=settlement,
+    )
+    md = _make_market_data()
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    result = engine.run_one_cycle(mocks["data_provider"])
+
+    settlement.receive_dividend.assert_not_called()
+    mocks["logger"].warning.assert_called_once()
+    assert result.expected_dividend == 0.0
+
+
+def test_run_one_cycle_credits_applied_dividend_to_portfolio_before_execute_cycle():
+    """The Step 5 portfolio includes cash actually credited by settlement."""
+    rate_provider = MagicMock()
+    settlement = MagicMock()
+    rate_provider.get_dividend_rates.return_value = {"SSO": 1.25}
+    settlement.receive_dividend.return_value = 10.0
+    engine, mocks = _make_engine(
+        repo_last_reb=None,
+        dividend_rate_provider=rate_provider,
+        dividend_settlement=settlement,
+    )
+    md = _make_market_data()
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    seen_portfolios = []
+    original_execute_cycle = engine.execute_cycle
+
+    def execute_cycle(*args, **kwargs):
+        seen_portfolios.append(args[1])
+        return original_execute_cycle(*args, **kwargs)
+
+    engine.execute_cycle = execute_cycle
+    engine.run_one_cycle(mocks["data_provider"])
+
+    assert seen_portfolios[0].total_cash == 10010.0
+
 
 def test_default_decision_factors_are_regime_centric():
     """기본 엔진의 결정요소는 국면 중심 (대표 요소 = regime)."""

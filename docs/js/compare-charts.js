@@ -1,7 +1,7 @@
 // docs/js/compare-charts.js
 // 멀티 엔진 비교 전용 차트
 
-import { filterByDateRange, ENGINE_COLORS, ENGINE_MARKET_TYPES } from './utils.js?v=20260624-5';
+import { filterByDateRange, ENGINE_COLORS, ENGINE_MARKET_TYPES } from './utils.js?v=20260721-1';
 
 let comparePerformanceChart = null;
 let compareStrategyChart = null;
@@ -222,7 +222,7 @@ export function renderCompareCumulativeDividendChart(enginesData) {
         let cumulative = 0;
         const dateMap = new Map();
         summary.forEach(d => {
-            const div = d.daily_dividend || 0;
+            const div = d.expected_dividend || 0;
             if (div > 0) {
                 cumulative += div;
             }
@@ -295,7 +295,7 @@ export function renderCompareYearlyDividendChart(enginesData) {
         const summary = enginesData.get(name).summary;
         if (!summary) continue;
         summary.forEach(d => {
-            if ((d.daily_dividend || 0) > 0) yearSet.add(d.date.slice(0, 4));
+            if ((d.expected_dividend || 0) > 0) yearSet.add(d.date.slice(0, 4));
         });
     }
     const years = [...yearSet].sort();
@@ -307,7 +307,7 @@ export function renderCompareYearlyDividendChart(enginesData) {
 
         const yearlyMap = {};
         summary.forEach(d => {
-            const div = d.daily_dividend || 0;
+            const div = d.expected_dividend || 0;
             if (div > 0) {
                 const year = d.date.slice(0, 4);
                 yearlyMap[year] = (yearlyMap[year] || 0) + div;

@@ -5,7 +5,10 @@ from typing import List, Optional, Tuple
 
 import pandas as pd
 
-from src.core.interfaces import IDataProvider, IBrokerAdapter, IRepository, ILogger, INotifier
+from src.core.interfaces import (
+    IDataProvider, IBrokerAdapter, IRepository, ILogger, INotifier,
+    IDividendRateProvider, IDividendSettlement, NoOpDividendSettlement,
+)
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, DayResult,
     ExecutionStatus, DecisionFactor, Order, OrderAction,
@@ -45,6 +48,8 @@ class TradingEngine:
         benchmarks: Optional[dict] = None,
         account_label: Optional[str] = None,
         is_active: bool = True,
+        dividend_rate_provider: Optional[IDividendRateProvider] = None,
+        dividend_settlement: Optional[IDividendSettlement] = None,
     ):
         # 클래스 속성 우선, 없으면 파라미터 사용
         groups = getattr(type(self), 'ASSET_GROUPS', asset_groups)
@@ -77,6 +82,8 @@ class TradingEngine:
         self.is_active = is_active
         # 멀티 계좌 Slack 알림에서 계좌를 구분하기 위한 라벨 (예: accounts.yaml의 id)
         self.account_label = account_label
+        self.dividend_rate_provider = dividend_rate_provider
+        self.dividend_settlement = dividend_settlement or NoOpDividendSettlement()
 
         # 벤치마크 {논리명: 티커}. 포트폴리오와 동일 브로커·동일 시점으로 현재가를 조회한다.
         # 백테스트는 BacktestBroker가 과거 종가를 서빙하므로 동일 경로로 동작한다.
@@ -93,7 +100,6 @@ class TradingEngine:
         self,
         data_provider: IDataProvider,
         sim_date: Optional[str] = None,
-        daily_dividend: float = 0.0,
     ) -> DayResult:
         """하루치 트레이딩 사이클 전체를 실행한다 (Template Method).
 
@@ -149,6 +155,8 @@ class TradingEngine:
         # Step 5: 조건 분기 & 실행
         # 비활성 계좌는 매매를 하지 않는다. execute_cycle이 엔진별로 오버라이드되어 있어
         # 게이트를 각 구현에 넣지 않고 상속 공통 지점인 이곳에서 한 번만 분기한다.
+        expected_dividend = self._settle_expected_dividend(portfolio, record_date)
+
         if self.is_active:
             signal, executions, final_pf, is_rebalancing = self.execute_cycle(
                 market_data, portfolio, regime, exposure, nan_fields, sim_date, record_date
@@ -161,7 +169,9 @@ class TradingEngine:
         # Step 6: 저장 (NaN 데이터 품질 이상 시 전체 스킵 — step 4 API 오류와 동일 처리)
         self.logger.info(">>> Step 6: Archiving Data")
         if not nan_fields:
-            self.persist(market_data, signal, executions, final_pf, regime, exposure, is_rebalancing, sim_date, daily_dividend, record_date, self._benchmark_prices)
+            self.persist(market_data, signal, executions, final_pf, regime, exposure,
+                         is_rebalancing, sim_date, expected_dividend, record_date,
+                         self._benchmark_prices)
         self.logger.info(
             f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
             f"orders={len(signal.orders)} executions={len(executions)}"
@@ -176,7 +186,7 @@ class TradingEngine:
             final_pf=final_pf,
             is_rebalancing=is_rebalancing,
             nan_fields=nan_fields,
-            daily_dividend=daily_dividend,
+            expected_dividend=expected_dividend,
         )
 
     # ── Overridable step methods ─────────────────────────────────────────────
@@ -280,6 +290,44 @@ class TradingEngine:
         except Exception as e:
             self.logger.warning(f"벤치마크 현재가 조회 실패, 빈 값으로 처리: {e}")
             return {}
+
+    def _settle_expected_dividend(self, portfolio: Portfolio, record_date: str) -> float:
+        """Calculate and settle the current holdings' expected dividend."""
+        if self.dividend_rate_provider is None:
+            return 0.0
+
+        tickers = [ticker for ticker, quantity in portfolio.holdings.items() if quantity > 0]
+        if not tickers:
+            return 0.0
+
+        try:
+            rates = self.dividend_rate_provider.get_dividend_rates(tickers, record_date)
+        except Exception as error:
+            self.logger.warning(f"Dividend-rate lookup failed; using zero: {error}")
+            return 0.0
+
+        try:
+            expected_dividend = sum(
+                quantity * float(rates.get(ticker, 0.0))
+                for ticker, quantity in portfolio.holdings.items()
+                if quantity > 0
+            )
+        except (AttributeError, TypeError, ValueError) as error:
+            self.logger.warning(f"Invalid dividend-rate data; using zero: {error}")
+            return 0.0
+
+        if expected_dividend > 0 and self.dividend_settlement is not None:
+            try:
+                applied_amount = self.dividend_settlement.receive_dividend(expected_dividend)
+            except Exception as error:
+                self.logger.warning(f"Dividend settlement failed: {error}")
+            else:
+                if isinstance(applied_amount, (int, float)) and not isinstance(applied_amount, bool):
+                    portfolio.total_cash += applied_amount
+                else:
+                    self.logger.warning("Dividend settlement returned a non-numeric applied amount")
+
+        return expected_dividend
 
     def execute_cycle(
         self,
@@ -489,7 +537,7 @@ class TradingEngine:
         exposure: float,
         is_rebalancing: bool,
         sim_date: Optional[str],
-        daily_dividend: float = 0.0,
+        expected_dividend: float = 0.0,
         record_date: Optional[str] = None,
         benchmark_prices: Optional[dict] = None,
     ) -> None:
@@ -498,7 +546,7 @@ class TradingEngine:
         rebalancing_date = effective_record_date if is_rebalancing else None
         factors = self.decision_factors(market_data, regime, exposure, signal, final_pf)
         self.repo.save_daily_summary(market_data, signal, final_pf, regime,
-                                     daily_dividend=daily_dividend, date_override=record_date,
+                                     expected_dividend=expected_dividend, date_override=record_date,
                                      benchmarks=benchmark_prices, executions=executions,
                                      decision_factors=factors)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
