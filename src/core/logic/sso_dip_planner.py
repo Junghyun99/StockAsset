@@ -71,6 +71,10 @@ class SsoDipPlanner:
 
     SSO_TICKER = "SSO"
     SPYI_TICKER = "SPYI"
+    _buy_stages = BUY_STAGES
+    _sell_condition = SELL_CONDITION
+    _sell_target = SELL_TARGET
+    _sell_speed = SELL_SPEED
 
     def plan(
         self,
@@ -99,7 +103,7 @@ class SsoDipPlanner:
         target_ratio, speed = self._get_target_and_speed(new_level)
 
         # 매도 완료 체크 (40% 이하 도달 시 IDLE 복귀)
-        if new_level == SignalLevel.SELL and current_sso_ratio <= SELL_TARGET + 0.005:
+        if new_level == SignalLevel.SELL and current_sso_ratio <= self._sell_target + 0.005:
             new_level = SignalLevel.IDLE
             target_ratio, speed = self._get_target_and_speed(new_level)
 
@@ -122,7 +126,7 @@ class SsoDipPlanner:
                     if spyi_sell_qty > 0:
                         orders.append(Order(self.SPYI_TICKER, OrderAction.SELL, spyi_sell_qty, spyi_price))
                 orders.append(Order(self.SSO_TICKER, OrderAction.BUY, qty, sso_price))
-                reasons.append(f"{new_level.value} 분할매수 SSO {qty}주")
+                reasons.append(f"{new_level.value} 분할매수 {self.SSO_TICKER} {qty}주")
 
         elif delta_amount < 0:
             sell_amount = abs(delta_amount)
@@ -132,7 +136,7 @@ class SsoDipPlanner:
             )
             if qty > 0:
                 orders.append(Order(self.SSO_TICKER, OrderAction.SELL, qty, sso_price))
-                reasons.append(f"분할매도 SSO {qty}주")
+                reasons.append(f"분할매도 {self.SSO_TICKER} {qty}주")
                 proceeds = qty * sso_price
                 spyi_qty = math.floor(proceeds / spyi_price)
                 if spyi_qty > 0:
@@ -156,17 +160,17 @@ class SsoDipPlanner:
                     existing.quantity += sweep_qty
                 else:
                     orders.append(Order(self.SPYI_TICKER, OrderAction.BUY, sweep_qty, spyi_price))
-                reasons.append(f"SPYI 스윕 {sweep_qty}주")
+                reasons.append(f"{self.SPYI_TICKER} 스윕 {sweep_qty}주")
 
         reason = " / ".join(reasons) if reasons else f"대기({new_level.value})"
         return orders, reason, SsoDipState(level=new_level)
 
     def _detect_signal(self, rsi: float, dev: float, current: SignalLevel) -> SignalLevel:
-        if current != SignalLevel.SELL and rsi >= SELL_CONDITION["rsi"] and dev >= SELL_CONDITION["deviation"]:
+        if current != SignalLevel.SELL and rsi >= self._sell_condition["rsi"] and dev >= self._sell_condition["deviation"]:
             return SignalLevel.SELL
 
         current_order = _LEVEL_ORDER.get(current, 0)
-        for level, rsi_th, dev_th, _, _ in BUY_STAGES:
+        for level, rsi_th, dev_th, _, _ in self._buy_stages:
             if _LEVEL_ORDER[level] > current_order and rsi <= rsi_th and dev <= dev_th:
                 return level
 
@@ -174,8 +178,8 @@ class SsoDipPlanner:
 
     def _get_target_and_speed(self, level: SignalLevel) -> Tuple[float, float]:
         if level == SignalLevel.SELL:
-            return SELL_TARGET, SELL_SPEED
-        for lv, _, _, target, speed in BUY_STAGES:
+            return self._sell_target, self._sell_speed
+        for lv, _, _, target, speed in self._buy_stages:
             if lv == level:
                 return target, speed
         return IDLE_TARGET, IDLE_SPEED
