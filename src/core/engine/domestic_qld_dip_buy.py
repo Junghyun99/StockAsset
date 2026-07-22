@@ -102,6 +102,7 @@ class DomesticQldDipBuyEngine(TradingEngine):
                 )
                 final_pf = portfolio
 
+        new_state = self._planner.record_filled_tranche(new_state, executions)
         self.dip_state = new_state
         self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
 
