@@ -3,7 +3,7 @@ accounts:
     market_type: domestic
     is_live: true
     is_active: true         
-    engine: DomesticVolManagedEngine
+    engine: DomesticQldDipBuyEngine
     kis_env_prefix: MY_TEST
   - id: my_isa
     market_type: domestic
