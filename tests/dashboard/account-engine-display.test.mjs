@@ -107,6 +107,6 @@ test('uses one versioned account metadata module across dashboard consumers', as
 
     for (const path of consumers) {
         const source = await readFile(new URL(path, import.meta.url), 'utf8');
-        assert.match(source, /utils\.js\?v=20260722-1/);
+        assert.match(source, /utils\.js\?v=20260722-2/);
     }
 });

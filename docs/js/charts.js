@@ -16,7 +16,7 @@ import {
     computeMonthlyTradeFrequency,
     computeTickerContribution,
     computeAnnualReturns
-} from './utils.js?v=20260722-1';
+} from './utils.js?v=20260722-2';
 
 // 차트 인스턴스 (모듈 스코프, 모드 전환 시 기존 차트 삭제용)
 let stratChart = null;
@@ -122,6 +122,9 @@ export function renderGroupBarChart(statusData, groupConfig, marketType = 'overs
     const holdings = statusData.portfolio.holdings;
     const cash = statusData.portfolio.cash_balance;
     const totalValue = statusData.portfolio.total_value;
+    const configuredGroups = groupConfig
+        ? Object.entries(groupConfig).filter(([, info]) => Array.isArray(info?.tickers))
+        : [];
 
     // 그룹별 합산 (groupConfig 기반으로 동적 집계)
     const groupValues = {};
@@ -131,7 +134,9 @@ export function renderGroupBarChart(statusData, groupConfig, marketType = 'overs
     });
 
     // 마지막 그룹에 현금 포함
-    const cashGroup = groupConfig ? Object.keys(groupConfig).slice(-1)[0] : 'C';
+    const cashGroup = configuredGroups.length > 0
+        ? configuredGroups[configuredGroups.length - 1][0]
+        : 'C';
     groupValues[cashGroup] = (groupValues[cashGroup] || 0) + cash;
 
     if (groupBarChartInstance) groupBarChartInstance.destroy();
@@ -141,8 +146,8 @@ export function renderGroupBarChart(statusData, groupConfig, marketType = 'overs
 
     // groupConfig 기반으로 동적 datasets 생성
     let datasets;
-    if (groupConfig && Object.keys(groupConfig).length > 0) {
-        datasets = Object.entries(groupConfig).map(([group, info]) => {
+    if (configuredGroups.length > 0) {
+        datasets = configuredGroups.map(([group, info]) => {
             const value = groupValues[group] || 0;
             return {
                 label: `${group}: ${info.label} (${formatAmount(value, marketType)})`,

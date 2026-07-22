@@ -26,7 +26,7 @@ import {
     computeDividendYield,
     computeWinLossStats,
     RISK_FREE_RATE_ANNUAL
-} from './utils.js?v=20260722-1';
+} from './utils.js?v=20260722-2';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
 
