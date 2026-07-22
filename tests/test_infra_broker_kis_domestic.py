@@ -1,5 +1,6 @@
 # tests/test_infra_broker_kis_domestic.py
 import pytest
+import requests
 from unittest.mock import patch, MagicMock
 from src.infra.broker import KisDomesticPaperBroker, KisDomesticLiveBroker, KisDomesticBrokerBase
 from src.core.models import Order, Portfolio, OrderAction, ExecutionStatus
@@ -173,6 +174,69 @@ def test_domestic_get_portfolio_api_failure(domestic_paper_broker, mock_requests
 
     with pytest.raises(RuntimeError, match="Get Portfolio Failed"):
         domestic_paper_broker.get_portfolio()
+
+    assert mock_requests.get.call_count == 1
+
+
+def test_domestic_get_portfolio_retries_server_error_then_succeeds(
+    domestic_paper_broker, mock_requests
+):
+    """HTTP 500 일시 오류 뒤 성공한 잔고 조회는 재시도 결과를 반환한다."""
+    server_error_response = MagicMock()
+    server_error_response.status_code = 500
+    server_error_response.raise_for_status.side_effect = requests.HTTPError(
+        response=server_error_response
+    )
+    portfolio_response = MagicMock()
+    portfolio_response.json.return_value = {
+        'rt_cd': '0',
+        'output1': [{'pdno': '005930', 'hldg_qty': '10', 'prpr': '72000'}],
+        'output2': [{'prvs_rcdl_excc_amt': '5000000'}],
+    }
+    mock_requests.get.side_effect = [server_error_response, portfolio_response]
+
+    with patch('src.infra.broker.kis_domestic.time.sleep'):
+        portfolio = domestic_paper_broker.get_portfolio()
+
+    assert portfolio.total_cash == 5000000.0
+    assert portfolio.holdings == {'005930.KS': 10}
+    assert mock_requests.get.call_count == 2
+
+
+def test_domestic_get_portfolio_fails_after_three_server_errors(
+    domestic_paper_broker, mock_requests
+):
+    """HTTP 500이 계속되면 총 세 번만 요청한 뒤 실패한다."""
+    server_error_response = MagicMock()
+    server_error_response.status_code = 500
+    server_error_response.raise_for_status.side_effect = requests.HTTPError(
+        response=server_error_response
+    )
+    mock_requests.get.return_value = server_error_response
+
+    with patch('src.infra.broker.kis_domestic.time.sleep'), \
+            pytest.raises(RuntimeError, match="Error getting portfolio"):
+        domestic_paper_broker.get_portfolio()
+
+    assert mock_requests.get.call_count == 3
+
+
+def test_domestic_get_portfolio_does_not_retry_client_error(
+    domestic_paper_broker, mock_requests
+):
+    """HTTP 4xx는 일시 장애가 아니므로 즉시 실패한다."""
+    client_error_response = MagicMock()
+    client_error_response.status_code = 400
+    client_error_response.raise_for_status.side_effect = requests.HTTPError(
+        response=client_error_response
+    )
+    mock_requests.get.return_value = client_error_response
+
+    with patch('src.infra.broker.kis_domestic.time.sleep'), \
+            pytest.raises(RuntimeError, match="Error getting portfolio"):
+        domestic_paper_broker.get_portfolio()
+
+    assert mock_requests.get.call_count == 1
 
 
 def test_domestic_get_portfolio_zero_qty_excluded(domestic_paper_broker, mock_requests):

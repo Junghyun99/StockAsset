@@ -2,6 +2,7 @@
 """KIS 국내주식 브로커."""
 from typing import List, Dict, Optional
 import time
+from requests import exceptions as requests_exceptions
 import src.infra.broker as _pkg  # test patch 타깃: src.infra.broker.requests
 from datetime import datetime, timezone, timedelta
 
@@ -90,9 +91,31 @@ class KisDomesticBrokerBase(KisBrokerCommon):
         all_prices: Dict[str, float] = {}
 
         try:
-            time.sleep(0.2)
-            res = _pkg.requests.get(url, headers=headers, params=params, timeout=_pkg.KIS_HTTP_TIMEOUT)
-            res.raise_for_status()
+            for attempt in range(3):
+                try:
+                    time.sleep(0.2)
+                    res = _pkg.requests.get(
+                        url, headers=headers, params=params, timeout=_pkg.KIS_HTTP_TIMEOUT
+                    )
+                    res.raise_for_status()
+                    break
+                except requests_exceptions.HTTPError as e:
+                    status_code = e.response.status_code if e.response is not None else None
+                    if status_code is None or status_code < 500 or attempt == 2:
+                        raise
+                    self.logger.warning(
+                        f"[KisDomestic] Portfolio API HTTP {status_code}; "
+                        f"retrying ({attempt + 2}/3)"
+                    )
+                except (requests_exceptions.Timeout, requests_exceptions.ConnectionError) as e:
+                    if attempt == 2:
+                        raise
+                    self.logger.warning(
+                        f"[KisDomestic] Portfolio API {type(e).__name__}; "
+                        f"retrying ({attempt + 2}/3)"
+                    )
+                time.sleep(2 ** attempt)
+
             data = res.json()
 
             if data['rt_cd'] != '0':
