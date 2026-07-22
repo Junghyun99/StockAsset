@@ -26,7 +26,7 @@ import {
     computeDividendYield,
     computeWinLossStats,
     RISK_FREE_RATE_ANNUAL
-} from './utils.js?v=20260721-1';
+} from './utils.js?v=20260722-1';
 
 import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
 
@@ -52,7 +52,7 @@ export function updateModeUI(isBacktest) {
 /**
  * 상태 배너 렌더링 (국면별 색상 + 주요 정보 한 줄)
  */
-export function renderStatusBanner(statusData) {
+export function renderStatusBanner(statusData, engineName = '-') {
     const banner = document.getElementById('status-banner');
     const bannerText = document.getElementById('banner-text');
     const bannerUpdated = document.getElementById('banner-updated');
@@ -64,7 +64,7 @@ export function renderStatusBanner(statusData) {
 
     // 배너 색상 클래스 적용
     banner.className = 'status-banner mb-4 ' + getRegimeBannerClass(strategy.regime);
-    bannerText.innerHTML = `<strong>${regime}</strong> &nbsp;|&nbsp; Exposure ${exposure}% &nbsp;|&nbsp; ${reason}`;
+    bannerText.innerHTML = `<strong>${regime}</strong> &nbsp;|&nbsp; Exposure ${exposure}% &nbsp;|&nbsp; 운용 엔진: <strong>${engineName}</strong> &nbsp;|&nbsp; ${reason}`;
     bannerUpdated.textContent = statusData.last_updated || '';
 }
 

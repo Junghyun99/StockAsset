@@ -1,9 +1,9 @@
 // docs/js/portfolio-cards.js
 import {
     formatAmount,
-    ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES, ACCOUNT_IS_ACTIVE,
+    ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES, ACCOUNT_IS_ACTIVE, ACCOUNT_ENGINE_NAMES,
     getRegimeColorClass
-} from './utils.js?v=20260715-3';
+} from './utils.js?v=20260722-1';
 
 /**
  * 통화별 합산 배너 렌더링
@@ -88,6 +88,7 @@ function buildCard(id, data, marketType) {
     const portfolio = status.portfolio || {};
     const strategy  = status.strategy  || {};
     const color     = ACCOUNT_COLORS[id] || '#6c757d';
+    const engineName = ACCOUNT_ENGINE_NAMES[id] || '-';
 
     const totalValue = portfolio.total_value ?? 0;
     const regime     = strategy.regime || '-';
@@ -127,6 +128,7 @@ function buildCard(id, data, marketType) {
                         ${inactiveBadge}
                         ${dailyBadge}
                     </div>
+                    <div class="text-muted small mb-2"><i class="fas fa-microchip me-1"></i>운용 엔진: ${engineName}</div>
                     <div class="fs-5 fw-bold mb-1">${formatAmount(totalValue, marketType)}</div>
                     <div class="mb-2">
                         <span class="fw-semibold ${regimeClass}">${regime.replace('_', ' ')}</span>
