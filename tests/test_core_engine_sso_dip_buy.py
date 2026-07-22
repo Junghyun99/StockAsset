@@ -6,8 +6,10 @@ from unittest.mock import MagicMock, patch
 from src.core.engine.sso_dip_buy import SsoDipBuyEngine
 from src.core.engine import TradingEngine, _ENGINE_REGISTRY, _ENGINE_BACKTEST
 from src.core.logic.sso_dip_planner import SignalLevel, SsoDipState
+from src.core.logic.sso_dip_signals import SsoDipSignals
 from src.core.models import (
-    MarketData, MarketRegime, Portfolio, TradeSignal, Order, OrderAction,
+    ExecutionStatus, MarketData, MarketRegime, Portfolio, TradeExecution,
+    TradeSignal, Order, OrderAction,
 )
 
 
@@ -83,6 +85,27 @@ class TestStateManagement:
         engine, mocks = _build_engine()
         engine.dip_state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
         mocks["repo"].save_strategy_state.assert_not_called()
+
+    def test_filled_sso_order_advances_the_saved_tranche(self):
+        engine, mocks = _build_engine()
+        engine.sso_signals = SsoDipSignals(
+            date="2026-07-22", weekly_rsi=45.0, ma200_deviation=-0.12,
+            price=80.0, ma200=90.0,
+        )
+        mocks["broker"].execute_orders.return_value = [TradeExecution(
+            "SSO", OrderAction.BUY, 5, 80.0, 0.0, "2026-07-22", ExecutionStatus.FILLED,
+        )]
+        portfolio = Portfolio(
+            total_cash=10000.0,
+            holdings={"SSO": 0, "SPYI": 0},
+            current_prices={"SSO": 80.0, "SPYI": 55.0},
+        )
+
+        engine.execute_cycle(
+            _make_market_data(), portfolio, MarketRegime.BULL, 1.0, [], None, "2026-07-22",
+        )
+
+        assert engine.dip_state.tranche_completed == 1
 
 
 class TestCollectData:

@@ -6,7 +6,7 @@ from src.core.logic.sso_dip_planner import (
     SsoDipPlanner, SsoDipState, SignalLevel,
     BUY_STAGES, SELL_CONDITION, IDLE_TARGET, SELL_TARGET,
 )
-from src.core.models import Portfolio
+from src.core.models import ExecutionStatus, OrderAction, Portfolio, TradeExecution
 
 
 def _sig(rsi: float = 50.0, dev: float = 0.0) -> SsoDipSignals:
@@ -135,7 +135,7 @@ class TestDCA:
         assert len(sso_buy) == 1
         assert sso_buy[0].quantity == 5  # $400 / $80 = 5주
 
-    def test_buy_stage3_speed(self):
+    def test_buy_stage3_uses_three_equal_tranches(self):
         """단계3 속도계수 40% 검증."""
         planner = SsoDipPlanner()
         state = SsoDipState(level=SignalLevel.BUY_STAGE_3)
@@ -148,9 +148,9 @@ class TestDCA:
         )
         sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
         assert len(sso_buy) == 1
-        assert sso_buy[0].quantity == 40  # $3200 / $80 = 40주
+        assert sso_buy[0].quantity == 33
 
-    def test_sell_speed(self):
+    def test_sell_uses_ten_equal_tranches(self):
         """매도 속도계수 10% 검증."""
         planner = SsoDipPlanner()
         # SSO 100%, 목표 20%
@@ -164,7 +164,7 @@ class TestDCA:
         )
         sso_sell = [o for o in orders if o.ticker == "SSO" and o.action.value == "SELL"]
         assert len(sso_sell) == 1
-        assert sso_sell[0].quantity == 9
+        assert sso_sell[0].quantity == 8
 
     def test_spyi_counterpart_on_buy(self):
         """SSO 매수 시 SPYI 매도로 자금 확보."""
@@ -204,6 +204,92 @@ class TestDCA:
         assert len(sso_orders) == 0
 
 
+class TestFixedAmountTranches:
+    """신호 단계별 고정금액 트랜치 테스트."""
+
+    def test_stage1_creates_ten_equal_purchase_tranches(self):
+        planner = SsoDipPlanner()
+        orders, reason, new_state = planner.plan(
+            _sig(rsi=45, dev=-0.12), _pf(cash=10000, sso=0, spyi=0), SsoDipState(),
+        )
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
+        assert sso_buy[0].quantity == 5
+        assert new_state.tranche_total == 10
+        assert new_state.tranche_completed == 0
+        assert new_state.tranche_amount == 400.0
+        assert "1/10" in reason
+
+    def test_stage_upgrade_replaces_tranche_with_next_stage_schedule(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=2,
+            tranche_amount=400.0,
+        )
+        orders, _, new_state = planner.plan(
+            _sig(rsi=40, dev=-0.20), _pf(cash=9200, sso=10, spyi=0), state,
+        )
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
+        assert sso_buy[0].quantity == 13
+        assert new_state.tranche_total == 5
+        assert new_state.tranche_completed == 0
+        assert new_state.tranche_amount == 1040.0
+
+    def test_completed_tranche_waits_for_a_new_signal(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=10,
+            tranche_amount=400.0,
+        )
+        orders, _, _ = planner.plan(_sig(rsi=45, dev=-0.12), _pf(), state)
+        assert not [o for o in orders if o.ticker == "SSO"]
+
+    def test_final_tranche_is_capped_at_remaining_target_amount(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=9,
+            tranche_amount=400.0,
+        )
+        orders, _, _ = planner.plan(
+            _sig(rsi=45, dev=-0.12), _pf(cash=6080, sso=49, spyi=0), state,
+        )
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
+        assert sso_buy[0].quantity == 1
+
+    def test_only_filled_leveraged_execution_consumes_a_tranche(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=1,
+            tranche_amount=400.0,
+        )
+        execution = TradeExecution(
+            "SSO", OrderAction.BUY, 5, 80.0, 0.0, "2026-07-22", ExecutionStatus.FILLED,
+        )
+        new_state = planner.record_filled_tranche(state, [execution])
+        assert new_state.tranche_completed == 2
+
+    def test_ordered_execution_does_not_consume_a_tranche(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=1,
+            tranche_amount=400.0,
+        )
+        execution = TradeExecution(
+            "SSO", OrderAction.BUY, 5, 80.0, 0.0, "2026-07-22", ExecutionStatus.ORDERED,
+        )
+        new_state = planner.record_filled_tranche(state, [execution])
+        assert new_state.tranche_completed == 1
+
+
 class TestSpyiSweep:
     """잔여 현금 → SPYI 스윕 테스트."""
 
@@ -221,7 +307,7 @@ class TestSpyiSweep:
         )
         sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
         assert len(sso_buy) == 1
-        assert sso_buy[0].quantity == 2
+        assert sso_buy[0].quantity == 25
         spyi_buy = [o for o in orders if o.ticker == "SPYI" and o.action.value == "BUY"]
         assert len(spyi_buy) == 1
         assert "SPYI 스윕" in reason

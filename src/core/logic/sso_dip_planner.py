@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import List, Tuple
 
-from src.core.models import Portfolio, Order, OrderAction
+from src.core.models import ExecutionStatus, Portfolio, Order, OrderAction, TradeExecution
 from src.core.logic.sso_dip_signals import SsoDipSignals
 
 
@@ -25,18 +25,17 @@ class SignalLevel(str, Enum):
 
 # IDLE 기본 SSO 비중 (상승장에서도 SSO 수익에 참여)
 IDLE_TARGET = 0.20
-IDLE_SPEED = 0.10
 
-# 매수 단계 정의: (level, rsi_threshold, deviation_threshold, target_ratio, speed)
+# 매수 단계 정의: (level, rsi_threshold, deviation_threshold, target_ratio, tranche_count)
 BUY_STAGES = [
-    (SignalLevel.BUY_STAGE_3, 36.0, -0.26, 0.80, 0.40),
-    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, 0.60, 0.20),
-    (SignalLevel.BUY_STAGE_1, 48.0, -0.10, 0.40, 0.10),
+    (SignalLevel.BUY_STAGE_3, 36.0, -0.26, 0.80, 3),
+    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, 0.60, 5),
+    (SignalLevel.BUY_STAGE_1, 48.0, -0.10, 0.40, 10),
 ]
 
 SELL_CONDITION = {"rsi": 75.0, "deviation": 0.15}
 SELL_TARGET = 0.20
-SELL_SPEED = 0.10
+SELL_TRANCHE_COUNT = 10
 
 _LEVEL_ORDER = {
     SignalLevel.IDLE: 0,
@@ -51,9 +50,17 @@ _LEVEL_ORDER = {
 class SsoDipState:
     """플래너의 영속 상태."""
     level: SignalLevel = SignalLevel.IDLE
+    tranche_total: int = 0
+    tranche_completed: int = 0
+    tranche_amount: float = 0.0
 
     def to_dict(self) -> dict:
-        return {"level": self.level.value}
+        return {
+            "level": self.level.value,
+            "tranche_total": self.tranche_total,
+            "tranche_completed": self.tranche_completed,
+            "tranche_amount": self.tranche_amount,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> "SsoDipState":
@@ -63,7 +70,12 @@ class SsoDipState:
             level = SignalLevel(level_str)
         except ValueError:
             level = SignalLevel.IDLE
-        return cls(level=level)
+        return cls(
+            level=level,
+            tranche_total=int(data.get("tranche_total", 0)),
+            tranche_completed=int(data.get("tranche_completed", 0)),
+            tranche_amount=float(data.get("tranche_amount", 0.0)),
+        )
 
 
 class SsoDipPlanner:
@@ -74,7 +86,7 @@ class SsoDipPlanner:
     _buy_stages = BUY_STAGES
     _sell_condition = SELL_CONDITION
     _sell_target = SELL_TARGET
-    _sell_speed = SELL_SPEED
+    _sell_tranche_count = SELL_TRANCHE_COUNT
 
     def plan(
         self,
@@ -100,18 +112,50 @@ class SsoDipPlanner:
         current_sso_ratio = self._sso_ratio(portfolio)
         new_level = self._detect_signal(rsi, dev, state.level)
 
-        target_ratio, speed = self._get_target_and_speed(new_level)
+        target_ratio, tranche_total = self._get_target_and_tranche_count(new_level)
 
         # 매도 완료 체크 (40% 이하 도달 시 IDLE 복귀)
         if new_level == SignalLevel.SELL and current_sso_ratio <= self._sell_target + 0.005:
             new_level = SignalLevel.IDLE
-            target_ratio, speed = self._get_target_and_speed(new_level)
+            target_ratio, tranche_total = self._get_target_and_tranche_count(new_level)
 
-        delta_ratio = (target_ratio - current_sso_ratio) * speed
-        delta_amount = delta_ratio * total
+        if new_level == SignalLevel.IDLE:
+            new_state = SsoDipState(level=new_level)
+            delta_amount = (target_ratio - current_sso_ratio) * total
+        else:
+            needs_new_tranche = (
+                new_level != state.level
+                or state.tranche_total == 0
+            )
+            if needs_new_tranche:
+                if new_level == SignalLevel.SELL:
+                    remaining_amount = max(current_sso_ratio - target_ratio, 0.0) * total
+                else:
+                    remaining_amount = max(target_ratio - current_sso_ratio, 0.0) * total
+                tranche_amount = remaining_amount / tranche_total if tranche_total else 0.0
+                new_state = SsoDipState(
+                    level=new_level,
+                    tranche_total=tranche_total,
+                    tranche_amount=tranche_amount,
+                )
+            else:
+                new_state = state
+
+            if new_state.tranche_completed >= new_state.tranche_total:
+                delta_amount = 0.0
+            elif new_level == SignalLevel.SELL:
+                remaining_amount = max(current_sso_ratio - target_ratio, 0.0) * total
+                delta_amount = -min(new_state.tranche_amount, remaining_amount)
+            else:
+                remaining_amount = max(target_ratio - current_sso_ratio, 0.0) * total
+                delta_amount = min(new_state.tranche_amount, remaining_amount)
 
         orders: List[Order] = []
         reasons: List[str] = []
+        tranche_progress = (
+            f"{new_state.tranche_completed + 1}/{new_state.tranche_total}"
+            if new_state.tranche_total else ""
+        )
 
         if delta_amount > 0:
             qty = math.floor(delta_amount / sso_price)
@@ -126,7 +170,9 @@ class SsoDipPlanner:
                     if spyi_sell_qty > 0:
                         orders.append(Order(self.SPYI_TICKER, OrderAction.SELL, spyi_sell_qty, spyi_price))
                 orders.append(Order(self.SSO_TICKER, OrderAction.BUY, qty, sso_price))
-                reasons.append(f"{new_level.value} 분할매수 {self.SSO_TICKER} {qty}주")
+                reasons.append(
+                    f"{new_level.value} {tranche_progress} 분할매수 {self.SSO_TICKER} {qty}주"
+                )
 
         elif delta_amount < 0:
             sell_amount = abs(delta_amount)
@@ -136,7 +182,7 @@ class SsoDipPlanner:
             )
             if qty > 0:
                 orders.append(Order(self.SSO_TICKER, OrderAction.SELL, qty, sso_price))
-                reasons.append(f"분할매도 {self.SSO_TICKER} {qty}주")
+                reasons.append(f"{tranche_progress} 분할매도 {self.SSO_TICKER} {qty}주")
                 proceeds = qty * sso_price
                 spyi_qty = math.floor(proceeds / spyi_price)
                 if spyi_qty > 0:
@@ -163,7 +209,7 @@ class SsoDipPlanner:
                 reasons.append(f"{self.SPYI_TICKER} 스윕 {sweep_qty}주")
 
         reason = " / ".join(reasons) if reasons else f"대기({new_level.value})"
-        return orders, reason, SsoDipState(level=new_level)
+        return orders, reason, new_state
 
     def _detect_signal(self, rsi: float, dev: float, current: SignalLevel) -> SignalLevel:
         if current != SignalLevel.SELL and rsi >= self._sell_condition["rsi"] and dev >= self._sell_condition["deviation"]:
@@ -176,13 +222,33 @@ class SsoDipPlanner:
 
         return current
 
-    def _get_target_and_speed(self, level: SignalLevel) -> Tuple[float, float]:
+    def _get_target_and_tranche_count(self, level: SignalLevel) -> Tuple[float, int]:
         if level == SignalLevel.SELL:
-            return self._sell_target, self._sell_speed
-        for lv, _, _, target, speed in self._buy_stages:
+            return self._sell_target, self._sell_tranche_count
+        for lv, _, _, target, tranche_count in self._buy_stages:
             if lv == level:
-                return target, speed
-        return IDLE_TARGET, IDLE_SPEED
+                return target, tranche_count
+        return IDLE_TARGET, 0
+
+    def record_filled_tranche(
+        self, state: SsoDipState, executions: List[TradeExecution],
+    ) -> SsoDipState:
+        """레버리지 ETF의 실제 체결 한 건만 현재 트랜치에 반영한다."""
+        if state.tranche_completed >= state.tranche_total:
+            return state
+        for execution in executions:
+            if (
+                execution.ticker == self.SSO_TICKER
+                and execution.status == ExecutionStatus.FILLED
+                and execution.action in (OrderAction.BUY, OrderAction.SELL)
+            ):
+                return SsoDipState(
+                    level=state.level,
+                    tranche_total=state.tranche_total,
+                    tranche_completed=state.tranche_completed + 1,
+                    tranche_amount=state.tranche_amount,
+                )
+        return state
 
     def _sso_ratio(self, pf: Portfolio) -> float:
         total = pf.total_value
