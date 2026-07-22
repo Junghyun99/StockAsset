@@ -116,3 +116,64 @@ RuntimeError: [KisDomestic] Error getting portfolio: 500 Server Error: Internal 
 2026-07-22 14:01:06,801 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
 2026-07-22 14:01:07,250 [INFO] >>> Step 6: Archiving Data
 2026-07-22 14:01:07,252 [INFO] Cycle Completed: regime=Bull exposure=0.85 orders=0 executions=0
+2026-07-22 17:43:19,756 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-07-22 17:43:19,758 [INFO] Loaded 2 account(s) from accounts.yaml
+2026-07-22 17:43:19,758 [INFO] [my_test] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=ACTIVE
+2026-07-22 17:43:19,758 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-22 17:43:19,758 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-22 17:43:19,759 [INFO] Restored previous regime: Bull
+2026-07-22 17:43:19,759 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-07-22 17:43:19,759 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-22 17:43:19,759 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-22 17:43:19,759 [INFO] Restored previous regime: Bull
+2026-07-22 17:43:19,760 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-07-22 17:43:19,760 [INFO] >>> Step 1: Data Collection
+2026-07-22 17:43:19,760 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-22 17:43:20,233 [INFO] [Data] VIX fetched: 17.47
+2026-07-22 17:43:20,234 [INFO] >>> Step 2: Indicator Calculation
+2026-07-22 17:43:20,236 [INFO] Market Data: Price=189625.00, VIX=17.47, MDD=-8.74%
+2026-07-22 17:43:20,236 [INFO] >>> Step 3: Strategy Analysis
+2026-07-22 17:43:20,236 [INFO] >>> VolManaged: vol=25.42% → L=0.87x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 87%, 현금 13%)
+2026-07-22 17:43:20,237 [INFO] Regime: Bull | Target Exposure: 0.87
+2026-07-22 17:43:20,237 [INFO] >>> Step 4: Portfolio Status
+2026-07-22 17:43:21,163 [INFO] Fetching Real-time prices from Broker...
+2026-07-22 17:43:25,506 [INFO] Current Portfolio: Cash=$707,676, Value=$4,120,926
+2026-07-22 17:43:25,575 [INFO] >>> Step 5: Rebalancing
+2026-07-22 17:43:25,575 [INFO] [입력] Regime=Bull | TargetExposure=0.87 | TotalValue=$4,120,926.00 | Cash=$707,676.00
+2026-07-22 17:43:25,575 [INFO] [포트폴리오 현황]
+2026-07-22 17:43:25,575 [INFO]   A그룹(성장): $        0.00 (  0.0%)
+2026-07-22 17:43:25,575 [INFO]   B그룹(안전): $3,413,250.00 ( 82.8%)
+2026-07-22 17:43:25,575 [INFO]   C그룹(현금): $        0.00 (  0.0%)
+2026-07-22 17:43:25,575 [INFO]   현금(예수금): $ 707,676.00 ( 17.2%)
+2026-07-22 17:43:25,575 [INFO] [비중 판정] ratio_A=0.000  ratio_B=1.000
+2026-07-22 17:43:25,576 [INFO]   A 상대이탈: 0.0% | B 상대이탈: 0.0% | 임계치: 7.5% → 비율 유지 (리밸런싱 불필요)
+2026-07-22 17:43:25,576 [INFO] [목표 금액]
+2026-07-22 17:43:25,576 [INFO]   A그룹: 현재 $      0.00 → 목표 $      0.00  (exposure 0.87 × ratio 0.00)
+2026-07-22 17:43:25,576 [INFO]   B그룹: 현재 $3,413,250.00 → 목표 $3,566,559.34  (exposure 0.87 × ratio 1.00)
+2026-07-22 17:43:25,576 [INFO]   C그룹: 현재 $      0.00 → 목표 $554,366.66  (잔여)
+2026-07-22 17:43:25,576 [INFO] [A그룹(성장) 종목별]
+2026-07-22 17:43:25,576 [INFO]   TIGER 미국나스닥100레버리지(합성): 보유 0주 $0.00 → 목표 $0.00 | diff=+0.00 → 주문 없음
+2026-07-22 17:43:25,576 [INFO] [B그룹(안전) 종목별]
+2026-07-22 17:43:25,576 [INFO]   TIGER 미국나스닥100: 보유 18주 $3,413,250.00 → 목표 $3,566,559.34 | diff=+153,309.34 → 주문 없음 (수량 미달)
+2026-07-22 17:43:25,576 [INFO] [C그룹(현금) 종목별]
+2026-07-22 17:43:25,576 [INFO]   KODEX CD금리액티브: 보유 0주 $0.00 → 목표 $554,366.66 | diff=+554,366.66 → 주문 없음 (수량 미달)
+2026-07-22 17:43:25,576 [INFO] [최종 주문] 주문 없음
+2026-07-22 17:43:25,576 [INFO] [결정 사유] 비율 유지, 추가 주문 없음
+2026-07-22 17:43:25,576 [INFO] No Rebalance Needed.
+2026-07-22 17:43:26,688 [INFO] >>> Step 6: Archiving Data
+2026-07-22 17:43:26,692 [INFO] Cycle Completed: regime=Bull exposure=0.87 orders=0 executions=0
+2026-07-22 17:43:26,692 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-07-22 17:43:26,692 [INFO] >>> Step 1: Data Collection
+2026-07-22 17:43:26,692 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-22 17:43:26,832 [INFO] [Data] VIX fetched: 17.47
+2026-07-22 17:43:26,832 [INFO] >>> Step 2: Indicator Calculation
+2026-07-22 17:43:26,835 [INFO] Market Data: Price=189625.00, VIX=17.47, MDD=-8.74%
+2026-07-22 17:43:26,835 [INFO] >>> Step 3: Strategy Analysis
+2026-07-22 17:43:26,835 [INFO] >>> VolManaged: vol=25.42% → L=0.87x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 87%, 현금 13%)
+2026-07-22 17:43:26,835 [INFO] Regime: Bull | Target Exposure: 0.87
+2026-07-22 17:43:26,835 [INFO] >>> Step 4: Portfolio Status
+2026-07-22 17:43:27,645 [INFO] Fetching Real-time prices from Broker...
+2026-07-22 17:43:32,570 [INFO] Current Portfolio: Cash=$20,093,002, Value=$49,823,362
+2026-07-22 17:43:33,763 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
+2026-07-22 17:43:33,990 [INFO] >>> Step 6: Archiving Data
+2026-07-22 17:43:33,992 [INFO] Cycle Completed: regime=Bull exposure=0.87 orders=0 executions=0
