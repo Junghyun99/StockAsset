@@ -153,7 +153,7 @@ export function computeTradeStats(historyData) {
 export function getAssetGroup(ticker, groupConfig) {
     if (groupConfig) {
         for (const [group, info] of Object.entries(groupConfig)) {
-            if (info.tickers.includes(ticker)) {
+            if (Array.isArray(info?.tickers) && info.tickers.includes(ticker)) {
                 return { group, label: info.label, color: info.color };
             }
         }

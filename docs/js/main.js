@@ -22,7 +22,7 @@ import {
     renderHistoricalAllocationChart,
     renderTargetVsActualChart,
     renderDeviationTrendChart
-} from './charts.js?v=20260721-2';
+} from './charts.js?v=20260722-2';
 
 import {
     updateModeUI,
@@ -46,9 +46,9 @@ import {
     renderDividendSummaryCards,
     renderWinLossCards,
     initTooltips
-} from './ui.js?v=20260714-1';
+} from './ui.js?v=20260722-2';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260721-1';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260722-2';
 
 import {
     renderCompareOverview,

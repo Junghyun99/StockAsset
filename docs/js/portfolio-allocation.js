@@ -4,7 +4,7 @@ import {
     formatAmount,
     getTickerAlias, getAssetGroup,
     ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES,
-} from './utils.js?v=20260715-3';
+} from './utils.js?v=20260722-2';
 
 const CASH_KEY = '__CASH__';
 const CASH_COLOR = '#dee2e6';
