@@ -367,6 +367,8 @@ export const ACCOUNT_MARKET_TYPES = {};
  */
 export const ACCOUNT_IS_ACTIVE = {};
 
+export const ACCOUNT_ENGINE_NAMES = {};
+
 /**
  * accounts_meta.json을 fetch하여 ACCOUNT_COLORS, ACCOUNT_MARKET_TYPES, ACCOUNT_IS_ACTIVE를 채운다.
  * loadLiveMode() 시작 시 먼저 호출된다.
@@ -380,6 +382,7 @@ export async function loadAccountsMeta(basePath) {
         for (const [id, info] of Object.entries(meta)) {
             ACCOUNT_COLORS[id] = info.color;
             ACCOUNT_MARKET_TYPES[id] = info.market_type || 'overseas';
+            ACCOUNT_ENGINE_NAMES[id] = info.engine_name || '-';
             // is_active 미기재(구버전 데이터)는 활성으로 간주
             ACCOUNT_IS_ACTIVE[id] = info.is_active !== false;
         }

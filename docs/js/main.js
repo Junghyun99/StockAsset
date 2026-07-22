@@ -48,24 +48,24 @@ import {
     initTooltips
 } from './ui.js?v=20260722-2';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES } from './utils.js?v=20260722-2';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES, ACCOUNT_ENGINE_NAMES } from './utils.js?v=20260722-2';
 
 import {
     renderCompareOverview,
     renderCompareTradesTab,
-} from './compare-ui.js?v=5';
+} from './compare-ui.js?v=20260722-2';
 
 import {
     renderAccountOverview,
     renderAccountTradesTab,
-} from './account-compare-ui.js?v=4';
+} from './account-compare-ui.js?v=20260722-2';
 
 import {
     renderAccountPerformanceChart,
     renderAccountStrategyChart,
     updateAccountChartRange,
     resizeAccountCharts,
-} from './account-compare-charts.js?v=2';
+} from './account-compare-charts.js?v=20260722-2';
 
 import { initMemoTab } from './memo.js?v=20260624-1';
 
@@ -76,7 +76,7 @@ import {
     renderCompareYearlyDividendChart,
     updateCompareChartRange,
     resizeCompareCharts,
-} from './compare-charts.js?v=20260721-2';
+} from './compare-charts.js?v=20260722-2';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 1. URL 파라미터에서 모드 확인 (?mode=backtest)
@@ -200,7 +200,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     window.__status = statusData;
     window.__history = historyData;
 
-    renderStatusBanner(statusData);
+    renderStatusBanner(statusData, ACCOUNT_ENGINE_NAMES[accountId] || '-');
     updateSummaryCards(statusData, summaryData, marketType);
     renderGroupBarChart(statusData, groupConfig, marketType);
     renderHoldingsTable(statusData, groupConfig, marketType);
