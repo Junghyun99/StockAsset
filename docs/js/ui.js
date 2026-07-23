@@ -647,14 +647,14 @@ export function renderFailedOrderAlert(historyData, groupConfig = null) {
     const alert = document.getElementById('failed-order-alert');
     const text = document.getElementById('failed-order-alert-text');
     if (!alert || !text) return;
-    const failed = computeFailedExecutions(historyData);
+    const failed = (historyData || []).filter(event => event.alertable);
     if (failed.length === 0) {
         alert.classList.add('d-none');
         return;
     }
     alert.classList.remove('d-none');
     const recent = failed.slice(-3).reverse();
-    const summary = recent.map(f => `${f.date} ${getTickerAlias(f.ticker, groupConfig)} ${f.action} [${f.status}]`).join(', ');
+    const summary = recent.map(f => `${f.attempted_at || f.executed_at || '-'} ${getTickerAlias(f.ticker, groupConfig)} ${f.action} [${f.status}]`).join(', ');
     text.innerHTML = ` ${failed.length}건 감지 — 최근: ${summary}`;
 }
 
@@ -710,21 +710,21 @@ export function renderOperationsPanel(statusData, historyData, summaryData, grou
     const failedCountEl = document.getElementById('ops-failed-count');
     const failedTableBody = document.getElementById('ops-failed-table-body');
     if (failedCountEl && failedTableBody) {
-        const failed = computeFailedExecutions(historyData);
+        const failed = (historyData || []).filter(event => event.alertable);
         failedCountEl.innerText = failed.length;
         failedCountEl.className = 'fw-bold mb-0 ' + (failed.length === 0 ? 'text-success' : 'text-danger');
 
         if (failed.length === 0) {
-            failedTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-success py-4"><i class="fas fa-check-circle me-1"></i>모든 주문이 정상 체결되었습니다</td></tr>';
+            failedTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-info-circle me-1"></i>주문 결과 운영 이력 없음 또는 경고 없음</td></tr>';
         } else {
             failedTableBody.innerHTML = failed.slice().reverse().map(f => `
                 <tr>
-                    <td class="ps-3 small text-muted">${f.date}</td>
+                    <td class="ps-3 small text-muted">${f.attempted_at || f.executed_at || '-'}</td>
                     <td class="fw-bold">${getTickerAlias(f.ticker, groupConfig)}</td>
                     <td><span class="badge ${f.action === 'BUY' ? 'bg-success' : 'bg-danger'}">${f.action}</span></td>
-                    <td class="text-end">${f.quantity}</td>
+                    <td class="text-end">${f.requested_quantity} / ${f.filled_quantity}</td>
                     <td><span class="badge bg-warning text-dark">${f.status}</span></td>
-                    <td class="pe-3 small">${f.reason || '-'}</td>
+                    <td class="pe-3 small">${f.broker_reason || '-'}</td>
                 </tr>
             `).join('');
         }

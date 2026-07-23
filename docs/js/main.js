@@ -22,7 +22,7 @@ import {
     renderHistoricalAllocationChart,
     renderTargetVsActualChart,
     renderDeviationTrendChart
-} from './charts.js?v=20260722-2';
+} from './charts.js?v=20260723-1';
 
 import {
     updateModeUI,
@@ -46,9 +46,9 @@ import {
     renderDividendSummaryCards,
     renderWinLossCards,
     initTooltips
-} from './ui.js?v=20260722-2';
+} from './ui.js?v=20260723-1';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES, ACCOUNT_ENGINE_NAMES } from './utils.js?v=20260722-2';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES, ACCOUNT_ENGINE_NAMES } from './utils.js?v=20260723-1';
 
 import {
     renderCompareOverview,
@@ -133,16 +133,18 @@ async function loadLiveMode() {
     const accountsData = new Map();
     await Promise.all(accountIds.map(async (id) => {
         const path = `${basePath}${id}/`;
-        const [summaryRes, statusRes, historyRes, groupRes] = await Promise.all([
+        const [summaryRes, statusRes, historyRes, groupRes, eventsRes] = await Promise.all([
             fetch(`${path}summary.json?${cacheBust}`),
             fetch(`${path}status.json?${cacheBust}`),
             fetch(`${path}history.json?${cacheBust}`),
             fetch(`${path}asset_groups.json?${cacheBust}`),
+            fetch(`${path}order_events.json?${cacheBust}`),
         ]);
         accountsData.set(id, {
             summary:    summaryRes.ok ? await summaryRes.json().catch(() => [])    : [],
             status:     statusRes.ok  ? await statusRes.json().catch(() => ({}))   : {},
             history:    historyRes.ok ? await historyRes.json().catch(() => [])    : [],
+            orderEvents: eventsRes.ok ? await eventsRes.json().catch(() => []) : [],
             groupConfig: groupRes.ok  ? await groupRes.json().catch(() => null)    : null,
         });
     }));
@@ -195,7 +197,7 @@ async function loadLiveMode() {
 /**
  * 단일 계좌 UI 렌더링 (기존 loadLiveMode 로직)
  */
-function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, groupConfig }, marketType = 'overseas', accountId = null) {
+function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, orderEvents = [], groupConfig }, marketType = 'overseas', accountId = null) {
     window.__summary = summaryData;
     window.__status = statusData;
     window.__history = historyData;
@@ -206,7 +208,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
     renderHoldingsTable(statusData, groupConfig, marketType);
     renderTodayActivity(historyData, statusData, marketType, groupConfig);
     updateDecisionLogic(summaryData[summaryData.length - 1]);
-    renderFailedOrderAlert(historyData, groupConfig);
+    renderFailedOrderAlert(orderEvents, groupConfig);
     renderStatusFreshnessBadge(statusData);
     initTooltips(); // Overview 탭 정적 요소 툴팁 초기화
 
@@ -277,7 +279,7 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
 
     function renderOperationsTab() {
         if (opsRendered) return;
-        renderOperationsPanel(statusData, historyData, summaryData, groupConfig);
+        renderOperationsPanel(statusData, orderEvents, summaryData, groupConfig);
         opsRendered = true;
     }
 
@@ -297,16 +299,18 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
  * Fallback: accounts.json 없을 때 레거시 data/ 직하위 경로에서 로드
  */
 async function _loadLegacySingleAccount(basePath, cacheBust) {
-    const [summaryRes, statusRes, historyRes, groupConfigRes] = await Promise.all([
+    const [summaryRes, statusRes, historyRes, groupConfigRes, eventsRes] = await Promise.all([
         fetch(`${basePath}summary.json?${cacheBust}`),
         fetch(`${basePath}status.json?${cacheBust}`),
         fetch(`${basePath}history.json?${cacheBust}`),
         fetch(`${basePath}asset_groups.json?${cacheBust}`),
+        fetch(`${basePath}order_events.json?${cacheBust}`),
     ]);
     _renderSingleAccount({
         summary: await summaryRes.json(),
         status:  await statusRes.json(),
         history: await historyRes.json(),
+        orderEvents: eventsRes.ok ? await eventsRes.json() : [],
         groupConfig: groupConfigRes.ok ? await groupConfigRes.json() : null,
     }, 'overseas', null);
 }

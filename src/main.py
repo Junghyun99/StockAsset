@@ -92,6 +92,10 @@ class TradingBot:
                 max_summary_records=self.config.MAX_SUMMARY_RECORDS,
                 max_history_records=self.config.MAX_HISTORY_RECORDS,
                 asset_groups=asset_groups,
+                max_order_event_records=100000,
+                account_id=acc.id,
+                engine_name=acc.engine_name,
+                execution_mode="live" if acc.is_live else "paper",
             )
             engine = engine_cls(
                 asset_groups=asset_groups,
