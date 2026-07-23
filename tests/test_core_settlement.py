@@ -332,6 +332,30 @@ class TestAggregateSummaryRecords:
             {"date": "2026-06-30", "total_value": 3300.0, "net_deposit": 100.0},
         ]
 
+    def test_invalid_constituent_snapshot_excludes_same_day_cash_flow(self):
+        records = {
+            "my_isa": [
+                _rec("2026-05-31", 1000.0),
+                {"date": "2026-06-30", "total_value": None, "net_deposit": 500.0},
+            ],
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-15", 2100.0),
+                _rec("2026-06-30", 2200.0),
+            ],
+        }
+
+        aggregate = aggregate_summary_records(records)
+
+        assert aggregate[-1] == {
+            "date": "2026-06-30", "total_value": None, "net_deposit": 500.0,
+        }
+        result = compute_settlement(aggregate, "2026-06-01", "2026-06-30")
+        assert result.last_date == "2026-06-15"
+        assert result.net_deposit == 0.0
+        assert result.profit == 100.0
+        assert result.twr_pct == pytest.approx(3.3333)
+
 
 class TestTradeCashImpact:
     def test_buy_decreases_and_sell_increases_cash(self):

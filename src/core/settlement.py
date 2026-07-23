@@ -79,12 +79,15 @@ def aggregate_summary_records(account_records: dict[str, List[dict]]) -> List[di
         total_value = 0.0
         net_deposit = 0.0
         missing_net_deposit_count = 0
+        has_invalid_snapshot = False
         for records in records_by_account.values():
             latest_value = None
             for record in records:
                 if record["date"] > date:
                     break
                 value = _finite(record.get("total_value"))
+                if record["date"] == date and value is None and latest_value is not None:
+                    has_invalid_snapshot = True
                 if value is not None:
                     latest_value = value
                 if record["date"] == date:
@@ -96,7 +99,7 @@ def aggregate_summary_records(account_records: dict[str, List[dict]]) -> List[di
 
         item = {
             "date": date,
-            "total_value": total_value,
+            "total_value": None if has_invalid_snapshot else total_value,
             "net_deposit": net_deposit,
         }
         if missing_net_deposit_count:
