@@ -66,6 +66,26 @@ def derive_net_deposit(current_cash: float,
     return round(current_cash - prev_cash - impact, 2)
 
 
+def aggregate_summary_records(account_records: dict[str, List[dict]]) -> List[dict]:
+    """Aggregate account summary records into one date-keyed record sequence."""
+    totals: dict[str, dict] = {}
+    for records in account_records.values():
+        for record in records:
+            date = record.get("date")
+            if not date:
+                continue
+            item = totals.setdefault(date, {
+                "date": date,
+                "total_value": 0.0,
+                "net_deposit": 0.0,
+            })
+            value = _finite(record.get("total_value"))
+            if value is not None:
+                item["total_value"] += value
+            item["net_deposit"] += float(record.get("net_deposit") or 0.0)
+    return [totals[date] for date in sorted(totals)]
+
+
 def compute_settlement(records: List[dict], start: str, end: str) -> SettlementResult:
     """일별 요약 레코드 리스트에서 [start, end] 기간(양끝 포함) 결산을 계산한다.
 
