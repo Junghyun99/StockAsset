@@ -41,6 +41,7 @@ jobs:
         START: ${{ github.event.inputs.start }}
         END: ${{ github.event.inputs.end }}
       run: |
+        set -o pipefail
         python -m scripts.monthly_settlement --all-groups --start "$START" --end "$END" | tee settlement_report.txt
 
     - name: Publish report to job summary

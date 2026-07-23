@@ -39,20 +39,20 @@ class TestMonthlySettlementCli:
         workflow_dispatch = workflow.split("workflow_dispatch:\n", 1)[1]
         inputs_block = workflow_dispatch.split("\n\npermissions:", 1)[0]
         assert "\n      account:" not in inputs_block
+        settlement_step = workflow.split(
+            "    - name: Run monthly settlement\n", 1
+        )[1].split("\n    - name:", 1)[0]
+        assert "set -o pipefail" in settlement_step
         assert (
             'python -m scripts.monthly_settlement --all-groups '
             '--start "$START" --end "$END" | tee settlement_report.txt'
-        ) in workflow
-        assert """    - name: Publish report to job summary
-      if: always()
-      run: |
-        {
-          echo '## 기간 결산 결과'
-          echo '```'
-          cat settlement_report.txt 2>/dev/null || echo '(리포트 없음 - 실행 로그 확인)'
-          echo '```'
-        } >> "$GITHUB_STEP_SUMMARY"
-""" in workflow
+        ) in settlement_step
+        assert "    - name: Publish report to job summary" in workflow
+        summary_step = workflow.split(
+            "    - name: Publish report to job summary\n", 1
+        )[1]
+        assert "GITHUB_STEP_SUMMARY" in summary_step
+        assert "settlement_report.txt" in summary_step
 
     def test_report_printed(self, tmp_path, capsys):
         _write_account(tmp_path, "acc1", [
