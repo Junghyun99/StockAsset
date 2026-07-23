@@ -68,22 +68,42 @@ def derive_net_deposit(current_cash: float,
 
 def aggregate_summary_records(account_records: dict[str, List[dict]]) -> List[dict]:
     """Aggregate account summary records into one date-keyed record sequence."""
-    totals: dict[str, dict] = {}
-    for records in account_records.values():
-        for record in records:
-            date = record.get("date")
-            if not date:
-                continue
-            item = totals.setdefault(date, {
-                "date": date,
-                "total_value": 0.0,
-                "net_deposit": 0.0,
-            })
-            value = _finite(record.get("total_value"))
-            if value is not None:
-                item["total_value"] += value
-            item["net_deposit"] += float(record.get("net_deposit") or 0.0)
-    return [totals[date] for date in sorted(totals)]
+    records_by_account = {
+        account: sorted((r for r in records if r.get("date")), key=lambda r: r["date"])
+        for account, records in account_records.items()
+    }
+    dates = sorted({r["date"] for records in records_by_account.values() for r in records})
+    totals = []
+
+    for date in dates:
+        total_value = 0.0
+        net_deposit = 0.0
+        missing_net_deposit_count = 0
+        for records in records_by_account.values():
+            latest_value = None
+            for record in records:
+                if record["date"] > date:
+                    break
+                value = _finite(record.get("total_value"))
+                if value is not None:
+                    latest_value = value
+                if record["date"] == date:
+                    net_deposit += float(record.get("net_deposit") or 0.0)
+                    if record.get("net_deposit") is None:
+                        missing_net_deposit_count += 1
+            if latest_value is not None:
+                total_value += latest_value
+
+        item = {
+            "date": date,
+            "total_value": total_value,
+            "net_deposit": net_deposit,
+        }
+        if missing_net_deposit_count:
+            item["missing_net_deposit_count"] = missing_net_deposit_count
+        totals.append(item)
+
+    return totals
 
 
 def compute_settlement(records: List[dict], start: str, end: str) -> SettlementResult:
@@ -147,7 +167,10 @@ def compute_settlement(records: List[dict], start: str, end: str) -> SettlementR
     net_deposit = round(sum(float(r.get("net_deposit") or 0.0) for r in window), 2)
     profit = round(end_asset - start_asset - net_deposit, 2)
     twr_pct = _twr_pct([base] + window)
-    missing = sum(1 for r in window if r.get("net_deposit") is None)
+    missing = sum(
+        r.get("missing_net_deposit_count", 1 if r.get("net_deposit") is None else 0)
+        for r in window
+    )
 
     return SettlementResult(
         start_date=start, end_date=end,
