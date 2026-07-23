@@ -58,12 +58,12 @@ class TestSignalDetection:
         _, _, new_state = planner.plan(_sig(rsi=34, dev=-0.28), _pf(), state)
         assert new_state.level == SignalLevel.BUY_STAGE_3
 
-    def test_no_downgrade(self):
+    def test_downgrades_when_lower_buy_target_exceeds_current_ratio(self):
         """단계2에서 단계1 조건 → 단계2 유지 (하향 강등 없음)."""
         planner = SsoDipPlanner()
         state = SsoDipState(level=SignalLevel.BUY_STAGE_2)
         _, _, new_state = planner.plan(_sig(rsi=45, dev=-0.12), _pf(), state)
-        assert new_state.level == SignalLevel.BUY_STAGE_2
+        assert new_state.level == SignalLevel.BUY_STAGE_1
 
     def test_sell_signal(self):
         """RSI≥75 AND 괴리율≥+15% → SELL."""
@@ -94,7 +94,7 @@ class TestSignalDetection:
         _, _, new_state = planner.plan(_sig(rsi=34, dev=-0.28), _pf(), state)
         assert new_state.level == SignalLevel.BUY_STAGE_3
 
-    def test_sell_overridden_by_buy_signal(self):
+    def test_sell_keeps_selling_when_buy_target_is_not_above_current_ratio(self):
         """SELL 중 급락(매수 조건 충족) → BUY_STAGE로 전환."""
         planner = SsoDipPlanner()
         state = SsoDipState(level=SignalLevel.SELL)
@@ -103,7 +103,7 @@ class TestSignalDetection:
             _pf(cash=0, sso=100, spyi=0),
             state,
         )
-        assert new_state.level == SignalLevel.BUY_STAGE_3
+        assert new_state.level == SignalLevel.SELL
 
     def test_sell_persists_without_buy_signal(self):
         """SELL 중 매수 조건 미충족 → SELL 유지."""
@@ -115,6 +115,87 @@ class TestSignalDetection:
             state,
         )
         assert new_state.level == SignalLevel.SELL
+
+    def test_buy3_sell_signal_targets_buy2(self):
+        """BUY3의 과매수 매도는 IDLE이 아니라 BUY2 목표까지만 진행한다."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(level=SignalLevel.BUY_STAGE_3)
+        orders, _, new_state = planner.plan(
+            _sig(rsi=78, dev=0.18),
+            _pf(cash=2000, sso=100, spyi=0),
+            state,
+        )
+        sso_sell = [o for o in orders if o.ticker == "SSO" and o.action.value == "SELL"]
+        assert new_state.level == SignalLevel.SELL
+        assert new_state.sell_target_level == SignalLevel.BUY_STAGE_2
+        assert sso_sell[0].quantity == 3
+
+    def test_sell_ignores_buy_signal_below_current_ratio(self):
+        """SELL 중 매수 목표가 현재 비중 이하면 기존 매도를 계속한다."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.SELL,
+            sell_target_level=SignalLevel.BUY_STAGE_2,
+            tranche_total=10,
+            tranche_completed=2,
+            tranche_amount=200.0,
+        )
+        _, _, new_state = planner.plan(
+            _sig(rsi=45, dev=-0.12),
+            _pf(cash=350, sso=65, spyi=0, sso_price=10.0),
+            state,
+        )
+        assert new_state.level == SignalLevel.SELL
+
+    def test_sell_switches_to_buy_when_buy_target_exceeds_current_ratio(self):
+        """SELL 중 실제 비중보다 높은 매수 목표면 남은 매도를 취소한다."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.SELL,
+            sell_target_level=SignalLevel.BUY_STAGE_2,
+            tranche_total=10,
+            tranche_completed=2,
+            tranche_amount=200.0,
+        )
+        orders, _, new_state = planner.plan(
+            _sig(rsi=45, dev=-0.12),
+            _pf(cash=5200, sso=280, spyi=0, sso_price=10.0),
+            state,
+        )
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
+        assert new_state.level == SignalLevel.BUY_STAGE_1
+        assert sso_buy[0].quantity == 4
+
+    def test_buy2_downgrades_to_buy1_when_current_ratio_is_below_buy1_target(self):
+        """약한 매수 신호라도 현재 비중보다 높은 목표면 새 매수 트랜치를 만든다."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(level=SignalLevel.BUY_STAGE_2, tranche_total=5, tranche_amount=60.0)
+        orders, _, new_state = planner.plan(
+            _sig(rsi=45, dev=-0.12),
+            _pf(cash=700, sso=30, spyi=0, sso_price=10.0),
+            state,
+        )
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action.value == "BUY"]
+        assert new_state.level == SignalLevel.BUY_STAGE_1
+        assert sso_buy[0].quantity == 1
+
+    def test_sell_completion_returns_to_target_level_before_next_sell_cycle(self):
+        """매도 목표 도달 시 같은 실행에서 다음 단계 매도를 시작하지 않는다."""
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.SELL,
+            sell_target_level=SignalLevel.BUY_STAGE_2,
+            tranche_total=10,
+            tranche_completed=9,
+            tranche_amount=200.0,
+        )
+        orders, _, new_state = planner.plan(
+            _sig(rsi=78, dev=0.18),
+            _pf(cash=400, sso=60, spyi=0, sso_price=10.0),
+            state,
+        )
+        assert new_state.level == SignalLevel.BUY_STAGE_2
+        assert not [o for o in orders if o.ticker == "SSO" and o.action.value == "SELL"]
 
 
 class TestDCA:
@@ -357,9 +438,13 @@ class TestStateSerialize:
     """상태 직렬화/역직렬화."""
 
     def test_roundtrip(self):
-        state = SsoDipState(level=SignalLevel.BUY_STAGE_2)
+        state = SsoDipState(
+            level=SignalLevel.SELL,
+            sell_target_level=SignalLevel.BUY_STAGE_2,
+        )
         restored = SsoDipState.from_dict(state.to_dict())
-        assert restored.level == SignalLevel.BUY_STAGE_2
+        assert restored.level == SignalLevel.SELL
+        assert restored.sell_target_level == SignalLevel.BUY_STAGE_2
 
     def test_from_empty_dict(self):
         state = SsoDipState.from_dict({})
