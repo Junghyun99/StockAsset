@@ -1,7 +1,7 @@
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 class MarketRegime(Enum):
     BULL = "Bull"
@@ -20,8 +20,11 @@ class OrderAction(str, Enum):
 class ExecutionStatus(str, Enum):
     FILLED = "FILLED"
     PARTIAL = "PARTIAL"
-    REJECTED = "REJECTED"
     ORDERED = "ORDERED"
+    CANCELLED = "CANCELLED"
+    SKIPPED = "SKIPPED"
+    REJECTED = "REJECTED"
+    ERROR = "ERROR"
 
     def __str__(self):
         return self.value
@@ -97,6 +100,100 @@ class TradeExecution:
     status: ExecutionStatus
     reason: str = "" # 거부 사유 등
 
+
+@dataclass(frozen=True)
+class OrderOutcome:
+    """주문 한 건의 최종 관측 결과.
+
+    ``order``는 전략이 요청한 원본 주문이며, 수량 조정이 있었다면
+    ``execution``에 실제 수량이 기록된다.
+    """
+
+    order: Order
+    status: ExecutionStatus
+    execution: Optional[TradeExecution] = None
+    reason: str = ""
+
+    def __post_init__(self) -> None:
+        if self.execution is not None and self.execution.status != self.status:
+            raise ValueError("outcome status must match execution status")
+
+
+@dataclass
+class OrderBatchResult:
+    """한 번의 브로커 호출에서 요청한 모든 주문의 결과."""
+
+    outcomes: List[OrderOutcome]
+
+    @property
+    def total(self) -> int:
+        return len(self.outcomes)
+
+    @property
+    def actual_executions(self) -> List[TradeExecution]:
+        """현금·보유수량에 반영 가능한 실제 체결만 반환한다."""
+        fill_statuses = {ExecutionStatus.FILLED, ExecutionStatus.PARTIAL}
+        return [
+            outcome.execution
+            for outcome in self.outcomes
+            if outcome.status in fill_statuses
+            and outcome.execution is not None
+            and outcome.execution.quantity > 0
+        ]
+
+    @property
+    def warning_outcomes(self) -> List[OrderOutcome]:
+        warning_statuses = {
+            ExecutionStatus.PARTIAL,
+            ExecutionStatus.ORDERED,
+            ExecutionStatus.CANCELLED,
+            ExecutionStatus.REJECTED,
+            ExecutionStatus.ERROR,
+        }
+        return [
+            outcome for outcome in self.outcomes
+            if outcome.status in warning_statuses
+        ]
+
+    @property
+    def has_warnings(self) -> bool:
+        return bool(self.warning_outcomes)
+
+    def count(self, status: ExecutionStatus) -> int:
+        return sum(1 for outcome in self.outcomes if outcome.status == status)
+
+    @property
+    def reported_executions(self) -> List[TradeExecution]:
+        """브로커가 상세 객체를 돌려준 결과(미체결 상태 포함)."""
+        return [
+            outcome.execution
+            for outcome in self.outcomes
+            if outcome.execution is not None
+        ]
+
+    # 과도기 호환: 기존 브로커 테스트가 상세 응답 리스트처럼 읽을 수 있게 한다.
+    # 도메인 저장·정산 코드는 반드시 actual_executions를 사용한다.
+    def __iter__(self):
+        return iter(self.reported_executions)
+
+    def __len__(self) -> int:
+        return len(self.reported_executions)
+
+    def __getitem__(self, index):
+        return self.reported_executions[index]
+
+
+@dataclass
+class StrategyDecision:
+    """전략 훅이 공통 실행 흐름에 전달하는 순수 결정."""
+
+    signal: TradeSignal
+    label: str = "Rebalancing"
+    is_rebalancing: bool = True
+    state_key: Optional[str] = None
+    proposed_state: Any = None
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
 @dataclass(frozen=True)
 class DecisionFactor:
     """엔진의 의사결정 핵심 요소 한 항목 (자기서술적 — 프론트가 그대로 렌더링).
@@ -125,3 +222,4 @@ class DayResult:
     is_rebalancing: bool
     nan_fields: List[str]
     expected_dividend: float = 0.0
+    order_result: Optional[OrderBatchResult] = None

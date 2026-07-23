@@ -21,6 +21,7 @@ from src.utils.logger import TradeLogger
 from src.backtest.fetcher import download_historical_data
 from src.backtest.components import BacktestDataLoader, BacktestBroker, BacktestDividendSettlement
 from src.infra.dividend import NoOpDividendSettlement
+from src.infra.ticker_labels import ConfigTickerLabelProvider
 
 # 국내(domestic) 엔진 백테스트 시 USD → KRW 환산에 사용하는 고정 환율
 # 백테스트 기간(2019~2025) 평균 환율 근사치. 실시간 환율 사용 시 백테스트 재현성 저하.
@@ -200,6 +201,7 @@ def run_compare_backtest(
             is_live_trading=False,
             benchmarks=BENCHMARKS_BY_MARKET.get(market_type, {}),
             dividend_rate_provider=loader,
+            ticker_labels=ConfigTickerLabelProvider(),
             dividend_settlement=(
                 BacktestDividendSettlement(broker)
                 if reinvest_dividends else NoOpDividendSettlement()

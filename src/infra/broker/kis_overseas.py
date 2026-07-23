@@ -1,6 +1,6 @@
 # src/infra/broker/kis_overseas.py
 """KIS 해외주식(미국) 브로커."""
-from typing import List, Dict, Optional
+from typing import List, Dict
 import time
 import src.infra.broker as _pkg  # test patch 타깃: src.infra.broker.requests
 from datetime import datetime, timezone, timedelta
@@ -102,7 +102,7 @@ class KisOverseasBrokerBase(KisBrokerCommon):
             current_prices=all_prices
         )
 
-    def _send_order(self, order: Order) -> Optional[TradeExecution]:
+    def _send_order(self, order: Order) -> TradeExecution:
         """실제 주문 API 호출 (체결 대기 없음)"""
         tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
 
@@ -118,7 +118,9 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                 f"[KisBroker] 스프레드 비정상 — {order.ticker} "
                 f"bid={bid} ask={ask} spread={spread_pct:.2f}% > {self.SPREAD_THRESHOLD_PCT}% — 주문 보류"
             )
-            return None
+            return self._status_execution(
+                order, ExecutionStatus.SKIPPED, "spread guard"
+            )
 
         if order.action == OrderAction.BUY:
             order_price = round(ask, 2) if ask > 0 else round(order.price, 2)
@@ -146,11 +148,14 @@ class KisOverseasBrokerBase(KisBrokerCommon):
             resp_data = res.json()
 
             if resp_data['rt_cd'] != '0':
+                reason = resp_data.get('msg1') or "KIS rejected the order"
                 self.logger.error(
                     f"[KisBroker] Order Failed: {order.action} {order.ticker} "
-                    f"qty={order.quantity} @ {order_price} — {resp_data.get('msg1')}"
+                    f"qty={order.quantity} @ {order_price} — {reason}"
                 )
-                return None
+                return self._status_execution(
+                    order, ExecutionStatus.REJECTED, reason, order_price
+                )
 
             self.logger.info(f"[KisBroker] Order Sent: {order.action} {order.ticker} {order.quantity} @ {order_price}")
 
@@ -166,9 +171,11 @@ class KisOverseasBrokerBase(KisBrokerCommon):
 
         except Exception as e:
             self.logger.error(f"[KisBroker] Order Error: {e}")
-            return None
+            return self._status_execution(
+                order, ExecutionStatus.ERROR, str(e)
+            )
 
-    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> Optional[TradeExecution]:
+    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> TradeExecution:
         """주문 전송 후 체결 대기. 체결 시 FILLED, 타임아웃 시 ORDERED(미확인 체결) 반환."""
         tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
         url = f"{self.base_url}/uapi/overseas-stock/v1/trading/order"
@@ -183,11 +190,8 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                 f"[KisBroker] 스프레드 비정상 — {order.ticker} "
                 f"bid={bid} ask={ask} spread={spread_pct:.2f}% > {self.SPREAD_THRESHOLD_PCT}% — 주문 보류"
             )
-            return TradeExecution(
-                ticker=order.ticker, action=order.action, quantity=order.quantity,
-                price=order.price, fee=0.0,
-                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
-                status=ExecutionStatus.REJECTED
+            return self._status_execution(
+                order, ExecutionStatus.SKIPPED, "spread guard"
             )
 
         if order.action == OrderAction.BUY:
@@ -216,11 +220,14 @@ class KisOverseasBrokerBase(KisBrokerCommon):
             resp_data = res.json()
 
             if resp_data['rt_cd'] != '0':
+                reason = resp_data.get('msg1') or "KIS rejected the order"
                 self.logger.error(
                     f"[KisBroker] Order Failed: {order.action} {order.ticker} "
-                    f"qty={order.quantity} @ {order_price} — {resp_data.get('msg1')}"
+                    f"qty={order.quantity} @ {order_price} — {reason}"
                 )
-                return None
+                return self._status_execution(
+                    order, ExecutionStatus.REJECTED, reason, order_price
+                )
 
             odno = resp_data.get('output', {}).get('ODNO', '')
             self.logger.info(
@@ -258,6 +265,13 @@ class KisOverseasBrokerBase(KisBrokerCommon):
                         self.logger.error(
                             f"[KisBroker] 주문 취소 실패: {order.ticker} ODNO={odno} — 수동 확인 필요"
                         )
+                    else:
+                        return self._status_execution(
+                            order,
+                            ExecutionStatus.CANCELLED,
+                            f"fill timeout; cancelled ODNO={odno}",
+                            order_price,
+                        )
 
             return TradeExecution(
                 ticker=order.ticker,
@@ -272,7 +286,9 @@ class KisOverseasBrokerBase(KisBrokerCommon):
 
         except Exception as e:
             self.logger.error(f"[KisBroker] Order Error: {e}")
-            return None
+            return self._status_execution(
+                order, ExecutionStatus.ERROR, str(e)
+            )
 
     def _poll_order_fill(self, odno: str, exch: str, timeout: int = 30) -> bool:
         """공용 poll helper 호출 래퍼."""

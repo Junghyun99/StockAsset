@@ -1,6 +1,6 @@
 # src/infra/broker/kis_domestic.py
 """KIS 국내주식 브로커."""
-from typing import List, Dict, Optional
+from typing import List, Dict
 import time
 from requests import exceptions as requests_exceptions
 import src.infra.broker as _pkg  # test patch 타깃: src.infra.broker.requests
@@ -143,7 +143,7 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             current_prices=all_prices
         )
 
-    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> Optional[TradeExecution]:
+    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> TradeExecution:
         """국내주식 주문 전송 후 체결 대기."""
         tr_id = self.BUY_TR_ID if order.action == OrderAction.BUY else self.SELL_TR_ID
         url = f"{self.base_url}/uapi/domestic-stock/v1/trading/order-cash"
@@ -152,19 +152,13 @@ class KisDomesticBrokerBase(KisBrokerCommon):
 
         if order.action == OrderAction.BUY and ask <= 0:
             self.logger.warning(f"[KisDomestic] 매수 호가 조회 실패 — {order.ticker} 주문 스킵")
-            return TradeExecution(
-                ticker=order.ticker, action=order.action, quantity=order.quantity,
-                price=0.0, fee=0.0,
-                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
-                status=ExecutionStatus.REJECTED
+            return self._status_execution(
+                order, ExecutionStatus.ERROR, "buy asking price lookup failed", 0.0
             )
         if order.action == OrderAction.SELL and bid <= 0:
             self.logger.warning(f"[KisDomestic] 매도 호가 조회 실패 — {order.ticker} 주문 스킵")
-            return TradeExecution(
-                ticker=order.ticker, action=order.action, quantity=order.quantity,
-                price=0.0, fee=0.0,
-                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
-                status=ExecutionStatus.REJECTED
+            return self._status_execution(
+                order, ExecutionStatus.ERROR, "sell asking price lookup failed", 0.0
             )
 
         if not self._check_spread(bid, ask):
@@ -174,11 +168,8 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                 f"[KisDomestic] 스프레드 비정상 — {order.ticker} "
                 f"bid={bid} ask={ask} spread={spread_pct:.2f}% > {self.SPREAD_THRESHOLD_PCT}% — 주문 보류"
             )
-            return TradeExecution(
-                ticker=order.ticker, action=order.action, quantity=order.quantity,
-                price=order.price, fee=0.0,
-                date=datetime.now(_KST).strftime("%Y-%m-%d %H:%M:%S"),
-                status=ExecutionStatus.REJECTED
+            return self._status_execution(
+                order, ExecutionStatus.SKIPPED, "spread guard"
             )
 
         order_price = int(ask) if order.action == OrderAction.BUY else int(bid)
@@ -199,11 +190,14 @@ class KisDomesticBrokerBase(KisBrokerCommon):
             resp_data = res.json()
 
             if resp_data['rt_cd'] != '0':
+                reason = resp_data.get('msg1') or "KIS rejected the order"
                 self.logger.error(
                     f"[KisDomestic] Order Failed: {order.action} {order.ticker} "
-                    f"qty={order.quantity} @ {order_price} — {resp_data.get('msg1')}"
+                    f"qty={order.quantity} @ {order_price} — {reason}"
                 )
-                return None
+                return self._status_execution(
+                    order, ExecutionStatus.REJECTED, reason, float(order_price)
+                )
 
             odno = resp_data.get('output', {}).get('ODNO', '')
             self.logger.info(
@@ -241,6 +235,13 @@ class KisDomesticBrokerBase(KisBrokerCommon):
                         self.logger.error(
                             f"[KisDomestic] 주문 취소 실패: {order.ticker} ODNO={odno} — 수동 확인 필요"
                         )
+                    else:
+                        return self._status_execution(
+                            order,
+                            ExecutionStatus.CANCELLED,
+                            f"fill timeout; cancelled ODNO={odno}",
+                            float(order_price),
+                        )
 
             return TradeExecution(
                 ticker=order.ticker,
@@ -255,7 +256,9 @@ class KisDomesticBrokerBase(KisBrokerCommon):
 
         except Exception as e:
             self.logger.error(f"[KisDomestic] Order Error: {e}")
-            return None
+            return self._status_execution(
+                order, ExecutionStatus.ERROR, str(e)
+            )
 
     def _poll_order_fill(self, odno: str, timeout: int = 30) -> bool:
         """공용 poll helper 호출 래퍼."""

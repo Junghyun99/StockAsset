@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Optional
 import pandas as pd
-from src.core.models import Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution, DecisionFactor
+from src.core.models import (
+    Portfolio, Order, MarketData, TradeSignal, MarketRegime, TradeExecution,
+    DecisionFactor, OrderBatchResult,
+)
 
 class IDataProvider(ABC):
     @abstractmethod
@@ -34,7 +37,7 @@ class IBrokerAdapter(ABC):
     @abstractmethod
     def get_portfolio(self) -> Portfolio: ...
     @abstractmethod
-    def execute_orders(self, orders: List[Order]) -> List[TradeExecution]: ...
+    def execute_orders(self, orders: List[Order]) -> OrderBatchResult: ...
     @abstractmethod
     def fetch_current_prices(self, tickers: List[str]) -> Dict[str, float]: ...
 
@@ -91,6 +94,18 @@ class INotifier(ABC):
     @abstractmethod
     def send_alert(self, message: str, detail: Optional[str] = None,
                    account_label: Optional[str] = None) -> None: ...
+
+
+class ITickerLabelProvider(ABC):
+    """티커의 사용자 표시명을 제공하는 출력 포트."""
+
+    @abstractmethod
+    def display(self, ticker: str) -> str: ...
+
+
+class IdentityTickerLabelProvider(ITickerLabelProvider):
+    def display(self, ticker: str) -> str:
+        return ticker
 
 class IRepository(ABC):
     @abstractmethod

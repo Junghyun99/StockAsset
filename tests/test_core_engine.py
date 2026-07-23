@@ -530,7 +530,7 @@ def test_orders_executed_sends_message():
 
 
 def test_empty_executions_sends_alert():
-    """주문 전송 후 빈 체결 결과 시 notifier.send_alert() '⚠️ NO execution result' 호출."""
+    """주문별 결과가 누락되면 ERROR 경고로 승격한다."""
     notifier = MagicMock()
     engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier)
     md = _make_market_data()
@@ -546,7 +546,8 @@ def test_empty_executions_sends_alert():
 
     notifier.send_alert.assert_called_once()
     msg = notifier.send_alert.call_args[0][0]
-    assert "NO execution result" in msg
+    assert "ERROR" in msg
+    assert "broker returned no result" in msg
 
 
 # ─────────────────────────────────────────────────────────────────

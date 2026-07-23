@@ -9,19 +9,18 @@ QLD 단일 종목을 대상으로 이동평균선(MA20/60/120) 눌림목과 RSI 
 모든 현금을 SHV로 주차해 단기채 이자를 받고, 눌림 매수 시 SHV를 팔아 자금을
 확보한다. 가용현금 = 예수금 + SHV평가액으로 계산한다.
 """
-from typing import List, Optional, Tuple
+from typing import List
 
 import math
-import pandas as pd
 
 from src.core.engine.base import TradingEngine
+from src.core.engine.data_pipeline import CollectedData, DataSetSpec, StrategyDataSpec
 from src.core.engine.registry import register_engine
-from src.core.interfaces import IDataProvider
 from src.core.logic.dip_buy_indicators import DipBuyIndicatorCalculator
 from src.core.logic.dip_buy_planner import DipBuyPlanner, DipBuyState
 from src.core.models import (
-    MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, Order, OrderAction,
-    DecisionFactor,
+    MarketData, MarketRegime, Portfolio, TradeSignal, Order, OrderAction,
+    DecisionFactor, OrderBatchResult, StrategyDecision,
 )
 
 
@@ -55,40 +54,32 @@ class DipBuyEngine(TradingEngine):
             sell_target_cash_ratio=self.SELL_TARGET_CASH_RATIO,
         )
         # 트랜치 큐/무장 상태 복원 (국면 히스테리시스 복원과 동일 패턴)
-        self.dip_state = DipBuyState.from_dict(self.repo.load_strategy_state(self.STATE_KEY))
+        self.dip_state = DipBuyState.from_dict(
+            self.restore_strategy_state(self.STATE_KEY)
+        )
         self.dip_signals = None
 
-    def collect_data(self, data_provider: IDataProvider) -> Tuple[pd.DataFrame, float]:
-        """Step 1 오버라이드: SPY 대신 대상 티커(QLD) OHLCV를 수집한다."""
-        df = data_provider.fetch_ohlcv([self._ticker], days=400)
-        vix = data_provider.fetch_vix()
-        return df, vix
+    def data_spec(self) -> StrategyDataSpec:
+        return StrategyDataSpec(
+            reference=DataSetSpec("reference", (self._ticker,), days=400),
+        )
 
-    def calculate_indicators(self, spy_df: pd.DataFrame, vix: float) -> MarketData:
-        """Step 2 오버라이드: 대시보드/repo 호환 MarketData + 눌림목 지표 동시 계산."""
-        self.dip_signals = self._dip_calc.calculate(spy_df)
-        return self.calculator.calculate(spy_df, vix)
+    def calculate_strategy_indicators(self, collected: CollectedData):
+        self.dip_signals = self._dip_calc.calculate(collected.reference)
+        return self.dip_signals
 
-    def execute_cycle(
+    def uses_trading_interval(self) -> bool:
+        return False
+
+    def build_strategy_decision(
         self,
         market_data: MarketData,
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
-        nan_fields: List[str],
-        sim_date: Optional[str],
-        record_date: str,
-    ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
-        """Step 5 오버라이드: Rebalancer 대신 DipBuyPlanner로 트리거 기반 매매."""
-        executions: List[TradeExecution] = []
-        final_pf = portfolio
-        is_rebalancing = False
-
-        if nan_fields:
-            signal = TradeSignal(0.0, [], f"데이터 이상 - NaN: {', '.join(nan_fields)}")
-            self.logger.error(f"NaN detected: {', '.join(nan_fields)} — 매매 중단")
-            return signal, executions, final_pf, is_rebalancing
-
+    ) -> StrategyDecision:
+        """전략 훅: 눌림목 트리거와 현금 저수지 주문만 결정한다."""
+        previous_state = self.dip_state
         deployable_cash = self._deployable_cash(portfolio)
         orders, reason, new_state = self._planner.plan(
             self.dip_signals, portfolio, self.dip_state, available_cash=deployable_cash
@@ -97,25 +88,35 @@ class DipBuyEngine(TradingEngine):
         orders = self._apply_cash_reservoir(orders, portfolio)
 
         signal = TradeSignal(exposure, orders, reason)
-        self.logger.info(f">>> Step 5: DipBuy ({reason})")
+        return StrategyDecision(
+            signal=signal,
+            label=type(self).__name__.removesuffix("Engine"),
+            is_rebalancing=bool(orders),
+            state_key=self.STATE_KEY,
+            proposed_state=new_state,
+            metadata={"previous_state": previous_state, "target_ticker": self._ticker},
+        )
 
-        if orders:
-            is_rebalancing = True
-            self.logger.info(f"Executing {len(orders)} orders ({reason})")
-            executions = self.broker.execute_orders(orders)
-            try:
-                final_pf = self.broker.get_portfolio()
-            except RuntimeError as e:
-                self.logger.error(f"거래 후 포트폴리오 조회 실패 — 거래 전 포트폴리오로 대체: {e}")
-                final_pf = portfolio
-
-        # 상태 갱신 + 영속화는 주문 실행 시도 이후에 수행한다. execute_orders가
-        # 예외로 중단되면 차감된 트랜치 상태가 저장되지 않아, 다음 거래일에 동일
-        # 상태로 재시도된다 (주문 미실행 + 상태 차감의 불일치 방지).
-        self.dip_state = new_state
-        self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
-
-        return signal, executions, final_pf, is_rebalancing
+    def finalize_strategy_state(
+        self,
+        decision: StrategyDecision,
+        order_result: OrderBatchResult,
+    ) -> DipBuyState:
+        target_ticker = decision.metadata["target_ticker"]
+        target_requested = any(
+            order.ticker == target_ticker for order in decision.signal.orders
+        )
+        target_filled = any(
+            execution.ticker == target_ticker
+            for execution in order_result.actual_executions
+        )
+        state = (
+            decision.metadata["previous_state"]
+            if target_requested and not target_filled
+            else decision.proposed_state
+        )
+        self.dip_state = state
+        return state
 
     def decision_factors(
         self,
@@ -210,28 +211,21 @@ class DipBuyGatedEngine(DipBuyEngine):
 
     TREND_GATE_MA: int = 200   # DipBuySignals.ma200 사용 (변경 시 지표 추가 필요)
 
-    def execute_cycle(
+    def build_strategy_decision(
         self,
         market_data: MarketData,
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
-        nan_fields: List[str],
-        sim_date: Optional[str],
-        record_date: str,
-    ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
-        if nan_fields:
-            return super().execute_cycle(market_data, portfolio, regime, exposure,
-                                         nan_fields, sim_date, record_date)
-
+    ) -> StrategyDecision:
         price = portfolio.current_prices.get(self._ticker, 0.0)
         ma = self.dip_signals.ma200 if self.dip_signals is not None else float("nan")
         risk_on = price > 0 and not math.isnan(ma) and ma > 0 and price >= ma
 
         if risk_on:
-            # 추세 위 → 정상 DipBuy 위임
-            return super().execute_cycle(market_data, portfolio, regime, exposure,
-                                         nan_fields, sim_date, record_date)
+            return super().build_strategy_decision(
+                market_data, portfolio, regime, exposure
+            )
 
         # 추세 이탈(200MA 아래) → risk-off: 보유 QLD 전량 청산 후 SHV로 대기, 상태 리셋
         orders: List[Order] = []
@@ -241,22 +235,16 @@ class DipBuyGatedEngine(DipBuyEngine):
         orders = self._apply_cash_reservoir(orders, portfolio)
 
         new_state = DipBuyState()
-        self.dip_state = new_state
-        self.repo.save_strategy_state(self.STATE_KEY, new_state.to_dict())
-
         reason = "추세 이탈(200MA 아래) → risk-off 현금화"
         signal = TradeSignal(0.0, orders, reason)
-        self.logger.info(f">>> Step 5: DipBuyGated ({reason})")
-
-        executions: List[TradeExecution] = []
-        final_pf = portfolio
-        is_rebalancing = bool(orders)
-        if orders:
-            executions = self.broker.execute_orders(orders)
-            try:
-                final_pf = self.broker.get_portfolio()
-            except RuntimeError as e:
-                self.logger.error(f"거래 후 포트폴리오 조회 실패 — 거래 전 포트폴리오로 대체: {e}")
-                final_pf = portfolio
-
-        return signal, executions, final_pf, is_rebalancing
+        return StrategyDecision(
+            signal=signal,
+            label="DipBuyGated",
+            is_rebalancing=bool(orders),
+            state_key=self.STATE_KEY,
+            proposed_state=new_state,
+            metadata={
+                "previous_state": self.dip_state,
+                "target_ticker": self._ticker,
+            },
+        )

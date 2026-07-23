@@ -8,10 +8,22 @@ from src.core.engine.domestic_qld_dip_buy import (
 )
 from src.core.engine import TradingEngine, _ENGINE_REGISTRY, _ENGINE_BACKTEST, _ENGINE_MARKET_TYPES
 from src.core.logic.sso_dip_planner import SsoDipPlanner
-from src.core.models import Portfolio
+from src.core.logic.sso_dip_planner import SignalLevel, SsoDipState
+from src.core.models import (
+    ExecutionStatus,
+    MarketData,
+    MarketRegime,
+    Order,
+    OrderAction,
+    OrderBatchResult,
+    OrderOutcome,
+    Portfolio,
+    StrategyDecision,
+    TradeSignal,
+)
 
 
-def _build_engine():
+def _build_engine(notifier=None):
     broker = MagicMock()
     repo = MagicMock()
     logger = MagicMock()
@@ -39,6 +51,7 @@ def _build_engine():
 
         engine = DomesticQldDipBuyEngine(
             broker=broker, repo=repo, logger=logger,
+            notifier=notifier,
             trading_interval_days=1,
         )
 
@@ -96,6 +109,51 @@ class TestStateManagement:
     def test_loads_state_on_init(self):
         engine, mocks = _build_engine()
         mocks["repo"].load_strategy_state.assert_called_with("domestic_qld_dip_buy")
+
+    def test_rejected_buy_alerts_and_does_not_consume_tranche(self):
+        notifier = MagicMock()
+        engine, mocks = _build_engine(notifier)
+        order = Order(LEVER_TICKER, OrderAction.BUY, 15, 43930.0)
+        proposed_state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=0,
+            tranche_amount=700_000.0,
+        )
+        engine.build_strategy_decision = MagicMock(return_value=StrategyDecision(
+            signal=TradeSignal(1.0, [order], "BUY_STAGE_1 분할매수"),
+            label="DomesticQldDipBuy",
+            is_rebalancing=True,
+            state_key=engine.STATE_KEY,
+            proposed_state=proposed_state,
+        ))
+        mocks["broker"].execute_orders.return_value = OrderBatchResult([
+            OrderOutcome(
+                order,
+                ExecutionStatus.REJECTED,
+                reason="해당종목은 기본예탁금 충족한 계좌만 매수주문가능합니다",
+            )
+        ])
+
+        _, executions, _, _ = engine.execute_cycle(
+            MarketData(
+                "2026-07-23", 747.41, 700.0, 0.1, 0.1, -0.016, 16.64,
+            ),
+            mocks["broker"].get_portfolio.return_value,
+            MarketRegime.BULL,
+            1.0,
+            [],
+            "2026-07-23",
+            "2026-07-23",
+        )
+
+        assert executions == []
+        assert engine.dip_state.tranche_completed == 0
+        mocks["repo"].save_strategy_state.assert_called_once()
+        saved_state = mocks["repo"].save_strategy_state.call_args.args[1]
+        assert saved_state["tranche_completed"] == 0
+        notifier.send_alert.assert_called_once()
+        assert "기본예탁금" in notifier.send_alert.call_args.args[0]
 
 
 class TestCollectData:

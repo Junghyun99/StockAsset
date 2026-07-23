@@ -378,7 +378,7 @@ def test_domestic_send_order_sell_uses_correct_tr_id(domestic_paper_broker, mock
 
 
 def test_domestic_send_order_api_failure(domestic_paper_broker, mock_requests):
-    """주문 API 실패 시 None 반환"""
+    """주문 API 거부 시 REJECTED와 사유를 반환한다."""
     asking_response = MagicMock()
     asking_response.json.return_value = {
         'rt_cd': '0',
@@ -397,7 +397,8 @@ def test_domestic_send_order_api_failure(domestic_paper_broker, mock_requests):
 
     order = Order('005930', OrderAction.BUY, 100, 72000.0)
     result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
-    assert result is None
+    assert result.status == ExecutionStatus.REJECTED
+    assert result.reason == "Insufficient balance"
 
 
 def test_domestic_send_order_uses_domestic_url(domestic_paper_broker, mock_requests):
@@ -668,7 +669,9 @@ def test_execute_orders_buy_skipped_on_ask_price_zero(domestic_paper_broker, moc
     buy_order = Order('005930', OrderAction.BUY, 5, 72000.0)
     results = domestic_paper_broker.execute_orders([buy_order])
 
-    assert results == []
+    assert results.total == 1
+    assert results.outcomes[0].status == ExecutionStatus.ERROR
+    assert results.actual_executions == []
     mock_requests.post.assert_not_called()
 
 
@@ -700,7 +703,7 @@ def test_domestic_check_spread_inherited(domestic_paper_broker):
 # --- 주문 거부 (호가 조회 실패 / 스프레드 이상) 테스트 ---
 
 def test_domestic_sell_order_skipped_on_asking_price_failure(domestic_paper_broker, mock_requests):
-    """매도 호가 조회 실패(bid=0) 시 order.price fallback 없이 REJECTED 반환."""
+    """매도 호가 조회 실패는 ERROR로 보존한다."""
     asking_response = MagicMock()
     asking_response.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
     mock_requests.get.return_value = asking_response
@@ -709,12 +712,12 @@ def test_domestic_sell_order_skipped_on_asking_price_failure(domestic_paper_brok
     result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
 
     assert result is not None
-    assert result.status == ExecutionStatus.REJECTED
+    assert result.status == ExecutionStatus.ERROR
     mock_requests.post.assert_not_called()
 
 
 def test_domestic_buy_order_skipped_on_asking_price_failure(domestic_paper_broker, mock_requests):
-    """매수 호가 조회 실패(ask=0) 시 order.price fallback 없이 REJECTED 반환."""
+    """매수 호가 조회 실패는 ERROR로 보존한다."""
     asking_response = MagicMock()
     asking_response.json.return_value = {'rt_cd': '1', 'msg1': 'API error'}
     mock_requests.get.return_value = asking_response
@@ -723,12 +726,12 @@ def test_domestic_buy_order_skipped_on_asking_price_failure(domestic_paper_broke
     result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
 
     assert result is not None
-    assert result.status == ExecutionStatus.REJECTED
+    assert result.status == ExecutionStatus.ERROR
     mock_requests.post.assert_not_called()
 
 
-def test_domestic_order_rejected_on_bad_spread(domestic_paper_broker, mock_requests):
-    """스프레드 비정상 시 REJECTED 반환"""
+def test_domestic_order_skipped_on_bad_spread(domestic_paper_broker, mock_requests):
+    """스프레드 비정상이라는 의도된 보류는 SKIPPED로 반환한다."""
     asking_response = MagicMock()
     asking_response.json.return_value = {
         'rt_cd': '0',
@@ -740,7 +743,7 @@ def test_domestic_order_rejected_on_bad_spread(domestic_paper_broker, mock_reque
     result = domestic_paper_broker._send_order_and_wait(order, timeout=5)
 
     assert result is not None
-    assert result.status == ExecutionStatus.REJECTED
+    assert result.status == ExecutionStatus.SKIPPED
 
 
 # ==========================================
