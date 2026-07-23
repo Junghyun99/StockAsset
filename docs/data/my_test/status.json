@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-07-23 10:01:04",
+    "last_updated": "2026-07-23 11:09:25",
     "last_rebalancing_date": "2026-07-23",
     "strategy": {
         "regime": "Bull",
@@ -17,14 +17,14 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 53.5910846222946,
+                "value": 52.851147840313544,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.15292597654284518,
+                "value": 0.1432429975717124,
                 "format": "percent",
                 "threshold": -0.1
             },
@@ -45,14 +45,14 @@
         ]
     },
     "portfolio": {
-        "total_value": 4121826.0,
+        "total_value": 4104006.0,
         "cash_balance": 707676.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 18,
-                "price": 189675.0,
-                "value": 3414150.0
+                "price": 188685.0,
+                "value": 3396330.0
             }
         ]
     }
