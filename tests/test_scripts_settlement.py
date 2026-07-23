@@ -35,7 +35,12 @@ class TestMonthlySettlementCli:
         ).read_text(encoding="utf-8")
 
         assert "inputs.account" not in workflow
-        assert "--all-groups" in workflow
+        assert "ACCOUNT:" not in workflow
+        assert (
+            'python -m scripts.monthly_settlement --all-groups '
+            '--start "$START" --end "$END" | tee settlement_report.txt'
+        ) in workflow
+        assert "GITHUB_STEP_SUMMARY" in workflow
 
     def test_report_printed(self, tmp_path, capsys):
         _write_account(tmp_path, "acc1", [
