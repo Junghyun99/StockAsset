@@ -23,6 +23,7 @@ from src.infra.broker import (
 from src.infra.notifier import SlackNotifier
 from src.infra.repo import JsonRepository
 from src.infra.dividend import NoOpDividendSettlement
+from src.infra.ticker_labels import ConfigTickerLabelProvider
 
 
 def _resolve_engine_class(engine_name: str):
@@ -106,6 +107,7 @@ class TradingBot:
                 is_active=acc.is_active,
                 dividend_rate_provider=self.data_loader,
                 dividend_settlement=NoOpDividendSettlement(),
+                ticker_labels=ConfigTickerLabelProvider(),
             )
             self.runners.append(AccountRunner(acc, engine, broker, repo))
 

@@ -1,12 +1,16 @@
 # src/infra/broker/kis_base.py
 """KIS 공통 베이스 — 인증, 헤더, 매도우선 오케스트레이션."""
+from dataclasses import replace
 from typing import List, Dict, Optional
 import time
 import src.infra.broker as _pkg  # test patch 타깃: src.infra.broker.requests
 from datetime import datetime, timedelta
 
 from src.core.interfaces import IBrokerAdapter
-from src.core.models import Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus
+from src.core.models import (
+    Portfolio, Order, TradeExecution, OrderAction, ExecutionStatus,
+    OrderBatchResult, OrderOutcome,
+)
 
 from . import kis_http
 from . import kis_token_cache
@@ -114,7 +118,7 @@ class KisBrokerCommon(IBrokerAdapter):
     def get_portfolio(self) -> Portfolio:
         raise NotImplementedError
 
-    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> Optional[TradeExecution]:
+    def _send_order_and_wait(self, order: Order, timeout: int = 30) -> TradeExecution:
         raise NotImplementedError
 
     def _fetch_asking_price(self, ticker: str) -> tuple:
@@ -125,29 +129,33 @@ class KisBrokerCommon(IBrokerAdapter):
 
     # --- 공통 오케스트레이션 로직 ---
 
-    def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
-        executions = []
-        sell_orders = [o for o in orders if o.action == OrderAction.SELL]
-        buy_orders = [o for o in orders if o.action == OrderAction.BUY]
+    def execute_orders(self, orders: List[Order]) -> OrderBatchResult:
+        outcomes = {}
+        sell_orders = [(i, o) for i, o in enumerate(orders) if o.action == OrderAction.SELL]
+        buy_orders = [(i, o) for i, o in enumerate(orders) if o.action == OrderAction.BUY]
 
         # === 1. 매도 실행 (주문 + 체결 대기 통합) ===
         if sell_orders:
             self.logger.info(f"[KisBroker] Processing {len(sell_orders)} SELL orders...")
-            for order in sell_orders:
-                res = self._send_order_and_wait(order, timeout=30)
-                if res: executions.append(res)
+            for index, order in sell_orders:
+                outcomes[index] = self._execute_one(order)
                 time.sleep(0.2)  # API 제한 고려
 
         # === 2. 잔고 갱신 및 매수 재계산 ===
         # 매도 미체결(타임아웃) 시 매수 중단 — 이중 매도 및 자금 부족 방지 (#227)
         sell_timed_out = any(
-            e.status == ExecutionStatus.ORDERED
-            for e in executions
-            if e.action == OrderAction.SELL
+            outcomes[index].status == ExecutionStatus.ORDERED
+            for index, _ in sell_orders
         )
         if sell_timed_out:
             self.logger.error("[KisBroker] 매도 미체결 주문 존재 — 매수 중단 (#227)")
-            return executions
+            for index, order in buy_orders:
+                outcomes[index] = OrderOutcome(
+                    order,
+                    ExecutionStatus.SKIPPED,
+                    reason="buy blocked by unconfirmed sell order",
+                )
+            return OrderBatchResult([outcomes[i] for i in range(len(orders))])
 
         if buy_orders:
             if sell_orders:
@@ -155,12 +163,17 @@ class KisBrokerCommon(IBrokerAdapter):
 
             # === 3. 매수 실행 (주문 + 체결 대기 통합) ===
             prev_cash: Optional[float] = None
-            for order in buy_orders:
+            for index, order in buy_orders:
                 # 매수 주문마다 증권사 API로 실제 가용 금액 조회
                 try:
                     pf = self.get_portfolio()
                 except RuntimeError as e:
                     self.logger.error(f"[KisBroker] 매수 가용 현금 조회 실패 — {order.ticker} 스킵: {e}")
+                    outcomes[index] = OrderOutcome(
+                        order,
+                        ExecutionStatus.ERROR,
+                        reason=f"available cash lookup failed: {e}",
+                    )
                     continue
                 current_cash = pf.total_cash
                 # 현금 변동이 있을 때만 로깅(동일 값 반복 노이즈 방지)
@@ -176,9 +189,19 @@ class KisBrokerCommon(IBrokerAdapter):
                 bid, ask = self._fetch_asking_price(order.ticker)
                 if not self._check_spread(bid, ask):
                     self.logger.warning(f"[KisBroker] 스프레드 비정상 — {order.ticker} 매수 건너뜀")
+                    outcomes[index] = OrderOutcome(
+                        order,
+                        ExecutionStatus.SKIPPED,
+                        reason="spread guard",
+                    )
                     continue
                 if ask <= 0:
                     self.logger.warning(f"[KisBroker] 매수 호가 조회 실패 — {order.ticker} 스킵")
+                    outcomes[index] = OrderOutcome(
+                        order,
+                        ExecutionStatus.ERROR,
+                        reason="buy asking price lookup failed",
+                    )
                     continue
                 estimated_price = ask
 
@@ -191,12 +214,73 @@ class KisBrokerCommon(IBrokerAdapter):
 
                 if actual_qty > 0:
                     adjusted_order = Order(ticker=order.ticker, action=order.action, quantity=actual_qty, price=order.price)
-                    res = self._send_order_and_wait(adjusted_order, timeout=30)
-                    if res:
-                        executions.append(res)
+                    outcome = self._execute_one(adjusted_order)
+                    if actual_qty < order.quantity and outcome.status == ExecutionStatus.FILLED:
+                        execution = replace(
+                            outcome.execution,
+                            status=ExecutionStatus.PARTIAL,
+                            reason=(
+                                outcome.reason
+                                or f"quantity adjusted {order.quantity}->{actual_qty}"
+                            ),
+                        )
+                        outcome = OrderOutcome(
+                            order, ExecutionStatus.PARTIAL, execution, execution.reason
+                        )
+                    else:
+                        outcome = OrderOutcome(
+                            order, outcome.status, outcome.execution, outcome.reason
+                        )
+                    outcomes[index] = outcome
                     time.sleep(0.2)
+                else:
+                    outcomes[index] = OrderOutcome(
+                        order,
+                        ExecutionStatus.SKIPPED,
+                        reason="insufficient available cash",
+                    )
 
-        return executions
+        return OrderBatchResult([outcomes[i] for i in range(len(orders))])
+
+    def _execute_one(self, order: Order) -> OrderOutcome:
+        try:
+            execution = self._send_order_and_wait(order, timeout=30)
+        except Exception as error:
+            self.logger.error(
+                f"[KisBroker] Order adapter error: {order.action} {order.ticker} — {error}"
+            )
+            return OrderOutcome(order, ExecutionStatus.ERROR, reason=str(error))
+        if execution is None:
+            return OrderOutcome(
+                order,
+                ExecutionStatus.ERROR,
+                reason="broker adapter returned no order result",
+            )
+        return OrderOutcome(
+            order,
+            execution.status,
+            execution,
+            execution.reason,
+        )
+
+    @staticmethod
+    def _status_execution(
+        order: Order,
+        status: ExecutionStatus,
+        reason: str,
+        price: Optional[float] = None,
+    ) -> TradeExecution:
+        """체결이 아닌 주문 상태도 유실 없이 전달하는 공통 결과."""
+        return TradeExecution(
+            ticker=order.ticker,
+            action=order.action,
+            quantity=order.quantity,
+            price=order.price if price is None else price,
+            fee=0.0,
+            date=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            status=status,
+            reason=reason,
+        )
 
     def _wait_for_completion(self, timeout: int = 60) -> bool:
         """미체결 내역이 없을 때까지 대기"""

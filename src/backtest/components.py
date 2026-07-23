@@ -3,7 +3,7 @@ import pandas as pd
 from dataclasses import replace
 from typing import List, Dict, Optional
 from src.core.interfaces import IDataProvider, IBrokerAdapter, ILogger, IDividendRateProvider, IDividendSettlement
-from src.core.models import Portfolio, Order, TradeExecution
+from src.core.models import Order, OrderBatchResult, Portfolio, TradeExecution
 from src.infra.broker import MockBroker # 기능 재사용
 
 class BacktestDataLoader(IDataProvider, IDividendRateProvider):
@@ -109,7 +109,7 @@ class BacktestBroker(MockBroker):
             current_prices=self.simulation_prices
         )
 
-    def execute_orders(self, orders: List[Order]) -> List[TradeExecution]:
+    def execute_orders(self, orders: List[Order]) -> OrderBatchResult:
         # 주문 객체의 price는 '예상가'일 뿐이므로,
         # 체결은 'simulation_prices'(실제 종가)로 이루어져야 함.
 

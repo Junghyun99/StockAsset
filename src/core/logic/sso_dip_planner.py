@@ -295,7 +295,10 @@ class SsoDipPlanner:
         for execution in executions:
             if (
                 execution.ticker == self.SSO_TICKER
-                and execution.status == ExecutionStatus.FILLED
+                and execution.status in (
+                    ExecutionStatus.FILLED,
+                    ExecutionStatus.PARTIAL,
+                )
                 and execution.action in (OrderAction.BUY, OrderAction.SELL)
             ):
                 return SsoDipState(

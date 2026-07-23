@@ -7,12 +7,9 @@
 """
 from typing import List, Optional, Tuple
 
-import pandas as pd
-
-from src.config import ticker_display
 from src.core.engine.base import TradingEngine
+from src.core.engine.data_pipeline import DataSetSpec, StrategyDataSpec
 from src.core.engine.registry import register_engine
-from src.core.interfaces import IDataProvider
 from src.core.logic.volatility_targeter import VolatilityTargeter
 from src.core.models import DecisionFactor, MarketData, MarketRegime, Portfolio, TradeSignal
 
@@ -50,15 +47,10 @@ class VolManagedEngine(TradingEngine):
     SIGNAL_TICKER: str = "QQQ"        # 변동성/국면 신호 기준(레버리지 대상 자산과 일치)
     LEVERAGE_DEADBAND: float = 0.15   # 목표 L이 이만큼 이상 변할 때만 재조정(턴오버 억제)
 
-    def collect_data(self, data_provider: IDataProvider) -> Tuple[pd.DataFrame, float]:
-        """Step 1 오버라이드: 변동성/국면 신호를 QQQ(레버리지 대상)에서 산출.
-
-        base(TradingEngine)는 SPY로 신호를 뽑지만, 이 엔진은 QQQ/QLD를 운용하므로
-        변동성 관리가 포트폴리오와 일치하도록 QQQ 기준으로 산출한다.
-        """
-        df = data_provider.fetch_ohlcv([self.SIGNAL_TICKER], days=400)
-        vix = data_provider.fetch_vix()
-        return df, vix
+    def data_spec(self) -> StrategyDataSpec:
+        return StrategyDataSpec(
+            reference=DataSetSpec("reference", (self.SIGNAL_TICKER,), days=400),
+        )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,7 +100,7 @@ class VolManagedEngine(TradingEngine):
             exposure, ratio_a = self._lev_to_weights(self._applied_L)
             self.rebalancer.ratio_a = ratio_a
             self.rebalancer.ratio_b = round(1.0 - ratio_a, 10)
-            leveraged_ticker = ticker_display(self.ASSET_GROUPS["A"][0])
+            leveraged_ticker = self.ticker_labels.display(self.ASSET_GROUPS["A"][0])
             self.logger.info(
                 f">>> VolManaged: vol={market_data.spy_volatility:.2%} "
                 f"→ L={exposure + ratio_a:.2f}x "

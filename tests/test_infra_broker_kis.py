@@ -174,14 +174,15 @@ def test_paper_broker_get_header_raises_on_hashkey_failure(paper_broker, mock_re
 
 
 def test_paper_broker_send_order_fails_gracefully_on_hashkey_error(paper_broker, mock_requests):
-    """_send_order: hashkey 실패 시 None 반환 (예외 전파 없음)"""
+    """_send_order: hashkey 실패를 ERROR 결과로 보존한다."""
     # 첫 번째 post(hashkey 요청)에서 예외 발생
     mock_requests.post.side_effect = Exception("Hash service down")
 
     order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = paper_broker._send_order(order)
 
-    assert result is None
+    assert result.status == ExecutionStatus.ERROR
+    assert "주문 헤더" in result.reason
     paper_broker.logger.error.assert_called()
 
 
@@ -497,7 +498,7 @@ def test_paper_broker_send_order_sell_success(paper_broker, mock_requests):
 
 
 def test_paper_broker_send_order_failure(paper_broker, mock_requests):
-    """주문 전송 실패 (API 에러)"""
+    """주문 전송 API 거부를 REJECTED 결과로 보존한다."""
     order_response = MagicMock()
     order_response.json.return_value = {'rt_cd': '1', 'msg1': 'Insufficient balance'}
     hash_response = MagicMock()
@@ -507,12 +508,13 @@ def test_paper_broker_send_order_failure(paper_broker, mock_requests):
     order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = paper_broker._send_order(order)
 
-    assert result is None
+    assert result.status == ExecutionStatus.REJECTED
+    assert result.reason == "Insufficient balance"
     paper_broker.logger.error.assert_called()
 
 
 def test_paper_broker_send_order_exception(paper_broker, mock_requests):
-    """주문 전송 중 예외"""
+    """주문 전송 중 예외를 ERROR 결과로 보존한다."""
     hash_response = MagicMock()
     hash_response.json.return_value = {'HASH': 'hash'}
     mock_requests.post.side_effect = [hash_response, Exception("Network Down")]
@@ -520,7 +522,8 @@ def test_paper_broker_send_order_exception(paper_broker, mock_requests):
     order = Order('SPY', OrderAction.BUY, 5, 100.0)
     result = paper_broker._send_order(order)
 
-    assert result is None
+    assert result.status == ExecutionStatus.ERROR
+    assert result.reason == "Network Down"
 
 
 def test_paper_broker_send_order_real_mode_tr_ids(live_broker, mock_requests):
@@ -1069,7 +1072,7 @@ def test_get_portfolio_raise_for_status_on_http_error(mock_sleep, paper_broker, 
 
 
 def test_send_order_raise_for_status_on_http_error(paper_broker, mock_requests):
-    """_send_order: HTTP 에러 응답 시 None 반환 및 에러 로깅"""
+    """_send_order: HTTP 에러 응답을 ERROR 결과로 보존하고 로깅한다."""
     hash_response = MagicMock()
     hash_response.json.return_value = {'HASH': 'hash123'}
     order_response = MagicMock()
@@ -1079,7 +1082,8 @@ def test_send_order_raise_for_status_on_http_error(paper_broker, mock_requests):
     order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = paper_broker._send_order(order)
 
-    assert result is None
+    assert result.status == ExecutionStatus.ERROR
+    assert "429 Rate Limit" in result.reason
     paper_broker.logger.error.assert_called()
 
 
@@ -1393,8 +1397,8 @@ def test_send_order_and_wait_no_odno_returns_ordered(mock_sleep, paper_broker, m
 
 
 @patch('src.infra.broker.time.sleep')
-def test_send_order_and_wait_api_failure_returns_none(mock_sleep, paper_broker, mock_requests):
-    """주문 API 실패 시 None 반환"""
+def test_send_order_and_wait_api_failure_returns_rejected(mock_sleep, paper_broker, mock_requests):
+    """주문 API 거부 시 REJECTED와 사유를 반환한다."""
     hash_response = MagicMock()
     hash_response.json.return_value = {'HASH': 'hash123'}
 
@@ -1405,7 +1409,8 @@ def test_send_order_and_wait_api_failure_returns_none(mock_sleep, paper_broker, 
     order = Order('SPY', OrderAction.BUY, 10, 150.0)
     result = paper_broker._send_order_and_wait(order, timeout=30)
 
-    assert result is None
+    assert result.status == ExecutionStatus.REJECTED
+    assert result.reason == "Insufficient balance"
     paper_broker.logger.error.assert_called()
 
 
@@ -1504,7 +1509,7 @@ def test_send_order_and_wait_timeout_calls_cancel(mock_sleep, paper_broker, mock
 
     mock_cancel.assert_called_once_with('ORD999', 'AMEX', 'SPY', 5)
     assert result is not None
-    assert result.status == ExecutionStatus.ORDERED
+    assert result.status == ExecutionStatus.CANCELLED
 
 
 @patch('src.infra.broker.time.sleep')
@@ -1702,15 +1707,15 @@ def test_send_order_and_wait_fallback_to_last(mock_sleep, paper_broker, mock_req
 
 
 @patch('src.infra.broker.time.sleep')
-def test_send_order_and_wait_rejected_on_wide_spread(mock_sleep, paper_broker, mock_requests):
-    """스프레드 비정상 시 REJECTED 반환"""
+def test_send_order_and_wait_skipped_on_wide_spread(mock_sleep, paper_broker, mock_requests):
+    """스프레드 비정상이라는 의도된 보류는 SKIPPED로 반환한다."""
     # bid=100, ask=102 → spread ≈ 1.98% > 0.5%
     with patch.object(paper_broker, '_fetch_asking_price', return_value=(100.0, 102.0)):
         order = Order('SPY', OrderAction.BUY, 10, 150.0)
         result = paper_broker._send_order_and_wait(order, timeout=30)
 
     assert result is not None
-    assert result.status == ExecutionStatus.REJECTED
+    assert result.status == ExecutionStatus.SKIPPED
     paper_broker.logger.warning.assert_called()
     # POST는 호출되지 않아야 함 (주문 전송 안 함)
     mock_requests.post.assert_not_called()

@@ -224,7 +224,8 @@ def test_bot_order_execution_failure(mock_dependencies):
 
     mock_dependencies['notifier'].send_alert.assert_called()
     args, _ = mock_dependencies['notifier'].send_alert.call_args
-    assert "NO execution result" in args[0]
+    assert "ERROR" in args[0]
+    assert "broker returned no result" in args[0]
 
 
 def test_bot_current_price_fetch_failure(mock_dependencies):

@@ -1,30 +1,37 @@
 # src/core/engine/base.py
 import time
 from datetime import datetime, timezone, timedelta
-from typing import List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
 import pandas as pd
 
 from src.core.interfaces import (
     IDataProvider, IBrokerAdapter, IRepository, ILogger, INotifier,
     IDividendRateProvider, IDividendSettlement, NoOpDividendSettlement,
+    ITickerLabelProvider, IdentityTickerLabelProvider,
 )
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution, DayResult,
-    ExecutionStatus, DecisionFactor, Order, OrderAction,
+    ExecutionStatus, DecisionFactor, Order, OrderAction, OrderBatchResult,
+    OrderOutcome, StrategyDecision,
 )
 from src.core.logic import RegimeAnalyzer, VolatilityTargeter, Rebalancer
-from src.utils.calculator import IndicatorCalculator
+from src.core.indicators import IndicatorCalculator
+from src.core.engine.data_pipeline import (
+    CollectedData,
+    DataSetSpec,
+    StrategyDataSpec,
+)
 from src.core.engine.registry import register_engine
-from src.config import ticker_display
 
 
 @register_engine(color="#1f77b4", backtest=False)
 class TradingEngine:
     """핵심 트레이딩 사이클 엔진 (Template Method 패턴).
 
-    run_one_cycle()이 전체 사이클의 뼈대(template)를 정의하며,
-    각 단계(Step 1~6)는 개별 메서드로 분리되어 서브클래스에서 오버라이드 가능하다.
+    run_one_cycle()과 execute_cycle()이 데이터 수집부터 저장까지의 공통 흐름을
+    소유한다. 구체 엔진은 데이터 요구사항, 전략 지표, 전략 결정, 전략 상태 반영
+    훅만 재정의한다.
 
     main.py (실시간)와 runner.py (백테스트) 모두 이 엔진을 재사용한다.
     환경별 차이는 주입되는 구현체(broker, data_provider, notifier)가 담당하며,
@@ -50,6 +57,7 @@ class TradingEngine:
         is_active: bool = True,
         dividend_rate_provider: Optional[IDividendRateProvider] = None,
         dividend_settlement: Optional[IDividendSettlement] = None,
+        ticker_labels: Optional[ITickerLabelProvider] = None,
     ):
         # 클래스 속성 우선, 없으면 파라미터 사용
         groups = getattr(type(self), 'ASSET_GROUPS', asset_groups)
@@ -62,10 +70,17 @@ class TradingEngine:
         regime_ratio_a_map = getattr(type(self), 'REGIME_RATIO_A_MAP', None)
 
         self.calculator = IndicatorCalculator()
+        self.strategy_indicators: Any = None
         self.analyzer = RegimeAnalyzer()
         self.targeter = VolatilityTargeter(target_vol=target_vol)
-        self.rebalancer = Rebalancer(groups, logger=logger, ratio_a=effective_ratio_a,
-                                     regime_ratio_a_map=regime_ratio_a_map)
+        self.ticker_labels = ticker_labels or IdentityTickerLabelProvider()
+        self.rebalancer = Rebalancer(
+            groups,
+            logger=logger,
+            ratio_a=effective_ratio_a,
+            regime_ratio_a_map=regime_ratio_a_map,
+            ticker_labels=self.ticker_labels,
+        )
         self.broker = broker
         self.repo = repo
         self.logger = logger
@@ -89,6 +104,8 @@ class TradingEngine:
         # 백테스트는 BacktestBroker가 과거 종가를 서빙하므로 동일 경로로 동작한다.
         self.benchmarks: dict = benchmarks or {}
         self._benchmark_prices: dict = {}  # get_portfolio에서 매 사이클 갱신
+        self._last_order_result = OrderBatchResult([])
+        self._orphan_order_result = OrderBatchResult([])
 
         # 히스테리시스 상태 복원 (프로세스 재시작 시 이전 국면 유지)
         last_regime = self.repo.load_last_regime()
@@ -115,6 +132,7 @@ class TradingEngine:
         # 슬랙 댓글용 로그 캡처 버퍼를 사이클 단위로 초기화한다.
         # (멀티 계정 공유 로거에서 이전 계정 로그 혼입 방지 + 백테스트 메모리 바운드)
         self.logger.clear_captured_logs()
+        self._last_order_result = OrderBatchResult([])
 
         # 저장 key 및 리밸런싱 날짜로 사용할 실행일 결정
         # 백테스트: sim_date(시뮬레이션 날짜) 사용
@@ -123,11 +141,11 @@ class TradingEngine:
 
         # Step 1: 데이터 수집
         self.logger.info(">>> Step 1: Data Collection")
-        spy_df, vix = self.collect_data(data_provider)
+        collected = self.collect_data(data_provider)
 
         # Step 2: 지표 계산
         self.logger.info(">>> Step 2: Indicator Calculation")
-        market_data = self.calculate_indicators(spy_df, vix)
+        market_data = self.calculate_indicators(collected)
         self.logger.info(
             f"Market Data: Price={market_data.spy_price:.2f}, "
             f"VIX={market_data.vix:.2f}, MDD={market_data.spy_mdd:.2%}"
@@ -153,8 +171,7 @@ class TradingEngine:
         )
 
         # Step 5: 조건 분기 & 실행
-        # 비활성 계좌는 매매를 하지 않는다. execute_cycle이 엔진별로 오버라이드되어 있어
-        # 게이트를 각 구현에 넣지 않고 상속 공통 지점인 이곳에서 한 번만 분기한다.
+        # 비활성 계좌 게이트도 공통 흐름에서 한 번만 적용한다.
         expected_dividend = self._settle_expected_dividend(portfolio, record_date)
 
         if self.is_active:
@@ -187,23 +204,37 @@ class TradingEngine:
             is_rebalancing=is_rebalancing,
             nan_fields=nan_fields,
             expected_dividend=expected_dividend,
+            order_result=self._last_order_result,
         )
 
-    # ── Overridable step methods ─────────────────────────────────────────────
+    # ── Common flow and strategy hooks ───────────────────────────────────────
 
-    def collect_data(
-        self, data_provider: IDataProvider
-    ) -> Tuple[pd.DataFrame, float]:
-        """Step 1: OHLCV 및 VIX 데이터를 수집한다."""
-        spy_df = data_provider.fetch_ohlcv(["SPY"], days=400)
-        vix = data_provider.fetch_vix()
-        return spy_df, vix
+    def data_spec(self) -> StrategyDataSpec:
+        """전략이 필요로 하는 원천 데이터 선언."""
+        return StrategyDataSpec(
+            reference=DataSetSpec("reference", ("SPY",), days=400),
+        )
 
-    def calculate_indicators(
-        self, spy_df: pd.DataFrame, vix: float
-    ) -> MarketData:
-        """Step 2: 시장 지표를 계산한다."""
-        return self.calculator.calculate(spy_df, vix)
+    def collect_data(self, data_provider: IDataProvider) -> CollectedData:
+        """Step 1: 선언된 모든 OHLCV와 VIX를 공통 경로로 수집한다."""
+        spec = self.data_spec()
+        frames = {
+            dataset.key: data_provider.fetch_ohlcv(
+                list(dataset.tickers), days=dataset.days
+            )
+            for dataset in spec.datasets
+        }
+        return CollectedData(frames=frames, vix=data_provider.fetch_vix(), spec=spec)
+
+    def calculate_indicators(self, collected: CollectedData) -> MarketData:
+        """Step 2: 기준 지표와 전략 전용 지표를 한 파이프라인에서 계산한다."""
+        market_data = self.calculator.calculate(collected.reference, collected.vix)
+        self.strategy_indicators = self.calculate_strategy_indicators(collected)
+        return market_data
+
+    def calculate_strategy_indicators(self, collected: CollectedData) -> Any:
+        """전략 전용 지표 훅. 공통 기준 지표 계산 뒤 한 번 호출된다."""
+        return None
 
     def analyze_strategy(
         self, market_data: MarketData
@@ -339,13 +370,14 @@ class TradingEngine:
         sim_date: Optional[str],
         record_date: str,
     ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
-        """Step 5: 3-way 조건 분기: NaN이상 / 모니터링 / 리밸런싱."""
+        """Step 5 공통 흐름: 안전 분기 → 전략 결정 → 주문 → 알림 → 상태 반영."""
         orphan_executions: List[TradeExecution] = []
         executions: List[TradeExecution] = []
         final_pf = portfolio
         is_rebalancing = False
+        strategy_result = OrderBatchResult([])
+        self._orphan_order_result = OrderBatchResult([])
 
-        # ── 고아 종목 청산 (NaN 이상이 아닌 경우에만) ──
         if not nan_fields:
             orphan_tickers = self._detect_orphan_holdings(portfolio)
             if orphan_tickers:
@@ -357,13 +389,11 @@ class TradingEngine:
                 orphan_executions, portfolio = self._liquidate_orphans(portfolio, orphan_tickers)
                 final_pf = portfolio
 
-        # 보유 종목 중 가격 조회 실패(0.0 또는 누락) 종목 감지
         zero_price_tickers = [
             t for t, q in portfolio.holdings.items()
             if q > 0 and portfolio.current_prices.get(t, 0) <= 0
         ]
 
-        # 모든 분기에서 공통으로 사용할 목표 파라미터 (regime 기반)
         target_ratio_a, rebalance_threshold = self.rebalancer.get_target_params(regime)
 
         if nan_fields:
@@ -379,7 +409,7 @@ class TradingEngine:
             self._notify_alert(msg, detail=self._cycle_detail())
 
         elif zero_price_tickers:
-            display_names = [ticker_display(t) for t in zero_price_tickers]
+            display_names = [self.ticker_labels.display(t) for t in zero_price_tickers]
             signal = TradeSignal(0.0, [], f"가격 조회 실패 — 매매 중단: {', '.join(display_names)}",
                                  target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold)
             msg = (
@@ -392,7 +422,11 @@ class TradingEngine:
             self.logger.error(msg)
             self._notify_alert(msg, detail=self._cycle_detail())
 
-        elif not self._is_due(sim_date) and regime != MarketRegime.CRASH:
+        elif (
+            self.uses_trading_interval()
+            and not self._is_due(sim_date)
+            and regime != MarketRegime.CRASH
+        ):
             signal = TradeSignal(exposure, [], f"{regime.value} (모니터링)",
                                  target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold)
             self.logger.info(
@@ -405,11 +439,13 @@ class TradingEngine:
             )
 
         else:
-            is_rebalancing = True
-            self.logger.info(">>> Step 5: Rebalancing")
-            signal = self.rebalancer.generate_signal(portfolio, exposure, regime)
+            decision = self.build_strategy_decision(
+                market_data, portfolio, regime, exposure
+            )
+            signal = decision.signal
+            is_rebalancing = decision.is_rebalancing
+            self.logger.info(f">>> Step 5: {decision.label} ({signal.reason})")
 
-            # CRASH 알림 발송
             if regime == MarketRegime.CRASH:
                 crash_msg = self._build_crash_alert(market_data, portfolio)
                 self.logger.error(crash_msg)
@@ -417,24 +453,11 @@ class TradingEngine:
 
             if signal.has_orders:
                 self.logger.info(f"Executing {len(signal.orders)} orders ({signal.reason})")
-                executions = self.broker.execute_orders(signal.orders)
-
-                total = len(signal.orders)
-                filled = sum(1 for e in executions if e.status == ExecutionStatus.FILLED)
-                partial = sum(1 for e in executions if e.status == ExecutionStatus.PARTIAL)
-                ordered = sum(1 for e in executions if e.status == ExecutionStatus.ORDERED)
-                rejected = sum(1 for e in executions if e.status == ExecutionStatus.REJECTED)
-                failed = total - len(executions)
-                self.logger.info(
-                    f"Order Summary: total={total} filled={filled} partial={partial} "
-                    f"ordered={ordered} rejected={rejected} failed={failed}"
-                )
+                strategy_result = self._execute_orders(signal.orders)
+                executions = strategy_result.actual_executions
+                self._report_order_result(strategy_result, record_date)
 
                 if executions:
-                    self._notify_message(
-                        f"✅ Orders Executed. Count: {len(executions)}",
-                        detail=self._cycle_detail(),
-                    )
                     if self.is_live_trading:
                         time.sleep(3)
                     try:
@@ -450,11 +473,6 @@ class TradingEngine:
                         )
                         self.logger.error(warn_msg)
                         self._notify_alert(warn_msg, detail=self._cycle_detail())
-                else:
-                    self._notify_alert(
-                        "⚠️ Orders sent but NO execution result returned.",
-                        detail=self._cycle_detail(),
-                    )
             else:
                 self.logger.info("No Rebalance Needed.")
                 self._notify_message(
@@ -462,7 +480,169 @@ class TradingEngine:
                     detail=self._cycle_detail(),
                 )
 
+            self.commit_strategy_state(decision, strategy_result)
+
+        self._last_order_result = OrderBatchResult(
+            self._orphan_order_result.outcomes + strategy_result.outcomes
+        )
         return signal, orphan_executions + executions, final_pf, is_rebalancing
+
+    def uses_trading_interval(self) -> bool:
+        """전략 판단을 리밸런싱 주기로 제한할지 여부."""
+        return True
+
+    def build_strategy_decision(
+        self,
+        market_data: MarketData,
+        portfolio: Portfolio,
+        regime: MarketRegime,
+        exposure: float,
+    ) -> StrategyDecision:
+        """전략 특화 훅: 주문을 포함한 결정만 생성한다."""
+        signal = self.rebalancer.generate_signal(portfolio, exposure, regime)
+        return StrategyDecision(
+            signal=signal,
+            label="Rebalancing",
+            is_rebalancing=True,
+        )
+
+    def finalize_strategy_state(
+        self,
+        decision: StrategyDecision,
+        order_result: OrderBatchResult,
+    ) -> Any:
+        """전략 특화 훅: 주문 결과로 다음 상태를 확정한다."""
+        return decision.proposed_state
+
+    def commit_strategy_state(
+        self,
+        decision: StrategyDecision,
+        order_result: OrderBatchResult,
+    ) -> None:
+        """상태 저장은 공통 흐름에서만 수행한다."""
+        if not decision.state_key:
+            return
+        state = self.finalize_strategy_state(decision, order_result)
+        if state is None:
+            return
+        self.repo.save_strategy_state(decision.state_key, state.to_dict())
+
+    def restore_strategy_state(self, state_key: str) -> dict:
+        """전략 상태 로드는 베이스 엔진을 통해서만 수행한다."""
+        return self.repo.load_strategy_state(state_key)
+
+    def _execute_orders(self, orders: List[Order]) -> OrderBatchResult:
+        raw_result = self.broker.execute_orders(orders)
+        return self._normalize_order_result(orders, raw_result)
+
+    def _normalize_order_result(
+        self,
+        orders: List[Order],
+        raw_result,
+    ) -> OrderBatchResult:
+        """구형 테스트 더블도 요청별 결과 계약으로 안전하게 승격한다."""
+        if isinstance(raw_result, OrderBatchResult):
+            if raw_result.total == len(orders):
+                return raw_result
+            executions = raw_result.reported_executions
+        else:
+            executions = list(raw_result or [])
+
+        remaining = list(executions)
+        outcomes: List[OrderOutcome] = []
+        for order in orders:
+            match_index = next(
+                (
+                    index for index, execution in enumerate(remaining)
+                    if execution.ticker == order.ticker
+                    and execution.action == order.action
+                ),
+                None,
+            )
+            # 구형 테스트 더블은 상세 필드 없는 객체를 요청 순서대로 반환했다.
+            if match_index is None and remaining:
+                match_index = 0
+            if match_index is None:
+                outcomes.append(OrderOutcome(
+                    order,
+                    ExecutionStatus.ERROR,
+                    reason="broker returned no result for requested order",
+                ))
+                continue
+            execution = remaining.pop(match_index)
+            if not isinstance(execution, TradeExecution):
+                ticker = order.ticker if isinstance(order.ticker, str) else "LEGACY"
+                action = (
+                    order.action
+                    if isinstance(order.action, OrderAction)
+                    else OrderAction.BUY
+                )
+                quantity = (
+                    order.quantity
+                    if isinstance(order.quantity, int) and order.quantity > 0
+                    else 1
+                )
+                price = (
+                    float(order.price)
+                    if isinstance(order.price, (int, float))
+                    else 0.0
+                )
+                execution = TradeExecution(
+                    ticker=ticker,
+                    action=action,
+                    quantity=quantity,
+                    price=price,
+                    fee=0.0,
+                    date=datetime.now(
+                        timezone(timedelta(hours=9))
+                    ).strftime("%Y-%m-%d %H:%M:%S"),
+                    status=ExecutionStatus.FILLED,
+                    reason="legacy broker result",
+                )
+            outcomes.append(OrderOutcome(
+                order,
+                execution.status,
+                execution,
+                execution.reason,
+            ))
+        return OrderBatchResult(outcomes)
+
+    def _report_order_result(
+        self,
+        result: OrderBatchResult,
+        record_date: str,
+    ) -> None:
+        statuses = " ".join(
+            f"{status.value.lower()}={result.count(status)}"
+            for status in ExecutionStatus
+        )
+        self.logger.info(f"Order Summary: total={result.total} {statuses}")
+
+        if result.warning_outcomes:
+            lines = []
+            for outcome in result.warning_outcomes:
+                reason = outcome.reason or (
+                    outcome.execution.reason if outcome.execution else ""
+                )
+                lines.append(
+                    f"- {outcome.order.action} {outcome.order.ticker} "
+                    f"{outcome.order.quantity}주: {outcome.status.value}"
+                    f"{f' — {reason}' if reason else ''}"
+                )
+            message = (
+                f"⚠️ Order Result Alert\n"
+                f"날짜: {record_date}\n"
+                + "\n".join(lines)
+            )
+            self.logger.error(message)
+            self._notify_alert(message, detail=self._cycle_detail())
+        elif result.actual_executions:
+            self._notify_message(
+                f"✅ Orders Executed. Count: {len(result.actual_executions)}",
+                detail=self._cycle_detail(),
+            )
+        elif result.outcomes:
+            self.logger.info("All orders intentionally skipped; no alert sent.")
 
     def deactivated_cycle(
         self,
@@ -503,7 +683,7 @@ class TradingEngine:
             if q > 0 and portfolio.current_prices.get(t, 0) <= 0
         ]
         if zero_price_tickers:
-            display_names = [ticker_display(t) for t in zero_price_tickers]
+            display_names = [self.ticker_labels.display(t) for t in zero_price_tickers]
             signal = TradeSignal(0.0, [], f"가격 조회 실패 — 자산평가 왜곡 가능: {', '.join(display_names)}",
                                  target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold)
             msg = (
@@ -592,21 +772,29 @@ class TradingEngine:
             if qty > 0 and price > 0:
                 orders.append(Order(ticker, OrderAction.SELL, qty, price))
                 self.logger.info(
-                    f"[고아 종목] {ticker_display(ticker)}: {qty}주 @${price:,.0f} → 전량 매도"
+                    f"[고아 종목] {self.ticker_labels.display(ticker)}: {qty}주 @${price:,.0f} → 전량 매도"
                 )
             elif qty > 0:
                 self.logger.warning(
-                    f"[고아 종목] {ticker_display(ticker)}: {qty}주 보유 중이나 가격 조회 실패 → 매도 스킵"
+                    f"[고아 종목] {self.ticker_labels.display(ticker)}: {qty}주 보유 중이나 가격 조회 실패 → 매도 스킵"
                 )
 
         if not orders:
             return [], portfolio
 
         self.logger.info(f">>> 고아 종목 청산: {len(orders)}건 매도 실행")
-        executions = self.broker.execute_orders(orders)
+        result = self._execute_orders(orders)
+        self._orphan_order_result = result
+        record_date = datetime.now(
+            timezone(timedelta(hours=9))
+        ).strftime("%Y-%m-%d")
+        self._report_order_result(result, record_date)
+        executions = result.actual_executions
 
         if executions and self.is_live_trading:
             time.sleep(3)
+        if not executions:
+            return [], portfolio
         try:
             updated_pf = self.broker.get_portfolio()
         except Exception as e:
@@ -632,7 +820,9 @@ class TradingEngine:
             if qty > 0:
                 price = portfolio.current_prices.get(ticker, 0)
                 value = qty * price
-                holdings_lines.append(f"  • {ticker_display(ticker)}: {qty}주 (${value:,.0f})")
+                holdings_lines.append(
+                    f"  • {self.ticker_labels.display(ticker)}: {qty}주 (${value:,.0f})"
+                )
         if not holdings_lines:
             holdings_lines.append("  • (보유 종목 없음)")
         holdings_info = "\n".join(holdings_lines)

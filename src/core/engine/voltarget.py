@@ -8,17 +8,15 @@
 켈리식 처방(레버리지 ∝ target_vol/σ)을 기존 VolatilityTargeter(레버리지 모드)로
 구현하고, 주문 생성·턴오버 throttle은 기존 Rebalancer를 재사용한다.
 """
-from typing import List, Optional, Tuple
-
-import pandas as pd
+from typing import List
 
 from src.core.engine.base import FullExposureEngine
+from src.core.engine.data_pipeline import DataSetSpec, StrategyDataSpec
 from src.core.engine.registry import register_engine
-from src.core.interfaces import IDataProvider
 from src.core.logic.volatility_targeter import VolatilityTargeter
 from src.core.models import (
-    MarketData, MarketRegime, Portfolio, TradeSignal, TradeExecution,
-    DecisionFactor,
+    MarketData, MarketRegime, Portfolio, TradeSignal, DecisionFactor,
+    StrategyDecision,
 )
 
 
@@ -73,11 +71,10 @@ class VolTargetLeverageEngine(FullExposureEngine):
             crash_exposure=self.MIN_LEVERAGE,  # CRASH도 1x로 디레버리지(현금화 아님)
         )
 
-    def collect_data(self, data_provider: IDataProvider) -> Tuple[pd.DataFrame, float]:
-        """Step 1 오버라이드: 변동성/국면 신호를 QQQ(1x 나스닥)에서 산출."""
-        df = data_provider.fetch_ohlcv([self.SIGNAL_TICKER], days=400)
-        vix = data_provider.fetch_vix()
-        return df, vix
+    def data_spec(self) -> StrategyDataSpec:
+        return StrategyDataSpec(
+            reference=DataSetSpec("reference", (self.SIGNAL_TICKER,), days=400),
+        )
 
     def _set_leverage_ratio(self, regime: MarketRegime, current_vol: float) -> float:
         """변동성→레버리지→QLD 비중(ratio_a) 동적 설정. 반환: 실효 레버리지 L."""
@@ -87,25 +84,21 @@ class VolTargetLeverageEngine(FullExposureEngine):
         self.rebalancer.ratio_b = round(1.0 - w, 10)
         return L
 
-    def execute_cycle(
+    def build_strategy_decision(
         self,
         market_data: MarketData,
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
-        nan_fields: List[str],
-        sim_date: Optional[str],
-        record_date: str,
-    ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
-        if not nan_fields:
-            # 레버리지 사이징은 실현변동성만 사용(VIX는 CRASH 판정 전용)
-            L = self._set_leverage_ratio(regime, market_data.spy_volatility)
-            self.logger.info(
-                f">>> VolTarget: vol={market_data.spy_volatility:.2%} "
-                f"→ leverage={L:.2f}x (QLD {self.rebalancer.ratio_a:.0%})"
-            )
-        return super().execute_cycle(market_data, portfolio, regime, exposure,
-                                     nan_fields, sim_date, record_date)
+    ) -> StrategyDecision:
+        L = self._set_leverage_ratio(regime, market_data.spy_volatility)
+        self.logger.info(
+            f">>> VolTarget: vol={market_data.spy_volatility:.2%} "
+            f"→ leverage={L:.2f}x (QLD {self.rebalancer.ratio_a:.0%})"
+        )
+        return super().build_strategy_decision(
+            market_data, portfolio, regime, exposure
+        )
 
     def decision_factors(
         self,
