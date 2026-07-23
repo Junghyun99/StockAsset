@@ -36,11 +36,23 @@ class TestMonthlySettlementCli:
 
         assert "inputs.account" not in workflow
         assert "ACCOUNT:" not in workflow
+        workflow_dispatch = workflow.split("workflow_dispatch:\n", 1)[1]
+        inputs_block = workflow_dispatch.split("\n\npermissions:", 1)[0]
+        assert "\n      account:" not in inputs_block
         assert (
             'python -m scripts.monthly_settlement --all-groups '
             '--start "$START" --end "$END" | tee settlement_report.txt'
         ) in workflow
-        assert "GITHUB_STEP_SUMMARY" in workflow
+        assert """    - name: Publish report to job summary
+      if: always()
+      run: |
+        {
+          echo '## 기간 결산 결과'
+          echo '```'
+          cat settlement_report.txt 2>/dev/null || echo '(리포트 없음 - 실행 로그 확인)'
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+""" in workflow
 
     def test_report_printed(self, tmp_path, capsys):
         _write_account(tmp_path, "acc1", [
