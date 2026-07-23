@@ -124,6 +124,8 @@ class IRepository(ABC):
     def save_trade_history(self, executions: List[TradeExecution], portfolio: Portfolio,
                            reason: str, sim_date: Optional[str] = None) -> None: ...
     @abstractmethod
+    def save_order_events(self, order_result: OrderBatchResult) -> None: ...
+    @abstractmethod
     def update_status(self, regime: MarketRegime, exposure: float, portfolio: Portfolio,
                       market_data: MarketData, reason: str,
                       sim_date: Optional[str] = None,

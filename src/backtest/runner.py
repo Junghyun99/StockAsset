@@ -189,6 +189,10 @@ def run_compare_backtest(
             asset_groups=eff_groups,
             max_summary_records=_cfg.MAX_SUMMARY_RECORDS,
             max_history_records=_cfg.MAX_HISTORY_RECORDS,
+            max_order_event_records=100000,
+            account_id=None,
+            engine_name=name,
+            execution_mode="backtest",
         )
         engine = eng_cls(
             asset_groups=eff_groups,

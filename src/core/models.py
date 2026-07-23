@@ -113,6 +113,7 @@ class OrderOutcome:
     status: ExecutionStatus
     execution: Optional[TradeExecution] = None
     reason: str = ""
+    attempted_at: Optional[str] = None
 
     def __post_init__(self) -> None:
         if self.execution is not None and self.execution.status != self.status:

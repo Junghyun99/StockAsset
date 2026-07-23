@@ -1,5 +1,6 @@
 # src/core/engine/base.py
 import time
+from dataclasses import replace
 from datetime import datetime, timezone, timedelta
 from typing import Any, List, Optional, Tuple
 
@@ -188,7 +189,7 @@ class TradingEngine:
         if not nan_fields:
             self.persist(market_data, signal, executions, final_pf, regime, exposure,
                          is_rebalancing, sim_date, expected_dividend, record_date,
-                         self._benchmark_prices)
+                         self._benchmark_prices, self._last_order_result)
         self.logger.info(
             f"Cycle Completed: regime={regime.value} exposure={exposure:.2f} "
             f"orders={len(signal.orders)} executions={len(executions)}"
@@ -453,7 +454,7 @@ class TradingEngine:
 
             if signal.has_orders:
                 self.logger.info(f"Executing {len(signal.orders)} orders ({signal.reason})")
-                strategy_result = self._execute_orders(signal.orders)
+                strategy_result = self._execute_orders(signal.orders, sim_date)
                 executions = strategy_result.actual_executions
                 self._report_order_result(strategy_result, record_date)
 
@@ -531,9 +532,11 @@ class TradingEngine:
         """전략 상태 로드는 베이스 엔진을 통해서만 수행한다."""
         return self.repo.load_strategy_state(state_key)
 
-    def _execute_orders(self, orders: List[Order]) -> OrderBatchResult:
+    def _execute_orders(self, orders: List[Order], attempted_at: Optional[str] = None) -> OrderBatchResult:
+        attempted_at = attempted_at or datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d %H:%M:%S")
         raw_result = self.broker.execute_orders(orders)
-        return self._normalize_order_result(orders, raw_result)
+        result = self._normalize_order_result(orders, raw_result)
+        return OrderBatchResult([outcome if outcome.attempted_at else replace(outcome, attempted_at=attempted_at) for outcome in result.outcomes])
 
     def _normalize_order_result(
         self,
@@ -720,6 +723,7 @@ class TradingEngine:
         expected_dividend: float = 0.0,
         record_date: Optional[str] = None,
         benchmark_prices: Optional[dict] = None,
+        order_result: Optional[OrderBatchResult] = None,
     ) -> None:
         """Step 6: 저장 3종 호출."""
         effective_record_date = record_date or sim_date or market_data.date
@@ -730,6 +734,8 @@ class TradingEngine:
                                      benchmarks=benchmark_prices, executions=executions,
                                      decision_factors=factors)
         self.repo.save_trade_history(executions, final_pf, signal.reason, sim_date=sim_date)
+        if order_result is not None:
+            self.repo.save_order_events(order_result)
         self.repo.update_status(
             regime, exposure, final_pf, market_data, signal.reason,
             sim_date=sim_date,

@@ -2,10 +2,11 @@
 import json
 import math
 import os
+import uuid
 from typing import List, Dict, Optional
 from dataclasses import asdict
 from datetime import datetime, timezone, timedelta
-from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution, DecisionFactor
+from src.core.models import MarketData, Portfolio, TradeSignal, MarketRegime, TradeExecution, DecisionFactor, OrderBatchResult, ExecutionStatus
 from src.core.settlement import derive_net_deposit
 
 _KST = timezone(timedelta(hours=9))
@@ -19,16 +20,19 @@ class JsonRepository(IRepository):
         'C': {'label': 'Cash',   'color': '#ffc107'},
     }
 
-    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100, asset_groups: dict = None):
+    def __init__(self, root_path: str = "docs/data", max_summary_records: int = 2000, max_history_records: int = 100, asset_groups: dict = None, max_order_event_records: int = 100000, account_id: Optional[str] = None, engine_name: Optional[str] = None, execution_mode: str = "legacy"):
         self.root = root_path
         self.max_summary_records = max_summary_records
         self.max_history_records = max_history_records
+        self.max_order_event_records = max_order_event_records
+        self.account_id, self.engine_name, self.execution_mode = account_id, engine_name, execution_mode
         self._asset_groups = asset_groups or {}
         os.makedirs(self.root, exist_ok=True)
 
         self.status_file = os.path.join(self.root, "status.json")
         self.summary_file = os.path.join(self.root, "summary.json")
         self.history_file = os.path.join(self.root, "history.json")
+        self.order_events_file = os.path.join(self.root, "order_events.json")
         self._strategy_state_file = os.path.join(self.root, "strategy_state.json")
 
         self.save_asset_groups_config()
@@ -189,6 +193,39 @@ class JsonRepository(IRepository):
             data = data[-self.max_history_records:]
 
         self._save_json(self.history_file, data)
+    @staticmethod
+    def _event_policy(status):
+        if status == ExecutionStatus.FILLED:
+            return False, "success"
+        if status == ExecutionStatus.SKIPPED:
+            return False, "info"
+        if status in {ExecutionStatus.REJECTED, ExecutionStatus.ERROR}:
+            return True, "danger"
+        return True, "warning"
+
+    def save_order_events(self, order_result: OrderBatchResult) -> None:
+        data = self._load_json(self.order_events_file, default=[])
+        for outcome in order_result.outcomes:
+            execution = outcome.execution
+            alertable, display_level = self._event_policy(outcome.status)
+            data.append({
+                "schema_version": 1, "event_id": str(uuid.uuid4()),
+                "attempted_at": outcome.attempted_at, "execution_mode": self.execution_mode,
+                "account_id": self.account_id, "engine": self.engine_name,
+                "ticker": outcome.order.ticker, "action": outcome.order.action.value,
+                "requested_quantity": outcome.order.quantity, "requested_price": outcome.order.price,
+                "filled_quantity": execution.quantity if execution else 0,
+                "filled_price": execution.price if execution else None,
+                "fee": execution.fee if execution else None,
+                "executed_at": execution.date if execution else None,
+                "status": outcome.status.value,
+                "broker_reason": outcome.reason or (execution.reason if execution else None),
+                "alertable": alertable, "display_level": display_level, "source": "runtime",
+            })
+        if self.max_order_event_records > 0:
+            data = data[-self.max_order_event_records:]
+        self._save_json(self.order_events_file, data)
+
     def update_status(self,
                       regime: MarketRegime,
                       exposure: float,
