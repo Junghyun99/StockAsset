@@ -3,13 +3,6 @@ name: Monthly Settlement
 on:
   workflow_dispatch:
     inputs:
-      account:
-        description: 'Account id (docs/data/<account>)'
-        required: true
-        type: choice
-        options:
-          - my_test
-          - my_isa
       start:
         description: 'Start date (YYYY-MM-DD, e.g. 2026-06-01)'
         required: true
@@ -45,14 +38,10 @@ jobs:
     - name: Run monthly settlement
       env:
         # 입력값은 셸 인젝션 방지를 위해 env 경유로만 전달한다 (run 내 직접 보간 금지)
-        ACCOUNT: ${{ github.event.inputs.account }}
         START: ${{ github.event.inputs.start }}
         END: ${{ github.event.inputs.end }}
       run: |
-        python -m scripts.monthly_settlement \
-          --account "$ACCOUNT" \
-          --start "$START" \
-          --end "$END" | tee settlement_report.txt
+        python -m scripts.monthly_settlement --all-groups --start "$START" --end "$END" | tee settlement_report.txt
 
     - name: Publish report to job summary
       if: always()

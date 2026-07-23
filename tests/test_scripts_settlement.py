@@ -2,6 +2,7 @@
 """monthly_settlement CLI 스크립트 테스트."""
 import json
 import os
+from pathlib import Path
 
 import pytest
 
@@ -25,6 +26,17 @@ def _rec(date, value, cash, net_deposit=0.0, dividend=0.0):
 
 
 class TestMonthlySettlementCli:
+    def test_workflow_runs_all_groups_without_account_input(self):
+        workflow = (
+            Path(__file__).resolve().parents[1]
+            / ".github"
+            / "workflows"
+            / "monthly-settlement.yml"
+        ).read_text(encoding="utf-8")
+
+        assert "inputs.account" not in workflow
+        assert "--all-groups" in workflow
+
     def test_report_printed(self, tmp_path, capsys):
         _write_account(tmp_path, "acc1", [
             _rec("2026-05-31", 1000.0, 100.0),
