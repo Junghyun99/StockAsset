@@ -86,7 +86,7 @@ def aggregate_summary_records(account_records: dict[str, List[dict]]) -> List[di
                 if record["date"] > date:
                     break
                 value = _finite(record.get("total_value"))
-                if record["date"] == date and value is None and latest_value is not None:
+                if record["date"] == date and value is None:
                     has_invalid_snapshot = True
                 if value is not None:
                     latest_value = value
@@ -156,7 +156,12 @@ def compute_settlement(records: List[dict], start: str, end: str) -> SettlementR
         base = valid_in_range[0]
     else:
         base = in_range[0]
-    end_rec = valid_in_range[-1] if valid_in_range else in_range[-1]
+    if valid_in_range:
+        end_rec = valid_in_range[-1]
+    elif valid_prior:
+        end_rec = base
+    else:
+        end_rec = in_range[-1]
 
     # 결산 창은 (base, end_rec]: 항등식(손익 = 기말 - 기초 - 순입금)이 유지되도록
     # base 이후 ~ end_rec까지 발생한 순입금만 합산한다. base가 null 레코드를
