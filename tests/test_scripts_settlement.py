@@ -103,6 +103,7 @@ class TestMonthlySettlementCli:
         _write_account(tmp_path, "my_isa", summaries)
         _write_account(tmp_path, "spouse_isa", summaries)
         _write_account(tmp_path, "backtest", summaries)
+        os.makedirs(tmp_path / "my_incomplete")
 
         rc = monthly_settlement.main([
             "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
@@ -123,6 +124,16 @@ class TestMonthlySettlementCli:
         positions = [out.index(section) for section in expected_sections]
         assert positions == sorted(positions)
         assert "backtest" not in out
+        assert "my_incomplete" not in out
+
+    def test_account_and_all_groups_are_mutually_exclusive(self, capsys):
+        with pytest.raises(SystemExit):
+            monthly_settlement.parse_args([
+                "--account", "my_isa", "--all-groups",
+                "--start", "2026-06-01", "--end", "2026-06-30",
+            ])
+
+        assert "not allowed with argument --account" in capsys.readouterr().err
 
     def test_group_without_accounts_reports_message_and_succeeds(self, tmp_path, capsys):
         _write_account(tmp_path, "spouse_isa", [
