@@ -20,7 +20,7 @@ from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
-from src.core.settlement import compute_settlement
+from src.core.settlement import aggregate_summary_records, compute_settlement
 
 DATE_FMT = "%Y-%m-%d"
 
@@ -43,8 +43,11 @@ def _valid_date(text: str) -> str:
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--account", required=True,
+    target = parser.add_mutually_exclusive_group(required=True)
+    target.add_argument("--account",
                         help="결산 대상 계정 id (docs/data/<account>/summary.json)")
+    target.add_argument("--all-groups", action="store_true",
+                        help="my_ 및 spouse_ 계정 그룹을 모두 결산")
     parser.add_argument("--start", required=True, type=_valid_date,
                         help="조회 시작일 (YYYY-MM-DD, 예: 2026-06-01)")
     parser.add_argument("--end", required=True, type=_valid_date,
@@ -107,12 +110,55 @@ def build_report(result, account: str) -> str:
     return "\n".join(lines)
 
 
+def discover_group_accounts(data_root: str, prefix: str) -> list[str]:
+    """summary.json이 있는 prefix 계정 디렉터리를 정렬해 반환한다."""
+    if not os.path.isdir(data_root):
+        return []
+    return sorted(
+        entry.name for entry in os.scandir(data_root)
+        if entry.is_dir()
+        and entry.name.startswith(prefix)
+        and os.path.isfile(os.path.join(entry.path, "summary.json"))
+    )
+
+
+def build_group_report(data_root: str, group: str, start: str, end: str) -> str:
+    """그룹별 계정 보고서와 통합 보고서를 조합한다."""
+    accounts = discover_group_accounts(data_root, f"{group}_")
+    header = f"=== {group} 계좌 기간 결산 ==="
+    if not accounts:
+        return f"{header}\n대상 계좌가 없습니다"
+
+    account_records = {account: load_summaries(data_root, account) for account in accounts}
+    reports = [
+        build_report(compute_settlement(records, start, end), account)
+        for account, records in account_records.items()
+    ]
+    aggregate = aggregate_summary_records(account_records)
+    reports.append(
+        build_report(compute_settlement(aggregate, start, end), f"{group} 통합")
+    )
+    return "\n\n".join([header, *reports])
+
+
+def build_all_groups_report(data_root: str, start: str, end: str) -> str:
+    """my, spouse 순서로 모든 계정 그룹 결산을 조합한다."""
+    return "\n\n".join(
+        build_group_report(data_root, group, start, end)
+        for group in ("my", "spouse")
+    )
+
+
 def main(argv=None) -> int:
     args = parse_args(argv)
     if args.start > args.end:
         print(f"오류: 시작일({args.start})이 종료일({args.end})보다 뒤입니다.",
               file=sys.stderr)
         return 2
+
+    if args.all_groups:
+        print(build_all_groups_report(args.data_root, args.start, args.end))
+        return 0
 
     try:
         records = load_summaries(args.data_root, args.account)

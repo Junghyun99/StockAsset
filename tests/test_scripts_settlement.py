@@ -93,3 +93,48 @@ class TestMonthlySettlementCli:
         ])
         assert args.start == "2026-06-01"
         assert args.end == "2026-06-30"
+
+    def test_all_groups_reports_sorted_accounts_and_group_totals(self, tmp_path, capsys):
+        summaries = [
+            _rec("2026-05-31", 1000.0, 100.0),
+            _rec("2026-06-30", 1100.0, 100.0),
+        ]
+        _write_account(tmp_path, "my_pension", summaries)
+        _write_account(tmp_path, "my_isa", summaries)
+        _write_account(tmp_path, "spouse_isa", summaries)
+        _write_account(tmp_path, "backtest", summaries)
+
+        rc = monthly_settlement.main([
+            "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
+            "--data-root", str(tmp_path),
+        ])
+
+        out = capsys.readouterr().out
+        assert rc == 0
+        expected_sections = [
+            "=== my 계좌 기간 결산 ===",
+            "=== 기간 결산 (my_isa) ===",
+            "=== 기간 결산 (my_pension) ===",
+            "=== 기간 결산 (my 통합) ===",
+            "=== spouse 계좌 기간 결산 ===",
+            "=== 기간 결산 (spouse_isa) ===",
+            "=== 기간 결산 (spouse 통합) ===",
+        ]
+        positions = [out.index(section) for section in expected_sections]
+        assert positions == sorted(positions)
+        assert "backtest" not in out
+
+    def test_group_without_accounts_reports_message_and_succeeds(self, tmp_path, capsys):
+        _write_account(tmp_path, "spouse_isa", [
+            _rec("2026-05-31", 1000.0, 100.0),
+            _rec("2026-06-30", 1100.0, 100.0),
+        ])
+
+        rc = monthly_settlement.main([
+            "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
+            "--data-root", str(tmp_path),
+        ])
+
+        out = capsys.readouterr().out
+        assert rc == 0
+        assert "=== my 계좌 기간 결산 ===\n대상 계좌가 없습니다" in out
