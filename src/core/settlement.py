@@ -66,6 +66,49 @@ def derive_net_deposit(current_cash: float,
     return round(current_cash - prev_cash - impact, 2)
 
 
+def aggregate_summary_records(account_records: dict[str, List[dict]]) -> List[dict]:
+    """Aggregate account summary records into one date-keyed record sequence."""
+    records_by_account = {
+        account: sorted((r for r in records if r.get("date")), key=lambda r: r["date"])
+        for account, records in account_records.items()
+    }
+    dates = sorted({r["date"] for records in records_by_account.values() for r in records})
+    totals = []
+
+    for date in dates:
+        total_value = 0.0
+        net_deposit = 0.0
+        missing_net_deposit_count = 0
+        has_invalid_snapshot = False
+        for records in records_by_account.values():
+            latest_value = None
+            for record in records:
+                if record["date"] > date:
+                    break
+                value = _finite(record.get("total_value"))
+                if record["date"] == date and value is None:
+                    has_invalid_snapshot = True
+                if value is not None:
+                    latest_value = value
+                if record["date"] == date:
+                    net_deposit += float(record.get("net_deposit") or 0.0)
+                    if record.get("net_deposit") is None:
+                        missing_net_deposit_count += 1
+            if latest_value is not None:
+                total_value += latest_value
+
+        item = {
+            "date": date,
+            "total_value": None if has_invalid_snapshot else total_value,
+            "net_deposit": net_deposit,
+        }
+        if missing_net_deposit_count:
+            item["missing_net_deposit_count"] = missing_net_deposit_count
+        totals.append(item)
+
+    return totals
+
+
 def compute_settlement(records: List[dict], start: str, end: str) -> SettlementResult:
     """일별 요약 레코드 리스트에서 [start, end] 기간(양끝 포함) 결산을 계산한다.
 
@@ -113,7 +156,12 @@ def compute_settlement(records: List[dict], start: str, end: str) -> SettlementR
         base = valid_in_range[0]
     else:
         base = in_range[0]
-    end_rec = valid_in_range[-1] if valid_in_range else in_range[-1]
+    if valid_in_range:
+        end_rec = valid_in_range[-1]
+    elif valid_prior:
+        end_rec = base
+    else:
+        end_rec = in_range[-1]
 
     # 결산 창은 (base, end_rec]: 항등식(손익 = 기말 - 기초 - 순입금)이 유지되도록
     # base 이후 ~ end_rec까지 발생한 순입금만 합산한다. base가 null 레코드를
@@ -127,7 +175,10 @@ def compute_settlement(records: List[dict], start: str, end: str) -> SettlementR
     net_deposit = round(sum(float(r.get("net_deposit") or 0.0) for r in window), 2)
     profit = round(end_asset - start_asset - net_deposit, 2)
     twr_pct = _twr_pct([base] + window)
-    missing = sum(1 for r in window if r.get("net_deposit") is None)
+    missing = sum(
+        r.get("missing_net_deposit_count", 1 if r.get("net_deposit") is None else 0)
+        for r in window
+    )
 
     return SettlementResult(
         start_date=start, end_date=end,

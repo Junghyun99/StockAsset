@@ -2,6 +2,7 @@
 """monthly_settlement CLI 스크립트 테스트."""
 import json
 import os
+from pathlib import Path
 
 import pytest
 
@@ -25,6 +26,34 @@ def _rec(date, value, cash, net_deposit=0.0, dividend=0.0):
 
 
 class TestMonthlySettlementCli:
+    def test_workflow_runs_all_groups_without_account_input(self):
+        workflow = (
+            Path(__file__).resolve().parents[1]
+            / ".github"
+            / "workflows"
+            / "monthly-settlement.yml"
+        ).read_text(encoding="utf-8")
+
+        assert "inputs.account" not in workflow
+        assert "ACCOUNT:" not in workflow
+        workflow_dispatch = workflow.split("workflow_dispatch:\n", 1)[1]
+        inputs_block = workflow_dispatch.split("\n\npermissions:", 1)[0]
+        assert "\n      account:" not in inputs_block
+        settlement_step = workflow.split(
+            "    - name: Run monthly settlement\n", 1
+        )[1].split("\n    - name:", 1)[0]
+        assert "set -o pipefail" in settlement_step
+        assert (
+            'python -m scripts.monthly_settlement --all-groups '
+            '--start "$START" --end "$END" | tee settlement_report.txt'
+        ) in settlement_step
+        assert "    - name: Publish report to job summary" in workflow
+        summary_step = workflow.split(
+            "    - name: Publish report to job summary\n", 1
+        )[1]
+        assert "GITHUB_STEP_SUMMARY" in summary_step
+        assert "settlement_report.txt" in summary_step
+
     def test_report_printed(self, tmp_path, capsys):
         _write_account(tmp_path, "acc1", [
             _rec("2026-05-31", 1000.0, 100.0),
@@ -93,3 +122,82 @@ class TestMonthlySettlementCli:
         ])
         assert args.start == "2026-06-01"
         assert args.end == "2026-06-30"
+
+    def test_all_groups_reports_sorted_accounts_and_group_totals(self, tmp_path, capsys):
+        my_isa_summaries = [
+            _rec("2026-05-31", 1000.0, 100.0),
+            _rec("2026-06-30", 1200.0, 100.0, net_deposit=100.0),
+        ]
+        my_pension_summaries = [
+            _rec("2026-05-31", 2000.0, 200.0),
+            _rec("2026-06-30", 2300.0, 200.0),
+        ]
+        spouse_summaries = [
+            _rec("2026-05-31", 1000.0, 100.0),
+            _rec("2026-06-30", 1100.0, 100.0),
+        ]
+        _write_account(tmp_path, "my_pension", my_pension_summaries)
+        _write_account(tmp_path, "my_isa", my_isa_summaries)
+        _write_account(tmp_path, "spouse_isa", spouse_summaries)
+        _write_account(tmp_path, "backtest", spouse_summaries)
+        os.makedirs(tmp_path / "my_incomplete")
+
+        rc = monthly_settlement.main([
+            "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
+            "--data-root", str(tmp_path),
+        ])
+
+        out = capsys.readouterr().out
+        assert rc == 0
+        expected_sections = [
+            "=== my 계좌 기간 결산 ===",
+            "=== 기간 결산 (my_isa) ===",
+            "=== 기간 결산 (my_pension) ===",
+            "=== 기간 결산 (my 통합) ===",
+            "=== spouse 계좌 기간 결산 ===",
+            "=== 기간 결산 (spouse_isa) ===",
+            "=== 기간 결산 (spouse 통합) ===",
+        ]
+        positions = [out.index(section) for section in expected_sections]
+        assert positions == sorted(positions)
+        assert "backtest" not in out
+        assert "my_incomplete" not in out
+        my_total = out[out.index("=== 기간 결산 (my 통합) ==="):out.index("=== spouse 계좌")]
+        assert "기초자산       : KRW 3,000" in my_total
+        assert "기말자산       : KRW 3,500" in my_total
+        assert "순입금액       : KRW 100" in my_total
+        assert "기간손익(금액) : +KRW 400" in my_total
+        assert "수익률(TWR)    : +12.90%" in my_total
+
+    def test_account_and_all_groups_are_mutually_exclusive(self, capsys):
+        with pytest.raises(SystemExit):
+            monthly_settlement.parse_args([
+                "--account", "my_isa", "--all-groups",
+                "--start", "2026-06-01", "--end", "2026-06-30",
+            ])
+
+        assert "not allowed with argument --account" in capsys.readouterr().err
+
+    def test_group_without_accounts_reports_message_and_succeeds(self, tmp_path, capsys):
+        _write_account(tmp_path, "spouse_isa", [
+            _rec("2026-05-31", 1000.0, 100.0),
+            _rec("2026-06-30", 1100.0, 100.0),
+        ])
+
+        rc = monthly_settlement.main([
+            "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
+            "--data-root", str(tmp_path),
+        ])
+
+        out = capsys.readouterr().out
+        assert rc == 0
+        assert "=== my 계좌 기간 결산 ===\n대상 계좌가 없습니다" in out
+
+    def test_all_groups_missing_data_root_returns_error(self, tmp_path, capsys):
+        rc = monthly_settlement.main([
+            "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
+            "--data-root", str(tmp_path / "missing"),
+        ])
+
+        assert rc == 2
+        assert "데이터 루트" in capsys.readouterr().err

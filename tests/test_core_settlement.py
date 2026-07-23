@@ -3,6 +3,7 @@ import pytest
 
 from src.core.models import TradeExecution, OrderAction, ExecutionStatus
 from src.core.settlement import (
+    aggregate_summary_records,
     compute_settlement,
     derive_net_deposit,
     trade_cash_impact,
@@ -252,6 +253,130 @@ class TestComputeSettlement:
         d = r.to_dict()
         assert d["start_asset"] == 1000.0
         assert d["record_count"] == 1
+
+
+class TestAggregateSummaryRecords:
+    def test_marks_same_date_nonfinite_valuation_invalid(self):
+        records = {
+            "my_isa": [
+                _rec("2026-05-31", 1000.0),
+                _rec("2026-06-30", 1200.0, net_deposit=100.0),
+            ],
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-30", 2100.0),
+            ],
+            "my_failed_account": [
+                _rec("2026-06-30", float("nan"), net_deposit=50.0),
+            ],
+        }
+
+        assert aggregate_summary_records(records) == [
+            {"date": "2026-05-31", "total_value": 3000.0, "net_deposit": 0.0},
+            {"date": "2026-06-30", "total_value": None, "net_deposit": 150.0},
+        ]
+
+    def test_aggregated_records_calculate_group_profit_and_twr(self):
+        records = {
+            "my_isa": [
+                _rec("2026-05-31", 1000.0),
+                _rec("2026-06-30", 1200.0, net_deposit=100.0),
+            ],
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-30", 2100.0),
+            ],
+        }
+
+        result = compute_settlement(
+            aggregate_summary_records(records), "2026-06-01", "2026-06-30"
+        )
+
+        assert result.profit == 200.0
+        assert result.twr_pct == pytest.approx(6.4516)
+
+    def test_preserves_missing_net_deposit_metadata_for_settlement(self):
+        records = {
+            "my_isa": [
+                _rec("2026-05-31", 1000.0),
+                {"date": "2026-06-30", "total_value": 1100.0},
+            ],
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-30", 2100.0, net_deposit=50.0),
+            ],
+        }
+
+        result = compute_settlement(
+            aggregate_summary_records(records), "2026-06-01", "2026-06-30"
+        )
+
+        assert result.net_deposit == 50.0
+        assert result.missing_net_deposit_count == 1
+
+    def test_carries_latest_valid_value_to_other_accounts_record_dates(self):
+        records = {
+            "my_isa": [
+                _rec("2026-05-31", 1000.0),
+                _rec("2026-06-30", 1200.0, net_deposit=100.0),
+            ],
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-15", 2100.0, net_deposit=25.0),
+            ],
+        }
+
+        assert aggregate_summary_records(records) == [
+            {"date": "2026-05-31", "total_value": 3000.0, "net_deposit": 0.0},
+            {"date": "2026-06-15", "total_value": 3100.0, "net_deposit": 25.0},
+            {"date": "2026-06-30", "total_value": 3300.0, "net_deposit": 100.0},
+        ]
+
+    def test_invalid_constituent_snapshot_excludes_same_day_cash_flow(self):
+        records = {
+            "my_isa": [
+                _rec("2026-05-31", 1000.0),
+                {"date": "2026-06-30", "total_value": None, "net_deposit": 500.0},
+            ],
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-15", 2100.0),
+                _rec("2026-06-30", 2200.0),
+            ],
+        }
+
+        aggregate = aggregate_summary_records(records)
+
+        assert aggregate[-1] == {
+            "date": "2026-06-30", "total_value": None, "net_deposit": 500.0,
+        }
+        result = compute_settlement(aggregate, "2026-06-01", "2026-06-30")
+        assert result.last_date == "2026-06-15"
+        assert result.net_deposit == 0.0
+        assert result.profit == 100.0
+        assert result.twr_pct == pytest.approx(3.3333)
+
+    def test_first_nonfinite_constituent_excludes_same_day_cash_flow(self):
+        records = {
+            "my_pension": [
+                _rec("2026-05-31", 2000.0),
+                _rec("2026-06-30", 2200.0),
+            ],
+            "my_new_account": [
+                {"date": "2026-06-30", "total_value": None, "net_deposit": 500.0},
+            ],
+        }
+
+        aggregate = aggregate_summary_records(records)
+
+        assert aggregate[-1] == {
+            "date": "2026-06-30", "total_value": None, "net_deposit": 500.0,
+        }
+        result = compute_settlement(aggregate, "2026-06-01", "2026-06-30")
+        assert result.last_date == "2026-05-31"
+        assert result.net_deposit == 0.0
+        assert result.profit == 0.0
+        assert result.twr_pct is None
 
 
 class TestTradeCashImpact:
