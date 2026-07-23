@@ -1,0 +1,45 @@
+2026-07-23 10:00:55,582 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-07-23 10:00:55,584 [INFO] Loaded 2 account(s) from accounts.yaml
+2026-07-23 10:00:55,584 [INFO] [my_test] engine=DomesticQldDipBuyEngine market=domestic mode=LIVE state=ACTIVE
+2026-07-23 10:00:55,584 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-23 10:00:55,584 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-23 10:00:55,585 [INFO] Restored previous regime: Bull
+2026-07-23 10:00:55,585 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-07-23 10:00:55,585 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-07-23 10:00:55,585 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-07-23 10:00:55,586 [INFO] Restored previous regime: Bull
+2026-07-23 10:00:55,586 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-07-23 10:00:55,586 [INFO] >>> Step 1: Data Collection
+2026-07-23 10:00:55,587 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-07-23 10:00:56,055 [INFO] [Data] Fetching ['418660.KS'] history for 400 days...
+2026-07-23 10:00:56,688 [INFO] [Data] VIX fetched: 16.64
+2026-07-23 10:00:56,688 [INFO] >>> Step 2: Indicator Calculation
+2026-07-23 10:00:56,695 [INFO] Market Data: Price=747.41, VIX=16.64, MDD=-1.60%
+2026-07-23 10:00:56,696 [INFO] >>> Step 3: Strategy Analysis
+2026-07-23 10:00:56,696 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-07-23 10:00:56,696 [INFO] >>> Step 4: Portfolio Status
+2026-07-23 10:00:57,396 [INFO] Fetching Real-time prices from Broker...
+2026-07-23 10:01:00,911 [INFO] Current Portfolio: Cash=$707,676, Value=$4,122,186
+2026-07-23 10:01:01,262 [INFO] >>> Step 5: DomesticQldDipBuy (IDLE  분할매수 418660.KS 18주)
+2026-07-23 10:01:01,262 [INFO] Executing 1 orders (IDLE  분할매수 418660.KS 18주)
+2026-07-23 10:01:01,965 [INFO] [KisBroker] Available Cash for BUY: 707,676
+2026-07-23 10:01:02,498 [WARNING] ⚠️ Qty Adjusted: 418660.KS 18 -> 15
+2026-07-23 10:01:04,032 [ERROR] [KisDomestic] Order Failed: BUY 418660.KS qty=15 @ 44395 — 파생ETF 미 신청(선택확인서 미 징구) 계좌는 파생ETF 거래가 불가합니다.
+2026-07-23 10:01:04,898 [INFO] >>> Step 6: Archiving Data
+2026-07-23 10:01:04,901 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=1 executions=0
+2026-07-23 10:01:04,902 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-07-23 10:01:04,902 [INFO] >>> Step 1: Data Collection
+2026-07-23 10:01:04,902 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-07-23 10:01:05,294 [INFO] [Data] VIX fetched: 16.64
+2026-07-23 10:01:05,294 [INFO] >>> Step 2: Indicator Calculation
+2026-07-23 10:01:05,297 [INFO] Market Data: Price=189710.00, VIX=16.64, MDD=-8.70%
+2026-07-23 10:01:05,297 [INFO] >>> Step 3: Strategy Analysis
+2026-07-23 10:01:05,297 [INFO] >>> VolManaged: vol=24.72% → L=0.89x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 89%, 현금 11%)
+2026-07-23 10:01:05,298 [INFO] Regime: Bull | Target Exposure: 0.89
+2026-07-23 10:01:05,298 [INFO] >>> Step 4: Portfolio Status
+2026-07-23 10:01:05,942 [WARNING] [KisDomestic] Portfolio API HTTP 500; retrying (2/3)
+2026-07-23 10:01:07,611 [INFO] Fetching Real-time prices from Broker...
+2026-07-23 10:01:11,500 [INFO] Current Portfolio: Cash=$20,093,002, Value=$51,225,202
+2026-07-23 10:01:11,970 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
+2026-07-23 10:01:12,433 [INFO] >>> Step 6: Archiving Data
+2026-07-23 10:01:12,434 [INFO] Cycle Completed: regime=Bull exposure=0.89 orders=0 executions=0

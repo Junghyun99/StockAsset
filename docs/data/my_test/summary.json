@@ -1556,5 +1556,37 @@
             "effective_leverage": 0.8654752199574256,
             "cash_weight": 0.1345247800425744
         }
+    },
+    {
+        "date": "2026-07-23",
+        "total_value": 4121826.0,
+        "cash_balance": 707676.0,
+        "net_deposit": 0.0,
+        "group_a": 0,
+        "group_b": 0,
+        "group_c": 707676.0,
+        "expected_dividend": 0.0,
+        "spy_price": 747.4099731445312,
+        "spy_ma180": 700.8368340386285,
+        "spy_volatility": 0.11699888752132728,
+        "spy_momentum": 0.08660438651666977,
+        "mdd": -0.016009102600725845,
+        "vix": 16.639999389648438,
+        "benchmarks": {
+            "KOSPI200": 112480.0,
+            "S&P500": 27450.0,
+            "NASDAQ100": 189675.0
+        },
+        "regime": "Bull",
+        "reason": "IDLE  분할매수 418660.KS 18주",
+        "target_exposure": 1.0,
+        "target_ratio_a": null,
+        "rebalance_threshold": null,
+        "factors": {
+            "weekly_rsi": 53.5910846222946,
+            "ma200_deviation": 0.15292597654284518,
+            "signal_level": "IDLE",
+            "lever_ratio": 0.0
+        }
     }
 ]
