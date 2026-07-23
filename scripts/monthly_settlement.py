@@ -157,6 +157,10 @@ def main(argv=None) -> int:
         return 2
 
     if args.all_groups:
+        if not os.path.isdir(args.data_root):
+            print(f"오류: 데이터 루트 디렉터리가 없습니다: {args.data_root}",
+                  file=sys.stderr)
+            return 2
         print(build_all_groups_report(args.data_root, args.start, args.end))
         return 0
 

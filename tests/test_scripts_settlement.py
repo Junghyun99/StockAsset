@@ -95,14 +95,22 @@ class TestMonthlySettlementCli:
         assert args.end == "2026-06-30"
 
     def test_all_groups_reports_sorted_accounts_and_group_totals(self, tmp_path, capsys):
-        summaries = [
+        my_isa_summaries = [
+            _rec("2026-05-31", 1000.0, 100.0),
+            _rec("2026-06-30", 1200.0, 100.0, net_deposit=100.0),
+        ]
+        my_pension_summaries = [
+            _rec("2026-05-31", 2000.0, 200.0),
+            _rec("2026-06-30", 2300.0, 200.0),
+        ]
+        spouse_summaries = [
             _rec("2026-05-31", 1000.0, 100.0),
             _rec("2026-06-30", 1100.0, 100.0),
         ]
-        _write_account(tmp_path, "my_pension", summaries)
-        _write_account(tmp_path, "my_isa", summaries)
-        _write_account(tmp_path, "spouse_isa", summaries)
-        _write_account(tmp_path, "backtest", summaries)
+        _write_account(tmp_path, "my_pension", my_pension_summaries)
+        _write_account(tmp_path, "my_isa", my_isa_summaries)
+        _write_account(tmp_path, "spouse_isa", spouse_summaries)
+        _write_account(tmp_path, "backtest", spouse_summaries)
         os.makedirs(tmp_path / "my_incomplete")
 
         rc = monthly_settlement.main([
@@ -125,6 +133,12 @@ class TestMonthlySettlementCli:
         assert positions == sorted(positions)
         assert "backtest" not in out
         assert "my_incomplete" not in out
+        my_total = out[out.index("=== 기간 결산 (my 통합) ==="):out.index("=== spouse 계좌")]
+        assert "기초자산       : KRW 3,000" in my_total
+        assert "기말자산       : KRW 3,500" in my_total
+        assert "순입금액       : KRW 100" in my_total
+        assert "기간손익(금액) : +KRW 400" in my_total
+        assert "수익률(TWR)    : +12.90%" in my_total
 
     def test_account_and_all_groups_are_mutually_exclusive(self, capsys):
         with pytest.raises(SystemExit):
@@ -149,3 +163,12 @@ class TestMonthlySettlementCli:
         out = capsys.readouterr().out
         assert rc == 0
         assert "=== my 계좌 기간 결산 ===\n대상 계좌가 없습니다" in out
+
+    def test_all_groups_missing_data_root_returns_error(self, tmp_path, capsys):
+        rc = monthly_settlement.main([
+            "--all-groups", "--start", "2026-06-01", "--end", "2026-06-30",
+            "--data-root", str(tmp_path / "missing"),
+        ])
+
+        assert rc == 2
+        assert "데이터 루트" in capsys.readouterr().err
