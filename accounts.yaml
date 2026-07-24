@@ -11,3 +11,19 @@ accounts:
     is_active: false 
     engine: DomesticVolManagedEngine
     kis_env_prefix: MY_ISA
+  - id: my_pension
+    market_type: domestic
+    is_live: true
+    is_active: false 
+    engine: DomesticAsset5RealEngine
+    kis_env_prefix: MY_PENSION
+  - id: my_irp
+    market_type: domestic
+    is_live: true
+    is_active: false 
+    engine: DomesticAsset5RealEngine
+    kis_env_prefix: MY_IRP
+
+
+
+
