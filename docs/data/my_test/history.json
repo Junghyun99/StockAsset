@@ -258,5 +258,34 @@
                 "reason": "ODNO=0030164600"
             }
         ]
+    },
+    {
+        "id": "tx_20260724_151242",
+        "date": "2026-07-24 15:12:42",
+        "portfolio_value": 10528896.0,
+        "total_trade_amount": 7198820.0,
+        "reason": "IDLE  분할매수 418660.KS 50주 / 486290.KS 스윕 473주",
+        "executions": [
+            {
+                "ticker": "418660.KS",
+                "action": "BUY",
+                "quantity": 50,
+                "price": 41850.0,
+                "fee": 313.875,
+                "date": "2026-07-24 15:12:33",
+                "status": "FILLED",
+                "reason": "ODNO=0035362100"
+            },
+            {
+                "ticker": "486290.KS",
+                "action": "BUY",
+                "quantity": 464,
+                "price": 11005.0,
+                "fee": 765.948,
+                "date": "2026-07-24 15:12:37",
+                "status": "PARTIAL",
+                "reason": "ODNO=0035378500"
+            }
+        ]
     }
 ]
