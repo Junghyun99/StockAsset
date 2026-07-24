@@ -1,10 +1,10 @@
 {
-    "last_updated": "2026-07-24 10:01:52",
+    "last_updated": "2026-07-24 14:01:18",
     "last_rebalancing_date": "2026-07-24",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "IDLE  분할매수 418660.KS 19주 / 486290.KS 스윕 292주",
+        "trigger_reason": "IDLE  분할매수 418660.KS 19주 / 486290.KS 스윕 152주",
         "market_score": {
             "vix": 18.700000762939453,
             "spy_mdd": -0.028160688866309166,
@@ -17,14 +17,14 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 50.27800644501321,
+                "value": 49.10834904160993,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.10553044001434095,
+                "value": 0.08799182514843173,
                 "format": "percent",
                 "threshold": -0.1
             },
@@ -45,8 +45,15 @@
         ]
     },
     "portfolio": {
-        "total_value": 4043596.0,
-        "cash_balance": 4043596.0,
-        "holdings": []
+        "total_value": 4037486.0,
+        "cash_balance": 804231.0,
+        "holdings": [
+            {
+                "ticker": "486290.KS",
+                "qty": 293,
+                "price": 11035.0,
+                "value": 3233255.0
+            }
+        ]
     }
 }
