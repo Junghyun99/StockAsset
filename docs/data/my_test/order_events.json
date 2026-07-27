@@ -517,5 +517,26 @@
         "alertable": true,
         "display_level": "warning",
         "source": "runtime"
+    },
+    {
+        "schema_version": 1,
+        "event_id": "6fb5ade9-e5fa-4540-b5df-0d6b4d69e4b6",
+        "attempted_at": "2026-07-27 10:01:01",
+        "execution_mode": "live",
+        "account_id": "my_test",
+        "engine": "DomesticQldDipBuyEngine",
+        "ticker": "486290.KS",
+        "action": "BUY",
+        "requested_quantity": 9,
+        "requested_price": 11035.0,
+        "filled_quantity": 9,
+        "filled_price": 11035.0,
+        "fee": 0.0,
+        "executed_at": "2026-07-27 01:01:05",
+        "status": "REJECTED",
+        "broker_reason": "주문가능금액을 초과 했습니다",
+        "alertable": true,
+        "display_level": "danger",
+        "source": "runtime"
     }
 ]
