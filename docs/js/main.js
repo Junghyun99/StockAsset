@@ -50,6 +50,8 @@ import {
 
 import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES, ACCOUNT_ENGINE_NAMES } from './utils.js?v=20260723-1';
 
+import { renderStrategyTab } from './strategy-view.js?v=20260727-1';
+
 import {
     renderCompareOverview,
     renderCompareTradesTab,
@@ -133,12 +135,13 @@ async function loadLiveMode() {
     const accountsData = new Map();
     await Promise.all(accountIds.map(async (id) => {
         const path = `${basePath}${id}/`;
-        const [summaryRes, statusRes, historyRes, groupRes, eventsRes] = await Promise.all([
+        const [summaryRes, statusRes, historyRes, groupRes, eventsRes, stateRes] = await Promise.all([
             fetch(`${path}summary.json?${cacheBust}`),
             fetch(`${path}status.json?${cacheBust}`),
             fetch(`${path}history.json?${cacheBust}`),
             fetch(`${path}asset_groups.json?${cacheBust}`),
             fetch(`${path}order_events.json?${cacheBust}`),
+            fetch(`${path}strategy_state.json?${cacheBust}`),
         ]);
         accountsData.set(id, {
             summary:    summaryRes.ok ? await summaryRes.json().catch(() => [])    : [],
@@ -146,6 +149,7 @@ async function loadLiveMode() {
             history:    historyRes.ok ? await historyRes.json().catch(() => [])    : [],
             orderEvents: eventsRes.ok ? await eventsRes.json().catch(() => []) : [],
             groupConfig: groupRes.ok  ? await groupRes.json().catch(() => null)    : null,
+            strategyState: stateRes.ok ? await stateRes.json().catch(() => ({}))   : {},
         });
     }));
 
@@ -197,7 +201,7 @@ async function loadLiveMode() {
 /**
  * 단일 계좌 UI 렌더링 (기존 loadLiveMode 로직)
  */
-function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, orderEvents = [], groupConfig }, marketType = 'overseas', accountId = null) {
+function _renderSingleAccount({ summary: summaryData, status: statusData, history: historyData, orderEvents = [], groupConfig, strategyState = {} }, marketType = 'overseas', accountId = null) {
     window.__summary = summaryData;
     window.__status = statusData;
     window.__history = historyData;
@@ -220,11 +224,20 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         memoTabBtn.classList.remove('d-none');
     }
 
+    // accountId가 있을 때만 전략 탭 표시
+    const strategyTabItem = document.getElementById('strategy-tab-item');
+    const strategyTabBtn = document.getElementById('strategy-tab');
+    if (strategyTabItem && strategyTabBtn && accountId) {
+        strategyTabItem.classList.remove('d-none');
+        strategyTabBtn.classList.remove('d-none');
+    }
+
     let memoRendered = false;
     let perfRendered = false;
     let allocationRendered = false;
     let tradesRendered = false;
     let opsRendered = false;
+    let strategyRendered = false;
 
     function renderMemoTab() {
         if (memoRendered) return;
@@ -283,12 +296,19 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
         opsRendered = true;
     }
 
+    function renderStrategyTabWrapper() {
+        if (strategyRendered) return;
+        renderStrategyTab(statusData, summaryData, strategyState, accountId);
+        strategyRendered = true;
+    }
+
     setupTabEvents({
         memo: renderMemoTab,
         performance: renderPerformanceTab,
         allocation: renderAllocationTab,
         trades: renderTradesTab,
         operations: renderOperationsTab,
+        strategy: renderStrategyTabWrapper,
         onResize: resizeAllCharts,
     });
 
@@ -299,12 +319,13 @@ function _renderSingleAccount({ summary: summaryData, status: statusData, histor
  * Fallback: accounts.json 없을 때 레거시 data/ 직하위 경로에서 로드
  */
 async function _loadLegacySingleAccount(basePath, cacheBust) {
-    const [summaryRes, statusRes, historyRes, groupConfigRes, eventsRes] = await Promise.all([
+    const [summaryRes, statusRes, historyRes, groupConfigRes, eventsRes, stateRes] = await Promise.all([
         fetch(`${basePath}summary.json?${cacheBust}`),
         fetch(`${basePath}status.json?${cacheBust}`),
         fetch(`${basePath}history.json?${cacheBust}`),
         fetch(`${basePath}asset_groups.json?${cacheBust}`),
         fetch(`${basePath}order_events.json?${cacheBust}`),
+        fetch(`${basePath}strategy_state.json?${cacheBust}`),
     ]);
     _renderSingleAccount({
         summary: await summaryRes.json(),
@@ -312,6 +333,7 @@ async function _loadLegacySingleAccount(basePath, cacheBust) {
         history: await historyRes.json(),
         orderEvents: eventsRes.ok ? await eventsRes.json() : [],
         groupConfig: groupConfigRes.ok ? await groupConfigRes.json() : null,
+        strategyState: stateRes.ok ? await stateRes.json().catch(() => ({})) : {},
     }, 'overseas', null);
 }
 
@@ -476,7 +498,7 @@ function setupComparePerformanceHTML() {
  */
 function setupTabEvents(handlers) {
     const { memo: onMemo, performance: onPerformance, allocation: onAllocation,
-            trades: onTrades, operations: onOperations, onResize } = handlers;
+            trades: onTrades, operations: onOperations, strategy: onStrategy, onResize } = handlers;
 
     const dispatch = (target) => {
         if (target === '#memo' && onMemo) {
@@ -491,6 +513,9 @@ function setupTabEvents(handlers) {
             onTrades();
         } else if (target === '#operations' && onOperations) {
             onOperations();
+        } else if (target === '#strategy' && onStrategy) {
+            onStrategy();
+            if (onResize) setTimeout(() => onResize(), 50);
         }
     };
 
@@ -511,6 +536,7 @@ function setupTabEvents(handlers) {
         'allocation': 'allocation-tab',
         'trades': 'trades-tab',
         'operations': 'operations-tab',
+        'strategy': 'strategy-tab',
     };
     if (hashToTabId[currentHash]) {
         activateTab(hashToTabId[currentHash]);
@@ -547,7 +573,8 @@ function setupTabRouting() {
             'performance': 'performance-tab',
             'allocation': 'allocation-tab',
             'trades': 'trades-tab',
-            'operations': 'operations-tab'
+            'operations': 'operations-tab',
+            'strategy': 'strategy-tab'
         };
         if (tabMap[hash]) {
             activateTab(tabMap[hash]);
