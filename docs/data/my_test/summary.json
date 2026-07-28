@@ -1652,5 +1652,37 @@
             "signal_level": "IDLE",
             "lever_ratio": 0.19959715478182707
         }
+    },
+    {
+        "date": "2026-07-28",
+        "total_value": 10351551.0,
+        "cash_balance": 6701.0,
+        "net_deposit": 4.65,
+        "group_a": 2033750.0,
+        "group_b": 8311100.0,
+        "group_c": 6701.0,
+        "expected_dividend": 0.0,
+        "spy_price": 739.0900268554688,
+        "spy_ma180": 701.8121673583985,
+        "spy_volatility": 0.11366972610174934,
+        "spy_momentum": 0.07586654976520474,
+        "mdd": -0.026962597616111795,
+        "vix": 18.670000076293945,
+        "benchmarks": {
+            "KOSPI200": 98950.0,
+            "S&P500": 27037.0,
+            "NASDAQ100": 181745.0
+        },
+        "regime": "Bull",
+        "reason": "486290.KS 스윕 9주",
+        "target_exposure": 1.0,
+        "target_ratio_a": null,
+        "rebalance_threshold": null,
+        "factors": {
+            "weekly_rsi": 47.12489694936473,
+            "ma200_deviation": 0.05630364850228738,
+            "signal_level": "IDLE",
+            "lever_ratio": 0.1964681427932877
+        }
     }
 ]
