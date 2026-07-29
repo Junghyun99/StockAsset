@@ -1,10 +1,10 @@
 {
-    "last_updated": "2026-07-29 10:01:13",
+    "last_updated": "2026-07-29 14:01:08",
     "last_rebalancing_date": "2026-07-29",
     "strategy": {
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "IDLE  분할매수 418660.KS 1주",
+        "trigger_reason": "IDLE  분할매수 418660.KS 2주",
         "market_score": {
             "vix": 18.209999084472656,
             "spy_mdd": -0.024632386471613234,
@@ -17,14 +17,14 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 45.55912039712692,
+                "value": 43.04517140189475,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.030184642574763887,
+                "value": -0.013652889294069872,
                 "format": "percent",
                 "threshold": -0.1
             },
@@ -38,27 +38,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.1945606975059726,
+                "value": 0.19215229647461457,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10217891.0,
-        "cash_balance": 49821.0,
+        "total_value": 10012891.0,
+        "cash_balance": 81441.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 50,
-                "price": 39760.0,
-                "value": 1988000.0
+                "price": 38480.0,
+                "value": 1924000.0
             },
             {
                 "ticker": "486290.KS",
-                "qty": 762,
-                "price": 10735.0,
-                "value": 8180070.0
+                "qty": 759,
+                "price": 10550.0,
+                "value": 8007450.0
             }
         ]
     }
