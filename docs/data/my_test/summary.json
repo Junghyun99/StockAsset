@@ -1719,10 +1719,10 @@
     },
     {
         "date": "2026-07-30",
-        "total_value": 9759056.0,
+        "total_value": 9757806.0,
         "cash_balance": 81241.0,
         "net_deposit": 12.37,
-        "group_a": 1871500.0,
+        "group_a": 1870250.0,
         "group_b": 7806315.0,
         "group_c": 81241.0,
         "expected_dividend": 0.0,
@@ -1731,11 +1731,11 @@
         "spy_volatility": 0.10857322687201829,
         "spy_momentum": 0.06648454711959986,
         "mdd": -0.03964082976055451,
-        "vix": 20.65999984741211,
+        "vix": 19.68000030517578,
         "benchmarks": {
-            "KOSPI200": 87590.0,
-            "S&P500": 26165.0,
-            "NASDAQ100": 173915.0
+            "KOSPI200": 87635.0,
+            "S&P500": 26110.0,
+            "NASDAQ100": 173865.0
         },
         "regime": "Bull",
         "reason": "IDLE  분할매수 418660.KS 2주",
@@ -1743,10 +1743,10 @@
         "target_ratio_a": null,
         "rebalance_threshold": null,
         "factors": {
-            "weekly_rsi": 42.14495630554087,
-            "ma200_deviation": -0.0315629651912666,
+            "weekly_rsi": 42.01183438961585,
+            "ma200_deviation": -0.03413264957000114,
             "signal_level": "IDLE",
-            "lever_ratio": 0.19177059748401895
+            "lever_ratio": 0.19166706122257401
         }
     }
 ]

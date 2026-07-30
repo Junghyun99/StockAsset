@@ -419,34 +419,34 @@
     },
     {
         "date": "2026-07-30",
-        "total_value": 31166798.0,
+        "total_value": 31184128.0,
         "cash_balance": 161698.0,
         "net_deposit": 0.0,
         "group_a": 0.0,
-        "group_b": 2783200.0,
+        "group_b": 2781840.0,
         "group_c": 161698.0,
         "expected_dividend": 0.0,
-        "spy_price": 174070.0,
-        "spy_ma180": 174739.13888888888,
-        "spy_volatility": 0.22998822548488898,
-        "spy_momentum": 0.06805086773783725,
-        "mdd": -0.16223890653575898,
-        "vix": 20.65999984741211,
+        "spy_price": 173865.0,
+        "spy_ma180": 174738.0,
+        "spy_volatility": 0.23068334573936233,
+        "spy_momentum": 0.06764810977987136,
+        "mdd": -0.16322552699971124,
+        "vix": 19.68000030517578,
         "benchmarks": {
-            "KOSPI200": 87660.0,
-            "S&P500": 26165.0,
-            "NASDAQ100": 173900.0
+            "KOSPI200": 87635.0,
+            "S&P500": 26110.0,
+            "NASDAQ100": 173865.0
         },
         "regime": "Bear_Weak",
         "reason": "Bear_Weak (비활성 — 조회 전용)",
-        "target_exposure": 0.9565707093750969,
+        "target_exposure": 0.9536882660292567,
         "target_ratio_a": 0.0,
         "rebalance_threshold": 0.05,
         "factors": {
-            "realized_vol": 0.22998822548488898,
+            "realized_vol": 0.23068334573936233,
             "target_vol": 0.22,
-            "effective_leverage": 0.9565707093750969,
-            "cash_weight": 0.04342929062490308
+            "effective_leverage": 0.9536882660292567,
+            "cash_weight": 0.046311733970743285
         }
     }
 ]

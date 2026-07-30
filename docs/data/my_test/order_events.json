@@ -769,5 +769,26 @@
         "alertable": true,
         "display_level": "danger",
         "source": "runtime"
+    },
+    {
+        "schema_version": 1,
+        "event_id": "008cf216-d9ef-4e50-8beb-dc885c20884b",
+        "attempted_at": "2026-07-30 19:22:39",
+        "execution_mode": "live",
+        "account_id": "my_test",
+        "engine": "DomesticQldDipBuyEngine",
+        "ticker": "418660.KS",
+        "action": "BUY",
+        "requested_quantity": 2,
+        "requested_price": 37405.0,
+        "filled_quantity": 2,
+        "filled_price": 37405.0,
+        "fee": 0.0,
+        "executed_at": "2026-07-30 10:22:42",
+        "status": "REJECTED",
+        "broker_reason": "장운영시간이 아닙니다",
+        "alertable": true,
+        "display_level": "danger",
+        "source": "runtime"
     }
 ]
