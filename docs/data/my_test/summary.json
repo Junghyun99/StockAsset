@@ -1719,12 +1719,12 @@
     },
     {
         "date": "2026-07-30",
-        "total_value": 9815411.0,
-        "cash_balance": 40121.0,
-        "net_deposit": 6.2,
-        "group_a": 1893500.0,
-        "group_b": 7881790.0,
-        "group_c": 40121.0,
+        "total_value": 9759056.0,
+        "cash_balance": 81241.0,
+        "net_deposit": 12.37,
+        "group_a": 1871500.0,
+        "group_b": 7806315.0,
+        "group_c": 81241.0,
         "expected_dividend": 0.0,
         "spy_price": 729.4600219726562,
         "spy_ma180": 702.492333984375,
@@ -1733,20 +1733,20 @@
         "mdd": -0.03964082976055451,
         "vix": 20.65999984741211,
         "benchmarks": {
-            "KOSPI200": 89170.0,
-            "S&P500": 26240.0,
-            "NASDAQ100": 174950.0
+            "KOSPI200": 87590.0,
+            "S&P500": 26165.0,
+            "NASDAQ100": 173915.0
         },
         "regime": "Bull",
-        "reason": "IDLE  분할매수 418660.KS 1주 / 486290.KS 스윕 4주",
+        "reason": "IDLE  분할매수 418660.KS 2주",
         "target_exposure": 1.0,
         "target_ratio_a": null,
         "rebalance_threshold": null,
         "factors": {
-            "weekly_rsi": 42.359715085284506,
-            "ma200_deviation": -0.027451608197138294,
+            "weekly_rsi": 42.14495630554087,
+            "ma200_deviation": -0.0315629651912666,
             "signal_level": "IDLE",
-            "lever_ratio": 0.19291092344477476
+            "lever_ratio": 0.19177059748401895
         }
     }
 ]
