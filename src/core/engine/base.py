@@ -434,10 +434,6 @@ class TradingEngine:
                 f">>> Step 5: Monitoring "
                 f"(리밸런싱 인터벌 미충족, {self.trading_interval_days}일 기준)"
             )
-            self._notify_message(
-                f"모니터링 완료. {regime.value} | ${portfolio.total_value:,.0f}",
-                detail=self._cycle_detail(),
-            )
 
         else:
             decision = self.build_strategy_decision(
@@ -476,10 +472,6 @@ class TradingEngine:
                         self._notify_alert(warn_msg, detail=self._cycle_detail())
             else:
                 self.logger.info("No Rebalance Needed.")
-                self._notify_message(
-                    f"Bot Finished. Hold. ({regime.value})",
-                    detail=self._cycle_detail(),
-                )
 
             self.commit_strategy_state(decision, strategy_result)
 
@@ -704,10 +696,6 @@ class TradingEngine:
             target_ratio_a=target_ratio_a, rebalance_threshold=rebalance_threshold,
         )
         self.logger.info(">>> Step 5: Deactivated (조회 전용, 매매 스킵)")
-        self._notify_message(
-            f"🔒 비활성 계좌 — 조회만 수행. {regime.value} | ${portfolio.total_value:,.0f}",
-            detail=self._cycle_detail(),
-        )
         return signal, [], portfolio, False
 
     def persist(
