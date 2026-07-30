@@ -131,7 +131,8 @@ def test_monitoring_cycle_skips_orders():
     """최근 리밸런싱(1일 전) + BULL → 주문 없음, is_rebalancing=False"""
     from datetime import date, timedelta
     yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-    engine, mocks = _make_engine(repo_last_reb=yesterday)
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=yesterday, notifier=notifier)
     md = _make_market_data()
 
     mocks["calculator"].calculate.return_value = md
@@ -148,6 +149,8 @@ def test_monitoring_cycle_skips_orders():
     mocks["repo"].save_daily_summary.assert_called_once()
     _, kwargs = mocks["repo"].update_status.call_args
     assert kwargs.get("rebalancing_date") is None
+    notifier.send_message.assert_not_called()
+    notifier.send_alert.assert_not_called()
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -346,8 +349,8 @@ def test_inactive_account_persists_target_ratio_for_factors():
     assert result.signal.rebalance_threshold == 0.075
 
 
-def test_inactive_account_sends_notification():
-    """비활성 계좌도 매 실행 시 조회 완료 알림을 보낸다."""
+def test_inactive_account_normal_cycle_sends_no_notification():
+    """비활성 계좌의 정상 조회 완료는 Slack 알림을 보내지 않는다."""
     notifier = MagicMock()
     engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier, is_active=False)
     md = _make_market_data()
@@ -358,8 +361,8 @@ def test_inactive_account_sends_notification():
 
     engine.run_one_cycle(mocks["data_provider"])
 
-    calls = [str(c) for c in notifier.send_message.call_args_list]
-    assert any("비활성" in c for c in calls)
+    notifier.send_message.assert_not_called()
+    notifier.send_alert.assert_not_called()
 
 
 def test_inactive_account_nan_sends_alert_and_skips_persist():
@@ -527,6 +530,23 @@ def test_orders_executed_sends_message():
 
     calls = [str(c) for c in notifier.send_message.call_args_list]
     assert any("Orders Executed" in c for c in calls)
+
+
+def test_hold_cycle_sends_no_notification():
+    """Due cycle without orders remains silent when no warning is raised."""
+    notifier = MagicMock()
+    engine, mocks = _make_engine(repo_last_reb=None, notifier=notifier)
+    md = _make_market_data()
+
+    mocks["calculator"].calculate.return_value = md
+    mocks["analyzer"].analyze.return_value = MarketRegime.BULL
+    mocks["targeter"].calculate_exposure.return_value = 1.0
+    mocks["rebalancer"].generate_signal.return_value = TradeSignal(1.0, [], "Hold")
+
+    engine.run_one_cycle(mocks["data_provider"])
+
+    notifier.send_message.assert_not_called()
+    notifier.send_alert.assert_not_called()
 
 
 def test_empty_executions_sends_alert():

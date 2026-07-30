@@ -98,7 +98,8 @@ def test_bot_run_happy_path_no_trade(mock_dependencies):
 
     mock_dependencies['loader'].fetch_ohlcv.assert_called()
     mock_dependencies['repo'].save_daily_summary.assert_called()
-    mock_dependencies['notifier'].send_message.assert_called()
+    mock_dependencies['notifier'].send_message.assert_not_called()
+    mock_dependencies['notifier'].send_alert.assert_not_called()
 
 
 def test_overseas_account_injects_overseas_benchmarks(mock_dependencies):
@@ -337,10 +338,8 @@ def test_bot_run_monitoring_day_skips_orders(mock_dependencies):
     mock_dependencies['rebalancer'].generate_signal.assert_not_called()
     mock_dependencies['broker'].execute_orders.assert_not_called()
 
-    # 모니터링 메시지 전송
-    mock_dependencies['notifier'].send_message.assert_called_once()
-    msg = mock_dependencies['notifier'].send_message.call_args[0][0]
-    assert "모니터링" in msg
+    mock_dependencies['notifier'].send_message.assert_not_called()
+    mock_dependencies['notifier'].send_alert.assert_not_called()
 
     # 데이터는 기록
     mock_dependencies['repo'].save_daily_summary.assert_called_once()
