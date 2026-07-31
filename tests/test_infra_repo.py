@@ -96,6 +96,27 @@ def test_update_status_decision_factors_미전달시_빈배열(repo, dummy_portf
     assert status["strategy"]["decision_factors"] == []
 
 
+def test_update_status_engine_name_저장(tmp_path, dummy_portfolio, dummy_market_data):
+    """엔진명이 status.json strategy.engine_name에 저장된다.
+
+    대시보드 전략 탭은 accounts_meta.json의 engine_name으로 엔진 패밀리를 식별하는데,
+    메타 로드가 실패해도 status.json만으로 폴백 렌더링이 가능해야 한다.
+    """
+    repo = JsonRepository(root_path=str(tmp_path), engine_name="DomesticQldDipBuyEngine")
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data, "이유")
+    with open(repo.status_file) as f:
+        status = json.load(f)
+    assert status["strategy"]["engine_name"] == "DomesticQldDipBuyEngine"
+
+
+def test_update_status_engine_name_미지정시_None(repo, dummy_portfolio, dummy_market_data):
+    """engine_name 없이 생성된 리포지토리(레거시 경로)는 None으로 저장된다."""
+    repo.update_status(MarketRegime.BULL, 1.0, dummy_portfolio, dummy_market_data, "이유")
+    with open(repo.status_file) as f:
+        status = json.load(f)
+    assert status["strategy"]["engine_name"] is None
+
+
 def test_save_daily_summary_factors_시계열(repo, dummy_portfolio, dummy_market_data):
     """summary.json에는 key:value 축약본만 저장 (시계열용)."""
     signal = TradeSignal(1.0, [], "test")

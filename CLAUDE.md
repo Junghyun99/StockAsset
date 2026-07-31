@@ -95,13 +95,27 @@ GitHub Actions 워크플로우 7개:
 테스트 시 `test_infra_broker_kis_domestic_live.py`는 CI에서 제외됨.
 
 ## 프론트엔드 정적 파일 버전 관리
-JS/CSS 파일을 HTML에서 로드할 때 `?v=YYYYMMDD-N` 쿼리스트링으로 브라우저 캐시를 무효화한다.
-- `YYYYMMDD` — 수정 날짜, `N` — 당일 수정 순번 (1부터 시작)
-- JS/CSS 수정 시 해당 파일을 참조하는 **모든 HTML**의 `?v=` 값을 함께 갱신한다
-- 파일마다 독립 버전 관리 (수정한 파일만 갱신)
-- 같은 날 두 번째 수정은 순번만 증가시킨다 (`20260618-1` → `20260618-2`)
-- `?v=` 갱신 없이 내용만 바꾸면 사용자가 캐시된 구버전을 볼 수 있으므로 반드시 HTML의 버전도 함께 변경하여 커밋한다
-- **ESM(`type="module"`) 사용 시 주의**: 진입 스크립트의 `?v=` 변경으로 `import`된 하위 모듈 캐시는 무효화되지 않는다. ESM 프로젝트는 번들러의 콘텐츠 해시(`[contenthash]`) 방식을 사용해야 한다.
+JS/CSS를 로드할 때 `?v=YYYYMMDD-N` 쿼리스트링으로 브라우저 캐시를 무효화한다.
+`YYYYMMDD` — 수정 날짜, `N` — 당일 수정 순번 (1부터 시작).
+
+### 전역 단일 토큰 규칙 (필수)
+**docs/ 안의 모든 `?v=` 값은 항상 동일해야 한다.** HTML의 엔트리 스크립트든 JS 모듈 간
+`import`든 예외 없이 하나의 토큰을 쓴다.
+
+이유: ESM 모듈 캐시 키는 **쿼리스트링을 포함한 URL 전체**다. 같은 모듈을 서로 다른 `?v=`로
+import하면 브라우저가 그 모듈을 여러 번 평가해 **별개 인스턴스**를 만들고, 모듈 최상위에
+선언된 공유 상태(`ACCOUNT_COLORS`, `ACCOUNT_ENGINE_NAMES`, `ENGINE_COLORS` 등)가 갈라진다.
+한쪽에서 `loadAccountsMeta()`로 채워도 다른 쪽은 빈 객체를 보게 되며, 에러 없이 조용히
+잘못 렌더링되므로 발견이 매우 늦다. (실제 사례: 전략 탭 전 계좌 미표시, 비교 화면 색상·통화 오류)
+
+- 갱신: `python -m scripts.asset_version --bump` (전 참조를 한 번에 오늘 날짜로 교체)
+  - 특정 토큰 지정: `python -m scripts.asset_version --bump 20260731-2`
+- 검사: `python -m scripts.asset_version --check`
+  - `tests/test_docs_asset_versions.py`와 `tests/dashboard/account-engine-display.test.mjs`가
+    CI에서 자동 검증하므로, 토큰이 갈라지면 빌드가 실패한다
+- **JS/CSS를 수정했으면 반드시 bump 후 함께 커밋한다.** 갱신 없이 내용만 바꾸면 사용자가
+  캐시된 구버전을 본다
+- 장기적으로는 번들러의 콘텐츠 해시(`[contenthash]`) 도입이 정석이다. 그때까지 이 규칙을 유지한다
 
 ## 주의사항
 - .env 파일은 절대 커밋하지 않을 것

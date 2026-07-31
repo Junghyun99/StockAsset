@@ -22,7 +22,7 @@ import {
     renderHistoricalAllocationChart,
     renderTargetVsActualChart,
     renderDeviationTrendChart
-} from './charts.js?v=20260723-1';
+} from './charts.js?v=20260731-1';
 
 import {
     updateModeUI,
@@ -46,30 +46,30 @@ import {
     renderDividendSummaryCards,
     renderWinLossCards,
     initTooltips
-} from './ui.js?v=20260723-1';
+} from './ui.js?v=20260731-1';
 
-import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES, ACCOUNT_ENGINE_NAMES } from './utils.js?v=20260723-1';
+import { loadEngineMeta, loadAccountsMeta, ACCOUNT_MARKET_TYPES, ACCOUNT_ENGINE_NAMES } from './utils.js?v=20260731-1';
 
-import { renderStrategyTab } from './strategy-view.js?v=20260727-1';
+import { renderStrategyTab } from './strategy-view.js?v=20260731-1';
 
 import {
     renderCompareOverview,
     renderCompareTradesTab,
-} from './compare-ui.js?v=20260722-2';
+} from './compare-ui.js?v=20260731-1';
 
 import {
     renderAccountOverview,
     renderAccountTradesTab,
-} from './account-compare-ui.js?v=20260722-2';
+} from './account-compare-ui.js?v=20260731-1';
 
 import {
     renderAccountPerformanceChart,
     renderAccountStrategyChart,
     updateAccountChartRange,
     resizeAccountCharts,
-} from './account-compare-charts.js?v=20260722-2';
+} from './account-compare-charts.js?v=20260731-1';
 
-import { initMemoTab } from './memo.js?v=20260624-1';
+import { initMemoTab } from './memo.js?v=20260731-1';
 
 import {
     renderComparePerformanceChart,
@@ -78,7 +78,7 @@ import {
     renderCompareYearlyDividendChart,
     updateCompareChartRange,
     resizeCompareCharts,
-} from './compare-charts.js?v=20260722-2';
+} from './compare-charts.js?v=20260731-1';
 
 document.addEventListener('DOMContentLoaded', async function() {
     // 1. URL 파라미터에서 모드 확인 (?mode=backtest)

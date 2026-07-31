@@ -420,11 +420,27 @@ export function formatAmount(value, marketType) {
 
 /**
  * 퍼센트 포맷팅 (부호 포함)
+ * @param {number} value - 이미 100을 곱한 퍼센트 값 (예: 12.34 -> "+12.34%")
  */
 export function formatPercent(value) {
     if (value == null) return '-';
     const sign = value >= 0 ? '+' : '';
     return sign + value.toFixed(2) + '%';
+}
+
+/**
+ * 비율(0~1) 퍼센트 포맷팅.
+ * formatPercent()와 달리 100을 곱해준다. 엔진 decision_factors의 format="percent"
+ * 값들은 모두 비율 규약(0.70 = 70%)이므로 이 함수를 써야 한다.
+ * @param {number} value - 비율 (예: 0.7 -> "70.0%")
+ * @param {number} digits - 소수점 자리수
+ * @param {boolean} signed - 양수에도 '+' 부호를 붙일지 (이격/차이 표시용)
+ */
+export function formatRatio(value, digits = 1, signed = false) {
+    if (value == null || (typeof value === 'number' && isNaN(value))) return '-';
+    const pct = value * 100;
+    const sign = signed && pct >= 0 ? '+' : '';
+    return sign + pct.toFixed(digits) + '%';
 }
 
 // ============================================================

@@ -1,7 +1,7 @@
 // docs/js/compare-charts.js
 // 멀티 엔진 비교 전용 차트
 
-import { filterByDateRange, ENGINE_COLORS, ENGINE_MARKET_TYPES } from './utils.js?v=20260722-2';
+import { filterByDateRange, ENGINE_COLORS, ENGINE_MARKET_TYPES } from './utils.js?v=20260731-1';
 
 let comparePerformanceChart = null;
 let compareStrategyChart = null;

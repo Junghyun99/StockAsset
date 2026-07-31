@@ -26,9 +26,9 @@ import {
     computeDividendYield,
     computeWinLossStats,
     RISK_FREE_RATE_ANNUAL
-} from './utils.js?v=20260722-2';
+} from './utils.js?v=20260731-1';
 
-import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260621-1';
+import { METRIC_TOOLTIPS } from './metric-tooltips.js?v=20260731-1';
 
 /**
  * 상단 내비게이션 바의 모드 버튼 및 상태 배지 업데이트

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import test from 'node:test';
 
 async function loadUtils() {
@@ -93,20 +93,24 @@ test('shows the engine name and missing-metadata fallback in the detail banner',
 });
 
 test('uses one versioned account metadata module across dashboard consumers', async () => {
-    const consumers = [
-        '../../docs/js/main.js',
-        '../../docs/js/ui.js',
-        '../../docs/js/charts.js',
-        '../../docs/js/account-compare-ui.js',
-        '../../docs/js/account-compare-charts.js',
-        '../../docs/js/portfolio-main.js',
-        '../../docs/js/portfolio-cards.js',
-        '../../docs/js/portfolio-allocation.js',
-        '../../docs/js/portfolio-charts.js',
-    ];
+    // 하드코딩 대신 docs/js 전체를 훑는다. 소비자 목록을 손으로 관리하면 새 모듈
+    // (strategy-view.js)이 누락되고, 토큰을 박아두면 정상 bump가 테스트를 깨뜨린다.
+    const jsDir = new URL('../../docs/js/', import.meta.url);
+    const files = (await readdir(jsDir)).filter((f) => f.endsWith('.js'));
 
-    for (const path of consumers) {
-        const source = await readFile(new URL(path, import.meta.url), 'utf8');
-        assert.match(source, /utils\.js\?v=20260722-2/);
+    const tokensByImporter = new Map();
+    for (const file of files) {
+        const source = await readFile(new URL(file, jsDir), 'utf8');
+        for (const [, token] of source.matchAll(/utils\.js\?v=([\w-]+)/g)) {
+            tokensByImporter.set(file, token);
+        }
     }
+
+    assert.ok(tokensByImporter.size > 0, 'utils.js를 import하는 모듈을 찾지 못했다');
+    const distinct = new Set(tokensByImporter.values());
+    assert.equal(
+        distinct.size, 1,
+        `utils.js가 여러 ?v= 토큰으로 import되면 ESM 모듈이 중복 인스턴스화된다: ` +
+        `${JSON.stringify(Object.fromEntries(tokensByImporter))}`,
+    );
 });

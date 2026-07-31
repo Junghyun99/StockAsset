@@ -248,6 +248,9 @@ class JsonRepository(IRepository):
             "last_rebalancing_date": last_rebalancing,
 
             "strategy": {
+                # [엔진명] 대시보드가 accounts_meta.json 없이도 전략 탭을 렌더링할 수 있게
+                # status.json 자체에 엔진명을 남긴다 (프론트 폴백 경로).
+                "engine_name": self.engine_name,
                 "regime": regime.value,
                 "target_exposure": exposure,
                 "trigger_reason": reason,
