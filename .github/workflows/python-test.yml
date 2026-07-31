@@ -37,10 +37,12 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
 
+    # glob은 따옴표 없이 쉘이 확장한다. `node --test`가 glob 인자를 직접 해석하는 건
+    # Node 22+ 기능이라, 따옴표로 감싸면 구버전 러너에서 리터럴 경로로 넘어가 실패한다.
     - name: Test dashboard modules
-      run: node --test "tests/dashboard/*.test.mjs"
+      run: node --test tests/dashboard/*.test.mjs
 
     - name: Slack Notification on Failure
       uses: 8398a7/action-slack@77eaa4f1c608a7d68b38af4e3f739dcd8cba273e # v3.19.0
