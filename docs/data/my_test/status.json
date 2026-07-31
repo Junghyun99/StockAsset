@@ -1,10 +1,11 @@
 {
-    "last_updated": "2026-07-31 10:01:07",
+    "last_updated": "2026-07-31 14:01:01",
     "last_rebalancing_date": "2026-07-31",
     "strategy": {
+        "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "486290.KS 스윕 7주",
+        "trigger_reason": "대기(IDLE)",
         "market_score": {
             "vix": 17.09000015258789,
             "spy_mdd": -0.0235396404681636,
@@ -17,14 +18,14 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 45.621628801828095,
+                "value": 46.49072105255862,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.029380282634656366,
+                "value": 0.043363884599389405,
                 "format": "percent",
                 "threshold": -0.1
             },
@@ -38,27 +39,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.19727878832869644,
+                "value": 0.19758052508420437,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10156946.0,
+        "total_value": 10208496.0,
         "cash_balance": 6786.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 50,
-                "price": 40075.0,
-                "value": 2003750.0
+                "price": 40340.0,
+                "value": 2017000.0
             },
             {
                 "ticker": "486290.KS",
                 "qty": 766,
-                "price": 10635.0,
-                "value": 8146410.0
+                "price": 10685.0,
+                "value": 8184710.0
             }
         ]
     }

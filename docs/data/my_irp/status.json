@@ -1,7 +1,8 @@
 {
-    "last_updated": "2026-07-31 10:01:31",
+    "last_updated": "2026-07-31 14:01:25",
     "last_rebalancing_date": null,
     "strategy": {
+        "engine_name": "DomesticAsset5RealEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "Bull (비활성 — 조회 전용)",
@@ -31,26 +32,26 @@
         ]
     },
     "portfolio": {
-        "total_value": 15906881.0,
+        "total_value": 15952676.0,
         "cash_balance": 30001.0,
         "holdings": [
             {
                 "ticker": "0162Z0.KS",
                 "qty": 384,
-                "price": 13170.0,
-                "value": 5057280.0
+                "price": 13185.0,
+                "value": 5063040.0
             },
             {
                 "ticker": "381180.KS",
                 "qty": 109,
-                "price": 43600.0,
-                "value": 4752400.0
+                "price": 43615.0,
+                "value": 4754035.0
             },
             {
                 "ticker": "465580.KS",
                 "qty": 256,
-                "price": 23700.0,
-                "value": 6067200.0
+                "price": 23850.0,
+                "value": 6105600.0
             }
         ]
     }
