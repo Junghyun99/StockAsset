@@ -1,8 +1,8 @@
 // docs/js/portfolio-main.js
-import { loadAccountsMeta } from './utils.js?v=20260722-2';
-import { renderCurrencySummary, renderAccountSections } from './portfolio-cards.js?v=20260722-2';
-import { renderAllocationSections } from './portfolio-allocation.js?v=20260722-2';
-import { renderComparisonChart, updateChartRange } from './portfolio-charts.js?v=20260722-2';
+import { loadAccountsMeta } from './utils.js?v=20260731-1';
+import { renderCurrencySummary, renderAccountSections } from './portfolio-cards.js?v=20260731-1';
+import { renderAllocationSections } from './portfolio-allocation.js?v=20260731-1';
+import { renderComparisonChart, updateChartRange } from './portfolio-charts.js?v=20260731-1';
 
 document.addEventListener('DOMContentLoaded', async () => {
     const base = 'data/';

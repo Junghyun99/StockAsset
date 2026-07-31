@@ -6,7 +6,7 @@
 //   - summary.json  -> factors 맵 (시계열, 매일 key:value로 저장됨)
 //   - strategy_state.json -> DipBuy 계열 트랜치 진행 상태 (level/completed/total 등)
 
-import { ACCOUNT_ENGINE_NAMES, formatPercent } from './utils.js?v=20260727-1';
+import { ACCOUNT_ENGINE_NAMES, formatRatio } from './utils.js?v=20260731-1';
 
 // 엔진 패밀리 분류 (accounts.yaml의 실사용 엔진 기준)
 const ENGINE_FAMILY = {
@@ -112,7 +112,7 @@ function _renderDipBuyFamily(contentEl, statusData, summaryData, strategyState, 
     cardsEl.innerHTML = `
         ${_card('현재 신호 단계', `
             <span class="badge bg-${levelMeta.color} fs-6">${levelMeta.label}</span>
-            <div class="small text-muted mt-2">목표 레버리지 비중 ${formatPercent(levelMeta.target_ratio)}</div>
+            <div class="small text-muted mt-2">목표 레버리지 비중 ${formatRatio(levelMeta.target_ratio)}</div>
         `)}
         ${_card('분할 매수 진행률', trancheTotal > 0 ? `
             <div class="h5 mb-1">${trancheCompleted} / ${trancheTotal} 단계</div>
@@ -130,13 +130,13 @@ function _renderDipBuyFamily(contentEl, statusData, summaryData, strategyState, 
             breached: rsi != null && rsi < 48,
         })}
         ${_metricCard('200일선 괴리율', deviation, 'percent', {
-            valueFormatter: v => formatPercent(v),
+            valueFormatter: v => formatRatio(v),
             subtext: 'STAGE 진입선: -10% / -18% / -26%',
             breached: deviation != null && deviation <= -0.10,
         })}
         ${_metricCard('현재 레버리지 비중', leverRatio, 'percent', {
-            valueFormatter: v => formatPercent(v),
-            subtext: `목표(현재 단계): ${formatPercent(levelMeta.target_ratio)}`,
+            valueFormatter: v => formatRatio(v),
+            subtext: `목표(현재 단계): ${formatRatio(levelMeta.target_ratio)}`,
             breached: leverRatio != null && Math.abs(leverRatio - levelMeta.target_ratio) > 0.05,
         })}
     `;
@@ -197,18 +197,18 @@ function _renderVolManagedFamily(contentEl, statusData, summaryData, engineName)
             gauge: { value: effectiveLev ?? 0, min: 0, max: 2, markers: [{ v: 1, label: '1x' }] },
         })}
         ${_metricCard('실현변동성(21d)', realizedVol, 'percent', {
-            valueFormatter: v => formatPercent(v),
-            subtext: `목표 변동성 ${formatPercent(targetVol)}`,
+            valueFormatter: v => formatRatio(v),
+            subtext: `목표 변동성 ${formatRatio(targetVol)}`,
             breached: volExceeded,
             gauge: { value: (realizedVol ?? 0) * 100, min: 0, max: 50, markers: [{ v: targetVol * 100, label: '목표' }] },
         })}
         ${_metricCard('현금 비중', cashWeight, 'percent', {
-            valueFormatter: v => formatPercent(v),
+            valueFormatter: v => formatRatio(v),
             subtext: '고변동성 회피 정도',
             gauge: { value: (cashWeight ?? 0) * 100, min: 0, max: 100 },
         })}
         ${_metricCard('목표 변동성', targetVol, 'percent', {
-            valueFormatter: v => formatPercent(v),
+            valueFormatter: v => formatRatio(v),
             subtext: '전략 앵커 (TARGET_VOL)',
         })}
     `;
@@ -253,7 +253,7 @@ function _renderFullExposureFamily(contentEl, statusData, summaryData, engineNam
     contentEl.innerHTML = `
         <p class="text-muted mb-3">
             <i class="fas fa-info-circle me-1"></i>
-            자산5분법 정적 비율(A그룹 ${formatPercent(targetRatioA)} : B그룹 ${formatPercent(1 - targetRatioA)})로 리밸런싱을 유지합니다.
+            자산5분법 정적 비율(A그룹 ${formatRatio(targetRatioA)} : B그룹 ${formatRatio(1 - targetRatioA)})로 리밸런싱을 유지합니다.
             이격도가 임계치를 벗어나면 리밸런싱을 실행합니다.
         </p>
         <div class="row g-3 mb-4" id="strategy-cards"></div>
@@ -266,23 +266,23 @@ function _renderFullExposureFamily(contentEl, statusData, summaryData, engineNam
     const cardsEl = document.getElementById('strategy-cards');
     cardsEl.innerHTML = `
         ${_metricCard('목표 A그룹 비중', targetRatioA, 'percent', {
-            valueFormatter: v => formatPercent(v),
+            valueFormatter: v => formatRatio(v),
             subtext: '전략 고정 비율 (REBALANCE_RATIO_A)',
         })}
         ${_metricCard('현재 A그룹 비중', currentRatioA, 'percent', {
-            valueFormatter: v => formatPercent(v),
+            valueFormatter: v => formatRatio(v),
             subtext: currentRatioA != null
-                ? `목표 대비 이격: ${formatPercent(currentRatioA - targetRatioA)}`
+                ? `목표 대비 이격: ${formatRatio(currentRatioA - targetRatioA, 1, true)}`
                 : '보유 자산 없음',
         })}
         ${_metricCard('그룹 이격도', groupDeviation, 'percent', {
-            valueFormatter: v => formatPercent(v),
-            subtext: `리밸런싱 임계치 ±${formatPercent(rebalanceThreshold)}`,
+            valueFormatter: v => formatRatio(v),
+            subtext: `리밸런싱 임계치 ±${formatRatio(rebalanceThreshold)}`,
             breached: needsRebalance,
         })}
         ${_card('현재 국면', `
             <span class="badge bg-${_regimeColor(regime)} fs-6">${regime}</span>
-            <div class="small text-muted mt-2">목표 익스포저 ${formatPercent(targetExposure ?? 1.0)}</div>
+            <div class="small text-muted mt-2">목표 익스포저 ${formatRatio(targetExposure ?? 1.0)}</div>
             ${needsRebalance ? '<div class="badge bg-warning mt-2">리밸런싱 필요</div>' : '<div class="badge bg-success mt-2">배분 양호</div>'}
         `)}
     `;
@@ -353,7 +353,7 @@ function _metricCard(title, value, format, opts = {}) {
 
 function _defaultFormat(value, format) {
     if (value == null || (typeof value === 'number' && isNaN(value))) return '-';
-    if (format === 'percent') return formatPercent(value);
+    if (format === 'percent') return formatRatio(value);
     if (format === 'number') return typeof value === 'number' ? value.toFixed(2) : String(value);
     return String(value);
 }

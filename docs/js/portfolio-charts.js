@@ -1,5 +1,5 @@
 // docs/js/portfolio-charts.js
-import { ACCOUNT_COLORS, filterByDateRange } from './utils.js?v=20260722-2';
+import { ACCOUNT_COLORS, filterByDateRange } from './utils.js?v=20260731-1';
 
 let comparisonChart = null;
 
