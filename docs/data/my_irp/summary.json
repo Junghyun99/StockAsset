@@ -148,5 +148,35 @@
             "target_ratio_a": 0.7,
             "rebalance_threshold": 0.075
         }
+    },
+    {
+        "date": "2026-08-03",
+        "total_value": 15870887.0,
+        "cash_balance": 30007.0,
+        "net_deposit": 6.0,
+        "group_a": 0.0,
+        "group_b": 0.0,
+        "group_c": 30007.0,
+        "expected_dividend": 0.0,
+        "spy_price": 747.030029296875,
+        "spy_ma180": 703.2496120876737,
+        "spy_volatility": 0.12382173548394493,
+        "spy_momentum": 0.06910527440697666,
+        "mdd": -0.016509311724299196,
+        "vix": 15.989999771118164,
+        "benchmarks": {
+            "KOSPI200": 100505.0,
+            "S&P500": 26685.0,
+            "NASDAQ100": 180350.0
+        },
+        "regime": "Bull",
+        "reason": "Bull (비활성 — 조회 전용)",
+        "target_exposure": 1.0,
+        "target_ratio_a": 0.7,
+        "rebalance_threshold": 0.075,
+        "factors": {
+            "target_ratio_a": 0.7,
+            "rebalance_threshold": 0.075
+        }
     }
 ]

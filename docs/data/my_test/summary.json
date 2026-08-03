@@ -1780,5 +1780,37 @@
             "signal_level": "IDLE",
             "lever_ratio": 0.19758052508420437
         }
+    },
+    {
+        "date": "2026-08-03",
+        "total_value": 10183346.0,
+        "cash_balance": 6786.0,
+        "net_deposit": 0.0,
+        "group_a": 2011000.0,
+        "group_b": 8165560.0,
+        "group_c": 6786.0,
+        "expected_dividend": 0.0,
+        "spy_price": 747.030029296875,
+        "spy_ma180": 703.2496120876737,
+        "spy_volatility": 0.12382173548394493,
+        "spy_momentum": 0.06910527440697666,
+        "mdd": -0.016509311724299196,
+        "vix": 15.989999771118164,
+        "benchmarks": {
+            "KOSPI200": 100690.0,
+            "S&P500": 26685.0,
+            "NASDAQ100": 180375.0
+        },
+        "regime": "Bull",
+        "reason": "대기(IDLE)",
+        "target_exposure": 1.0,
+        "target_ratio_a": null,
+        "rebalance_threshold": null,
+        "factors": {
+            "weekly_rsi": 46.2915324315154,
+            "ma200_deviation": 0.03792276319077841,
+            "signal_level": "IDLE",
+            "lever_ratio": 0.1974792960977659
+        }
     }
 ]
