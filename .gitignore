@@ -227,3 +227,9 @@ CLAUDE.local.md
 # KIS API 토큰 캐시 (민감 정보)
 .kis_token_cache.json
 .kis_token_cache.enc
+
+# AI 도구 메타 파일 (로컬 전용, 커밋 불필요)
+.agents/
+.codex/
+.zcode/
+AGENTS.md
