@@ -19,12 +19,14 @@ CHANNEL_RULES = {
     "SSO": {
         "stddev_k": 3.0,
         "slope": 16.0,
+        "slope_exit_threshold": -6.0,
         "breakdown_margin": 0.03,
         "trailing_drop": 0.08,
     },
     "SPYI": {
         "stddev_k": 2.0,
         "slope": 8.0,
+        "slope_exit_threshold": -4.0,
         "breakdown_margin": 0.02,
         "trailing_drop": 0.05,
     },
@@ -62,6 +64,7 @@ class AssetState:
     last_attempt_date: str = ""
     pending_buy_amount: float = 0.0
     exit_state: ExitState = ExitState.NONE
+    exit_origin: str = ""
     lock_price: float = 0.0
     uptrend_active: bool = False
     uptrend_days: int = 0
@@ -69,9 +72,17 @@ class AssetState:
     breach_date: str = ""
     breach_day_date: str = ""
     prior_breach_days: int = 0
+    slope_exit_days: int = 0
+    slope_exit_day_date: str = ""
+    prior_slope_exit_days: int = 0
+    slope_exit_latched: bool = False
+    slope_release_days: int = 0
+    slope_release_day_date: str = ""
+    prior_slope_release_days: int = 0
     forced_sale_date: str = ""
     pending_exit_date: str = ""
     pending_exit_quantity: int = 0
+    pending_exit_origin: str = ""
     pending_full_exit_date: str = ""
     pending_full_exit_quantity: int = 0
     recovery_quantity: int = 0
@@ -181,6 +192,7 @@ class SsoSpyiChannelPlanner:
                 self._clear_recovery_lot(asset)
                 asset.exit_state = ExitState.NONE
                 asset.lock_price = 0.0
+                asset.exit_origin = ""
 
         buy_executions = [
             execution for execution in executions
@@ -233,6 +245,8 @@ class SsoSpyiChannelPlanner:
                         self._clear_recovery_lot(asset)
                         asset.pending_exit_quantity = 0
                         asset.pending_exit_date = ""
+                        asset.pending_exit_origin = ""
+                        asset.exit_origin = ""
                         asset.uptrend_active = False
                         asset.uptrend_days = 0
                         asset.breach_days = 0
@@ -240,14 +254,21 @@ class SsoSpyiChannelPlanner:
                     continue
                 if asset.pending_exit_date:
                     asset.exit_state = ExitState.EXIT_LOCK
+                    asset.exit_origin = asset.pending_exit_origin
                     asset.lock_price = execution.price
                     asset.pending_exit_quantity = max(
                         asset.pending_exit_quantity - execution.quantity, 0
                     )
                     if not asset.pending_exit_quantity:
                         asset.pending_exit_date = ""
-                    asset.recovery_quantity += execution.quantity
-                    asset.recovery_reserved_cash += execution.quantity * execution.price
+                        asset.pending_exit_origin = ""
+                    if asset.exit_origin == "CHANNEL":
+                        asset.recovery_quantity += execution.quantity
+                        asset.recovery_reserved_cash += execution.quantity * execution.price
+                    elif asset.exit_origin == "SLOPE":
+                        asset.slope_exit_latched = True
+                        asset.slope_release_days = 0
+                        asset.prior_slope_release_days = 0
         return state
 
     def _update_daily_state(self, ticker: str, value: AssetInput, state: AssetState) -> None:
@@ -255,6 +276,7 @@ class SsoSpyiChannelPlanner:
         if value.date == state.daily_signal_date:
             state.daily_signal_level = raw_level
             self._update_breach(ticker, value, state)
+            self._update_slope_exit(ticker, value, state)
             return
         state.prior_signal_date = state.daily_signal_date
         state.prior_signal_level = state.daily_signal_level
@@ -274,6 +296,7 @@ class SsoSpyiChannelPlanner:
                 state.confirmed_level = proven_level
         self._update_uptrend(value, state, ticker)
         self._update_breach(ticker, value, state)
+        self._update_slope_exit(ticker, value, state)
 
     def _update_uptrend(self, value: AssetInput, state: AssetState, ticker: str) -> None:
         if not value.channel.is_valid:
@@ -299,6 +322,33 @@ class SsoSpyiChannelPlanner:
             state.breach_days = 0
             state.breach_date = ""
 
+    def _update_slope_exit(self, ticker: str, value: AssetInput, state: AssetState) -> None:
+        if not value.channel.is_valid:
+            return
+        is_below_threshold = value.channel.slope_pct < CHANNEL_RULES[ticker]["slope_exit_threshold"]
+        if value.date != state.slope_exit_day_date:
+            state.prior_slope_exit_days = state.slope_exit_days
+            state.slope_exit_day_date = value.date
+        if is_below_threshold:
+            state.slope_exit_days = state.prior_slope_exit_days + 1
+        else:
+            state.slope_exit_days = 0
+        if not state.slope_exit_latched:
+            return
+        if value.date != state.slope_release_day_date:
+            state.prior_slope_release_days = state.slope_release_days
+            state.slope_release_day_date = value.date
+        if is_below_threshold:
+            state.slope_release_days = 0
+        else:
+            state.slope_release_days = state.prior_slope_release_days + 1
+            if state.slope_release_days >= 2:
+                state.slope_exit_latched = False
+                state.slope_exit_days = 0
+                state.prior_slope_exit_days = 0
+                state.slope_release_days = 0
+                state.prior_slope_release_days = 0
+
     def _exit_orders(self, ticker: str, value: AssetInput, portfolio: Portfolio, state: AssetState) -> list[Order]:
         holding = portfolio.holdings.get(ticker, 0)
         if holding <= 0 or not value.channel.is_valid:
@@ -313,20 +363,36 @@ class SsoSpyiChannelPlanner:
             if value.channel.price >= value.channel.support:
                 self._clear_pending_exit(state)
                 self._clear_pending_full_exit(state)
+                if state.exit_origin == "SLOPE":
+                    state.exit_state = ExitState.NONE
+                    state.lock_price = 0.0
+                    state.exit_origin = ""
                 return []
             if state.pending_full_exit_quantity:
                 return self._start_full_exit(ticker, portfolio, state)
             if value.channel.price <= state.lock_price * (1 - CHANNEL_RULES[ticker]["trailing_drop"]):
                 return self._start_full_exit(ticker, portfolio, state)
             if state.pending_exit_quantity:
-                return self._start_exit(ticker, portfolio, state)
+                return self._start_exit(ticker, portfolio, state, state.pending_exit_origin)
             return []
         if state.exit_state == ExitState.EXIT_SUPPRESSED:
             if value.channel.price >= value.channel.support:
                 state.exit_state = ExitState.NONE
-            elif not state.confirmed_level and state.breach_days >= 2:
-                return self._start_exit(ticker, portfolio, state)
+                state.exit_origin = ""
+            elif not state.confirmed_level:
+                if state.slope_exit_days >= 2 and not state.slope_exit_latched:
+                    return self._start_exit(ticker, portfolio, state, "SLOPE")
+                if state.breach_days >= 2:
+                    return self._start_exit(ticker, portfolio, state, "CHANNEL")
             return []
+        if state.slope_exit_days >= 2 and not state.slope_exit_latched:
+            if state.confirmed_level:
+                state.exit_state = ExitState.EXIT_SUPPRESSED
+                self._clear_recovery_lot(state)
+                self._clear_pending_exit(state)
+                self._clear_pending_full_exit(state)
+                return []
+            return self._start_exit(ticker, portfolio, state, "SLOPE")
         if state.breach_days >= 2:
             if state.confirmed_level:
                 state.exit_state = ExitState.EXIT_SUPPRESSED
@@ -334,7 +400,7 @@ class SsoSpyiChannelPlanner:
                 self._clear_pending_exit(state)
                 self._clear_pending_full_exit(state)
                 return []
-            return self._start_exit(ticker, portfolio, state)
+            return self._start_exit(ticker, portfolio, state, "CHANNEL")
         return []
 
     def _recovery_orders(
@@ -376,7 +442,9 @@ class SsoSpyiChannelPlanner:
             orders.append(Order(ticker, OrderAction.BUY, quantity, price))
         return orders
 
-    def _start_exit(self, ticker: str, portfolio: Portfolio, state: AssetState) -> list[Order]:
+    def _start_exit(
+        self, ticker: str, portfolio: Portfolio, state: AssetState, origin: str
+    ) -> list[Order]:
         if state.pending_exit_date == state.daily_signal_date:
             return []
         quantity = state.pending_exit_quantity or math.ceil(portfolio.holdings.get(ticker, 0) * 0.5)
@@ -384,6 +452,7 @@ class SsoSpyiChannelPlanner:
             return []
         state.pending_exit_date = state.daily_signal_date
         state.pending_exit_quantity = quantity
+        state.pending_exit_origin = origin
         return [Order(ticker, OrderAction.SELL, quantity, portfolio.current_prices[ticker])]
 
     def _start_full_exit(self, ticker: str, portfolio: Portfolio, state: AssetState) -> list[Order]:
@@ -458,6 +527,7 @@ class SsoSpyiChannelPlanner:
     def _clear_pending_exit(state: AssetState) -> None:
         state.pending_exit_date = ""
         state.pending_exit_quantity = 0
+        state.pending_exit_origin = ""
 
     @staticmethod
     def _clear_pending_full_exit(state: AssetState) -> None:
