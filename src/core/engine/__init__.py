@@ -33,6 +33,7 @@ from src.core.engine.dip_buy import DipBuyEngine, DipBuyGatedEngine
 from src.core.engine.voltarget import VolTargetLeverageEngine
 from src.core.engine.volmanaged import VolManagedEngine, DomesticVolManagedEngine
 from src.core.engine.sso_dip_buy import SsoDipBuyEngine
+from src.core.engine.sso_spyi_channel_dip import SsoSpyiChannelDipEngine
 from src.core.engine.qld_dip_buy import QldDipBuyEngine
 from src.core.engine.domestic_qld_dip_buy import DomesticQldDipBuyEngine
 
@@ -62,6 +63,7 @@ __all__ = [
     "VolManagedEngine",
     "DomesticVolManagedEngine",
     "SsoDipBuyEngine",
+    "SsoSpyiChannelDipEngine",
     "QldDipBuyEngine",
     "DomesticQldDipBuyEngine",
 ]

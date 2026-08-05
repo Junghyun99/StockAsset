@@ -186,7 +186,7 @@ def test_stale_status_json_does_not_block_rebalancing(mock_savefig, mock_downloa
 
     assert result is not None
     # 신호 기반 엔진은 mock 데이터에서 매수 신호가 없을 수 있어 제외
-    signal_based_engines = {"SsoDipBuyEngine"}
+    signal_based_engines = {"SsoDipBuyEngine", "SsoSpyiChannelDipEngine"}
     for name, br in result.engine_results.items():
         if name in signal_based_engines:
             continue
