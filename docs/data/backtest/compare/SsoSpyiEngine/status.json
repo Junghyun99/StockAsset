@@ -1,17 +1,18 @@
 {
-    "last_updated": "2026-07-14",
-    "last_rebalancing_date": "2026-07-14",
+    "last_updated": "2026-07-31",
+    "last_rebalancing_date": "2026-07-31",
     "strategy": {
+        "engine_name": "SsoSpyiEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 16.5,
-            "spy_mdd": -0.010189962952382904,
-            "spy_momentum": 0.10474776952160693,
-            "spy_price": 751.8300170898438,
-            "spy_ma180": 698.6253343370225,
-            "spy_volatility": 0.13539734538122544
+            "vix": 15.989999771118164,
+            "spy_mdd": -0.016509311724299196,
+            "spy_momentum": 0.06910527440697666,
+            "spy_price": 747.030029296875,
+            "spy_ma180": 703.2496120876737,
+            "spy_volatility": 0.12382173548394493
         },
         "decision_factors": [
             {
@@ -24,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.4080697335787793,
+                "value": 0.40713362158648114,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 0.020174333946948175,
+                "value": 0.0178340539662028,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -45,23 +46,23 @@
         ]
     },
     "portfolio": {
-        "total_value": 182930997.90979612,
-        "cash_balance": 54.79202878048659,
+        "total_value": 18131102.021797717,
+        "cash_balance": 47.613075792409745,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 1095357,
-                "price": 68.1500015258789,
-                "value": 74648581.22138214
+                "qty": 110192,
+                "price": 66.98999786376953,
+                "value": 7381761.844604492
             },
             {
                 "ticker": "SPYI",
-                "qty": 2021702,
-                "price": 53.560001373291016,
-                "value": 108282361.8963852
+                "qty": 203354,
+                "price": 52.86000061035156,
+                "value": 10749292.564117432
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2006-01-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-01-01"
 }

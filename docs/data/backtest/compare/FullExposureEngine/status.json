@@ -1,17 +1,18 @@
 {
-    "last_updated": "2026-07-14",
-    "last_rebalancing_date": "2026-07-14",
+    "last_updated": "2026-07-31",
+    "last_rebalancing_date": "2026-07-31",
     "strategy": {
+        "engine_name": "FullExposureEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 16.5,
-            "spy_mdd": -0.010189962952382904,
-            "spy_momentum": 0.10474776952160693,
-            "spy_price": 751.8300170898438,
-            "spy_ma180": 698.6253343370225,
-            "spy_volatility": 0.13539734538122544
+            "vix": 15.989999771118164,
+            "spy_mdd": -0.016509311724299196,
+            "spy_momentum": 0.06910527440697666,
+            "spy_price": 747.030029296875,
+            "spy_ma180": 703.2496120876737,
+            "spy_volatility": 0.12382173548394493
         },
         "decision_factors": [
             {
@@ -24,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.504677404969161,
+                "value": 0.4896630178631816,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 0.00935480993832205,
+                "value": 0.02067396427363677,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -45,41 +46,41 @@
         ]
     },
     "portfolio": {
-        "total_value": 205023991.14504406,
-        "cash_balance": 6.978204462340628,
+        "total_value": 20022213.227729943,
+        "cash_balance": 17.41299834493796,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 775934,
-                "price": 68.1500015258789,
-                "value": 52879903.28398132
+                "qty": 72448,
+                "price": 66.98999786376953,
+                "value": 4853291.365234375
             },
             {
                 "ticker": "QLD",
-                "qty": 549127,
-                "price": 92.12999725341797,
-                "value": 50591069.00177765
+                "qty": 59171,
+                "price": 83.66999816894531,
+                "value": 4950837.461654663
             },
             {
                 "ticker": "IEF",
-                "qty": 376804,
-                "price": 93.55000305175781,
-                "value": 35250015.34991455
+                "qty": 36086,
+                "price": 92.94999694824219,
+                "value": 3354193.5898742676
             },
             {
                 "ticker": "GLD",
-                "qty": 86302,
-                "price": 372.1499938964844,
-                "value": 32117288.773254395
+                "qty": 9117,
+                "price": 371.5400085449219,
+                "value": 3387330.2579040527
             },
             {
                 "ticker": "DBC",
-                "qty": 1194052,
-                "price": 28.6299991607666,
-                "value": 34185707.75791168
+                "qty": 118049,
+                "price": 29.450000762939453,
+                "value": 3476543.1400642395
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2006-01-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-01-01"
 }

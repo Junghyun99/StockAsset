@@ -1,23 +1,24 @@
 {
-    "last_updated": "2026-07-14",
-    "last_rebalancing_date": "2026-07-14",
+    "last_updated": "2026-07-31",
+    "last_rebalancing_date": "2026-07-31",
     "strategy": {
+        "engine_name": "VolManagedEngine",
         "regime": "Bull",
-        "target_exposure": 0.7840105533869518,
-        "trigger_reason": "비율 유지, exposure 조정으로 주문 발생",
+        "target_exposure": 0.9520951021154107,
+        "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 16.5,
-            "spy_mdd": -0.03547492716819556,
-            "spy_momentum": 0.16041910777815455,
-            "spy_price": 719.6900024414062,
-            "spy_ma180": 643.212722100152,
-            "spy_volatility": 0.2806084676406365
+            "vix": 15.989999771118164,
+            "spy_mdd": -0.0779591307545101,
+            "spy_momentum": 0.06613843831420338,
+            "spy_price": 687.989990234375,
+            "spy_ma180": 648.1995547824436,
+            "spy_volatility": 0.23855493200432873
         },
         "decision_factors": [
             {
                 "key": "realized_vol",
                 "label": "실현변동성(21d)",
-                "value": 0.2806084676406365,
+                "value": 0.23855493200432873,
                 "format": "percent",
                 "threshold": 0.22
             },
@@ -31,37 +32,37 @@
             {
                 "key": "effective_leverage",
                 "label": "실효 레버리지(x)",
-                "value": 0.7840105533869518,
+                "value": 0.9520951021154107,
                 "format": "number",
                 "threshold": null
             },
             {
                 "key": "cash_weight",
                 "label": "현금 비중",
-                "value": 0.2159894466130482,
+                "value": 0.04790489788458929,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 178753735.80766243,
-        "cash_balance": 696372.4784387946,
+        "total_value": 17223849.166647997,
+        "cash_balance": 266.84783085707113,
         "holdings": [
             {
                 "ticker": "QQQ",
-                "qty": 193707,
-                "price": 719.6900024414062,
-                "value": 139408991.30291748
+                "qty": 23826,
+                "price": 687.989990234375,
+                "value": 16392049.507324219
             },
             {
                 "ticker": "SHV",
-                "qty": 350743,
-                "price": 110.19000244140625,
-                "value": 38648372.02630615
+                "qty": 7532,
+                "price": 110.4000015258789,
+                "value": 831532.8114929199
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2006-01-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-01-01"
 }

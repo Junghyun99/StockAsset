@@ -1,0 +1,82 @@
+{
+    "last_updated": "2026-07-31",
+    "last_rebalancing_date": "2026-03-30",
+    "strategy": {
+        "engine_name": "SsoSpyiChannelDipEngine",
+        "regime": "Bull",
+        "target_exposure": 1.0,
+        "trigger_reason": "waiting",
+        "market_score": {
+            "vix": 15.989999771118164,
+            "spy_mdd": -0.016509311724299196,
+            "spy_momentum": 0.06910527440697666,
+            "spy_price": 747.030029296875,
+            "spy_ma180": 703.2496120876737,
+            "spy_volatility": 0.12382173548394493
+        },
+        "decision_factors": [
+            {
+                "key": "sso_buy_level",
+                "label": "SSO buy level",
+                "value": 0,
+                "format": "number",
+                "threshold": null
+            },
+            {
+                "key": "sso_channel_slope",
+                "label": "SSO channel slope",
+                "value": 0.8468412535978631,
+                "format": "percent",
+                "threshold": null
+            },
+            {
+                "key": "sso_exit_state",
+                "label": "SSO exit state",
+                "value": "NONE",
+                "format": "text",
+                "threshold": null
+            },
+            {
+                "key": "spyi_buy_level",
+                "label": "SPYI buy level",
+                "value": 0,
+                "format": "number",
+                "threshold": null
+            },
+            {
+                "key": "spyi_channel_slope",
+                "label": "SPYI channel slope",
+                "value": -1.2046766178670398,
+                "format": "percent",
+                "threshold": null
+            },
+            {
+                "key": "spyi_exit_state",
+                "label": "SPYI exit state",
+                "value": "NONE",
+                "format": "text",
+                "threshold": null
+            }
+        ]
+    },
+    "portfolio": {
+        "total_value": 13200534.240200587,
+        "cash_balance": 6561311.964970178,
+        "holdings": [
+            {
+                "ticker": "SSO",
+                "qty": 45169,
+                "price": 66.98999786376953,
+                "value": 3025871.213508606
+            },
+            {
+                "ticker": "SPYI",
+                "qty": 68357,
+                "price": 52.86000061035156,
+                "value": 3613351.0617218018
+            }
+        ]
+    },
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-01-01"
+}

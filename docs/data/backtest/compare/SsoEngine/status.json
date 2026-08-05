@@ -1,17 +1,18 @@
 {
-    "last_updated": "2026-07-14",
-    "last_rebalancing_date": "2026-07-14",
+    "last_updated": "2026-07-31",
+    "last_rebalancing_date": "2026-07-31",
     "strategy": {
+        "engine_name": "SsoEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 16.5,
-            "spy_mdd": -0.010189962952382904,
-            "spy_momentum": 0.10474776952160693,
-            "spy_price": 751.8300170898438,
-            "spy_ma180": 698.6253343370225,
-            "spy_volatility": 0.13539734538122544
+            "vix": 15.989999771118164,
+            "spy_mdd": -0.016509311724299196,
+            "spy_momentum": 0.06910527440697666,
+            "spy_price": 747.030029296875,
+            "spy_ma180": 703.2496120876737,
+            "spy_volatility": 0.12382173548394493
         },
         "decision_factors": [
             {
@@ -24,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.9990269001215274,
+                "value": 0.9990134517559317,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 2.69270485759716e-05,
+                "value": 1.3465221152856637e-05,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -45,23 +46,23 @@
         ]
     },
     "portfolio": {
-        "total_value": 234511896.97624168,
-        "cash_balance": 3.485572431111578,
+        "total_value": 23052541.85986957,
+        "cash_balance": 44.98394641458722,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 3437765,
-                "price": 68.1500015258789,
-                "value": 234283689.9956131
+                "qty": 343779,
+                "price": 66.98999786376953,
+                "value": 23029754.475608826
             },
             {
                 "ticker": "SHV",
-                "qty": 2071,
-                "price": 110.19000244140625,
-                "value": 228203.49505615234
+                "qty": 206,
+                "price": 110.4000015258789,
+                "value": 22742.400314331055
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2006-01-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-01-01"
 }

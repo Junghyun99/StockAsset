@@ -1,17 +1,18 @@
 {
-    "last_updated": "2026-07-14",
-    "last_rebalancing_date": "2026-07-14",
+    "last_updated": "2026-07-31",
+    "last_rebalancing_date": "2026-07-31",
     "strategy": {
+        "engine_name": "SpyiEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "비율 유지, 추가 주문 없음",
         "market_score": {
-            "vix": 16.5,
-            "spy_mdd": -0.010189962952382904,
-            "spy_momentum": 0.10474776952160693,
-            "spy_price": 751.8300170898438,
-            "spy_ma180": 698.6253343370225,
-            "spy_volatility": 0.13539734538122544
+            "vix": 15.989999771118164,
+            "spy_mdd": -0.016509311724299196,
+            "spy_momentum": 0.06910527440697666,
+            "spy_price": 747.030029296875,
+            "spy_ma180": 703.2496120876737,
+            "spy_volatility": 0.12382173548394493
         },
         "decision_factors": [
             {
@@ -24,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.9990536807834085,
+                "value": 0.9990459169920086,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 5.373451792643156e-05,
+                "value": 4.5962954963584675e-05,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -45,23 +46,23 @@
         ]
     },
     "portfolio": {
-        "total_value": 152071501.57722175,
-        "cash_balance": 43.378575212117426,
+        "total_value": 15158470.7994884,
+        "cash_balance": 41.10442766868961,
         "holdings": [
             {
                 "ticker": "SPYI",
-                "qty": 2836586,
-                "price": 53.560001373291016,
-                "value": 151927550.05545807
+                "qty": 286492,
+                "price": 52.86000061035156,
+                "value": 15143967.29486084
             },
             {
                 "ticker": "SHV",
-                "qty": 1306,
-                "price": 110.19000244140625,
-                "value": 143908.14318847656
+                "qty": 131,
+                "price": 110.4000015258789,
+                "value": 14462.400199890137
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2006-01-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-01-01"
 }
