@@ -2,6 +2,7 @@ from src.core.logic.channel_regime import ChannelSnapshot
 from src.core.logic.sso_spyi_channel_planner import (
     AssetInput,
     AssetState,
+    ExitState,
     SsoSpyiChannelPlanner,
     SsoSpyiChannelState,
 )
@@ -101,6 +102,41 @@ def test_rejected_channel_exit_retries_next_trading_day_without_entering_lock():
     inputs["SSO"] = _input("2024-01-03", 60, 0, price=80, support=90)
     retry, _, state = planner.plan(inputs, _portfolio(cash=1000, sso=20), state)
     assert retry[0].action == OrderAction.SELL
+
+
+def test_trailing_full_exit_clears_lock_and_allows_a_future_campaign():
+    planner = SsoSpyiChannelPlanner()
+    state = SsoSpyiChannelState(assets={
+        "SSO": AssetState(
+            exit_state=ExitState.EXIT_LOCK,
+            lock_price=100.0,
+            uptrend_active=True,
+            campaign_level=2,
+            campaign_cash=10_000.0,
+            phase=2,
+        ),
+    })
+    portfolio = _portfolio(cash=1_000, sso=10)
+    portfolio.current_prices["SSO"] = 94.0
+    inputs = {
+        "SSO": _input("2024-01-02", 60, 0, price=94, support=95),
+        "SPYI": _input("2024-01-02", 60, 0, price=50),
+    }
+
+    orders, _, state = planner.plan(inputs, portfolio, state)
+    assert [(order.ticker, order.action, order.quantity) for order in orders] == [
+        ("SSO", OrderAction.SELL, 10),
+    ]
+    state = planner.record_fills(state, [
+        TradeExecution("SSO", OrderAction.SELL, 10, 94.0, 0.0,
+                       "2024-01-02", ExecutionStatus.FILLED),
+    ])
+
+    asset = state.assets["SSO"]
+    assert asset.exit_state == ExitState.NONE
+    assert asset.lock_price == 0.0
+    assert asset.uptrend_active is False
+    assert asset.phase == 0
 
 
 def test_last_intraday_state_replaces_same_day_confirmation():

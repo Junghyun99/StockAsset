@@ -61,6 +61,7 @@ class AssetState:
     prior_breach_days: int = 0
     forced_sale_date: str = ""
     pending_exit_date: str = ""
+    pending_full_exit_date: str = ""
 
     def to_dict(self) -> dict:
         data = self.__dict__.copy()
@@ -169,6 +170,17 @@ class SsoSpyiChannelPlanner:
                 and execution.status in (ExecutionStatus.FILLED, ExecutionStatus.PARTIAL)
             ):
                 asset = state.asset(execution.ticker)
+                if asset.pending_full_exit_date:
+                    asset.pending_full_exit_date = ""
+                    if execution.status == ExecutionStatus.FILLED:
+                        self._end_campaign(asset)
+                        asset.exit_state = ExitState.NONE
+                        asset.lock_price = 0.0
+                        asset.uptrend_active = False
+                        asset.uptrend_days = 0
+                        asset.breach_days = 0
+                        asset.breach_date = ""
+                    continue
                 if asset.pending_exit_date:
                     asset.exit_state = ExitState.EXIT_LOCK
                     asset.lock_price = execution.price
@@ -235,8 +247,7 @@ class SsoSpyiChannelPlanner:
                 state.exit_state, state.lock_price = ExitState.NONE, 0.0
                 return []
             if value.channel.price <= state.lock_price * (1 - CHANNEL_RULES[ticker]["trailing_drop"]):
-                self._end_campaign(state)
-                state.uptrend_active = False
+                state.pending_full_exit_date = state.daily_signal_date
                 return [Order(ticker, OrderAction.SELL, holding, portfolio.current_prices[ticker])]
             return []
         if state.exit_state == ExitState.EXIT_SUPPRESSED:
