@@ -11,6 +11,7 @@ from src.core.models import ExecutionStatus, Order, OrderAction, Portfolio, Trad
 
 
 TICKERS = ("SSO", "SPYI")
+CORE_ALLOCATIONS = {"SSO": 0.05, "SPYI": 0.15}
 BUY_THRESHOLDS = {
     "SSO": ((48.0, -0.10), (42.0, -0.18), (36.0, -0.26)),
     "SPYI": ((50.0, -0.06), (45.0, -0.10), (40.0, -0.15)),
@@ -50,6 +51,10 @@ class AssetInput:
 
 @dataclass
 class AssetState:
+    core_target_quantity: int = 0
+    core_quantity: int = 0
+    pending_core_quantity: int = 0
+    pending_core_date: str = ""
     confirmed_level: int = 0
     daily_signal_date: str = ""
     daily_signal_level: int = 0
@@ -80,6 +85,7 @@ class AssetState:
     slope_release_day_date: str = ""
     prior_slope_release_days: int = 0
     forced_sale_date: str = ""
+    forced_sale_reason: str = ""
     pending_exit_date: str = ""
     pending_exit_quantity: int = 0
     pending_exit_origin: str = ""
@@ -108,17 +114,25 @@ class AssetState:
 @dataclass
 class SsoSpyiChannelState:
     assets: dict[str, AssetState] = field(default_factory=dict)
+    core_setup_initialized: bool = False
 
     def asset(self, ticker: str) -> AssetState:
         return self.assets.setdefault(ticker, AssetState())
 
     def to_dict(self) -> dict:
-        return {"assets": {ticker: state.to_dict() for ticker, state in self.assets.items()}}
+        return {
+            "assets": {ticker: state.to_dict() for ticker, state in self.assets.items()},
+            "core_setup_initialized": self.core_setup_initialized,
+        }
 
     @classmethod
     def from_dict(cls, data: dict | None) -> "SsoSpyiChannelState":
-        raw = (data or {}).get("assets", {})
-        return cls(assets={ticker: AssetState.from_dict(value) for ticker, value in raw.items()})
+        values = data or {}
+        raw = values.get("assets", {})
+        return cls(
+            assets={ticker: AssetState.from_dict(value) for ticker, value in raw.items()},
+            core_setup_initialized=bool(values.get("core_setup_initialized", False)),
+        )
 
 
 class SsoSpyiChannelPlanner:
@@ -137,7 +151,10 @@ class SsoSpyiChannelPlanner:
 
         forced_orders = self._sso_cap_order(portfolio, state.asset("SSO"), inputs.get("SSO"))
         if forced_orders:
-            return forced_orders, "SSO hard cap: reduce to 78%", state
+            reason = "SSO hard cap: reduce to 78%"
+            if state.asset("SSO").forced_sale_reason:
+                reason = f"SSO hard cap: {state.asset('SSO').forced_sale_reason}"
+            return forced_orders, reason, state
 
         sells: list[Order] = []
         for ticker in TICKERS:
@@ -150,6 +167,12 @@ class SsoSpyiChannelPlanner:
         recovery_orders = self._recovery_orders(inputs, portfolio, state)
         if recovery_orders:
             return recovery_orders, "channel exit recovery", state
+
+        core_orders = self._core_setup_orders(inputs, portfolio, state)
+        if core_orders:
+            return core_orders, "core position setup", state
+        if not self._cores_established(state):
+            return [], "waiting", state
 
         cash = self._free_cash(portfolio, state)
         orders: list[Order] = []
@@ -194,12 +217,32 @@ class SsoSpyiChannelPlanner:
                 asset.lock_price = 0.0
                 asset.exit_origin = ""
 
+        core_executions = [
+            execution for execution in executions
+            if execution.ticker in TICKERS
+            and execution.status in (ExecutionStatus.FILLED, ExecutionStatus.PARTIAL)
+            and execution.action == OrderAction.BUY
+            and execution not in recovery_executions
+            and state.asset(execution.ticker).pending_core_quantity > 0
+        ]
+        for ticker in {execution.ticker for execution in core_executions}:
+            asset = state.asset(ticker)
+            filled_quantity = min(
+                sum(execution.quantity for execution in core_executions if execution.ticker == ticker),
+                asset.pending_core_quantity,
+            )
+            asset.core_quantity = min(asset.core_quantity + filled_quantity, asset.core_target_quantity)
+            asset.pending_core_quantity = max(asset.core_target_quantity - asset.core_quantity, 0)
+            if not asset.pending_core_quantity:
+                asset.pending_core_date = ""
+
         buy_executions = [
             execution for execution in executions
             if execution.ticker in TICKERS
             and execution.status in (ExecutionStatus.FILLED, ExecutionStatus.PARTIAL)
             and execution.action == OrderAction.BUY
             and execution not in recovery_executions
+            and execution not in core_executions
         ]
         for ticker in {execution.ticker for execution in buy_executions}:
             asset = state.asset(ticker)
@@ -354,6 +397,17 @@ class SsoSpyiChannelPlanner:
         if holding <= 0 or not value.channel.is_valid:
             return []
         if state.exit_state == ExitState.EXIT_LOCK:
+            if (
+                self._tactical_quantity(ticker, portfolio, state) <= 0
+                and not (state.exit_origin == "CHANNEL" and state.recovery_quantity > 0)
+            ):
+                self._clear_recovery_lot(state)
+                self._clear_pending_exit(state)
+                self._clear_pending_full_exit(state)
+                state.exit_state = ExitState.NONE
+                state.lock_price = 0.0
+                state.exit_origin = ""
+                return []
             if state.confirmed_level:
                 state.exit_state = ExitState.EXIT_SUPPRESSED
                 self._clear_recovery_lot(state)
@@ -442,12 +496,59 @@ class SsoSpyiChannelPlanner:
             orders.append(Order(ticker, OrderAction.BUY, quantity, price))
         return orders
 
+    @staticmethod
+    def _core_setup_orders(
+        inputs: Mapping[str, AssetInput],
+        portfolio: Portfolio,
+        state: SsoSpyiChannelState,
+    ) -> list[Order]:
+        if not state.core_setup_initialized:
+            if not all(ticker in inputs for ticker in TICKERS):
+                return []
+            prices = {ticker: portfolio.current_prices.get(ticker, 0.0) for ticker in TICKERS}
+            if not all(price > 0 for price in prices.values()):
+                return []
+            portfolio_value = portfolio.total_value
+            for ticker, allocation in CORE_ALLOCATIONS.items():
+                state.asset(ticker).core_target_quantity = math.floor(
+                    portfolio_value * allocation / prices[ticker]
+                )
+            state.core_setup_initialized = True
+
+        orders: list[Order] = []
+        for ticker in TICKERS:
+            asset = state.asset(ticker)
+            value = inputs.get(ticker)
+            price = portfolio.current_prices.get(ticker, 0.0)
+            quantity = asset.core_target_quantity - asset.core_quantity
+            if quantity <= 0:
+                asset.pending_core_quantity = 0
+                asset.pending_core_date = ""
+                continue
+            if value is None or price <= 0 or asset.pending_core_date == value.date:
+                continue
+            asset.pending_core_quantity = quantity
+            asset.pending_core_date = value.date
+            orders.append(Order(ticker, OrderAction.BUY, quantity, price))
+        return orders
+
+    @staticmethod
+    def _cores_established(state: SsoSpyiChannelState) -> bool:
+        return state.core_setup_initialized and all(
+            state.asset(ticker).core_quantity >= state.asset(ticker).core_target_quantity
+            for ticker in TICKERS
+        )
+
     def _start_exit(
         self, ticker: str, portfolio: Portfolio, state: AssetState, origin: str
     ) -> list[Order]:
         if state.pending_exit_date == state.daily_signal_date:
             return []
-        quantity = state.pending_exit_quantity or math.ceil(portfolio.holdings.get(ticker, 0) * 0.5)
+        tactical_quantity = self._tactical_quantity(ticker, portfolio, state)
+        quantity = min(
+            state.pending_exit_quantity or math.ceil(tactical_quantity * 0.5),
+            tactical_quantity,
+        )
         if quantity <= 0:
             return []
         state.pending_exit_date = state.daily_signal_date
@@ -458,7 +559,8 @@ class SsoSpyiChannelPlanner:
     def _start_full_exit(self, ticker: str, portfolio: Portfolio, state: AssetState) -> list[Order]:
         if state.pending_full_exit_date == state.daily_signal_date:
             return []
-        quantity = state.pending_full_exit_quantity or portfolio.holdings.get(ticker, 0)
+        tactical_quantity = self._tactical_quantity(ticker, portfolio, state)
+        quantity = min(state.pending_full_exit_quantity or tactical_quantity, tactical_quantity)
         if quantity <= 0:
             return []
         state.pending_full_exit_date = state.daily_signal_date
@@ -540,16 +642,28 @@ class SsoSpyiChannelPlanner:
         return max(portfolio.total_cash - reserved, 0.0)
 
     @staticmethod
+    def _tactical_quantity(ticker: str, portfolio: Portfolio, state: AssetState) -> int:
+        return max(portfolio.holdings.get(ticker, 0) - state.core_quantity, 0)
+
+    @staticmethod
     def _sso_cap_order(portfolio: Portfolio, state: AssetState, value: AssetInput | None) -> list[Order]:
         if value is None or portfolio.total_value <= 0:
             return []
         price = portfolio.current_prices.get("SSO", 0.0)
         held = portfolio.holdings.get("SSO", 0)
         if price <= 0 or held * price / portfolio.total_value <= 0.80:
+            state.forced_sale_reason = ""
+            return []
+        if state.forced_sale_date == value.date:
             return []
         desired_value = portfolio.total_value * 0.78
-        quantity = min(held, math.ceil((held * price - desired_value) / price))
+        needed_quantity = math.ceil((held * price - desired_value) / price)
+        tactical_quantity = SsoSpyiChannelPlanner._tactical_quantity("SSO", portfolio, state)
+        quantity = min(tactical_quantity, needed_quantity)
+        state.forced_sale_reason = (
+            "core floor prevents 78% target" if quantity < needed_quantity else ""
+        )
+        state.forced_sale_date = value.date
         if quantity <= 0:
             return []
-        state.forced_sale_date = value.date
         return [Order("SSO", OrderAction.SELL, quantity, price)]
