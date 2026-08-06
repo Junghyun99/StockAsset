@@ -11,7 +11,7 @@ from src.core.models import ExecutionStatus, Order, OrderAction, Portfolio, Trad
 
 
 TICKERS = ("SSO", "SPYI")
-CORE_ALLOCATIONS = {"SSO": 0.05, "SPYI": 0.15}
+CORE_ALLOCATIONS = {"SSO": 0.10, "SPYI": 0.30}
 BUY_THRESHOLDS = {
     "SSO": ((48.0, -0.10), (42.0, -0.18), (36.0, -0.26)),
     "SPYI": ((50.0, -0.06), (45.0, -0.10), (40.0, -0.15)),
@@ -605,10 +605,12 @@ class SsoSpyiChannelPlanner:
     def _signal_level(ticker: str, value: AssetInput) -> int:
         if math.isnan(value.weekly_rsi) or math.isnan(value.ma200_deviation):
             return 0
-        for level, (rsi, deviation) in reversed(list(enumerate(BUY_THRESHOLDS[ticker], start=1))):
+        thresholds = BUY_THRESHOLDS[ticker]
+        for level, (rsi, deviation) in reversed(list(enumerate(thresholds[1:], start=2))):
             if value.weekly_rsi <= rsi and value.ma200_deviation <= deviation:
                 return level
-        return 0
+        rsi, deviation = thresholds[0]
+        return int(value.weekly_rsi <= rsi or value.ma200_deviation <= deviation)
 
     @staticmethod
     def _end_campaign(state: AssetState) -> None:

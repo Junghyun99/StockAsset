@@ -48,15 +48,15 @@ def test_first_plan_sets_fixed_core_orders_and_skips_dip_campaign():
     orders, reason, state = planner.plan(inputs, _portfolio(cash=10_000), state)
 
     assert [(order.ticker, order.action, order.quantity) for order in orders] == [
-        ("SSO", OrderAction.BUY, 5),
-        ("SPYI", OrderAction.BUY, 30),
+        ("SSO", OrderAction.BUY, 10),
+        ("SPYI", OrderAction.BUY, 60),
     ]
     assert reason == "core position setup"
-    assert state.assets["SSO"].core_target_quantity == 5
-    assert state.assets["SPYI"].core_target_quantity == 30
-    assert state.assets["SSO"].pending_core_quantity == 5
+    assert state.assets["SSO"].core_target_quantity == 10
+    assert state.assets["SPYI"].core_target_quantity == 60
+    assert state.assets["SSO"].pending_core_quantity == 10
     assert state.assets["SSO"].pending_core_date == "2024-01-02"
-    assert state.assets["SPYI"].pending_core_quantity == 30
+    assert state.assets["SPYI"].pending_core_quantity == 60
     assert state.assets["SPYI"].pending_core_date == "2024-01-02"
 
 
@@ -83,9 +83,9 @@ def test_core_targets_wait_for_both_valid_prices_before_first_initialization():
     }
     orders, _, state = planner.plan(inputs, portfolio, state)
 
-    assert [(order.ticker, order.quantity) for order in orders] == [("SSO", 5), ("SPYI", 30)]
-    assert state.assets["SSO"].core_target_quantity == 5
-    assert state.assets["SPYI"].core_target_quantity == 30
+    assert [(order.ticker, order.quantity) for order in orders] == [("SSO", 10), ("SPYI", 60)]
+    assert state.assets["SSO"].core_target_quantity == 10
+    assert state.assets["SPYI"].core_target_quantity == 60
 
 
 def test_core_targets_wait_for_both_inputs_before_first_initialization():
@@ -108,7 +108,7 @@ def test_core_targets_wait_for_both_inputs_before_first_initialization():
     }
     orders, _, state = planner.plan(inputs, portfolio, state)
 
-    assert [(order.ticker, order.quantity) for order in orders] == [("SSO", 5), ("SPYI", 30)]
+    assert [(order.ticker, order.quantity) for order in orders] == [("SSO", 10), ("SPYI", 60)]
     assert state.core_setup_initialized is True
 
 
@@ -165,19 +165,19 @@ def test_partial_core_fill_retries_only_remaining_quantity_on_next_trading_day()
         "SPYI": _input("2024-01-02", 60, 0, price=50),
     }
     first, _, state = planner.plan(first_inputs, portfolio, SsoSpyiChannelState())
-    assert [(order.ticker, order.quantity) for order in first] == [("SSO", 5), ("SPYI", 30)]
+    assert [(order.ticker, order.quantity) for order in first] == [("SSO", 10), ("SPYI", 60)]
 
     state = planner.record_fills(state, [
         TradeExecution("SSO", OrderAction.BUY, 2, 100, 0.0,
                        "2024-01-02", ExecutionStatus.PARTIAL),
-        TradeExecution("SPYI", OrderAction.BUY, 30, 50, 0.0,
+        TradeExecution("SPYI", OrderAction.BUY, 60, 50, 0.0,
                        "2024-01-02", ExecutionStatus.FILLED),
     ])
 
     sso = state.assets["SSO"]
     spyi = state.assets["SPYI"]
-    assert (sso.core_quantity, sso.pending_core_quantity, sso.pending_core_date) == (2, 3, "2024-01-02")
-    assert (spyi.core_quantity, spyi.pending_core_quantity, spyi.pending_core_date) == (30, 0, "")
+    assert (sso.core_quantity, sso.pending_core_quantity, sso.pending_core_date) == (2, 8, "2024-01-02")
+    assert (spyi.core_quantity, spyi.pending_core_quantity, spyi.pending_core_date) == (60, 0, "")
 
     same_day, reason, state = planner.plan(first_inputs, portfolio, state)
     assert not same_day
@@ -188,7 +188,7 @@ def test_partial_core_fill_retries_only_remaining_quantity_on_next_trading_day()
         "SPYI": _input("2024-01-03", 60, 0, price=50),
     }
     retry, reason, state = planner.plan(next_inputs, portfolio, state)
-    assert [(order.ticker, order.quantity) for order in retry] == [("SSO", 3)]
+    assert [(order.ticker, order.quantity) for order in retry] == [("SSO", 8)]
     assert reason == "core position setup"
     assert state.assets["SSO"].pending_core_date == "2024-01-03"
 
@@ -289,6 +289,23 @@ def test_buy_signal_confirms_on_two_distinct_trading_dates():
     orders, _, state = planner.plan(inputs, _portfolio(), state)
     assert state.assets["SSO"].confirmed_level == 1
     assert [order.ticker for order in orders] == ["SSO"]
+
+
+def test_stage_one_signal_accepts_rsi_or_ma200_deviation():
+    planner = SsoSpyiChannelPlanner()
+
+    assert planner._signal_level("SSO", _input("2024-01-02", 47, 0)) == 1
+    assert planner._signal_level("SSO", _input("2024-01-02", 60, -0.11)) == 1
+    assert planner._signal_level("SPYI", _input("2024-01-02", 49, 0)) == 1
+    assert planner._signal_level("SPYI", _input("2024-01-02", 60, -0.07)) == 1
+
+
+def test_deeper_signal_levels_still_require_both_metrics():
+    planner = SsoSpyiChannelPlanner()
+
+    assert planner._signal_level("SSO", _input("2024-01-02", 41, -0.10)) == 1
+    assert planner._signal_level("SSO", _input("2024-01-02", 48, -0.19)) == 1
+    assert planner._signal_level("SSO", _input("2024-01-02", 41, -0.19)) == 2
 
 
 def test_stronger_second_day_signal_confirms_the_weaker_condition_first():
