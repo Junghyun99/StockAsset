@@ -418,7 +418,7 @@ def test_slope_exit_thresholds_are_minus_six_percent_for_sso_and_minus_four_for_
     assert CHANNEL_RULES["SPYI"]["slope_exit_threshold"] == -4.0
 
 
-def test_sso_slope_exit_sells_after_two_days_below_minus_six_percent_without_channel_breach():
+def test_sso_slope_exit_requires_two_days_below_support_and_negative_slope():
     planner = SsoSpyiChannelPlanner()
     state = _core_ready_state()
     first_inputs = {
@@ -431,10 +431,24 @@ def test_sso_slope_exit_sells_after_two_days_below_minus_six_percent_without_cha
         "SSO": _input("2024-01-03", 60, 0, price=100, support=90, slope=-7),
         "SPYI": _input("2024-01-03", 60, 0, price=50),
     }
-    second, _, _ = planner.plan(second_inputs, _portfolio(sso=20), state)
+    second, _, state = planner.plan(second_inputs, _portfolio(sso=20), state)
+
+    first_below_support = {
+        "SSO": _input("2024-01-04", 60, 0, price=80, support=90, slope=-7),
+        "SPYI": _input("2024-01-04", 60, 0, price=50),
+    }
+    third, _, state = planner.plan(first_below_support, _portfolio(sso=20), state)
+
+    second_below_support = {
+        "SSO": _input("2024-01-05", 60, 0, price=80, support=90, slope=-7),
+        "SPYI": _input("2024-01-05", 60, 0, price=50),
+    }
+    fourth, _, _ = planner.plan(second_below_support, _portfolio(sso=20), state)
 
     assert not first
-    assert [(order.ticker, order.action, order.quantity) for order in second] == [
+    assert not second
+    assert not third
+    assert [(order.ticker, order.action, order.quantity) for order in fourth] == [
         ("SSO", OrderAction.SELL, 8)
     ]
 
@@ -443,7 +457,7 @@ def test_intraday_slope_updates_count_only_once_per_trading_date():
     planner = SsoSpyiChannelPlanner()
     state = SsoSpyiChannelState()
     inputs = {
-        "SSO": _input("2024-01-02", 60, 0, price=100, support=90, slope=-7),
+        "SSO": _input("2024-01-02", 60, 0, price=80, support=90, slope=-7),
         "SPYI": _input("2024-01-02", 60, 0, price=50),
     }
     _, _, state = planner.plan(inputs, _portfolio(sso=20), state)
@@ -457,17 +471,17 @@ def test_filled_slope_exit_reserves_half_for_recovery():
     state = SsoSpyiChannelState()
     portfolio = _portfolio(cash=1_000, sso=20)
     first_inputs = {
-        "SSO": _input("2024-01-02", 60, 0, price=100, support=90, slope=-7),
+        "SSO": _input("2024-01-02", 60, 0, price=80, support=90, slope=-7),
         "SPYI": _input("2024-01-02", 60, 0, price=50),
     }
     _, _, state = planner.plan(first_inputs, portfolio, state)
     second_inputs = {
-        "SSO": _input("2024-01-03", 60, 0, price=100, support=90, slope=-7),
+        "SSO": _input("2024-01-03", 60, 0, price=80, support=90, slope=-7),
         "SPYI": _input("2024-01-03", 60, 0, price=50),
     }
     orders, _, state = planner.plan(second_inputs, portfolio, state)
     state = planner.record_fills(state, [
-        TradeExecution("SSO", OrderAction.SELL, orders[0].quantity, 100, 0.0,
+        TradeExecution("SSO", OrderAction.SELL, orders[0].quantity, 80, 0.0,
                        "2024-01-03", ExecutionStatus.FILLED),
     ])
 
@@ -475,7 +489,7 @@ def test_filled_slope_exit_reserves_half_for_recovery():
     assert asset.exit_origin == "SLOPE"
     assert asset.slope_exit_latched is True
     assert asset.recovery_quantity == 5
-    assert asset.recovery_reserved_cash == 500
+    assert asset.recovery_reserved_cash == 400
 
 
 def test_partial_slope_fills_reserve_half_of_the_total_sale():
@@ -582,12 +596,12 @@ def test_slope_exit_latch_requires_two_days_above_threshold_before_a_new_exit():
         assert not orders
 
     first_new_slope_day = {
-        "SSO": _input("2024-01-08", 60, 0, price=100, support=90, slope=-7),
+        "SSO": _input("2024-01-08", 60, 0, price=80, support=90, slope=-7),
         "SPYI": _input("2024-01-08", 60, 0, price=50),
     }
     first, _, state = planner.plan(first_new_slope_day, portfolio, state)
     second_new_slope_day = {
-        "SSO": _input("2024-01-09", 60, 0, price=100, support=90, slope=-7),
+        "SSO": _input("2024-01-09", 60, 0, price=80, support=90, slope=-7),
         "SPYI": _input("2024-01-09", 60, 0, price=50),
     }
     second, _, _ = planner.plan(second_new_slope_day, portfolio, state)
@@ -1086,54 +1100,87 @@ def test_channel_recovery_restores_only_the_tactical_shares_sold():
     ]
 
 
-def test_slope_recovery_requires_two_release_days_and_retries_below_support():
+def test_slope_recovery_survives_support_recapture_and_confirmed_dip_signal():
     planner = SsoSpyiChannelPlanner()
     state = _core_ready_state(slope_exit_days=2)
     portfolio = _portfolio(cash=1_000, sso=25)
-    portfolio.current_prices["SSO"] = 90
+    portfolio.current_prices["SSO"] = 80
     exit_inputs = {
-        "SSO": _input("2024-01-02", 60, 0, price=90, support=85, slope=-7),
+        "SSO": _input("2024-01-02", 60, 0, price=80, support=85, slope=-7),
         "SPYI": _input("2024-01-02", 60, 0, price=50),
     }
 
     exit_orders, _, state = planner.plan(exit_inputs, portfolio, state)
     state = planner.record_fills(state, [
-        TradeExecution("SSO", OrderAction.SELL, exit_orders[0].quantity, 90, 0.0,
+        TradeExecution("SSO", OrderAction.SELL, exit_orders[0].quantity, 80, 0.0,
                        "2024-01-02", ExecutionStatus.FILLED),
     ])
 
     portfolio.holdings["SSO"] = 15
     portfolio.current_prices["SSO"] = 88
     first_release_inputs = {
-        "SSO": _input("2024-01-03", 60, 0, price=88, support=89, slope=-5),
+        "SSO": _input("2024-01-03", 45, 0, price=88, support=86, slope=-5),
         "SPYI": _input("2024-01-03", 60, 0, price=50),
     }
     first_orders, _, state = planner.plan(first_release_inputs, portfolio, state)
 
     second_release_inputs = {
-        "SSO": _input("2024-01-04", 60, 0, price=88, support=89, slope=-5),
+        "SSO": _input("2024-01-04", 45, 0, price=88, support=86, slope=-5),
         "SPYI": _input("2024-01-04", 60, 0, price=50),
     }
     orders, _, state = planner.plan(second_release_inputs, portfolio, state)
-    state = planner.record_fills(state, [
-        TradeExecution("SSO", OrderAction.BUY, orders[0].quantity, 88, 0.0,
-                       "2024-01-04", ExecutionStatus.REJECTED),
-    ])
-
-    retry_inputs = {
-        "SSO": _input("2024-01-05", 60, 0, price=88, support=89, slope=-5),
-        "SPYI": _input("2024-01-05", 60, 0, price=50),
-    }
-    retry_orders, _, state = planner.plan(retry_inputs, portfolio, state)
-
     assert state.assets["SSO"].recovery_quantity == 5
-    assert state.assets["SSO"].recovery_reserved_cash == 450
+    assert state.assets["SSO"].recovery_reserved_cash == 400
     assert not first_orders
     assert [(order.ticker, order.action, order.quantity) for order in orders] == [
         ("SSO", OrderAction.BUY, 5),
     ]
-    assert [(order.ticker, order.action, order.quantity) for order in retry_orders] == [
+
+
+def test_slope_recovery_keeps_lock_after_selling_last_tactical_share():
+    planner = SsoSpyiChannelPlanner()
+    state = _core_ready_state(
+        exit_state=ExitState.EXIT_LOCK,
+        exit_origin="SLOPE",
+        recovery_quantity=5,
+        recovery_reserved_cash=400,
+        slope_exit_latched=False,
+    )
+    portfolio = _portfolio(cash=400, sso=5)
+    portfolio.current_prices["SSO"] = 80
+    inputs = {
+        "SSO": _input("2024-01-04", 60, 0, price=80, support=85, slope=-5),
+        "SPYI": _input("2024-01-04", 60, 0, price=50),
+    }
+
+    orders, _, _ = planner.plan(inputs, portfolio, state)
+
+    assert [(order.ticker, order.action, order.quantity) for order in orders] == [
         ("SSO", OrderAction.BUY, 5),
+    ]
+
+
+def test_released_slope_recovery_does_not_bypass_trailing_full_exit():
+    planner = SsoSpyiChannelPlanner()
+    state = _core_ready_state(
+        exit_state=ExitState.EXIT_LOCK,
+        exit_origin="SLOPE",
+        lock_price=100,
+        recovery_quantity=5,
+        recovery_reserved_cash=400,
+        slope_exit_latched=False,
+    )
+    portfolio = _portfolio(cash=400, sso=15)
+    portfolio.current_prices["SSO"] = 90
+    inputs = {
+        "SSO": _input("2024-01-04", 60, 0, price=90, support=95, slope=-5),
+        "SPYI": _input("2024-01-04", 60, 0, price=50),
+    }
+
+    orders, _, _ = planner.plan(inputs, portfolio, state)
+
+    assert [(order.ticker, order.action, order.quantity) for order in orders] == [
+        ("SSO", OrderAction.SELL, 10),
     ]
 
 
