@@ -93,6 +93,8 @@ class AssetState:
     pending_full_exit_quantity: int = 0
     recovery_quantity: int = 0
     recovery_reserved_cash: float = 0.0
+    slope_recovery_sale_quantity: int = 0
+    slope_recovery_sale_proceeds: float = 0.0
     pending_recovery_quantity: int = 0
     pending_recovery_date: str = ""
 
@@ -309,6 +311,10 @@ class SsoSpyiChannelPlanner:
                         asset.recovery_quantity += execution.quantity
                         asset.recovery_reserved_cash += execution.quantity * execution.price
                     elif asset.exit_origin == "SLOPE":
+                        asset.slope_recovery_sale_quantity += execution.quantity
+                        asset.slope_recovery_sale_proceeds += execution.quantity * execution.price
+                        asset.recovery_quantity = asset.slope_recovery_sale_quantity // 2
+                        asset.recovery_reserved_cash = asset.slope_recovery_sale_proceeds / 2
                         asset.slope_exit_latched = True
                         asset.slope_release_days = 0
                         asset.prior_slope_release_days = 0
@@ -414,6 +420,12 @@ class SsoSpyiChannelPlanner:
                 self._clear_pending_exit(state)
                 self._clear_pending_full_exit(state)
                 return []
+            if (
+                state.exit_origin == "SLOPE"
+                and state.recovery_quantity > 0
+                and not state.slope_exit_latched
+            ):
+                return []
             if value.channel.price >= value.channel.support:
                 self._clear_pending_exit(state)
                 self._clear_pending_full_exit(state)
@@ -476,7 +488,11 @@ class SsoSpyiChannelPlanner:
                 or not value.channel.is_valid
                 or asset.exit_state != ExitState.EXIT_LOCK
                 or asset.pending_recovery_quantity
-                or value.channel.price < value.channel.support
+                or (asset.exit_origin == "SLOPE" and asset.slope_exit_latched)
+                or (
+                    asset.exit_origin != "SLOPE"
+                    and value.channel.price < value.channel.support
+                )
             ):
                 continue
             if asset.recovery_quantity <= 0:
@@ -624,6 +640,8 @@ class SsoSpyiChannelPlanner:
     def _clear_recovery_lot(state: AssetState) -> None:
         state.recovery_quantity = 0
         state.recovery_reserved_cash = 0.0
+        state.slope_recovery_sale_quantity = 0
+        state.slope_recovery_sale_proceeds = 0.0
         state.pending_recovery_quantity = 0
         state.pending_recovery_date = ""
 

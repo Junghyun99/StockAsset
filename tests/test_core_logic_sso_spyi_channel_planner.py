@@ -452,7 +452,7 @@ def test_intraday_slope_updates_count_only_once_per_trading_date():
     assert state.assets["SSO"].slope_exit_days == 1
 
 
-def test_filled_slope_exit_does_not_create_a_channel_recovery_lot():
+def test_filled_slope_exit_reserves_half_for_recovery():
     planner = SsoSpyiChannelPlanner()
     state = SsoSpyiChannelState()
     portfolio = _portfolio(cash=1_000, sso=20)
@@ -474,8 +474,28 @@ def test_filled_slope_exit_does_not_create_a_channel_recovery_lot():
     asset = state.assets["SSO"]
     assert asset.exit_origin == "SLOPE"
     assert asset.slope_exit_latched is True
-    assert asset.recovery_quantity == 0
-    assert asset.recovery_reserved_cash == 0
+    assert asset.recovery_quantity == 5
+    assert asset.recovery_reserved_cash == 500
+
+
+def test_partial_slope_fills_reserve_half_of_the_total_sale():
+    planner = SsoSpyiChannelPlanner()
+    state = _core_ready_state(
+        pending_exit_date="2024-01-03",
+        pending_exit_quantity=10,
+        pending_exit_origin="SLOPE",
+    )
+
+    state = planner.record_fills(state, [
+        TradeExecution("SSO", OrderAction.SELL, 3, 100, 0.0,
+                       "2024-01-03", ExecutionStatus.PARTIAL),
+        TradeExecution("SSO", OrderAction.SELL, 7, 100, 0.0,
+                       "2024-01-03", ExecutionStatus.FILLED),
+    ])
+
+    asset = state.assets["SSO"]
+    assert asset.recovery_quantity == 5
+    assert asset.recovery_reserved_cash == 500
 
 
 def test_slope_exit_takes_precedence_over_simultaneous_channel_exit():
@@ -499,7 +519,7 @@ def test_slope_exit_takes_precedence_over_simultaneous_channel_exit():
 
     asset = state.assets["SSO"]
     assert asset.exit_origin == "SLOPE"
-    assert asset.recovery_quantity == 0
+    assert asset.recovery_quantity == 5
 
 
 def test_slope_exit_support_rebound_releases_lock_without_recovery_buy():
@@ -1066,7 +1086,7 @@ def test_channel_recovery_restores_only_the_tactical_shares_sold():
     ]
 
 
-def test_slope_exit_never_creates_a_recovery_buy_after_support_rebound():
+def test_slope_recovery_requires_two_release_days_and_retries_below_support():
     planner = SsoSpyiChannelPlanner()
     state = _core_ready_state(slope_exit_days=2)
     portfolio = _portfolio(cash=1_000, sso=25)
@@ -1083,17 +1103,38 @@ def test_slope_exit_never_creates_a_recovery_buy_after_support_rebound():
     ])
 
     portfolio.holdings["SSO"] = 15
-    portfolio.current_prices["SSO"] = 90
-    rebound_inputs = {
-        "SSO": _input("2024-01-03", 60, 0, price=90, support=85, slope=-7),
+    portfolio.current_prices["SSO"] = 88
+    first_release_inputs = {
+        "SSO": _input("2024-01-03", 60, 0, price=88, support=89, slope=-5),
         "SPYI": _input("2024-01-03", 60, 0, price=50),
     }
-    orders, _, state = planner.plan(rebound_inputs, portfolio, state)
+    first_orders, _, state = planner.plan(first_release_inputs, portfolio, state)
 
-    assert state.assets["SSO"].recovery_quantity == 0
-    assert state.assets["SSO"].recovery_reserved_cash == 0
-    assert not orders
-    assert state.assets["SSO"].exit_state == ExitState.NONE
+    second_release_inputs = {
+        "SSO": _input("2024-01-04", 60, 0, price=88, support=89, slope=-5),
+        "SPYI": _input("2024-01-04", 60, 0, price=50),
+    }
+    orders, _, state = planner.plan(second_release_inputs, portfolio, state)
+    state = planner.record_fills(state, [
+        TradeExecution("SSO", OrderAction.BUY, orders[0].quantity, 88, 0.0,
+                       "2024-01-04", ExecutionStatus.REJECTED),
+    ])
+
+    retry_inputs = {
+        "SSO": _input("2024-01-05", 60, 0, price=88, support=89, slope=-5),
+        "SPYI": _input("2024-01-05", 60, 0, price=50),
+    }
+    retry_orders, _, state = planner.plan(retry_inputs, portfolio, state)
+
+    assert state.assets["SSO"].recovery_quantity == 5
+    assert state.assets["SSO"].recovery_reserved_cash == 450
+    assert not first_orders
+    assert [(order.ticker, order.action, order.quantity) for order in orders] == [
+        ("SSO", OrderAction.BUY, 5),
+    ]
+    assert [(order.ticker, order.action, order.quantity) for order in retry_orders] == [
+        ("SSO", OrderAction.BUY, 5),
+    ]
 
 
 def test_tactical_full_exit_keeps_core_and_does_not_restart_core_setup():
