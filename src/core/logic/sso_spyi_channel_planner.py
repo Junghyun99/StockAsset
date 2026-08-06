@@ -374,11 +374,14 @@ class SsoSpyiChannelPlanner:
     def _update_slope_exit(self, ticker: str, value: AssetInput, state: AssetState) -> None:
         if not value.channel.is_valid:
             return
-        is_below_threshold = value.channel.slope_pct < CHANNEL_RULES[ticker]["slope_exit_threshold"]
+        is_slope_below_threshold = (
+            value.channel.slope_pct < CHANNEL_RULES[ticker]["slope_exit_threshold"]
+        )
+        is_exit_condition = is_slope_below_threshold and value.channel.price < value.channel.support
         if value.date != state.slope_exit_day_date:
             state.prior_slope_exit_days = state.slope_exit_days
             state.slope_exit_day_date = value.date
-        if is_below_threshold:
+        if is_exit_condition:
             state.slope_exit_days = state.prior_slope_exit_days + 1
         else:
             state.slope_exit_days = 0
@@ -387,7 +390,7 @@ class SsoSpyiChannelPlanner:
         if value.date != state.slope_release_day_date:
             state.prior_slope_release_days = state.slope_release_days
             state.slope_release_day_date = value.date
-        if is_below_threshold:
+        if is_slope_below_threshold:
             state.slope_release_days = 0
         else:
             state.slope_release_days = state.prior_slope_release_days + 1
@@ -405,7 +408,10 @@ class SsoSpyiChannelPlanner:
         if state.exit_state == ExitState.EXIT_LOCK:
             if (
                 self._tactical_quantity(ticker, portfolio, state) <= 0
-                and not (state.exit_origin == "CHANNEL" and state.recovery_quantity > 0)
+                and not (
+                    state.exit_origin in ("CHANNEL", "SLOPE")
+                    and state.recovery_quantity > 0
+                )
             ):
                 self._clear_recovery_lot(state)
                 self._clear_pending_exit(state)
@@ -414,22 +420,21 @@ class SsoSpyiChannelPlanner:
                 state.lock_price = 0.0
                 state.exit_origin = ""
                 return []
-            if state.confirmed_level:
+            if (
+                state.confirmed_level
+                and not (state.exit_origin == "SLOPE" and state.recovery_quantity > 0)
+            ):
                 state.exit_state = ExitState.EXIT_SUPPRESSED
                 self._clear_recovery_lot(state)
                 self._clear_pending_exit(state)
                 self._clear_pending_full_exit(state)
                 return []
-            if (
-                state.exit_origin == "SLOPE"
-                and state.recovery_quantity > 0
-                and not state.slope_exit_latched
-            ):
-                return []
             if value.channel.price >= value.channel.support:
                 self._clear_pending_exit(state)
                 self._clear_pending_full_exit(state)
                 if state.exit_origin == "SLOPE":
+                    if state.recovery_quantity > 0:
+                        return []
                     state.exit_state = ExitState.NONE
                     state.lock_price = 0.0
                     state.exit_origin = ""
@@ -440,6 +445,12 @@ class SsoSpyiChannelPlanner:
                 return self._start_full_exit(ticker, portfolio, state)
             if state.pending_exit_quantity:
                 return self._start_exit(ticker, portfolio, state, state.pending_exit_origin)
+            if (
+                state.exit_origin == "SLOPE"
+                and state.recovery_quantity > 0
+                and not state.slope_exit_latched
+            ):
+                return []
             return []
         if state.exit_state == ExitState.EXIT_SUPPRESSED:
             if value.channel.price >= value.channel.support:
