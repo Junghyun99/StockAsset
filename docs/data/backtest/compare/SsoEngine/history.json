@@ -2,26 +2,26 @@
     {
         "id": "tx_20230831",
         "date": "2023-08-31",
-        "portfolio_value": 99659803.6899024,
-        "total_trade_amount": 97211605.32,
+        "portfolio_value": 9965980.586015647,
+        "total_trade_amount": 9721098.51,
         "reason": "첫 투자: 100:0 비율로 진입",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 3277476,
+                "quantity": 327747,
                 "price": 29.63,
-                "fee": 242816.76,
+                "fee": 24281.63,
                 "date": "2023-08-31",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 3374430->3277476"
+                "reason": "quantity adjusted 337443->327747"
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 904,
+                "quantity": 90,
                 "price": 110.61,
-                "fee": 249.98,
+                "fee": 24.89,
                 "date": "2023-08-31",
                 "status": "FILLED",
                 "reason": ""
@@ -31,26 +31,26 @@
     {
         "id": "tx_20230901",
         "date": "2023-09-01",
-        "portfolio_value": 100028131.5656405,
-        "total_trade_amount": 2460479.14,
+        "portfolio_value": 10002813.199657172,
+        "total_trade_amount": 246074.36,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 82620,
+                "quantity": 8264,
                 "price": 29.75,
-                "fee": 6144.8,
+                "fee": 614.63,
                 "date": "2023-09-01",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 85062->82620"
+                "reason": "quantity adjusted 8508->8264"
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 23,
+                "quantity": 2,
                 "price": 110.18,
-                "fee": 6.34,
+                "fee": 0.55,
                 "date": "2023-09-01",
                 "status": "FILLED",
                 "reason": ""
@@ -60,103 +60,84 @@
     {
         "id": "tx_20230905",
         "date": "2023-09-05",
-        "portfolio_value": 99137490.59909691,
-        "total_trade_amount": 62173.32,
+        "portfolio_value": 9913748.618520917,
+        "total_trade_amount": 6249.76,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 2109,
+                "quantity": 212,
                 "price": 29.48,
-                "fee": 155.46,
+                "fee": 15.63,
                 "date": "2023-09-05",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 2172->2109"
+                "reason": "quantity adjusted 218->212"
             }
         ]
     },
     {
         "id": "tx_20230906",
         "date": "2023-09-06",
-        "portfolio_value": 97758999.80040038,
-        "total_trade_amount": 1656.99,
+        "portfolio_value": 9775898.570865074,
+        "total_trade_amount": 145.35,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 57,
+                "quantity": 5,
                 "price": 29.07,
-                "fee": 4.14,
+                "fee": 0.36,
                 "date": "2023-09-06",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 58->57"
-            }
-        ]
-    },
-    {
-        "id": "tx_20230907",
-        "date": "2023-09-07",
-        "portfolio_value": 97137038.64976911,
-        "total_trade_amount": 28.89,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 28.89,
-                "fee": 0.07,
-                "date": "2023-09-07",
                 "status": "FILLED",
                 "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20230920",
-        "date": "2023-09-20",
-        "portfolio_value": 94817172.00974284,
-        "total_trade_amount": 14769.2,
-        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 68,
-                "price": 110.2,
-                "fee": 18.73,
-                "date": "2023-09-20",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 258,
-                "price": 28.2,
-                "fee": 18.19,
-                "date": "2023-09-20",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 264->258"
             }
         ]
     },
     {
         "id": "tx_20230921",
         "date": "2023-09-21",
-        "portfolio_value": 91740504.50065994,
-        "total_trade_amount": 190.96,
+        "portfolio_value": 9174068.07299245,
+        "total_trade_amount": 1974.33,
+        "reason": "비율 재조정: 상대이탈 10.7% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 9,
+                "price": 110.25,
+                "fee": 2.48,
+                "date": "2023-09-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 36,
+                "price": 27.28,
+                "fee": 2.46,
+                "date": "2023-09-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230922",
+        "date": "2023-09-22",
+        "portfolio_value": 9125311.845204284,
+        "total_trade_amount": 27.14,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
-                "price": 27.28,
-                "fee": 0.48,
-                "date": "2023-09-21",
+                "quantity": 1,
+                "price": 27.14,
+                "fee": 0.07,
+                "date": "2023-09-22",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -165,65 +146,65 @@
     {
         "id": "tx_20231002",
         "date": "2023-10-02",
-        "portfolio_value": 89790353.172619,
-        "total_trade_amount": 373.8,
+        "portfolio_value": 8979045.560112044,
+        "total_trade_amount": 26.7,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 14,
+                "quantity": 1,
                 "price": 26.7,
-                "fee": 0.93,
+                "fee": 0.07,
                 "date": "2023-10-02",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 15->14"
-            }
-        ]
-    },
-    {
-        "id": "tx_20231003",
-        "date": "2023-10-03",
-        "portfolio_value": 87402910.72511019,
-        "total_trade_amount": 14084.78,
-        "reason": "비율 재조정: 상대이탈 8.1% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 65,
-                "price": 109.93,
-                "fee": 17.86,
-                "date": "2023-10-03",
                 "status": "FILLED",
                 "reason": ""
-            },
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 267,
-                "price": 25.99,
-                "fee": 17.35,
-                "date": "2023-10-03",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 275->267"
             }
         ]
     },
     {
         "id": "tx_20231004",
         "date": "2023-10-04",
-        "portfolio_value": 88630366.35560544,
-        "total_trade_amount": 184.51999999999998,
+        "portfolio_value": 8863036.001817387,
+        "total_trade_amount": 619.8699999999999,
+        "reason": "비율 재조정: 상대이탈 3.1% > 임계치 2.5%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 109.97,
+                "fee": 0.82,
+                "date": "2023-10-04",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 11,
+                "price": 26.36,
+                "fee": 0.72,
+                "date": "2023-10-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231005",
+        "date": "2023-10-05",
+        "portfolio_value": 8849589.870987305,
+        "total_trade_amount": 52.64,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
-                "price": 26.36,
-                "fee": 0.46,
-                "date": "2023-10-04",
+                "quantity": 2,
+                "price": 26.32,
+                "fee": 0.13,
+                "date": "2023-10-05",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -232,16 +213,16 @@
     {
         "id": "tx_20231006",
         "date": "2023-10-06",
-        "portfolio_value": 90547204.79298677,
-        "total_trade_amount": 6067.07,
-        "reason": "비율 재조정: 상대이탈 3.4% > 임계치 2.5%",
+        "portfolio_value": 9054718.806659827,
+        "total_trade_amount": 462.35,
+        "reason": "비율 재조정: 상대이탈 2.7% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 115,
+                "quantity": 9,
                 "price": 26.87,
-                "fee": 7.73,
+                "fee": 0.6,
                 "date": "2023-10-06",
                 "status": "FILLED",
                 "reason": ""
@@ -249,29 +230,10 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 27,
+                "quantity": 2,
                 "price": 110.26,
-                "fee": 7.44,
+                "fee": 0.55,
                 "date": "2023-10-06",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 28->27"
-            }
-        ]
-    },
-    {
-        "id": "tx_20231009",
-        "date": "2023-10-09",
-        "portfolio_value": 91690531.47621566,
-        "total_trade_amount": 109.08,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 27.27,
-                "fee": 0.27,
-                "date": "2023-10-09",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -280,16 +242,16 @@
     {
         "id": "tx_20231011",
         "date": "2023-10-11",
-        "portfolio_value": 93388697.5765369,
-        "total_trade_amount": 5695.57,
-        "reason": "비율 재조정: 상대이탈 3.1% > 임계치 2.5%",
+        "portfolio_value": 9338867.987815123,
+        "total_trade_amount": 525.5,
+        "reason": "비율 재조정: 상대이탈 3.3% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 106,
+                "quantity": 11,
                 "price": 27.72,
-                "fee": 7.35,
+                "fee": 0.76,
                 "date": "2023-10-11",
                 "status": "FILLED",
                 "reason": ""
@@ -297,28 +259,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 25,
+                "quantity": 2,
                 "price": 110.29,
-                "fee": 6.89,
+                "fee": 0.55,
                 "date": "2023-10-11",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 26->25"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20231012",
         "date": "2023-10-12",
-        "portfolio_value": 92245463.5854635,
-        "total_trade_amount": 164.57999999999998,
+        "portfolio_value": 9224544.628342949,
+        "total_trade_amount": 82.28999999999999,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 3,
                 "price": 27.43,
-                "fee": 0.41,
+                "fee": 0.21,
                 "date": "2023-10-12",
                 "status": "FILLED",
                 "reason": ""
@@ -326,47 +288,28 @@
         ]
     },
     {
-        "id": "tx_20231018",
-        "date": "2023-10-18",
-        "portfolio_value": 90681875.82826138,
-        "total_trade_amount": 5206.47,
-        "reason": "비율 재조정: 상대이탈 2.9% > 임계치 2.5%",
+        "id": "tx_20231019",
+        "date": "2023-10-19",
+        "portfolio_value": 8896694.610289387,
+        "total_trade_amount": 811.36,
+        "reason": "비율 재조정: 상대이탈 4.2% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 24,
-                "price": 110.18,
-                "fee": 6.61,
-                "date": "2023-10-18",
+                "quantity": 4,
+                "price": 110.23,
+                "fee": 1.1,
+                "date": "2023-10-19",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 95,
-                "price": 26.97,
-                "fee": 6.4,
-                "date": "2023-10-18",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 97->95"
-            }
-        ]
-    },
-    {
-        "id": "tx_20231019",
-        "date": "2023-10-19",
-        "portfolio_value": 88966938.96969545,
-        "total_trade_amount": 52.92,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 2,
+                "quantity": 14,
                 "price": 26.46,
-                "fee": 0.13,
+                "fee": 0.93,
                 "date": "2023-10-19",
                 "status": "FILLED",
                 "reason": ""
@@ -374,48 +317,67 @@
         ]
     },
     {
-        "id": "tx_20231025",
-        "date": "2023-10-25",
-        "portfolio_value": 85251166.10121052,
-        "total_trade_amount": 10863.35,
-        "reason": "비율 재조정: 상대이탈 6.4% > 임계치 5.0%",
+        "id": "tx_20231020",
+        "date": "2023-10-20",
+        "portfolio_value": 8679798.56593126,
+        "total_trade_amount": 77.42999999999999,
+        "reason": "비율 유지, 현금 소진 매수",
         "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 50,
-                "price": 110.29,
-                "fee": 13.79,
-                "date": "2023-10-25",
-                "status": "FILLED",
-                "reason": ""
-            },
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 211,
-                "price": 25.35,
-                "fee": 13.37,
-                "date": "2023-10-25",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 218->211"
+                "quantity": 3,
+                "price": 25.81,
+                "fee": 0.19,
+                "date": "2023-10-20",
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20231026",
         "date": "2023-10-26",
-        "portfolio_value": 83166210.73953044,
-        "total_trade_amount": 148.38,
+        "portfolio_value": 8316621.522506589,
+        "total_trade_amount": 1071.13,
+        "reason": "비율 재조정: 상대이탈 6.3% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 5,
+                "price": 110.36,
+                "fee": 1.38,
+                "date": "2023-10-26",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 21,
+                "price": 24.73,
+                "fee": 1.3,
+                "date": "2023-10-26",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231027",
+        "date": "2023-10-27",
+        "portfolio_value": 8235911.013539118,
+        "total_trade_amount": 24.49,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6,
-                "price": 24.73,
-                "fee": 0.37,
-                "date": "2023-10-26",
+                "quantity": 1,
+                "price": 24.49,
+                "fee": 0.06,
+                "date": "2023-10-27",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -424,16 +386,26 @@
     {
         "id": "tx_20231101",
         "date": "2023-11-01",
-        "portfolio_value": 87134507.41136292,
-        "total_trade_amount": 362.74,
-        "reason": "비율 유지, 현금 소진 매수",
+        "portfolio_value": 8713459.068728868,
+        "total_trade_amount": 854.48,
+        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 16,
+                "price": 25.86,
+                "fee": 1.03,
+                "date": "2023-11-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 14,
-                "price": 25.91,
-                "fee": 0.91,
+                "quantity": 4,
+                "price": 110.18,
+                "fee": 1.1,
                 "date": "2023-11-01",
                 "status": "FILLED",
                 "reason": ""
@@ -443,16 +415,16 @@
     {
         "id": "tx_20231102",
         "date": "2023-11-02",
-        "portfolio_value": 90480623.15874624,
-        "total_trade_amount": 10741.59,
-        "reason": "비율 재조정: 상대이탈 6.0% > 임계치 2.5%",
+        "portfolio_value": 9048063.949539332,
+        "total_trade_amount": 652.8900000000001,
+        "reason": "비율 재조정: 상대이탈 3.9% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 203,
+                "quantity": 12,
                 "price": 26.85,
-                "fee": 13.63,
+                "fee": 0.81,
                 "date": "2023-11-02",
                 "status": "FILLED",
                 "reason": ""
@@ -460,29 +432,10 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 48,
+                "quantity": 3,
                 "price": 110.23,
-                "fee": 13.23,
+                "fee": 0.83,
                 "date": "2023-11-02",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 49->48"
-            }
-        ]
-    },
-    {
-        "id": "tx_20231103",
-        "date": "2023-11-03",
-        "portfolio_value": 92077945.31147052,
-        "total_trade_amount": 136.9,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 5,
-                "price": 27.38,
-                "fee": 0.34,
-                "date": "2023-11-03",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -491,16 +444,16 @@
     {
         "id": "tx_20231107",
         "date": "2023-11-07",
-        "portfolio_value": 92969072.79306513,
-        "total_trade_amount": 5157.49,
+        "portfolio_value": 9296908.992437618,
+        "total_trade_amount": 468.87,
         "reason": "비율 재조정: 상대이탈 2.8% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 95,
+                "quantity": 9,
                 "price": 27.59,
-                "fee": 6.55,
+                "fee": 0.62,
                 "date": "2023-11-07",
                 "status": "FILLED",
                 "reason": ""
@@ -508,9 +461,9 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 23,
+                "quantity": 2,
                 "price": 110.28,
-                "fee": 6.34,
+                "fee": 0.55,
                 "date": "2023-11-07",
                 "status": "FILLED",
                 "reason": ""
@@ -520,16 +473,16 @@
     {
         "id": "tx_20231108",
         "date": "2023-11-08",
-        "portfolio_value": 93103583.29596974,
-        "total_trade_amount": 55.38,
+        "portfolio_value": 9310359.962224117,
+        "total_trade_amount": 27.69,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 2,
+                "quantity": 1,
                 "price": 27.69,
-                "fee": 0.14,
+                "fee": 0.07,
                 "date": "2023-11-08",
                 "status": "FILLED",
                 "reason": ""
@@ -537,67 +490,86 @@
         ]
     },
     {
-        "id": "tx_20231130",
-        "date": "2023-11-30",
-        "portfolio_value": 100922021.33886945,
-        "total_trade_amount": 15086.66,
+        "id": "tx_20231122",
+        "date": "2023-11-22",
+        "portfolio_value": 10045118.132234048,
+        "total_trade_amount": 1438.8000000000002,
         "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 256,
-                "price": 29.96,
-                "fee": 19.17,
-                "date": "2023-11-30",
+                "quantity": 26,
+                "price": 29.82,
+                "fee": 1.94,
+                "date": "2023-11-22",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 67,
-                "price": 110.7,
-                "fee": 18.54,
-                "date": "2023-11-30",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 69->67"
+                "quantity": 6,
+                "price": 110.58,
+                "fee": 1.66,
+                "date": "2023-11-22",
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20231201",
-        "date": "2023-12-01",
-        "portfolio_value": 102082071.82203199,
-        "total_trade_amount": 637.56,
+        "id": "tx_20231124",
+        "date": "2023-11-24",
+        "portfolio_value": 10053525.206627272,
+        "total_trade_amount": 89.69999999999999,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 21,
-                "price": 30.36,
-                "fee": 1.59,
-                "date": "2023-12-01",
+                "quantity": 3,
+                "price": 29.9,
+                "fee": 0.22,
+                "date": "2023-11-24",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 22->21"
+                "reason": "quantity adjusted 4->3"
             }
         ]
     },
     {
-        "id": "tx_20231204",
-        "date": "2023-12-04",
-        "portfolio_value": 100989295.97857049,
-        "total_trade_amount": 30.04,
+        "id": "tx_20231127",
+        "date": "2023-11-27",
+        "portfolio_value": 10018221.004661892,
+        "total_trade_amount": 29.79,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 30.04,
+                "price": 29.79,
+                "fee": 0.07,
+                "date": "2023-11-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231201",
+        "date": "2023-12-01",
+        "portfolio_value": 10208209.62294927,
+        "total_trade_amount": 30.36,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 30.36,
                 "fee": 0.08,
-                "date": "2023-12-04",
+                "date": "2023-12-01",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -606,65 +578,46 @@
     {
         "id": "tx_20231214",
         "date": "2023-12-14",
-        "portfolio_value": 107663871.0813587,
-        "total_trade_amount": 448.28000000000003,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 14,
-                "price": 32.02,
-                "fee": 1.12,
-                "date": "2023-12-14",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20231218",
-        "date": "2023-12-18",
-        "portfolio_value": 108470820.76228769,
-        "total_trade_amount": 16608.6,
-        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
+        "portfolio_value": 10766389.169249177,
+        "total_trade_amount": 1600.75,
+        "reason": "비율 재조정: 상대이탈 8.2% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 263,
-                "price": 32.2,
-                "fee": 21.17,
-                "date": "2023-12-18",
+                "quantity": 26,
+                "price": 31.96,
+                "fee": 2.08,
+                "date": "2023-12-14",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 74,
-                "price": 110.0,
-                "fee": 20.35,
-                "date": "2023-12-18",
+                "quantity": 7,
+                "price": 109.97,
+                "fee": 1.92,
+                "date": "2023-12-14",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 77->74"
+                "reason": "quantity adjusted 8->7"
             }
         ]
     },
     {
-        "id": "tx_20231219",
-        "date": "2023-12-19",
-        "portfolio_value": 109748443.74551219,
-        "total_trade_amount": 293.76,
+        "id": "tx_20231215",
+        "date": "2023-12-15",
+        "portfolio_value": 10724362.554634906,
+        "total_trade_amount": 95.69999999999999,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
-                "price": 32.64,
-                "fee": 0.73,
-                "date": "2023-12-19",
+                "quantity": 3,
+                "price": 31.9,
+                "fee": 0.24,
+                "date": "2023-12-15",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -673,65 +626,103 @@
     {
         "id": "tx_20231220",
         "date": "2023-12-20",
-        "portfolio_value": 106499939.30341206,
-        "total_trade_amount": 192802.31,
+        "portfolio_value": 10649994.850186069,
+        "total_trade_amount": 19288.2,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6094,
+                "quantity": 610,
                 "price": 31.62,
-                "fee": 481.68,
+                "fee": 48.22,
                 "date": "2023-12-20",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 6274->6094"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 110.03,
-                "fee": 0.28,
-                "date": "2023-12-20",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 628->610"
             }
         ]
     },
     {
         "id": "tx_20231221",
         "date": "2023-12-21",
-        "portfolio_value": 108588322.57342444,
-        "total_trade_amount": 4964.96,
+        "portfolio_value": 10858836.093320154,
+        "total_trade_amount": 483.6,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 154,
+                "quantity": 15,
                 "price": 32.24,
-                "fee": 12.41,
+                "fee": 1.21,
                 "date": "2023-12-21",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 158->154"
+                "reason": "quantity adjusted 16->15"
             }
         ]
     },
     {
         "id": "tx_20231222",
         "date": "2023-12-22",
-        "portfolio_value": 109026226.65298861,
-        "total_trade_amount": 129.48,
+        "portfolio_value": 10902626.975306077,
+        "total_trade_amount": 32.37,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 4,
+                "quantity": 1,
                 "price": 32.37,
-                "fee": 0.32,
+                "fee": 0.08,
                 "date": "2023-12-22",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240129",
+        "date": "2024-01-29",
+        "portfolio_value": 11642050.119378233,
+        "total_trade_amount": 1816.62,
+        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 27,
+                "price": 34.5,
+                "fee": 2.33,
+                "date": "2024-01-29",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 110.64,
+                "fee": 2.21,
+                "date": "2024-01-29",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240130",
+        "date": "2024-01-30",
+        "portfolio_value": 11618473.751695698,
+        "total_trade_amount": 34.49,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 34.49,
+                "fee": 0.09,
+                "date": "2024-01-30",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -740,65 +731,17 @@
     {
         "id": "tx_20240201",
         "date": "2024-02-01",
-        "portfolio_value": 115292111.85301743,
-        "total_trade_amount": 444.98999999999995,
+        "portfolio_value": 11529227.087218544,
+        "total_trade_amount": 34.23,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 13,
+                "quantity": 1,
                 "price": 34.23,
-                "fee": 1.11,
+                "fee": 0.09,
                 "date": "2024-02-01",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20240202",
-        "date": "2024-02-02",
-        "portfolio_value": 117666770.77327237,
-        "total_trade_amount": 17990.809999999998,
-        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 263,
-                "price": 34.87,
-                "fee": 22.92,
-                "date": "2024-02-02",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 80,
-                "price": 110.25,
-                "fee": 22.05,
-                "date": "2024-02-02",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 83->80"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240205",
-        "date": "2024-02-05",
-        "portfolio_value": 116807893.38585675,
-        "total_trade_amount": 312.12,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 9,
-                "price": 34.68,
-                "fee": 0.78,
-                "date": "2024-02-05",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -807,26 +750,36 @@
     {
         "id": "tx_20240301",
         "date": "2024-03-01",
-        "portfolio_value": 125851891.57639168,
-        "total_trade_amount": 448.43999999999994,
-        "reason": "비율 유지, 현금 소진 매수",
+        "portfolio_value": 12585198.6514581,
+        "total_trade_amount": 1961.52,
+        "reason": "비율 재조정: 상대이탈 8.1% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 12,
-                "price": 37.37,
-                "fee": 1.12,
+                "action": "SELL",
+                "quantity": 26,
+                "price": 37.29,
+                "fee": 2.42,
                 "date": "2024-03-01",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 13->12"
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 9,
+                "price": 110.22,
+                "fee": 2.48,
+                "date": "2024-03-01",
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240304",
         "date": "2024-03-04",
-        "portfolio_value": 125515075.2890913,
+        "portfolio_value": 12551519.290438687,
         "total_trade_amount": 37.27,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
@@ -843,133 +796,56 @@
         ]
     },
     {
-        "id": "tx_20240312",
-        "date": "2024-03-12",
-        "portfolio_value": 127536056.16958745,
-        "total_trade_amount": 19948.87,
-        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 268,
-                "price": 37.79,
-                "fee": 25.32,
-                "date": "2024-03-12",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 89,
-                "price": 110.35,
-                "fee": 24.55,
-                "date": "2024-03-12",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 91->89"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240313",
-        "date": "2024-03-13",
-        "portfolio_value": 127148750.00652331,
-        "total_trade_amount": 226.5,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 6,
-                "price": 37.75,
-                "fee": 0.57,
-                "date": "2024-03-13",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 7->6"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240314",
-        "date": "2024-03-14",
-        "portfolio_value": 126508905.50376174,
-        "total_trade_amount": 37.56,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 37.56,
-                "fee": 0.09,
-                "date": "2024-03-14",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
         "id": "tx_20240320",
         "date": "2024-03-20",
-        "portfolio_value": 129906203.06783137,
-        "total_trade_amount": 291322.16,
+        "portfolio_value": 12990629.33169959,
+        "total_trade_amount": 29090.879999999997,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7565,
+                "quantity": 756,
                 "price": 38.48,
-                "fee": 727.82,
+                "fee": 72.73,
                 "date": "2024-03-20",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 7789->7565"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 110.48,
-                "fee": 0.55,
-                "date": "2024-03-20",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 779->756"
             }
         ]
     },
     {
         "id": "tx_20240321",
         "date": "2024-03-21",
-        "portfolio_value": 130665704.75349121,
-        "total_trade_amount": 7432.32,
+        "portfolio_value": 13066580.092905587,
+        "total_trade_amount": 774.2,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 192,
+                "quantity": 20,
                 "price": 38.71,
-                "fee": 18.58,
+                "fee": 1.94,
                 "date": "2024-03-21",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 198->192"
+                "reason": "quantity adjusted 21->20"
             }
         ]
     },
     {
         "id": "tx_20240322",
         "date": "2024-03-22",
-        "portfolio_value": 130277541.84813319,
-        "total_trade_amount": 192.95000000000002,
+        "portfolio_value": 13027763.203861265,
+        "total_trade_amount": 38.59,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 5,
+                "quantity": 1,
                 "price": 38.59,
-                "fee": 0.48,
+                "fee": 0.1,
                 "date": "2024-03-22",
                 "status": "FILLED",
                 "reason": ""
@@ -979,36 +855,17 @@
     {
         "id": "tx_20240401",
         "date": "2024-04-01",
-        "portfolio_value": 130513966.90280151,
-        "total_trade_amount": 541.24,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 14,
-                "price": 38.66,
-                "fee": 1.35,
-                "date": "2024-04-01",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 15->14"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240402",
-        "date": "2024-04-02",
-        "portfolio_value": 128775491.28715877,
-        "total_trade_amount": 38.15,
+        "portfolio_value": 13051405.913244683,
+        "total_trade_amount": 38.66,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 38.15,
+                "price": 38.66,
                 "fee": 0.1,
-                "date": "2024-04-02",
+                "date": "2024-04-01",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1017,16 +874,16 @@
     {
         "id": "tx_20240419",
         "date": "2024-04-19",
-        "portfolio_value": 116775086.05935575,
-        "total_trade_amount": 21249.699999999997,
-        "reason": "비율 재조정: 상대이탈 9.2% > 임계치 7.5%",
+        "portfolio_value": 11677501.065832058,
+        "total_trade_amount": 1891.5,
+        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 98,
+                "quantity": 9,
                 "price": 110.24,
-                "fee": 27.01,
+                "fee": 2.48,
                 "date": "2024-04-19",
                 "status": "FILLED",
                 "reason": ""
@@ -1034,28 +891,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 302,
+                "quantity": 26,
                 "price": 34.59,
-                "fee": 26.12,
+                "fee": 2.25,
                 "date": "2024-04-19",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 312->302"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240422",
         "date": "2024-04-22",
-        "portfolio_value": 118834463.81684554,
-        "total_trade_amount": 281.6,
+        "portfolio_value": 11883438.562615413,
+        "total_trade_amount": 105.60000000000001,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 8,
+                "quantity": 3,
                 "price": 35.2,
-                "fee": 0.7,
+                "fee": 0.26,
                 "date": "2024-04-22",
                 "status": "FILLED",
                 "reason": ""
@@ -1065,16 +922,16 @@
     {
         "id": "tx_20240501",
         "date": "2024-05-01",
-        "portfolio_value": 118935890.86226588,
-        "total_trade_amount": 493.21999999999997,
+        "portfolio_value": 11893581.267262712,
+        "total_trade_amount": 35.23,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 14,
+                "quantity": 1,
                 "price": 35.23,
-                "fee": 1.23,
+                "fee": 0.09,
                 "date": "2024-05-01",
                 "status": "FILLED",
                 "reason": ""
@@ -1084,16 +941,16 @@
     {
         "id": "tx_20240506",
         "date": "2024-05-06",
-        "portfolio_value": 126633254.62760983,
-        "total_trade_amount": 19919.27,
-        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 7.5%",
+        "portfolio_value": 12663321.3830863,
+        "total_trade_amount": 2077.83,
+        "reason": "비율 재조정: 상대이탈 8.7% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 270,
+                "quantity": 29,
                 "price": 37.44,
-                "fee": 25.27,
+                "fee": 2.71,
                 "date": "2024-05-06",
                 "status": "FILLED",
                 "reason": ""
@@ -1101,28 +958,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 89,
+                "quantity": 9,
                 "price": 110.23,
-                "fee": 24.53,
+                "fee": 2.48,
                 "date": "2024-05-06",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 91->89"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240507",
         "date": "2024-05-07",
-        "portfolio_value": 126886449.89617908,
-        "total_trade_amount": 263.13,
+        "portfolio_value": 12688640.716972383,
+        "total_trade_amount": 75.18,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
+                "quantity": 2,
                 "price": 37.59,
-                "fee": 0.66,
+                "fee": 0.19,
                 "date": "2024-05-07",
                 "status": "FILLED",
                 "reason": ""
@@ -1132,36 +989,17 @@
     {
         "id": "tx_20240603",
         "date": "2024-06-03",
-        "portfolio_value": 131427322.64535427,
-        "total_trade_amount": 506.09,
+        "portfolio_value": 13142729.094630213,
+        "total_trade_amount": 77.86,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 13,
+                "quantity": 2,
                 "price": 38.93,
-                "fee": 1.27,
+                "fee": 0.19,
                 "date": "2024-06-03",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 14->13"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240604",
-        "date": "2024-06-04",
-        "portfolio_value": 131680531.67927964,
-        "total_trade_amount": 39.01,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 39.01,
-                "fee": 0.1,
-                "date": "2024-06-04",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1170,16 +1008,16 @@
     {
         "id": "tx_20240612",
         "date": "2024-06-12",
-        "portfolio_value": 138043957.4470405,
-        "total_trade_amount": 22884.510000000002,
-        "reason": "비율 재조정: 상대이탈 8.4% > 임계치 7.5%",
+        "portfolio_value": 13804395.149881689,
+        "total_trade_amount": 2478.74,
+        "reason": "비율 재조정: 상대이탈 9.0% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 285,
+                "quantity": 31,
                 "price": 40.81,
-                "fee": 29.08,
+                "fee": 3.16,
                 "date": "2024-06-12",
                 "status": "FILLED",
                 "reason": ""
@@ -1187,28 +1025,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 102,
+                "quantity": 11,
                 "price": 110.33,
-                "fee": 28.13,
+                "fee": 3.03,
                 "date": "2024-06-12",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 105->102"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240613",
         "date": "2024-06-13",
-        "portfolio_value": 138516536.5943733,
-        "total_trade_amount": 287.28,
+        "portfolio_value": 13851652.910540175,
+        "total_trade_amount": 41.04,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
+                "quantity": 1,
                 "price": 41.04,
-                "fee": 0.72,
+                "fee": 0.1,
                 "date": "2024-06-13",
                 "status": "FILLED",
                 "reason": ""
@@ -1218,64 +1056,54 @@
     {
         "id": "tx_20240626",
         "date": "2024-06-26",
-        "portfolio_value": 140711444.6156729,
-        "total_trade_amount": 313310.58,
+        "portfolio_value": 14071143.454662899,
+        "total_trade_amount": 31317.270000000004,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7528,
+                "quantity": 753,
                 "price": 41.59,
-                "fee": 782.75,
+                "fee": 78.3,
                 "date": "2024-06-26",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 7751->7528"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 110.53,
-                "fee": 0.55,
-                "date": "2024-06-26",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 775->753"
             }
         ]
     },
     {
         "id": "tx_20240627",
         "date": "2024-06-27",
-        "portfolio_value": 141083589.67755443,
-        "total_trade_amount": 8048.1,
+        "portfolio_value": 14108357.968625234,
+        "total_trade_amount": 792.3000000000001,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 193,
+                "quantity": 19,
                 "price": 41.7,
-                "fee": 20.12,
+                "fee": 1.98,
                 "date": "2024-06-27",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 198->193"
+                "reason": "quantity adjusted 20->19"
             }
         ]
     },
     {
         "id": "tx_20240628",
         "date": "2024-06-28",
-        "portfolio_value": 139865688.08314866,
-        "total_trade_amount": 206.70000000000002,
+        "portfolio_value": 13986567.947858097,
+        "total_trade_amount": 41.34,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 5,
+                "quantity": 1,
                 "price": 41.34,
-                "fee": 0.52,
+                "fee": 0.1,
                 "date": "2024-06-28",
                 "status": "FILLED",
                 "reason": ""
@@ -1285,36 +1113,17 @@
     {
         "id": "tx_20240701",
         "date": "2024-07-01",
-        "portfolio_value": 140474688.82675847,
-        "total_trade_amount": 539.76,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 13,
-                "price": 41.52,
-                "fee": 1.35,
-                "date": "2024-07-01",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 14->13"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240702",
-        "date": "2024-07-02",
-        "portfolio_value": 142301668.5528363,
-        "total_trade_amount": 42.06,
+        "portfolio_value": 14047468.046203854,
+        "total_trade_amount": 41.52,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 42.06,
-                "fee": 0.11,
-                "date": "2024-07-02",
+                "price": 41.52,
+                "fee": 0.1,
+                "date": "2024-07-01",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1323,16 +1132,16 @@
     {
         "id": "tx_20240716",
         "date": "2024-07-16",
-        "portfolio_value": 150252492.55176952,
-        "total_trade_amount": 24093.28,
+        "portfolio_value": 15025246.854969908,
+        "total_trade_amount": 2455.75,
         "reason": "비율 재조정: 상대이탈 8.2% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 277,
+                "quantity": 28,
                 "price": 44.33,
-                "fee": 30.7,
+                "fee": 3.1,
                 "date": "2024-07-16",
                 "status": "FILLED",
                 "reason": ""
@@ -1340,28 +1149,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 107,
+                "quantity": 11,
                 "price": 110.41,
-                "fee": 29.53,
+                "fee": 3.04,
                 "date": "2024-07-16",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 111->107"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240717",
         "date": "2024-07-17",
-        "portfolio_value": 145973052.31033224,
-        "total_trade_amount": 388.34999999999997,
+        "portfolio_value": 14597303.829727069,
+        "total_trade_amount": 43.15,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
+                "quantity": 1,
                 "price": 43.15,
-                "fee": 0.97,
+                "fee": 0.11,
                 "date": "2024-07-17",
                 "status": "FILLED",
                 "reason": ""
@@ -1371,16 +1180,16 @@
     {
         "id": "tx_20240724",
         "date": "2024-07-24",
-        "portfolio_value": 137549523.87756112,
-        "total_trade_amount": 24542.18,
-        "reason": "비율 재조정: 상대이탈 9.0% > 임계치 7.5%",
+        "portfolio_value": 13754952.298158506,
+        "total_trade_amount": 2584.2999999999997,
+        "reason": "비율 재조정: 상대이탈 9.2% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 113,
+                "quantity": 12,
                 "price": 110.32,
-                "fee": 31.17,
+                "fee": 3.31,
                 "date": "2024-07-24",
                 "status": "FILLED",
                 "reason": ""
@@ -1388,28 +1197,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 297,
+                "quantity": 31,
                 "price": 40.66,
-                "fee": 30.19,
+                "fee": 3.15,
                 "date": "2024-07-24",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 306->297"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240725",
         "date": "2024-07-25",
-        "portfolio_value": 136077806.36815733,
-        "total_trade_amount": 321.76,
+        "portfolio_value": 13607780.253070144,
+        "total_trade_amount": 40.22,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 8,
+                "quantity": 1,
                 "price": 40.22,
-                "fee": 0.8,
+                "fee": 0.1,
                 "date": "2024-07-25",
                 "status": "FILLED",
                 "reason": ""
@@ -1419,16 +1228,16 @@
     {
         "id": "tx_20240801",
         "date": "2024-08-01",
-        "portfolio_value": 138192514.83360475,
-        "total_trade_amount": 612.75,
+        "portfolio_value": 13819251.464155434,
+        "total_trade_amount": 81.7,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 15,
+                "quantity": 2,
                 "price": 40.85,
-                "fee": 1.53,
+                "fee": 0.2,
                 "date": "2024-08-01",
                 "status": "FILLED",
                 "reason": ""
@@ -1438,16 +1247,16 @@
     {
         "id": "tx_20240805",
         "date": "2024-08-05",
-        "portfolio_value": 125183775.58500515,
-        "total_trade_amount": 23615.629999999997,
-        "reason": "비율 재조정: 상대이탈 9.6% > 임계치 7.5%",
+        "portfolio_value": 12518372.504040154,
+        "total_trade_amount": 2357.77,
+        "reason": "비율 재조정: 상대이탈 9.1% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 109,
+                "quantity": 11,
                 "price": 110.07,
-                "fee": 29.99,
+                "fee": 3.03,
                 "date": "2024-08-05",
                 "status": "FILLED",
                 "reason": ""
@@ -1455,28 +1264,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 314,
+                "quantity": 31,
                 "price": 37.0,
-                "fee": 29.04,
+                "fee": 2.87,
                 "date": "2024-08-05",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 325->314"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240806",
         "date": "2024-08-06",
-        "portfolio_value": 127518474.24895202,
-        "total_trade_amount": 339.21,
+        "portfolio_value": 12751842.978250125,
+        "total_trade_amount": 37.69,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
+                "quantity": 1,
                 "price": 37.69,
-                "fee": 0.85,
+                "fee": 0.09,
                 "date": "2024-08-06",
                 "status": "FILLED",
                 "reason": ""
@@ -1486,16 +1295,16 @@
     {
         "id": "tx_20240813",
         "date": "2024-08-13",
-        "portfolio_value": 137111100.38675976,
-        "total_trade_amount": 23181.739999999998,
-        "reason": "비율 재조정: 상대이탈 8.6% > 임계치 7.5%",
+        "portfolio_value": 13711107.823705774,
+        "total_trade_amount": 2468.26,
+        "reason": "비율 재조정: 상대이탈 9.1% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 292,
+                "quantity": 31,
                 "price": 40.44,
-                "fee": 29.52,
+                "fee": 3.13,
                 "date": "2024-08-13",
                 "status": "FILLED",
                 "reason": ""
@@ -1503,28 +1312,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 103,
+                "quantity": 11,
                 "price": 110.42,
-                "fee": 28.43,
+                "fee": 3.04,
                 "date": "2024-08-13",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 106->103"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240814",
         "date": "2024-08-14",
-        "portfolio_value": 137956931.1026907,
-        "total_trade_amount": 367.02,
+        "portfolio_value": 13795690.681031434,
+        "total_trade_amount": 40.78,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
+                "quantity": 1,
                 "price": 40.78,
-                "fee": 0.92,
+                "fee": 0.1,
                 "date": "2024-08-14",
                 "status": "FILLED",
                 "reason": ""
@@ -1534,16 +1343,16 @@
     {
         "id": "tx_20240903",
         "date": "2024-09-03",
-        "portfolio_value": 141509833.0050442,
-        "total_trade_amount": 585.62,
+        "portfolio_value": 14150980.227308713,
+        "total_trade_amount": 41.83,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 14,
+                "quantity": 1,
                 "price": 41.83,
-                "fee": 1.46,
+                "fee": 0.1,
                 "date": "2024-09-03",
                 "status": "FILLED",
                 "reason": ""
@@ -1553,16 +1362,16 @@
     {
         "id": "tx_20240919",
         "date": "2024-09-19",
-        "portfolio_value": 150746680.92422286,
-        "total_trade_amount": 27211.56,
-        "reason": "비율 재조정: 상대이탈 9.2% > 임계치 7.5%",
+        "portfolio_value": 15074662.102491794,
+        "total_trade_amount": 2705.6499999999996,
+        "reason": "비율 재조정: 상대이탈 9.1% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 311,
+                "quantity": 31,
                 "price": 44.47,
-                "fee": 34.58,
+                "fee": 3.45,
                 "date": "2024-09-19",
                 "status": "FILLED",
                 "reason": ""
@@ -1570,48 +1379,29 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 121,
+                "quantity": 12,
                 "price": 110.59,
-                "fee": 33.45,
+                "fee": 3.32,
                 "date": "2024-09-19",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 125->121"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20240920",
         "date": "2024-09-20",
-        "portfolio_value": 150070137.09523633,
-        "total_trade_amount": 354.88,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 8,
-                "price": 44.36,
-                "fee": 0.89,
-                "date": "2024-09-20",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 9->8"
-            }
-        ]
-    },
-    {
-        "id": "tx_20240923",
-        "date": "2024-09-23",
-        "portfolio_value": 150848263.63639155,
-        "total_trade_amount": 44.59,
+        "portfolio_value": 15007007.888551248,
+        "total_trade_amount": 44.36,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 44.59,
+                "price": 44.36,
                 "fee": 0.11,
-                "date": "2024-09-23",
+                "date": "2024-09-20",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1620,64 +1410,54 @@
     {
         "id": "tx_20240925",
         "date": "2024-09-25",
-        "portfolio_value": 151024908.25020614,
-        "total_trade_amount": 287702.52999999997,
+        "portfolio_value": 15102484.756734246,
+        "total_trade_amount": 28779.3,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6453,
+                "quantity": 646,
                 "price": 44.55,
-                "fee": 718.78,
+                "fee": 71.96,
                 "date": "2024-09-25",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 6644->6453"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 110.69,
-                "fee": 0.55,
-                "date": "2024-09-25",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 665->646"
             }
         ]
     },
     {
         "id": "tx_20240926",
         "date": "2024-09-26",
-        "portfolio_value": 152194278.5822445,
-        "total_trade_amount": 7318.7,
+        "portfolio_value": 15219421.766070327,
+        "total_trade_amount": 718.4,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 163,
+                "quantity": 16,
                 "price": 44.9,
-                "fee": 18.3,
+                "fee": 1.8,
                 "date": "2024-09-26",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 168->163"
+                "reason": "quantity adjusted 17->16"
             }
         ]
     },
     {
         "id": "tx_20240927",
         "date": "2024-09-27",
-        "portfolio_value": 151668938.34345734,
-        "total_trade_amount": 223.70000000000002,
+        "portfolio_value": 15166887.733409941,
+        "total_trade_amount": 44.74,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 5,
+                "quantity": 1,
                 "price": 44.74,
-                "fee": 0.56,
+                "fee": 0.11,
                 "date": "2024-09-27",
                 "status": "FILLED",
                 "reason": ""
@@ -1687,36 +1467,17 @@
     {
         "id": "tx_20241001",
         "date": "2024-10-01",
-        "portfolio_value": 150126662.95978513,
-        "total_trade_amount": 575.77,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 13,
-                "price": 44.29,
-                "fee": 1.44,
-                "date": "2024-10-01",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 14->13"
-            }
-        ]
-    },
-    {
-        "id": "tx_20241002",
-        "date": "2024-10-02",
-        "portfolio_value": 150194458.0164207,
-        "total_trade_amount": 44.31,
+        "portfolio_value": 15012660.236733215,
+        "total_trade_amount": 44.29,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 44.31,
+                "price": 44.29,
                 "fee": 0.11,
-                "date": "2024-10-02",
+                "date": "2024-10-01",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1725,16 +1486,16 @@
     {
         "id": "tx_20241101",
         "date": "2024-11-01",
-        "portfolio_value": 150364505.41754583,
-        "total_trade_amount": 621.04,
+        "portfolio_value": 15036444.295484383,
+        "total_trade_amount": 88.72,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 14,
+                "quantity": 2,
                 "price": 44.36,
-                "fee": 1.55,
+                "fee": 0.22,
                 "date": "2024-11-01",
                 "status": "FILLED",
                 "reason": ""
@@ -1744,16 +1505,16 @@
     {
         "id": "tx_20241107",
         "date": "2024-11-07",
-        "portfolio_value": 163347031.9784135,
-        "total_trade_amount": 26023.46,
-        "reason": "비율 재조정: 상대이탈 8.1% > 임계치 7.5%",
+        "portfolio_value": 16334697.854964154,
+        "total_trade_amount": 2560.21,
+        "reason": "비율 재조정: 상대이탈 8.2% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 275,
+                "quantity": 28,
                 "price": 48.1,
-                "fee": 33.07,
+                "fee": 3.37,
                 "date": "2024-11-07",
                 "status": "FILLED",
                 "reason": ""
@@ -1761,28 +1522,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 116,
+                "quantity": 11,
                 "price": 110.31,
-                "fee": 31.99,
+                "fee": 3.03,
                 "date": "2024-11-07",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 120->116"
+                "reason": "quantity adjusted 12->11"
             }
         ]
     },
     {
         "id": "tx_20241108",
         "date": "2024-11-08",
-        "portfolio_value": 164702880.91810575,
-        "total_trade_amount": 340.13,
+        "portfolio_value": 16470282.359892404,
+        "total_trade_amount": 97.18,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
+                "quantity": 2,
                 "price": 48.59,
-                "fee": 0.85,
+                "fee": 0.24,
                 "date": "2024-11-08",
                 "status": "FILLED",
                 "reason": ""
@@ -1792,54 +1553,35 @@
     {
         "id": "tx_20241202",
         "date": "2024-12-02",
-        "portfolio_value": 166991147.58885333,
-        "total_trade_amount": 591.24,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 12,
-                "price": 49.27,
-                "fee": 1.48,
-                "date": "2024-12-02",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 13->12"
-            }
-        ]
-    },
-    {
-        "id": "tx_20241203",
-        "date": "2024-12-03",
-        "portfolio_value": 167075920.04675144,
-        "total_trade_amount": 49.29,
+        "portfolio_value": 16699109.523650046,
+        "total_trade_amount": 49.27,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 49.29,
+                "price": 49.27,
                 "fee": 0.12,
-                "date": "2024-12-03",
-                "status": "FILLED",
-                "reason": ""
+                "date": "2024-12-02",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 2->1"
             }
         ]
     },
     {
         "id": "tx_20241218",
         "date": "2024-12-18",
-        "portfolio_value": 157246846.93856284,
-        "total_trade_amount": 603.07,
+        "portfolio_value": 15724677.162644425,
+        "total_trade_amount": 92.78,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 13,
+                "quantity": 2,
                 "price": 46.39,
-                "fee": 1.51,
+                "fee": 0.23,
                 "date": "2024-12-18",
                 "status": "FILLED",
                 "reason": ""
@@ -1849,65 +1591,36 @@
     {
         "id": "tx_20241223",
         "date": "2024-12-23",
-        "portfolio_value": 162389039.19420746,
-        "total_trade_amount": 403630.11,
+        "portfolio_value": 16238898.555560827,
+        "total_trade_amount": 40334.76,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 8439,
+                "quantity": 844,
                 "price": 47.79,
-                "fee": 1008.2,
+                "fee": 100.83,
                 "date": "2024-12-23",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 8689->8439"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 110.1,
-                "fee": 0.83,
-                "date": "2024-12-23",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 869->844"
             }
         ]
     },
     {
         "id": "tx_20241224",
         "date": "2024-12-24",
-        "portfolio_value": 165820915.84155503,
-        "total_trade_amount": 10296.8,
+        "portfolio_value": 16582087.548622223,
+        "total_trade_amount": 1073.6,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 211,
+                "quantity": 22,
                 "price": 48.8,
-                "fee": 25.74,
+                "fee": 2.68,
                 "date": "2024-12-24",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 217->211"
-            }
-        ]
-    },
-    {
-        "id": "tx_20241226",
-        "date": "2024-12-26",
-        "portfolio_value": 165854919.79958308,
-        "total_trade_amount": 292.86,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 6,
-                "price": 48.81,
-                "fee": 0.73,
-                "date": "2024-12-26",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -1916,16 +1629,16 @@
     {
         "id": "tx_20250203",
         "date": "2025-02-03",
-        "portfolio_value": 162542479.10199878,
-        "total_trade_amount": 573.96,
+        "portfolio_value": 16254241.726301128,
+        "total_trade_amount": 47.83,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 1,
                 "price": 47.83,
-                "fee": 1.43,
+                "fee": 0.12,
                 "date": "2025-02-03",
                 "status": "FILLED",
                 "reason": ""
@@ -1935,16 +1648,16 @@
     {
         "id": "tx_20250303",
         "date": "2025-03-03",
-        "portfolio_value": 154183610.65290067,
-        "total_trade_amount": 544.4399999999999,
+        "portfolio_value": 15418350.43559448,
+        "total_trade_amount": 90.74,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 2,
                 "price": 45.37,
-                "fee": 1.36,
+                "fee": 0.23,
                 "date": "2025-03-03",
                 "status": "FILLED",
                 "reason": ""
@@ -1954,16 +1667,16 @@
     {
         "id": "tx_20250304",
         "date": "2025-03-04",
-        "portfolio_value": 150411604.5484329,
-        "total_trade_amount": 25109.699999999997,
-        "reason": "비율 재조정: 상대이탈 8.4% > 임계치 7.5%",
+        "portfolio_value": 15041147.675470484,
+        "total_trade_amount": 2360.87,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 116,
+                "quantity": 11,
                 "price": 110.01,
-                "fee": 31.9,
+                "fee": 3.03,
                 "date": "2025-03-04",
                 "status": "FILLED",
                 "reason": ""
@@ -1971,48 +1684,29 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 279,
+                "quantity": 26,
                 "price": 44.26,
-                "fee": 30.87,
+                "fee": 2.88,
                 "date": "2025-03-04",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 287->279"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250305",
         "date": "2025-03-05",
-        "portfolio_value": 153640127.57930264,
-        "total_trade_amount": 316.47,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 7,
-                "price": 45.21,
-                "fee": 0.79,
-                "date": "2025-03-05",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 8->7"
-            }
-        ]
-    },
-    {
-        "id": "tx_20250306",
-        "date": "2025-03-06",
-        "portfolio_value": 148219653.8411503,
-        "total_trade_amount": 43.61,
+        "portfolio_value": 15364000.396102397,
+        "total_trade_amount": 45.21,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 43.61,
+                "price": 45.21,
                 "fee": 0.11,
-                "date": "2025-03-06",
+                "date": "2025-03-05",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2021,16 +1715,16 @@
     {
         "id": "tx_20250310",
         "date": "2025-03-10",
-        "portfolio_value": 141762666.9192055,
-        "total_trade_amount": 17123.32,
-        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 5.0%",
+        "portfolio_value": 14176251.840944238,
+        "total_trade_amount": 1673.29,
+        "reason": "비율 재조정: 상대이탈 5.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 79,
+                "quantity": 8,
                 "price": 110.1,
-                "fee": 21.74,
+                "fee": 2.2,
                 "date": "2025-03-10",
                 "status": "FILLED",
                 "reason": ""
@@ -2038,29 +1732,58 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 202,
+                "quantity": 19,
                 "price": 41.71,
-                "fee": 21.06,
+                "fee": 1.98,
                 "date": "2025-03-10",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 208->202"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250311",
         "date": "2025-03-11",
-        "portfolio_value": 139417645.3443388,
-        "total_trade_amount": 205.10000000000002,
+        "portfolio_value": 13941749.801155647,
+        "total_trade_amount": 82.04,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 5,
+                "quantity": 2,
                 "price": 41.02,
-                "fee": 0.51,
+                "fee": 0.21,
                 "date": "2025-03-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250324",
+        "date": "2025-03-24",
+        "portfolio_value": 14895082.547972351,
+        "total_trade_amount": 1450.26,
+        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 18,
+                "price": 43.74,
+                "fee": 1.97,
+                "date": "2025-03-24",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 110.49,
+                "fee": 1.66,
+                "date": "2025-03-24",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2069,93 +1792,73 @@
     {
         "id": "tx_20250325",
         "date": "2025-03-25",
-        "portfolio_value": 149596692.1929618,
-        "total_trade_amount": 14892.89,
-        "reason": "비율 재조정: 상대이탈 5.1% > 임계치 5.0%",
+        "portfolio_value": 14959653.853506282,
+        "total_trade_amount": 88.04,
+        "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 173,
-                "price": 43.93,
-                "fee": 19.0,
-                "date": "2025-03-25",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 66,
-                "price": 110.5,
-                "fee": 18.23,
+                "quantity": 2,
+                "price": 44.02,
+                "fee": 0.22,
                 "date": "2025-03-25",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 69->66"
+                "reason": "quantity adjusted 3->2"
             }
         ]
     },
     {
         "id": "tx_20250326",
         "date": "2025-03-26",
-        "portfolio_value": 146139519.7748287,
-        "total_trade_amount": 274479.82,
+        "portfolio_value": 14613934.33792912,
+        "total_trade_amount": 27425.88,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6390,
+                "quantity": 639,
                 "price": 42.92,
-                "fee": 685.61,
+                "fee": 68.56,
                 "date": "2025-03-26",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 6579->6390"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 110.51,
-                "fee": 0.55,
-                "date": "2025-03-26",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 658->639"
             }
         ]
     },
     {
         "id": "tx_20250327",
         "date": "2025-03-27",
-        "portfolio_value": 145237239.99782667,
-        "total_trade_amount": 6994.599999999999,
+        "portfolio_value": 14523705.633190101,
+        "total_trade_amount": 725.05,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 164,
+                "quantity": 17,
                 "price": 42.65,
-                "fee": 17.49,
+                "fee": 1.81,
                 "date": "2025-03-27",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 169->164"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250328",
         "date": "2025-03-28",
-        "portfolio_value": 139414644.28725642,
-        "total_trade_amount": 20181.58,
-        "reason": "비율 재조정: 상대이탈 7.3% > 임계치 5.0%",
+        "portfolio_value": 13941442.026078973,
+        "total_trade_amount": 1742.46,
+        "reason": "비율 재조정: 상대이탈 6.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 92,
+                "quantity": 8,
                 "price": 110.34,
-                "fee": 25.38,
+                "fee": 2.21,
                 "date": "2025-03-28",
                 "status": "FILLED",
                 "reason": ""
@@ -2163,28 +1866,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 245,
+                "quantity": 21,
                 "price": 40.94,
-                "fee": 25.08,
+                "fee": 2.15,
                 "date": "2025-03-28",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 252->245"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250331",
         "date": "2025-03-31",
-        "portfolio_value": 141083224.20572987,
-        "total_trade_amount": 248.57999999999998,
+        "portfolio_value": 14108299.663939785,
+        "total_trade_amount": 41.43,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 1,
                 "price": 41.43,
-                "fee": 0.62,
+                "fee": 0.1,
                 "date": "2025-03-31",
                 "status": "FILLED",
                 "reason": ""
@@ -2194,16 +1897,16 @@
     {
         "id": "tx_20250401",
         "date": "2025-04-01",
-        "portfolio_value": 141985645.09379303,
-        "total_trade_amount": 500.40000000000003,
+        "portfolio_value": 14198541.724125672,
+        "total_trade_amount": 41.7,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 1,
                 "price": 41.7,
-                "fee": 1.25,
+                "fee": 0.1,
                 "date": "2025-04-01",
                 "status": "FILLED",
                 "reason": ""
@@ -2213,16 +1916,16 @@
     {
         "id": "tx_20250403",
         "date": "2025-04-03",
-        "portfolio_value": 130050132.14111598,
-        "total_trade_amount": 17766.33,
-        "reason": "비율 재조정: 상대이탈 6.9% > 임계치 5.0%",
+        "portfolio_value": 13004992.024143297,
+        "total_trade_amount": 1720.26,
+        "reason": "비율 재조정: 상대이탈 6.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 82,
+                "quantity": 8,
                 "price": 110.01,
-                "fee": 22.55,
+                "fee": 2.2,
                 "date": "2025-04-03",
                 "status": "FILLED",
                 "reason": ""
@@ -2230,28 +1933,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 229,
+                "quantity": 22,
                 "price": 38.19,
-                "fee": 21.86,
+                "fee": 2.1,
                 "date": "2025-04-03",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 234->229"
+                "reason": "quantity adjusted 23->22"
             }
         ]
     },
     {
         "id": "tx_20250404",
         "date": "2025-04-04",
-        "portfolio_value": 114503953.89175637,
-        "total_trade_amount": 30781.940000000002,
+        "portfolio_value": 11450379.598712562,
+        "total_trade_amount": 3231.04,
         "reason": "비율 재조정: 상대이탈 13.5% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 141,
+                "quantity": 15,
                 "price": 110.06,
-                "fee": 38.8,
+                "fee": 4.13,
                 "date": "2025-04-04",
                 "status": "FILLED",
                 "reason": ""
@@ -2259,28 +1962,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 454,
+                "quantity": 47,
                 "price": 33.62,
-                "fee": 38.16,
+                "fee": 3.95,
                 "date": "2025-04-04",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 468->454"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250407",
         "date": "2025-04-07",
-        "portfolio_value": 114044164.39985812,
-        "total_trade_amount": 401.76,
+        "portfolio_value": 11404400.38913579,
+        "total_trade_amount": 100.44,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 3,
                 "price": 33.48,
-                "fee": 1.0,
+                "fee": 0.25,
                 "date": "2025-04-07",
                 "status": "FILLED",
                 "reason": ""
@@ -2290,16 +1993,16 @@
     {
         "id": "tx_20250409",
         "date": "2025-04-09",
-        "portfolio_value": 131159056.98609345,
-        "total_trade_amount": 32749.78,
-        "reason": "비율 재조정: 상대이탈 12.7% > 임계치 5.0%",
+        "portfolio_value": 13115899.66453831,
+        "total_trade_amount": 3422.89,
+        "reason": "비율 재조정: 상대이탈 13.5% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 433,
+                "quantity": 46,
                 "price": 38.44,
-                "fee": 41.61,
+                "fee": 4.42,
                 "date": "2025-04-09",
                 "status": "FILLED",
                 "reason": ""
@@ -2307,28 +2010,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 146,
+                "quantity": 15,
                 "price": 110.31,
-                "fee": 40.26,
+                "fee": 4.14,
                 "date": "2025-04-09",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 151->146"
+                "reason": "quantity adjusted 16->15"
             }
         ]
     },
     {
         "id": "tx_20250410",
         "date": "2025-04-10",
-        "portfolio_value": 121981076.97762336,
-        "total_trade_amount": 17580.47,
-        "reason": "비율 재조정: 상대이탈 7.1% > 임계치 5.0%",
+        "portfolio_value": 12198103.21708478,
+        "total_trade_amount": 1776.22,
+        "reason": "비율 재조정: 상대이탈 6.6% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 79,
+                "quantity": 8,
                 "price": 110.09,
-                "fee": 21.74,
+                "fee": 2.2,
                 "date": "2025-04-10",
                 "status": "FILLED",
                 "reason": ""
@@ -2336,28 +2039,28 @@
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 248,
+                "quantity": 25,
                 "price": 35.82,
-                "fee": 22.21,
+                "fee": 2.24,
                 "date": "2025-04-10",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 253->248"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250411",
         "date": "2025-04-11",
-        "portfolio_value": 126153224.69855945,
-        "total_trade_amount": 222.24,
+        "portfolio_value": 12615317.28772162,
+        "total_trade_amount": 74.08,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 2,
                 "price": 37.04,
-                "fee": 0.56,
+                "fee": 0.19,
                 "date": "2025-04-11",
                 "status": "FILLED",
                 "reason": ""
@@ -2367,16 +2070,16 @@
     {
         "id": "tx_20250414",
         "date": "2025-04-14",
-        "portfolio_value": 128605350.10555463,
-        "total_trade_amount": 13034.9,
-        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "portfolio_value": 12860530.280459676,
+        "total_trade_amount": 1378.33,
+        "reason": "비율 재조정: 상대이탈 5.7% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 176,
+                "quantity": 19,
                 "price": 37.69,
-                "fee": 16.58,
+                "fee": 1.79,
                 "date": "2025-04-14",
                 "status": "FILLED",
                 "reason": ""
@@ -2384,96 +2087,106 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 58,
+                "quantity": 6,
                 "price": 110.37,
-                "fee": 16.0,
+                "fee": 1.66,
                 "date": "2025-04-14",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 60->58"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250415",
         "date": "2025-04-15",
-        "portfolio_value": 127958299.098728,
-        "total_trade_amount": 187.85,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 5,
-                "price": 37.57,
-                "fee": 0.47,
-                "date": "2025-04-15",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20250416",
-        "date": "2025-04-16",
-        "portfolio_value": 122236838.85077243,
-        "total_trade_amount": 12163.71,
-        "reason": "비율 재조정: 상대이탈 5.0% > 임계치 5.0%",
-        "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 56,
-                "price": 110.18,
-                "fee": 15.43,
-                "date": "2025-04-16",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 167,
-                "price": 35.89,
-                "fee": 14.98,
-                "date": "2025-04-16",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 172->167"
-            }
-        ]
-    },
-    {
-        "id": "tx_20250417",
-        "date": "2025-04-17",
-        "portfolio_value": 122475297.72302777,
-        "total_trade_amount": 143.84,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 35.96,
-                "fee": 0.36,
-                "date": "2025-04-17",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 5->4"
-            }
-        ]
-    },
-    {
-        "id": "tx_20250421",
-        "date": "2025-04-21",
-        "portfolio_value": 116668443.49140921,
-        "total_trade_amount": 34.25,
+        "portfolio_value": 12795825.186045494,
+        "total_trade_amount": 37.57,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 34.25,
+                "price": 37.57,
                 "fee": 0.09,
+                "date": "2025-04-15",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 2->1"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250416",
+        "date": "2025-04-16",
+        "portfolio_value": 12223683.117027689,
+        "total_trade_amount": 35.89,
+        "reason": "비율 유지, 현금 소진 매수",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 35.89,
+                "fee": 0.09,
+                "date": "2025-04-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250421",
+        "date": "2025-04-21",
+        "portfolio_value": 11666861.942694565,
+        "total_trade_amount": 2342.89,
+        "reason": "비율 재조정: 상대이탈 9.7% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 11,
+                "price": 110.24,
+                "fee": 3.03,
                 "date": "2025-04-21",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 33,
+                "price": 34.25,
+                "fee": 2.83,
+                "date": "2025-04-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250422",
+        "date": "2025-04-22",
+        "portfolio_value": 12256089.46029381,
+        "total_trade_amount": 1273.29,
+        "reason": "비율 재조정: 상대이탈 5.5% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 17,
+                "price": 35.91,
+                "fee": 1.53,
+                "date": "2025-04-22",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 6,
+                "price": 110.47,
+                "fee": 1.66,
+                "date": "2025-04-22",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2482,16 +2195,16 @@
     {
         "id": "tx_20250424",
         "date": "2025-04-24",
-        "portfolio_value": 131670917.39881204,
-        "total_trade_amount": 18437.550000000003,
-        "reason": "비율 재조정: 상대이탈 7.1% > 임계치 5.0%",
+        "portfolio_value": 13167133.910050012,
+        "total_trade_amount": 1810.08,
+        "reason": "비율 재조정: 상대이탈 6.9% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 243,
+                "quantity": 24,
                 "price": 38.59,
-                "fee": 23.44,
+                "fee": 2.32,
                 "date": "2025-04-24",
                 "status": "FILLED",
                 "reason": ""
@@ -2499,28 +2212,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 82,
+                "quantity": 8,
                 "price": 110.49,
-                "fee": 22.65,
+                "fee": 2.21,
                 "date": "2025-04-24",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 84->82"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250425",
         "date": "2025-04-25",
-        "portfolio_value": 133509963.21472134,
-        "total_trade_amount": 235.20000000000002,
+        "portfolio_value": 13351038.54477096,
+        "total_trade_amount": 39.2,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6,
+                "quantity": 1,
                 "price": 39.2,
-                "fee": 0.59,
+                "fee": 0.1,
                 "date": "2025-04-25",
                 "status": "FILLED",
                 "reason": ""
@@ -2530,16 +2243,16 @@
     {
         "id": "tx_20250501",
         "date": "2025-05-01",
-        "portfolio_value": 137273159.15464315,
-        "total_trade_amount": 443.41,
+        "portfolio_value": 13727358.815867433,
+        "total_trade_amount": 40.31,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 11,
+                "quantity": 1,
                 "price": 40.31,
-                "fee": 1.11,
+                "fee": 0.1,
                 "date": "2025-05-01",
                 "status": "FILLED",
                 "reason": ""
@@ -2549,16 +2262,16 @@
     {
         "id": "tx_20250502",
         "date": "2025-05-02",
-        "portfolio_value": 141206536.55409694,
-        "total_trade_amount": 19948.57,
+        "portfolio_value": 14120697.55287995,
+        "total_trade_amount": 1874.96,
         "reason": "비율 재조정: 상대이탈 7.2% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 245,
+                "quantity": 24,
                 "price": 41.38,
-                "fee": 25.35,
+                "fee": 2.48,
                 "date": "2025-05-02",
                 "status": "FILLED",
                 "reason": ""
@@ -2566,28 +2279,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 89,
+                "quantity": 8,
                 "price": 110.23,
-                "fee": 24.53,
+                "fee": 2.2,
                 "date": "2025-05-02",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 92->89"
+                "reason": "quantity adjusted 9->8"
             }
         ]
     },
     {
         "id": "tx_20250505",
         "date": "2025-05-05",
-        "portfolio_value": 139674151.73441368,
-        "total_trade_amount": 287.14000000000004,
+        "portfolio_value": 13967458.28183146,
+        "total_trade_amount": 123.06,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
+                "quantity": 3,
                 "price": 41.02,
-                "fee": 0.72,
+                "fee": 0.31,
                 "date": "2025-05-05",
                 "status": "FILLED",
                 "reason": ""
@@ -2597,16 +2310,16 @@
     {
         "id": "tx_20250512",
         "date": "2025-05-12",
-        "portfolio_value": 149072908.14638638,
-        "total_trade_amount": 15915.369999999999,
-        "reason": "비율 재조정: 상대이탈 5.4% > 임계치 2.5%",
+        "portfolio_value": 14907342.22921675,
+        "total_trade_amount": 1800.05,
+        "reason": "비율 재조정: 상대이탈 6.1% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 185,
+                "quantity": 21,
                 "price": 43.69,
-                "fee": 20.21,
+                "fee": 2.29,
                 "date": "2025-05-12",
                 "status": "FILLED",
                 "reason": ""
@@ -2614,29 +2327,10 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 71,
+                "quantity": 8,
                 "price": 110.32,
-                "fee": 19.58,
+                "fee": 2.21,
                 "date": "2025-05-12",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 73->71"
-            }
-        ]
-    },
-    {
-        "id": "tx_20250513",
-        "date": "2025-05-13",
-        "portfolio_value": 151098984.51960862,
-        "total_trade_amount": 221.85,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 5,
-                "price": 44.37,
-                "fee": 0.55,
-                "date": "2025-05-13",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2645,16 +2339,16 @@
     {
         "id": "tx_20250515",
         "date": "2025-05-15",
-        "portfolio_value": 152869648.8925204,
-        "total_trade_amount": 7895.15,
+        "portfolio_value": 15287017.206520833,
+        "total_trade_amount": 734.3399999999999,
         "reason": "비율 재조정: 상대이탈 2.6% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 90,
+                "quantity": 9,
                 "price": 44.81,
-                "fee": 10.08,
+                "fee": 1.01,
                 "date": "2025-05-15",
                 "status": "FILLED",
                 "reason": ""
@@ -2662,28 +2356,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 35,
+                "quantity": 3,
                 "price": 110.35,
-                "fee": 9.66,
+                "fee": 0.83,
                 "date": "2025-05-15",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 36->35"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250516",
         "date": "2025-05-16",
-        "portfolio_value": 154759511.49083632,
-        "total_trade_amount": 136.35000000000002,
+        "portfolio_value": 15476003.342499346,
+        "total_trade_amount": 90.9,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 3,
+                "quantity": 2,
                 "price": 45.45,
-                "fee": 0.34,
+                "fee": 0.23,
                 "date": "2025-05-16",
                 "status": "FILLED",
                 "reason": ""
@@ -2693,16 +2387,16 @@
     {
         "id": "tx_20250602",
         "date": "2025-06-02",
-        "portfolio_value": 153448812.35723516,
-        "total_trade_amount": 540.84,
+        "portfolio_value": 15344932.602179708,
+        "total_trade_amount": 45.07,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 1,
                 "price": 45.07,
-                "fee": 1.35,
+                "fee": 0.11,
                 "date": "2025-06-02",
                 "status": "FILLED",
                 "reason": ""
@@ -2712,64 +2406,64 @@
     {
         "id": "tx_20250625",
         "date": "2025-06-25",
-        "portfolio_value": 161288221.41659266,
-        "total_trade_amount": 339351.85,
+        "portfolio_value": 16128877.651653685,
+        "total_trade_amount": 33892.590000000004,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7172,
+                "quantity": 717,
                 "price": 47.27,
-                "fee": 847.5,
+                "fee": 84.73,
                 "date": "2025-06-25",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 7385->7172"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 110.47,
-                "fee": 0.83,
-                "date": "2025-06-25",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 739->717"
             }
         ]
     },
     {
         "id": "tx_20250626",
         "date": "2025-06-26",
-        "portfolio_value": 163813272.37419212,
-        "total_trade_amount": 8593.789999999999,
+        "portfolio_value": 16381383.730635012,
+        "total_trade_amount": 912.1899999999999,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 179,
+                "quantity": 19,
                 "price": 48.01,
-                "fee": 21.48,
+                "fee": 2.28,
                 "date": "2025-06-26",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 184->179"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20250627",
         "date": "2025-06-27",
-        "portfolio_value": 165212419.95768884,
-        "total_trade_amount": 242.10000000000002,
-        "reason": "비율 유지, 현금 소진 매수",
+        "portfolio_value": 16521290.995959166,
+        "total_trade_amount": 2472.1499999999996,
+        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 26,
+                "price": 48.32,
+                "fee": 3.14,
+                "date": "2025-06-27",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 5,
-                "price": 48.42,
-                "fee": 0.61,
+                "quantity": 11,
+                "price": 110.53,
+                "fee": 3.04,
                 "date": "2025-06-27",
                 "status": "FILLED",
                 "reason": ""
@@ -2779,45 +2473,35 @@
     {
         "id": "tx_20250630",
         "date": "2025-06-30",
-        "portfolio_value": 166884421.704846,
-        "total_trade_amount": 26771.059999999998,
-        "reason": "비율 재조정: 상대이탈 8.2% > 임계치 7.5%",
+        "portfolio_value": 16688488.707551777,
+        "total_trade_amount": 48.91,
+        "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 279,
-                "price": 48.81,
-                "fee": 34.05,
+                "action": "BUY",
+                "quantity": 1,
+                "price": 48.91,
+                "fee": 0.12,
                 "date": "2025-06-30",
                 "status": "FILLED",
                 "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 119,
-                "price": 110.53,
-                "fee": 32.88,
-                "date": "2025-06-30",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 123->119"
             }
         ]
     },
     {
         "id": "tx_20250701",
         "date": "2025-07-01",
-        "portfolio_value": 166662637.01829916,
-        "total_trade_amount": 927.96,
+        "portfolio_value": 16666310.042499714,
+        "total_trade_amount": 48.84,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 19,
+                "quantity": 1,
                 "price": 48.84,
-                "fee": 2.32,
+                "fee": 0.12,
                 "date": "2025-07-01",
                 "status": "FILLED",
                 "reason": ""
@@ -2827,17 +2511,46 @@
     {
         "id": "tx_20250801",
         "date": "2025-08-01",
-        "portfolio_value": 167891688.13775492,
-        "total_trade_amount": 590.4000000000001,
+        "portfolio_value": 16789215.94437211,
+        "total_trade_amount": 49.2,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 1,
                 "price": 49.2,
-                "fee": 1.48,
+                "fee": 0.12,
                 "date": "2025-08-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250812",
+        "date": "2025-08-12",
+        "portfolio_value": 17906726.24033539,
+        "total_trade_amount": 2901.19,
+        "reason": "비율 재조정: 상대이탈 8.3% > 임계치 7.5%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 28,
+                "price": 52.38,
+                "fee": 3.67,
+                "date": "2025-08-12",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 13,
+                "price": 110.35,
+                "fee": 3.59,
+                "date": "2025-08-12",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2846,46 +2559,17 @@
     {
         "id": "tx_20250813",
         "date": "2025-08-13",
-        "portfolio_value": 180295083.3373649,
-        "total_trade_amount": 27820.2,
-        "reason": "비율 재조정: 상대이탈 7.8% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 268,
-                "price": 52.74,
-                "fee": 35.33,
-                "date": "2025-08-13",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 124,
-                "price": 110.37,
-                "fee": 34.21,
-                "date": "2025-08-13",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 128->124"
-            }
-        ]
-    },
-    {
-        "id": "tx_20250814",
-        "date": "2025-08-14",
-        "portfolio_value": 180295082.04308608,
-        "total_trade_amount": 369.88,
+        "portfolio_value": 18029559.344378844,
+        "total_trade_amount": 52.84,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7,
+                "quantity": 1,
                 "price": 52.84,
-                "fee": 0.92,
-                "date": "2025-08-14",
+                "fee": 0.13,
+                "date": "2025-08-13",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2894,16 +2578,16 @@
     {
         "id": "tx_20250902",
         "date": "2025-09-02",
-        "portfolio_value": 177071238.24031186,
-        "total_trade_amount": 622.8,
+        "portfolio_value": 17707171.78712516,
+        "total_trade_amount": 51.9,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12,
+                "quantity": 1,
                 "price": 51.9,
-                "fee": 1.56,
+                "fee": 0.13,
                 "date": "2025-09-02",
                 "status": "FILLED",
                 "reason": ""
@@ -2913,65 +2597,36 @@
     {
         "id": "tx_20250924",
         "date": "2025-09-24",
-        "portfolio_value": 189077202.97734877,
-        "total_trade_amount": 311784.29,
+        "portfolio_value": 18907778.24363316,
+        "total_trade_amount": 31150.789999999997,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 5631,
+                "quantity": 563,
                 "price": 55.33,
-                "fee": 778.84,
+                "fee": 77.87,
                 "date": "2025-09-24",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 5798->5631"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 2,
-                "price": 110.53,
-                "fee": 0.55,
-                "date": "2025-09-24",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 580->563"
             }
         ]
     },
     {
         "id": "tx_20250925",
         "date": "2025-09-25",
-        "portfolio_value": 187317149.1587398,
-        "total_trade_amount": 7947.450000000001,
+        "portfolio_value": 18731771.3108815,
+        "total_trade_amount": 822.1500000000001,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 145,
+                "quantity": 15,
                 "price": 54.81,
-                "fee": 19.87,
+                "fee": 2.06,
                 "date": "2025-09-25",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 150->145"
-            }
-        ]
-    },
-    {
-        "id": "tx_20250926",
-        "date": "2025-09-26",
-        "portfolio_value": 189367832.6897043,
-        "total_trade_amount": 221.64,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 55.41,
-                "fee": 0.55,
-                "date": "2025-09-26",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -2980,16 +2635,26 @@
     {
         "id": "tx_20251001",
         "date": "2025-10-01",
-        "portfolio_value": 193144476.3564361,
-        "total_trade_amount": 621.72,
-        "reason": "비율 유지, 현금 소진 매수",
+        "portfolio_value": 19314499.44499568,
+        "total_trade_amount": 2843.38,
+        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 25,
+                "price": 56.4,
+                "fee": 3.53,
+                "date": "2025-10-01",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 11,
-                "price": 56.52,
-                "fee": 1.55,
+                "quantity": 13,
+                "price": 110.26,
+                "fee": 3.58,
                 "date": "2025-10-01",
                 "status": "FILLED",
                 "reason": ""
@@ -2997,67 +2662,19 @@
         ]
     },
     {
-        "id": "tx_20251006",
-        "date": "2025-10-06",
-        "portfolio_value": 194767865.3052395,
-        "total_trade_amount": 29184.68,
-        "reason": "비율 재조정: 상대이탈 7.6% > 임계치 7.5%",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 261,
-                "price": 56.88,
-                "fee": 37.11,
-                "date": "2025-10-06",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 130,
-                "price": 110.3,
-                "fee": 35.85,
-                "date": "2025-10-06",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 134->130"
-            }
-        ]
-    },
-    {
-        "id": "tx_20251007",
-        "date": "2025-10-07",
-        "portfolio_value": 193332541.1409274,
-        "total_trade_amount": 395.99,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 7,
-                "price": 56.57,
-                "fee": 0.99,
-                "date": "2025-10-07",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 8->7"
-            }
-        ]
-    },
-    {
-        "id": "tx_20251010",
-        "date": "2025-10-10",
-        "portfolio_value": 183866294.07152098,
-        "total_trade_amount": 53.8,
+        "id": "tx_20251002",
+        "date": "2025-10-02",
+        "portfolio_value": 19348676.6794695,
+        "total_trade_amount": 56.62,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 53.8,
-                "fee": 0.13,
-                "date": "2025-10-10",
+                "price": 56.62,
+                "fee": 0.14,
+                "date": "2025-10-02",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -3066,36 +2683,17 @@
     {
         "id": "tx_20251103",
         "date": "2025-11-03",
-        "portfolio_value": 200509800.32273173,
-        "total_trade_amount": 586.7,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 10,
-                "price": 58.67,
-                "fee": 1.47,
-                "date": "2025-11-03",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 11->10"
-            }
-        ]
-    },
-    {
-        "id": "tx_20251104",
-        "date": "2025-11-04",
-        "portfolio_value": 195776602.04052705,
-        "total_trade_amount": 57.29,
+        "portfolio_value": 20051036.00309044,
+        "total_trade_amount": 58.67,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 57.29,
-                "fee": 0.14,
-                "date": "2025-11-04",
+                "price": 58.67,
+                "fee": 0.15,
+                "date": "2025-11-03",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -3104,16 +2702,16 @@
     {
         "id": "tx_20251201",
         "date": "2025-12-01",
-        "portfolio_value": 197485890.07291976,
-        "total_trade_amount": 577.9,
+        "portfolio_value": 19748641.786045842,
+        "total_trade_amount": 57.79,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 10,
+                "quantity": 1,
                 "price": 57.79,
-                "fee": 1.44,
+                "fee": 0.14,
                 "date": "2025-12-01",
                 "status": "FILLED",
                 "reason": ""
@@ -3123,16 +2721,16 @@
     {
         "id": "tx_20251219",
         "date": "2025-12-19",
-        "portfolio_value": 198101490.1649669,
-        "total_trade_amount": 637.67,
+        "portfolio_value": 19810202.021442384,
+        "total_trade_amount": 57.97,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 11,
+                "quantity": 1,
                 "price": 57.97,
-                "fee": 1.59,
+                "fee": 0.14,
                 "date": "2025-12-19",
                 "status": "FILLED",
                 "reason": ""
@@ -3142,64 +2740,54 @@
     {
         "id": "tx_20251224",
         "date": "2025-12-24",
-        "portfolio_value": 203657080.69417349,
-        "total_trade_amount": 385404.05999999994,
+        "portfolio_value": 20365765.923657678,
+        "total_trade_amount": 38483.56,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6474,
+                "quantity": 647,
                 "price": 59.48,
-                "fee": 962.67,
+                "fee": 96.21,
                 "date": "2025-12-24",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 6666->6474"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 110.18,
-                "fee": 0.83,
-                "date": "2025-12-24",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 667->647"
             }
         ]
     },
     {
         "id": "tx_20251226",
         "date": "2025-12-26",
-        "portfolio_value": 203520167.9460308,
-        "total_trade_amount": 9807.6,
+        "portfolio_value": 20352074.380859964,
+        "total_trade_amount": 1010.48,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 165,
+                "quantity": 17,
                 "price": 59.44,
-                "fee": 24.52,
+                "fee": 2.53,
                 "date": "2025-12-26",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 170->165"
+                "reason": "quantity adjusted 18->17"
             }
         ]
     },
     {
         "id": "tx_20251229",
         "date": "2025-12-29",
-        "portfolio_value": 202082021.5277313,
-        "total_trade_amount": 236.08,
+        "portfolio_value": 20208258.355119627,
+        "total_trade_amount": 59.02,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 4,
+                "quantity": 1,
                 "price": 59.02,
-                "fee": 0.59,
+                "fee": 0.15,
                 "date": "2025-12-29",
                 "status": "FILLED",
                 "reason": ""
@@ -3209,16 +2797,16 @@
     {
         "id": "tx_20260202",
         "date": "2026-02-02",
-        "portfolio_value": 205335580.47757068,
-        "total_trade_amount": 599.7,
+        "portfolio_value": 20533617.106902894,
+        "total_trade_amount": 59.97,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 10,
+                "quantity": 1,
                 "price": 59.97,
-                "fee": 1.5,
+                "fee": 0.15,
                 "date": "2026-02-02",
                 "status": "FILLED",
                 "reason": ""
@@ -3228,16 +2816,16 @@
     {
         "id": "tx_20260302",
         "date": "2026-03-02",
-        "portfolio_value": 198898667.00738382,
-        "total_trade_amount": 522.8100000000001,
+        "portfolio_value": 19889918.517162193,
+        "total_trade_amount": 58.09,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
+                "quantity": 1,
                 "price": 58.09,
-                "fee": 1.31,
+                "fee": 0.15,
                 "date": "2026-03-02",
                 "status": "FILLED",
                 "reason": ""
@@ -3245,48 +2833,29 @@
         ]
     },
     {
-        "id": "tx_20260313",
-        "date": "2026-03-13",
-        "portfolio_value": 184688558.7427539,
-        "total_trade_amount": 19782.25,
+        "id": "tx_20260319",
+        "date": "2026-03-19",
+        "portfolio_value": 18311381.52017448,
+        "total_trade_amount": 1953.72,
         "reason": "비율 재조정: 상대이탈 5.4% > 임계치 5.0%",
         "executions": [
             {
                 "ticker": "SHV",
                 "action": "SELL",
-                "quantity": 91,
-                "price": 110.12,
-                "fee": 25.05,
-                "date": "2026-03-13",
+                "quantity": 9,
+                "price": 110.14,
+                "fee": 2.48,
+                "date": "2026-03-19",
                 "status": "FILLED",
                 "reason": ""
             },
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 181,
-                "price": 53.93,
-                "fee": 24.41,
-                "date": "2026-03-13",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 186->181"
-            }
-        ]
-    },
-    {
-        "id": "tx_20260316",
-        "date": "2026-03-16",
-        "portfolio_value": 188352621.74867648,
-        "total_trade_amount": 220.0,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 55.0,
-                "fee": 0.55,
-                "date": "2026-03-16",
+                "quantity": 18,
+                "price": 53.47,
+                "fee": 2.41,
+                "date": "2026-03-19",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -3295,84 +2864,74 @@
     {
         "id": "tx_20260325",
         "date": "2026-03-25",
-        "portfolio_value": 182201299.31913805,
-        "total_trade_amount": 379500.07,
+        "portfolio_value": 18220172.931019187,
+        "total_trade_amount": 37906.26,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 7142,
+                "quantity": 714,
                 "price": 53.09,
-                "fee": 947.98,
+                "fee": 94.77,
                 "date": "2026-03-25",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 7353->7142"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 3,
-                "price": 110.43,
-                "fee": 0.83,
-                "date": "2026-03-25",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 736->714"
             }
         ]
     },
     {
         "id": "tx_20260326",
         "date": "2026-03-26",
-        "portfolio_value": 175749996.2535711,
-        "total_trade_amount": 28059.5,
-        "reason": "비율 재조정: 상대이탈 5.3% > 임계치 5.0%",
+        "portfolio_value": 17575043.22073532,
+        "total_trade_amount": 1024.2,
+        "reason": "비율 유지, 현금 소진 매수",
         "executions": [
-            {
-                "ticker": "SHV",
-                "action": "SELL",
-                "quantity": 85,
-                "price": 110.21,
-                "fee": 23.42,
-                "date": "2026-03-26",
-                "status": "FILLED",
-                "reason": ""
-            },
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 365,
+                "quantity": 20,
                 "price": 51.21,
-                "fee": 46.73,
+                "fee": 2.56,
                 "date": "2026-03-26",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 377->365"
+                "reason": "quantity adjusted 21->20"
             }
         ]
     },
     {
         "id": "tx_20260327",
         "date": "2026-03-27",
-        "portfolio_value": 169641360.5347711,
-        "total_trade_amount": 494.3,
-        "reason": "비율 유지, 현금 소진 매수",
+        "portfolio_value": 16964194.259308398,
+        "total_trade_amount": 2817.29,
+        "reason": "비율 재조정: 상대이탈 8.0% > 임계치 5.0%",
         "executions": [
+            {
+                "ticker": "SHV",
+                "action": "SELL",
+                "quantity": 13,
+                "price": 110.25,
+                "fee": 3.58,
+                "date": "2026-03-27",
+                "status": "FILLED",
+                "reason": ""
+            },
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 10,
+                "quantity": 28,
                 "price": 49.43,
-                "fee": 1.24,
+                "fee": 3.46,
                 "date": "2026-03-27",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 11->10"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20260330",
         "date": "2026-03-30",
-        "portfolio_value": 168543196.46491292,
+        "portfolio_value": 16854373.25169846,
         "total_trade_amount": 49.11,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
@@ -3389,18 +2948,47 @@
         ]
     },
     {
+        "id": "tx_20260331",
+        "date": "2026-03-31",
+        "portfolio_value": 17822195.13805542,
+        "total_trade_amount": 1816.94,
+        "reason": "비율 재조정: 상대이탈 5.2% > 임계치 5.0%",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 18,
+                "price": 51.83,
+                "fee": 2.33,
+                "date": "2026-03-31",
+                "status": "FILLED",
+                "reason": ""
+            },
+            {
+                "ticker": "SHV",
+                "action": "BUY",
+                "quantity": 8,
+                "price": 110.5,
+                "fee": 2.21,
+                "date": "2026-03-31",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
         "id": "tx_20260401",
         "date": "2026-04-01",
-        "portfolio_value": 180863632.50820664,
-        "total_trade_amount": 474.3,
+        "portfolio_value": 18086448.090731937,
+        "total_trade_amount": 105.4,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
+                "quantity": 2,
                 "price": 52.7,
-                "fee": 1.19,
+                "fee": 0.26,
                 "date": "2026-04-01",
                 "status": "FILLED",
                 "reason": ""
@@ -3410,16 +2998,16 @@
     {
         "id": "tx_20260408",
         "date": "2026-04-08",
-        "portfolio_value": 192154488.1875329,
-        "total_trade_amount": 32750.200000000004,
-        "reason": "비율 재조정: 상대이탈 8.7% > 임계치 2.5%",
+        "portfolio_value": 19215526.913422454,
+        "total_trade_amount": 2886.26,
+        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 2.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 298,
+                "quantity": 26,
                 "price": 55.88,
-                "fee": 41.63,
+                "fee": 3.63,
                 "date": "2026-04-08",
                 "status": "FILLED",
                 "reason": ""
@@ -3427,48 +3015,10 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 146,
+                "quantity": 13,
                 "price": 110.26,
-                "fee": 40.24,
+                "fee": 3.58,
                 "date": "2026-04-08",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 151->146"
-            }
-        ]
-    },
-    {
-        "id": "tx_20260409",
-        "date": "2026-04-09",
-        "portfolio_value": 194385051.66221437,
-        "total_trade_amount": 453.2,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 8,
-                "price": 56.65,
-                "fee": 1.13,
-                "date": "2026-04-09",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 9->8"
-            }
-        ]
-    },
-    {
-        "id": "tx_20260410",
-        "date": "2026-04-10",
-        "portfolio_value": 194007627.1877971,
-        "total_trade_amount": 56.54,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 1,
-                "price": 56.54,
-                "fee": 0.14,
-                "date": "2026-04-10",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -3477,16 +3027,16 @@
     {
         "id": "tx_20260417",
         "date": "2026-04-17",
-        "portfolio_value": 211645979.43636572,
-        "total_trade_amount": 39091.740000000005,
-        "reason": "비율 재조정: 상대이탈 9.4% > 임계치 7.5%",
+        "portfolio_value": 21164679.294811256,
+        "total_trade_amount": 3846.55,
+        "reason": "비율 재조정: 상대이탈 9.3% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 323,
+                "quantity": 32,
                 "price": 61.56,
-                "fee": 49.71,
+                "fee": 4.92,
                 "date": "2026-04-17",
                 "status": "FILLED",
                 "reason": ""
@@ -3494,28 +3044,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 174,
+                "quantity": 17,
                 "price": 110.39,
-                "fee": 48.02,
+                "fee": 4.69,
                 "date": "2026-04-17",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 180->174"
+                "status": "FILLED",
+                "reason": ""
             }
         ]
     },
     {
         "id": "tx_20260420",
         "date": "2026-04-20",
-        "portfolio_value": 210788161.75182992,
-        "total_trade_amount": 552.87,
+        "portfolio_value": 21078897.114914414,
+        "total_trade_amount": 122.86,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 9,
+                "quantity": 2,
                 "price": 61.43,
-                "fee": 1.38,
+                "fee": 0.31,
                 "date": "2026-04-20",
                 "status": "FILLED",
                 "reason": ""
@@ -3525,16 +3075,16 @@
     {
         "id": "tx_20260501",
         "date": "2026-05-01",
-        "portfolio_value": 217445099.58085564,
-        "total_trade_amount": 633.6999999999999,
+        "portfolio_value": 21744594.34842211,
+        "total_trade_amount": 63.37,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 10,
+                "quantity": 1,
                 "price": 63.37,
-                "fee": 1.58,
+                "fee": 0.16,
                 "date": "2026-05-01",
                 "status": "FILLED",
                 "reason": ""
@@ -3544,16 +3094,16 @@
     {
         "id": "tx_20260511",
         "date": "2026-05-11",
-        "portfolio_value": 228425255.7029019,
-        "total_trade_amount": 34591.259999999995,
-        "reason": "비율 재조정: 상대이탈 7.7% > 임계치 7.5%",
+        "portfolio_value": 22842615.731679734,
+        "total_trade_amount": 3448.23,
+        "reason": "비율 재조정: 상대이탈 7.9% > 임계치 7.5%",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 265,
+                "quantity": 27,
                 "price": 66.44,
-                "fee": 44.02,
+                "fee": 4.48,
                 "date": "2026-05-11",
                 "status": "FILLED",
                 "reason": ""
@@ -3561,28 +3111,28 @@
             {
                 "ticker": "SHV",
                 "action": "BUY",
-                "quantity": 154,
+                "quantity": 15,
                 "price": 110.29,
-                "fee": 42.46,
+                "fee": 4.14,
                 "date": "2026-05-11",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 160->154"
+                "reason": "quantity adjusted 16->15"
             }
         ]
     },
     {
         "id": "tx_20260512",
         "date": "2026-05-12",
-        "portfolio_value": 227807690.41168752,
-        "total_trade_amount": 531.2,
+        "portfolio_value": 22780858.682771407,
+        "total_trade_amount": 132.8,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 8,
+                "quantity": 2,
                 "price": 66.4,
-                "fee": 1.33,
+                "fee": 0.33,
                 "date": "2026-05-12",
                 "status": "FILLED",
                 "reason": ""
@@ -3592,36 +3142,17 @@
     {
         "id": "tx_20260601",
         "date": "2026-06-01",
-        "portfolio_value": 239645129.44829738,
-        "total_trade_amount": 628.65,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 9,
-                "price": 69.85,
-                "fee": 1.57,
-                "date": "2026-06-01",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 10->9"
-            }
-        ]
-    },
-    {
-        "id": "tx_20260602",
-        "date": "2026-06-02",
-        "portfolio_value": 240297075.3886065,
-        "total_trade_amount": 70.04,
+        "portfolio_value": 23964611.046287738,
+        "total_trade_amount": 69.85,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 70.04,
-                "fee": 0.18,
-                "date": "2026-06-02",
+                "price": 69.85,
+                "fee": 0.17,
+                "date": "2026-06-01",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -3630,65 +3161,36 @@
     {
         "id": "tx_20260624",
         "date": "2026-06-24",
-        "portfolio_value": 223888772.7366488,
-        "total_trade_amount": 427043.05999999994,
+        "portfolio_value": 22388963.93912849,
+        "total_trade_amount": 42660.149999999994,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 6550,
+                "quantity": 655,
                 "price": 65.13,
-                "fee": 1066.42,
+                "fee": 106.64,
                 "date": "2026-06-24",
                 "status": "PARTIAL",
-                "reason": "quantity adjusted 6743->6550"
-            },
-            {
-                "ticker": "SHV",
-                "action": "BUY",
-                "quantity": 4,
-                "price": 110.39,
-                "fee": 1.1,
-                "date": "2026-06-24",
-                "status": "FILLED",
-                "reason": ""
+                "reason": "quantity adjusted 674->655"
             }
         ]
     },
     {
         "id": "tx_20260625",
         "date": "2026-06-25",
-        "portfolio_value": 223854419.60550556,
-        "total_trade_amount": 10744.800000000001,
+        "portfolio_value": 22385528.46510438,
+        "total_trade_amount": 1107.04,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 165,
+                "quantity": 17,
                 "price": 65.12,
-                "fee": 26.86,
+                "fee": 2.77,
                 "date": "2026-06-25",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 170->165"
-            }
-        ]
-    },
-    {
-        "id": "tx_20260626",
-        "date": "2026-06-26",
-        "portfolio_value": 221688681.3189336,
-        "total_trade_amount": 322.40000000000003,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 5,
-                "price": 64.48,
-                "fee": 0.81,
-                "date": "2026-06-26",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -3697,36 +3199,17 @@
     {
         "id": "tx_20260701",
         "date": "2026-07-01",
-        "portfolio_value": 231280078.85476905,
-        "total_trade_amount": 605.52,
-        "reason": "비율 유지, 현금 소진 매수",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 9,
-                "price": 67.28,
-                "fee": 1.51,
-                "date": "2026-07-01",
-                "status": "PARTIAL",
-                "reason": "quantity adjusted 10->9"
-            }
-        ]
-    },
-    {
-        "id": "tx_20260702",
-        "date": "2026-07-02",
-        "portfolio_value": 230558254.8679882,
-        "total_trade_amount": 67.07,
+        "portfolio_value": 23128099.499395937,
+        "total_trade_amount": 67.28,
         "reason": "비율 유지, 현금 소진 매수",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
                 "quantity": 1,
-                "price": 67.07,
+                "price": 67.28,
                 "fee": 0.17,
-                "date": "2026-07-02",
+                "date": "2026-07-01",
                 "status": "FILLED",
                 "reason": ""
             }

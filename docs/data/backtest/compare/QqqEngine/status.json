@@ -25,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.999038102246638,
+                "value": 0.99897042624002,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 3.814038702505269e-05,
+                "value": 2.9603363343371684e-05,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -46,23 +46,23 @@
         ]
     },
     "portfolio": {
-        "total_value": 184440599.85937035,
-        "cash_balance": 203.95242607484306,
+        "total_value": 18443923.028091487,
+        "cash_balance": 562.28935247107,
         "holdings": [
             {
                 "ticker": "QQQ",
-                "qty": 267828,
+                "qty": 26780,
                 "price": 687.989990234375,
-                "value": 184262983.1044922
+                "value": 18424371.938476562
             },
             {
                 "ticker": "SHV",
-                "qty": 1607,
+                "qty": 172,
                 "price": 110.4000015258789,
-                "value": 177412.8024520874
+                "value": 18988.800262451172
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2023-03-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-08-01"
 }

@@ -25,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.489678910160413,
+                "value": 0.4896630178631816,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 0.020642179679174033,
+                "value": 0.02067396427363677,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -46,41 +46,41 @@
         ]
     },
     "portfolio": {
-        "total_value": 200219911.18171898,
-        "cash_balance": 39.354475156256285,
+        "total_value": 20022213.227729943,
+        "cash_balance": 17.41299834493796,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 724511,
+                "qty": 72448,
                 "price": 66.98999786376953,
-                "value": 48534990.34227753
+                "value": 4853291.365234375
             },
             {
                 "ticker": "QLD",
-                "qty": 591711,
+                "qty": 59171,
                 "price": 83.66999816894531,
-                "value": 49508458.2865448
+                "value": 4950837.461654663
             },
             {
                 "ticker": "IEF",
-                "qty": 360841,
+                "qty": 36086,
                 "price": 92.94999694824219,
-                "value": 33540169.84880066
+                "value": 3354193.5898742676
             },
             {
                 "ticker": "GLD",
-                "qty": 91168,
+                "qty": 9117,
                 "price": 371.5400085449219,
-                "value": 33872559.49902344
+                "value": 3387330.2579040527
             },
             {
                 "ticker": "DBC",
-                "qty": 1180431,
+                "qty": 118049,
                 "price": 29.450000762939453,
-                "value": 34763693.85059738
+                "value": 3476543.1400642395
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2023-03-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-08-01"
 }

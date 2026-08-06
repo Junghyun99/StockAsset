@@ -1,6 +1,6 @@
 {
     "last_updated": "2026-07-31",
-    "last_rebalancing_date": "2026-07-06",
+    "last_rebalancing_date": "2026-07-17",
     "strategy": {
         "engine_name": "DipBuyGatedEngine",
         "regime": "Crash",
@@ -53,17 +53,17 @@
         ]
     },
     "portfolio": {
-        "total_value": 147276723.5292161,
-        "cash_balance": 39.72225505721002,
+        "total_value": 14727595.486202141,
+        "cash_balance": 2.4085043880471915,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 1760209,
+                "qty": 176020,
                 "price": 83.66999816894531,
-                "value": 147276683.80696106
+                "value": 14727593.077697754
             }
         ]
     },
-    "initial_cash": 100000000.0,
-    "backtest_start_date": "2023-03-01"
+    "initial_cash": 10000000.0,
+    "backtest_start_date": "2022-08-01"
 }
