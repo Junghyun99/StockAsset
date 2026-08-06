@@ -1,6 +1,6 @@
 {
     "last_updated": "2026-07-31",
-    "last_rebalancing_date": "2026-07-24",
+    "last_rebalancing_date": "2025-05-23",
     "strategy": {
         "engine_name": "SsoSpyiChannelDipEngine",
         "regime": "Bull",
@@ -60,23 +60,23 @@
         ]
     },
     "portfolio": {
-        "total_value": 15922929.762378862,
-        "cash_balance": 2471826.8293267987,
+        "total_value": 17370037.40075857,
+        "cash_balance": 1424978.6782854234,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 45455,
+                "qty": 89918,
                 "price": 66.98999786376953,
-                "value": 3045030.352897644
+                "value": 6023606.627914429
             },
             {
                 "ticker": "SPYI",
-                "qty": 196861,
+                "qty": 187693,
                 "price": 52.86000061035156,
-                "value": 10406072.580154419
+                "value": 9921452.094558716
             }
         ]
     },
     "initial_cash": 10000000.0,
-    "backtest_start_date": "2022-08-01"
+    "backtest_start_date": "2023-08-01"
 }
