@@ -2,16 +2,16 @@
     {
         "id": "tx_20230831",
         "date": "2023-08-31",
-        "portfolio_value": 9992995.107207011,
-        "total_trade_amount": 2001758.46,
+        "portfolio_value": 99859900.2414597,
+        "total_trade_amount": 40035712.93,
         "reason": "core position setup",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 16889,
+                "quantity": 337780,
                 "price": 29.63,
-                "fee": 1251.25,
+                "fee": 25024.94,
                 "date": "2023-08-31",
                 "status": "FILLED",
                 "reason": ""
@@ -19,10 +19,200 @@
             {
                 "ticker": "SPYI",
                 "action": "BUY",
-                "quantity": 30373,
+                "quantity": 607471,
                 "price": 49.43,
-                "fee": 3753.68,
+                "fee": 75074.89,
                 "date": "2023-08-31",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230921",
+        "date": "2023-09-21",
+        "portfolio_value": 98135265.14443849,
+        "total_trade_amount": 3011046.12,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63484,
+                "price": 47.43,
+                "fee": 7527.2,
+                "date": "2023-09-21",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230927",
+        "date": "2023-09-27",
+        "portfolio_value": 97476152.19623885,
+        "total_trade_amount": 2859649.39,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 107627,
+                "price": 26.57,
+                "fee": 7149.54,
+                "date": "2023-09-27",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20230928",
+        "date": "2023-09-28",
+        "portfolio_value": 97778170.35693768,
+        "total_trade_amount": 3011075.87,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63943,
+                "price": 47.09,
+                "fee": 7527.22,
+                "date": "2023-09-28",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231004",
+        "date": "2023-10-04",
+        "portfolio_value": 97320537.42508715,
+        "total_trade_amount": 2860191.8,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 108505,
+                "price": 26.36,
+                "fee": 7149.48,
+                "date": "2023-10-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231005",
+        "date": "2023-10-05",
+        "portfolio_value": 97317240.2529585,
+        "total_trade_amount": 3011075.34,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 64298,
+                "price": 46.83,
+                "fee": 7527.17,
+                "date": "2023-10-05",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231009",
+        "date": "2023-10-09",
+        "portfolio_value": 98264726.93768342,
+        "total_trade_amount": 2940475.86,
+        "reason": "channel exit protection",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 108066,
+                "price": 27.21,
+                "fee": 7351.94,
+                "date": "2023-10-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231012",
+        "date": "2023-10-12",
+        "portfolio_value": 98519565.36761469,
+        "total_trade_amount": 3010999.23,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63243,
+                "price": 47.61,
+                "fee": 7527.11,
+                "date": "2023-10-12",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231019",
+        "date": "2023-10-19",
+        "portfolio_value": 97634484.58761667,
+        "total_trade_amount": 3011055.9,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63929,
+                "price": 47.1,
+                "fee": 7527.17,
+                "date": "2023-10-19",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231020",
+        "date": "2023-10-20",
+        "portfolio_value": 96929306.59062359,
+        "total_trade_amount": 2859722.19,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 110799,
+                "price": 25.81,
+                "fee": 7149.52,
+                "date": "2023-10-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231026",
+        "date": "2023-10-26",
+        "portfolio_value": 95525550.69927743,
+        "total_trade_amount": 3011165.4200000004,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 66413,
+                "price": 45.34,
+                "fee": 7527.13,
+                "date": "2023-10-26",
                 "status": "FILLED",
                 "reason": ""
             }
@@ -31,16 +221,16 @@
     {
         "id": "tx_20231027",
         "date": "2023-10-27",
-        "portfolio_value": 9803031.442700975,
-        "total_trade_amount": 401521.61000000004,
+        "portfolio_value": 95173466.46059833,
+        "total_trade_amount": 2859868.73,
         "reason": "dip-buy campaign",
         "executions": [
             {
-                "ticker": "SPYI",
+                "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 8897,
-                "price": 45.13,
-                "fee": 1003.69,
+                "quantity": 116777,
+                "price": 24.49,
+                "fee": 7149.52,
                 "date": "2023-10-27",
                 "status": "FILLED",
                 "reason": ""
@@ -48,231 +238,741 @@
         ]
     },
     {
-        "id": "tx_20231031",
-        "date": "2023-10-31",
-        "portfolio_value": 9848764.702295795,
-        "total_trade_amount": 203897.66999999998,
+        "id": "tx_20231102",
+        "date": "2023-11-02",
+        "portfolio_value": 98496825.72199771,
+        "total_trade_amount": 3011049.5,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 64270,
+                "price": 46.85,
+                "fee": 7527.11,
+                "date": "2023-11-02",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231109",
+        "date": "2023-11-09",
+        "portfolio_value": 98944440.20758137,
+        "total_trade_amount": 3011067.9,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63970,
+                "price": 47.07,
+                "fee": 7527.19,
+                "date": "2023-11-09",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231116",
+        "date": "2023-11-16",
+        "portfolio_value": 101118189.71192609,
+        "total_trade_amount": 3011008.9499999997,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63005,
+                "price": 47.79,
+                "fee": 7527.17,
+                "date": "2023-11-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231120",
+        "date": "2023-11-20",
+        "portfolio_value": 101535167.63379657,
+        "total_trade_amount": 13776805.62,
         "reason": "channel exit protection",
         "executions": [
             {
                 "ticker": "SPYI",
                 "action": "SELL",
-                "quantity": 4449,
-                "price": 45.83,
-                "fee": 509.79,
-                "date": "2023-10-31",
+                "quantity": 288278,
+                "price": 47.79,
+                "fee": 34443.57,
+                "date": "2023-11-20",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20250313",
-        "date": "2025-03-13",
-        "portfolio_value": 10449905.04032678,
-        "total_trade_amount": 105706.72,
+        "id": "tx_20231124",
+        "date": "2023-11-24",
+        "portfolio_value": 101676390.820135,
+        "total_trade_amount": 3011041.27,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63377,
+                "price": 47.51,
+                "fee": 7527.2,
+                "date": "2023-11-24",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231201",
+        "date": "2023-12-01",
+        "portfolio_value": 102215410.48478353,
+        "total_trade_amount": 3011029.1999999997,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63045,
+                "price": 47.76,
+                "fee": 7527.21,
+                "date": "2023-12-01",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20231208",
+        "date": "2023-12-08",
+        "portfolio_value": 102384657.17292893,
+        "total_trade_amount": 3011023.0,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 62900,
+                "price": 47.87,
+                "fee": 7527.21,
+                "date": "2023-12-08",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240104",
+        "date": "2024-01-04",
+        "portfolio_value": 103432629.66550188,
+        "total_trade_amount": 3010702.52,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 63091,
+                "price": 47.72,
+                "fee": 7527.18,
+                "date": "2024-01-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240416",
+        "date": "2024-04-16",
+        "portfolio_value": 109454726.75025389,
+        "total_trade_amount": 3010929.57,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 61611,
+                "price": 48.87,
+                "fee": 7527.14,
+                "date": "2024-04-16",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240423",
+        "date": "2024-04-23",
+        "portfolio_value": 109826938.7029922,
+        "total_trade_amount": 3010934.25,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 61385,
+                "price": 49.05,
+                "fee": 7527.18,
+                "date": "2024-04-23",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240430",
+        "date": "2024-04-30",
+        "portfolio_value": 109001699.77979454,
+        "total_trade_amount": 3010998.9,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 62430,
+                "price": 48.23,
+                "fee": 7527.21,
+                "date": "2024-04-30",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240501",
+        "date": "2024-05-01",
+        "portfolio_value": 108675743.83846226,
+        "total_trade_amount": 20287400.0,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 421250,
+                "price": 48.16,
+                "fee": 50716.51,
+                "date": "2024-05-01",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 434146->421250"
+            }
+        ]
+    },
+    {
+        "id": "tx_20240502",
+        "date": "2024-05-02",
+        "portfolio_value": 109733243.37990852,
+        "total_trade_amount": 533671.48,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 10999,
+                "price": 48.52,
+                "fee": 1334.14,
+                "date": "2024-05-02",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 11335->10999"
+            }
+        ]
+    },
+    {
+        "id": "tx_20240503",
+        "date": "2024-05-03",
+        "portfolio_value": 111063264.99409021,
+        "total_trade_amount": 14042.91,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 287,
+                "price": 48.93,
+                "fee": 35.11,
+                "date": "2024-05-03",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 295->287"
+            }
+        ]
+    },
+    {
+        "id": "tx_20240506",
+        "date": "2024-05-06",
+        "portfolio_value": 112200767.8155121,
+        "total_trade_amount": 345.03,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 7,
+                "price": 49.29,
+                "fee": 0.86,
+                "date": "2024-05-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20240725",
+        "date": "2024-07-25",
+        "portfolio_value": 116857265.78842555,
+        "total_trade_amount": 2659619.5500000003,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 53893,
+                "price": 49.35,
+                "fee": 6648.95,
+                "date": "2024-07-25",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 55542->53893"
+            }
+        ]
+    },
+    {
+        "id": "tx_20240726",
+        "date": "2024-07-26",
+        "portfolio_value": 118316507.62235105,
+        "total_trade_amount": 69961.31999999999,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 1404,
+                "price": 49.83,
+                "fee": 174.9,
+                "date": "2024-07-26",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 1447->1404"
+            }
+        ]
+    },
+    {
+        "id": "tx_20240802",
+        "date": "2024-08-02",
+        "portfolio_value": 115387460.86495146,
+        "total_trade_amount": 1808.5600000000002,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SPYI",
+                "action": "BUY",
+                "quantity": 37,
+                "price": 48.88,
+                "fee": 4.52,
+                "date": "2024-08-02",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 38->37"
+            }
+        ]
+    },
+    {
+        "id": "tx_20240806",
+        "date": "2024-08-06",
+        "portfolio_value": 112675408.88390516,
+        "total_trade_amount": 75.38,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 2,
+                "price": 37.69,
+                "fee": 0.19,
+                "date": "2024-08-06",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250304",
+        "date": "2025-03-04",
+        "portfolio_value": 126752283.78402872,
+        "total_trade_amount": 2859859.9,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 64615,
+                "price": 44.26,
+                "fee": 7149.52,
+                "date": "2025-03-04",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250311",
+        "date": "2025-03-11",
+        "portfolio_value": 121549671.52465914,
+        "total_trade_amount": 2859709.3000000003,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 69715,
+                "price": 41.02,
+                "fee": 7149.44,
+                "date": "2025-03-11",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250318",
+        "date": "2025-03-18",
+        "portfolio_value": 122880586.63937633,
+        "total_trade_amount": 1041416.48,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 24986,
+                "price": 41.68,
+                "fee": 2603.64,
+                "date": "2025-03-18",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 25751->24986"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250319",
+        "date": "2025-03-19",
+        "portfolio_value": 124501658.6593854,
+        "total_trade_amount": 27408.640000000003,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 644,
+                "price": 42.56,
+                "fee": 68.52,
+                "date": "2025-03-19",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 663->644"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250320",
+        "date": "2025-03-20",
+        "portfolio_value": 124180925.80822557,
+        "total_trade_amount": 719.95,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 17,
+                "price": 42.35,
+                "fee": 1.8,
+                "date": "2025-03-20",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250327",
+        "date": "2025-03-27",
+        "portfolio_value": 124930782.9841825,
+        "total_trade_amount": 962311.95,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 22563,
+                "price": 42.65,
+                "fee": 2405.93,
+                "date": "2025-03-27",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 23254->22563"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250328",
+        "date": "2025-03-28",
+        "portfolio_value": 121754823.1393473,
+        "total_trade_amount": 25300.92,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 618,
+                "price": 40.94,
+                "fee": 63.25,
+                "date": "2025-03-28",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 637->618"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250331",
+        "date": "2025-03-31",
+        "portfolio_value": 122684551.86652836,
+        "total_trade_amount": 662.88,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 16,
+                "price": 41.43,
+                "fee": 1.66,
+                "date": "2025-03-31",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 17->16"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250403",
+        "date": "2025-04-03",
+        "portfolio_value": 117085908.23246549,
+        "total_trade_amount": 38.19,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 38.19,
+                "fee": 0.1,
+                "date": "2025-04-03",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250423",
+        "date": "2025-04-23",
+        "portfolio_value": 115828330.40208782,
+        "total_trade_amount": 817271.0399999999,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 22017,
+                "price": 37.12,
+                "fee": 2043.29,
+                "date": "2025-04-23",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 22691->22017"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250424",
+        "date": "2025-04-24",
+        "portfolio_value": 118784214.89407949,
+        "total_trade_amount": 21494.96,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 556,
+                "price": 38.66,
+                "fee": 53.74,
+                "date": "2025-04-24",
+                "status": "PARTIAL",
+                "reason": "quantity adjusted 573->556"
+            }
+        ]
+    },
+    {
+        "id": "tx_20250425",
+        "date": "2025-04-25",
+        "portfolio_value": 119896476.14202076,
+        "total_trade_amount": 588.0,
+        "reason": "dip-buy campaign",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "BUY",
+                "quantity": 15,
+                "price": 39.2,
+                "fee": 1.47,
+                "date": "2025-04-25",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250513",
+        "date": "2025-05-13",
+        "portfolio_value": 128657732.75979103,
+        "total_trade_amount": 11989480.16,
+        "reason": "channel exit protection",
+        "executions": [
+            {
+                "ticker": "SSO",
+                "action": "SELL",
+                "quantity": 270704,
+                "price": 44.29,
+                "fee": 29970.77,
+                "date": "2025-05-13",
+                "status": "FILLED",
+                "reason": ""
+            }
+        ]
+    },
+    {
+        "id": "tx_20250515",
+        "date": "2025-05-15",
+        "portfolio_value": 129160658.5664973,
+        "total_trade_amount": 29967441.889999997,
         "reason": "channel exit protection",
         "executions": [
             {
                 "ticker": "SPYI",
                 "action": "SELL",
-                "quantity": 2224,
-                "price": 47.53,
-                "fee": 264.28,
-                "date": "2025-03-13",
+                "quantity": 606997,
+                "price": 49.37,
+                "fee": 74919.48,
+                "date": "2025-05-15",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20250404",
-        "date": "2025-04-04",
-        "portfolio_value": 10221735.361525765,
-        "total_trade_amount": 813688.07,
+        "id": "tx_20260313",
+        "date": "2026-03-13",
+        "portfolio_value": 142502409.74431208,
+        "total_trade_amount": 2144688.2399999998,
         "reason": "dip-buy campaign",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 12262,
-                "price": 33.62,
-                "fee": 1030.58,
-                "date": "2025-04-04",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SPYI",
-                "action": "BUY",
-                "quantity": 9201,
-                "price": 43.63,
-                "fee": 1003.68,
-                "date": "2025-04-04",
+                "quantity": 39768,
+                "price": 53.93,
+                "fee": 5362.11,
+                "date": "2026-03-13",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20250411",
-        "date": "2025-04-11",
-        "portfolio_value": 10415386.285718523,
-        "total_trade_amount": 1220593.76,
+        "id": "tx_20260320",
+        "date": "2026-03-20",
+        "portfolio_value": 140274589.41050148,
+        "total_trade_amount": 2144765.4699999997,
         "reason": "dip-buy campaign",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 16693,
-                "price": 37.04,
-                "fee": 1545.86,
-                "date": "2025-04-11",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SPYI",
-                "action": "BUY",
-                "quantity": 13096,
-                "price": 45.99,
-                "fee": 1505.58,
-                "date": "2025-04-11",
+                "quantity": 41317,
+                "price": 51.91,
+                "fee": 5362.11,
+                "date": "2026-03-20",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20250421",
-        "date": "2025-04-21",
-        "portfolio_value": 10197256.527969504,
-        "total_trade_amount": 1220401.94,
+        "id": "tx_20260327",
+        "date": "2026-03-27",
+        "portfolio_value": 137263218.03470522,
+        "total_trade_amount": 2144866.56,
         "reason": "dip-buy campaign",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 18051,
-                "price": 34.25,
-                "fee": 1545.81,
-                "date": "2025-04-21",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SPYI",
-                "action": "BUY",
-                "quantity": 13559,
-                "price": 44.41,
-                "fee": 1505.54,
-                "date": "2025-04-21",
+                "quantity": 43392,
+                "price": 49.43,
+                "fee": 5362.1,
+                "date": "2026-03-27",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20250428",
-        "date": "2025-04-28",
-        "portfolio_value": 10721744.442017056,
-        "total_trade_amount": 1220545.1800000002,
+        "id": "tx_20260406",
+        "date": "2026-04-06",
+        "portfolio_value": 142244176.8150556,
+        "total_trade_amount": 2144703.47,
         "reason": "dip-buy campaign",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "BUY",
-                "quantity": 15752,
-                "price": 39.25,
-                "fee": 1545.83,
-                "date": "2025-04-28",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SPYI",
-                "action": "BUY",
-                "quantity": 12809,
-                "price": 47.02,
-                "fee": 1505.6,
-                "date": "2025-04-28",
+                "quantity": 40261,
+                "price": 53.27,
+                "fee": 5362.08,
+                "date": "2026-04-06",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20250505",
-        "date": "2025-05-05",
-        "portfolio_value": 10929749.232450098,
-        "total_trade_amount": 1284342.47,
+        "id": "tx_20260410",
+        "date": "2026-04-10",
+        "portfolio_value": 146154939.06312954,
+        "total_trade_amount": 12283818.82,
         "reason": "channel exit protection",
         "executions": [
             {
                 "ticker": "SSO",
                 "action": "SELL",
-                "quantity": 31379,
-                "price": 40.93,
-                "fee": 3211.17,
-                "date": "2025-05-05",
+                "quantity": 217721,
+                "price": 56.42,
+                "fee": 30711.46,
+                "date": "2026-04-10",
                 "status": "FILLED",
                 "reason": ""
             }
         ]
     },
     {
-        "id": "tx_20260323",
-        "date": "2026-03-23",
-        "portfolio_value": 12130416.742854668,
-        "total_trade_amount": 2093756.5999999999,
+        "id": "tx_20260414",
+        "date": "2026-04-14",
+        "portfolio_value": 148405046.9256934,
+        "total_trade_amount": 15724231.38,
         "reason": "channel exit protection",
         "executions": [
             {
-                "ticker": "SSO",
-                "action": "SELL",
-                "quantity": 15690,
-                "price": 52.91,
-                "fee": 2075.28,
-                "date": "2026-03-23",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
                 "ticker": "SPYI",
                 "action": "SELL",
-                "quantity": 25445,
-                "price": 49.66,
-                "fee": 3159.02,
-                "date": "2026-03-23",
-                "status": "FILLED",
-                "reason": ""
-            }
-        ]
-    },
-    {
-        "id": "tx_20260330",
-        "date": "2026-03-30",
-        "portfolio_value": 11905963.308695856,
-        "total_trade_amount": 1220514.81,
-        "reason": "dip-buy campaign",
-        "executions": [
-            {
-                "ticker": "SSO",
-                "action": "BUY",
-                "quantity": 12591,
-                "price": 49.11,
-                "fee": 1545.83,
-                "date": "2026-03-30",
-                "status": "FILLED",
-                "reason": ""
-            },
-            {
-                "ticker": "SPYI",
-                "action": "BUY",
-                "quantity": 12540,
-                "price": 48.02,
-                "fee": 1505.52,
-                "date": "2026-03-30",
+                "quantity": 303498,
+                "price": 51.81,
+                "fee": 39309.17,
+                "date": "2026-04-14",
                 "status": "FILLED",
                 "reason": ""
             }

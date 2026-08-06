@@ -25,14 +25,14 @@
             {
                 "key": "current_ratio_a",
                 "label": "현재 A그룹 비율",
-                "value": 0.40713362158648114,
+                "value": 0.4071468573325342,
                 "format": "percent",
                 "threshold": null
             },
             {
                 "key": "group_deviation",
                 "label": "A그룹 상대이탈",
-                "value": 0.0178340539662028,
+                "value": 0.017867143331335433,
                 "format": "percent",
                 "threshold": 0.075
             },
@@ -46,23 +46,23 @@
         ]
     },
     "portfolio": {
-        "total_value": 18131102.021797717,
-        "cash_balance": 47.613075792409745,
+        "total_value": 181311615.0115324,
+        "cash_balance": 54.58442364407435,
         "holdings": [
             {
                 "ticker": "SSO",
-                "qty": 110192,
+                "qty": 1101962,
                 "price": 66.98999786376953,
-                "value": 7381761.844604492
+                "value": 73820432.0259552
             },
             {
                 "ticker": "SPYI",
-                "qty": 203354,
+                "qty": 2033506,
                 "price": 52.86000061035156,
-                "value": 10749292.564117432
+                "value": 107491128.40115356
             }
         ]
     },
-    "initial_cash": 10000000.0,
-    "backtest_start_date": "2022-01-01"
+    "initial_cash": 100000000.0,
+    "backtest_start_date": "2023-03-01"
 }
