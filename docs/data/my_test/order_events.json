@@ -895,5 +895,26 @@
         "alertable": false,
         "display_level": "info",
         "source": "runtime"
+    },
+    {
+        "schema_version": 1,
+        "event_id": "9c26d7ba-5e17-4740-9763-389514dd8933",
+        "attempted_at": "2026-08-07 10:01:11",
+        "execution_mode": "live",
+        "account_id": "my_test",
+        "engine": "DomesticQldDipBuyEngine",
+        "ticker": "486290.KS",
+        "action": "BUY",
+        "requested_quantity": 3,
+        "requested_price": 10920.0,
+        "filled_quantity": 3,
+        "filled_price": 10920.0,
+        "fee": 4.914,
+        "executed_at": "2026-08-07 10:01:16",
+        "status": "FILLED",
+        "broker_reason": "ODNO=0012279000",
+        "alertable": false,
+        "display_level": "success",
+        "source": "runtime"
     }
 ]

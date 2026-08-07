@@ -1,20 +1,34 @@
 {
-    "last_updated": "2026-08-06 14:01:10",
-    "last_rebalancing_date": "2026-08-06",
+    "last_updated": "2026-08-07 10:01:20",
+    "last_rebalancing_date": "2026-08-07",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "waiting (invalid signal)",
+        "trigger_reason": "486290.KS 스윕 3주",
         "market_score": {
-            "vix": 15.8100004196167,
-            "spy_mdd": -0.002501447392263191,
-            "spy_momentum": 0.08183707443034464,
-            "spy_price": 757.6699829101562,
-            "spy_ma180": 704.0771674262153,
-            "spy_volatility": 0.12984417270199827
+            "vix": 15.149999618530273,
+            "spy_mdd": -0.003591224858201455,
+            "spy_momentum": 0.0983253396055409,
+            "spy_price": 768.5599975585938,
+            "spy_ma180": 705.2329454210069,
+            "spy_volatility": 0.14174148365382205
         },
         "decision_factors": [
+            {
+                "key": "weekly_rsi",
+                "label": "주봉 RSI(14)",
+                "value": 49.78818523851183,
+                "format": "number",
+                "threshold": 48.0
+            },
+            {
+                "key": "ma200_deviation",
+                "label": "200일선 괴리율",
+                "value": 0.08189722296811017,
+                "format": "percent",
+                "threshold": -0.1
+            },
             {
                 "key": "signal_level",
                 "label": "신호 단계",
@@ -25,27 +39,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.1959237932326216,
+                "value": 0.19599796461872948,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10557855.0,
-        "cash_balance": 42560.0,
+        "total_value": 10592610.0,
+        "cash_balance": 9800.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 42215.0,
-                "value": 2068535.0
+                "price": 42370.0,
+                "value": 2076130.0
             },
             {
                 "ticker": "486290.KS",
-                "qty": 776,
-                "price": 10885.0,
-                "value": 8446760.0
+                "qty": 779,
+                "price": 10920.0,
+                "value": 8506680.0
             }
         ]
     }
