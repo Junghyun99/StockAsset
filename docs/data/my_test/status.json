@@ -1,11 +1,11 @@
 {
-    "last_updated": "2026-08-07 10:01:20",
+    "last_updated": "2026-08-07 14:01:09",
     "last_rebalancing_date": "2026-08-07",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "486290.KS 스윕 3주",
+        "trigger_reason": "IDLE  분할매수 418660.KS 1주",
         "market_score": {
             "vix": 15.149999618530273,
             "spy_mdd": -0.003591224858201455,
@@ -18,14 +18,14 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 49.78818523851183,
+                "value": 49.531488543607665,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.08189722296811017,
+                "value": 0.07807279907355714,
                 "format": "percent",
                 "threshold": -0.1
             },
@@ -39,27 +39,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.19599796461872948,
+                "value": 0.19552890871909276,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10592610.0,
-        "cash_balance": 9800.0,
+        "total_value": 10542840.0,
+        "cash_balance": 42410.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 42370.0,
-                "value": 2076130.0
+                "price": 42070.0,
+                "value": 2061430.0
             },
             {
                 "ticker": "486290.KS",
-                "qty": 779,
-                "price": 10920.0,
-                "value": 8506680.0
+                "qty": 776,
+                "price": 10875.0,
+                "value": 8439000.0
             }
         ]
     }

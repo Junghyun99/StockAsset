@@ -468,5 +468,24 @@
                 "reason": "ODNO=0012279000"
             }
         ]
+    },
+    {
+        "id": "tx_20260807_140109",
+        "date": "2026-08-07 14:01:09",
+        "portfolio_value": 10542840.0,
+        "total_trade_amount": 32610.0,
+        "reason": "IDLE  분할매수 418660.KS 1주",
+        "executions": [
+            {
+                "ticker": "486290.KS",
+                "action": "SELL",
+                "quantity": 3,
+                "price": 10870.0,
+                "fee": 4.8915,
+                "date": "2026-08-07 14:01:01",
+                "status": "FILLED",
+                "reason": "ODNO=0029048100"
+            }
+        ]
     }
 ]
