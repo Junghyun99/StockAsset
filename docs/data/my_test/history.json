@@ -487,5 +487,24 @@
                 "reason": "ODNO=0029048100"
             }
         ]
+    },
+    {
+        "id": "tx_20260810_100119",
+        "date": "2026-08-10 10:01:19",
+        "portfolio_value": 10628725.0,
+        "total_trade_amount": 32850.0,
+        "reason": "486290.KS 스윕 3주",
+        "executions": [
+            {
+                "ticker": "486290.KS",
+                "action": "BUY",
+                "quantity": 3,
+                "price": 10950.0,
+                "fee": 4.927499999999999,
+                "date": "2026-08-10 10:01:14",
+                "status": "FILLED",
+                "reason": "ODNO=0012717800"
+            }
+        ]
     }
 ]
