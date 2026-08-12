@@ -1,31 +1,31 @@
 {
-    "last_updated": "2026-08-11 14:01:00",
-    "last_rebalancing_date": "2026-08-10",
+    "last_updated": "2026-08-12 10:01:20",
+    "last_rebalancing_date": "2026-08-12",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "대기(IDLE)",
+        "trigger_reason": "IDLE  분할매수 418660.KS 1주",
         "market_score": {
-            "vix": 15.460000038146973,
-            "spy_mdd": -0.0002974167367321983,
-            "spy_momentum": 0.10312830605221075,
-            "spy_price": 773.030029296875,
-            "spy_ma180": 706.4581678602431,
-            "spy_volatility": 0.14021133473172967
+            "vix": 15.279999732971191,
+            "spy_mdd": -0.003491726163169389,
+            "spy_momentum": 0.10129890953168973,
+            "spy_price": 770.5599975585938,
+            "spy_ma180": 707.0577789306641,
+            "spy_volatility": 0.13750061351138407
         },
         "decision_factors": [
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 50.96198813030594,
+                "value": 49.7137927342624,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.09332431815814352,
+                "value": 0.07429280511064633,
                 "format": "percent",
                 "threshold": -0.1
             },
@@ -39,27 +39,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.1967982438830032,
+                "value": 0.19557830458579342,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10641660.0,
-        "cash_balance": 9560.0,
+        "total_value": 10557715.0,
+        "cash_balance": 42215.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 42740.0,
-                "value": 2094260.0
+                "price": 42140.0,
+                "value": 2064860.0
             },
             {
                 "ticker": "486290.KS",
-                "qty": 779,
-                "price": 10960.0,
-                "value": 8537840.0
+                "qty": 776,
+                "price": 10890.0,
+                "value": 8450640.0
             }
         ]
     }
