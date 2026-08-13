@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-08-12 14:01:09",
+    "last_updated": "2026-08-13 10:01:08",
     "last_rebalancing_date": "2026-08-12",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
@@ -7,12 +7,12 @@
         "target_exposure": 1.0,
         "trigger_reason": "waiting (invalid signal)",
         "market_score": {
-            "vix": 15.279999732971191,
-            "spy_mdd": -0.003491726163169389,
-            "spy_momentum": 0.10129890953168973,
-            "spy_price": 770.5599975585938,
-            "spy_ma180": 707.0577789306641,
-            "spy_volatility": 0.13750061351138407
+            "vix": 14.550000190734863,
+            "spy_mdd": -0.000995809328719059,
+            "spy_momentum": 0.10126927025552057,
+            "spy_price": 772.489990234375,
+            "spy_ma180": 707.7242231580947,
+            "spy_volatility": 0.13733992864108802
         },
         "decision_factors": [
             {
@@ -25,27 +25,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.19626708224239203,
+                "value": 0.19658043736449562,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10600555.0,
+        "total_value": 10638495.0,
         "cash_balance": 42215.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 42460.0,
-                "value": 2080540.0
+                "price": 42680.0,
+                "value": 2091320.0
             },
             {
                 "ticker": "486290.KS",
                 "qty": 776,
-                "price": 10925.0,
-                "value": 8477800.0
+                "price": 10960.0,
+                "value": 8504960.0
             }
         ]
     }
