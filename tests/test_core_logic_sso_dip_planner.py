@@ -259,6 +259,31 @@ class TestDCA:
         spyi_sell = [o for o in orders if o.ticker == "SPYI" and o.action.value == "SELL"]
         assert len(spyi_sell) == 1
 
+    def test_income_sale_funds_buy_with_broker_safety_margin(self):
+        """매수 안전마진을 충족하도록 SPYI 매도 수량을 올림한다."""
+        planner = SsoDipPlanner()
+        orders, _, _ = planner.plan(
+            _sig(rsi=55, dev=0.02),
+            _pf(
+                cash=9_560,
+                sso=49,
+                spyi=779,
+                sso_price=42_140,
+                spyi_price=10_890,
+            ),
+            SsoDipState(),
+        )
+
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action == OrderAction.BUY]
+        spyi_sell = [o for o in orders if o.ticker == "SPYI" and o.action == OrderAction.SELL]
+
+        assert sso_buy[0].quantity == 1
+        assert spyi_sell[0].quantity == 4
+        assert not [
+            order for order in orders
+            if order.ticker == "SPYI" and order.action == OrderAction.BUY
+        ]
+
     def test_spyi_buy_on_sell(self):
         """SSO 매도 시 잔여 현금으로 SPYI 매수."""
         planner = SsoDipPlanner()
