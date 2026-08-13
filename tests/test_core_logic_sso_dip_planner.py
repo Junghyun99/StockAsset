@@ -259,6 +259,18 @@ class TestDCA:
         spyi_sell = [o for o in orders if o.ticker == "SPYI" and o.action.value == "SELL"]
         assert len(spyi_sell) == 1
 
+    def test_idle_buy_reason_identifies_target_weight_rebalance(self):
+        """IDLE 매수는 분할매수가 아닌 목표비중 보정으로 표시한다."""
+        planner = SsoDipPlanner()
+        _, reason, _ = planner.plan(
+            _sig(rsi=55, dev=0.02),
+            _pf(cash=10_000, sso=0, spyi=0),
+            SsoDipState(),
+        )
+
+        assert "IDLE 목표비중 보정 매수" in reason
+        assert "분할매수" not in reason
+
     def test_income_sale_funds_buy_with_broker_safety_margin(self):
         """매수 안전마진을 충족하도록 SPYI 매도 수량을 올림한다."""
         planner = SsoDipPlanner()
