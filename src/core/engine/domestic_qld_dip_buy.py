@@ -113,6 +113,11 @@ class DomesticQldDipBuyEngine(TradingEngine):
                     "ma200_deviation", "200일선 괴리율", s.ma200_deviation, "percent",
                     threshold=-0.10,
                 ))
+            if not math.isnan(s.mdd_252):
+                factors.append(DecisionFactor(
+                    "mdd_252", "252거래일 MDD", s.mdd_252, "percent",
+                    threshold=-0.20,
+                ))
 
         factors.append(DecisionFactor(
             "signal_level", "신호 단계", self.dip_state.level.value, "text",

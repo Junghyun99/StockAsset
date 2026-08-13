@@ -9,6 +9,7 @@ from src.core.engine.domestic_qld_dip_buy import (
 from src.core.engine import TradingEngine, _ENGINE_REGISTRY, _ENGINE_BACKTEST, _ENGINE_MARKET_TYPES
 from src.core.logic.sso_dip_planner import SsoDipPlanner
 from src.core.logic.sso_dip_planner import SignalLevel, SsoDipState
+from src.core.logic.sso_dip_signals import SsoDipSignals
 from src.core.models import (
     ExecutionStatus,
     MarketData,
@@ -154,6 +155,27 @@ class TestStateManagement:
         assert saved_state["tranche_completed"] == 0
         notifier.send_alert.assert_called_once()
         assert "기본예탁금" in notifier.send_alert.call_args.args[0]
+
+
+class TestDecisionFactors:
+    def test_includes_trailing_mdd(self):
+        engine, mocks = _build_engine()
+        engine.dip_signals = SsoDipSignals(
+            date="2026-08-13", weekly_rsi=45.0, ma200_deviation=0.0,
+            price=43_200.0, ma200=39_215.0, mdd_252=-0.21,
+        )
+
+        factors = engine.decision_factors(
+            MarketData("2026-08-13", 1, 1, 1, 1, 1, 1),
+            MarketRegime.BULL,
+            1.0,
+            TradeSignal(1.0, [], "test"),
+            mocks["broker"].get_portfolio.return_value,
+        )
+
+        mdd = next(factor for factor in factors if factor.key == "mdd_252")
+        assert mdd.value == -0.21
+        assert mdd.threshold == -0.20
 
 
 class TestCollectData:

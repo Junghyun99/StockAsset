@@ -9,11 +9,11 @@ from src.core.logic.sso_dip_planner import (
 from src.core.models import ExecutionStatus, OrderAction, Portfolio, TradeExecution
 
 
-def _sig(rsi: float = 50.0, dev: float = 0.0) -> SsoDipSignals:
+def _sig(rsi: float = 50.0, dev: float = 0.0, mdd: float = 0.0) -> SsoDipSignals:
     """지표 스냅샷 헬퍼."""
     return SsoDipSignals(
         date="2024-06-01", weekly_rsi=rsi, ma200_deviation=dev,
-        price=500.0, ma200=500.0,
+        price=500.0, ma200=500.0, mdd_252=mdd,
     )
 
 
@@ -57,6 +57,31 @@ class TestSignalDetection:
         state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
         _, _, new_state = planner.plan(_sig(rsi=34, dev=-0.28), _pf(), state)
         assert new_state.level == SignalLevel.BUY_STAGE_3
+
+    @pytest.mark.parametrize(("rsi", "mdd", "expected"), [
+        (48.0, -0.20, SignalLevel.BUY_STAGE_1),
+        (42.0, -0.30, SignalLevel.BUY_STAGE_2),
+        (36.0, -0.40, SignalLevel.BUY_STAGE_3),
+    ])
+    def test_mdd_triggers_stage_when_ma200_deviation_does_not(
+        self, rsi, mdd, expected,
+    ):
+        planner = SsoDipPlanner()
+
+        _, _, new_state = planner.plan(
+            _sig(rsi=rsi, dev=0.0, mdd=mdd), _pf(), SsoDipState(),
+        )
+
+        assert new_state.level == expected
+
+    def test_mdd_does_not_bypass_rsi_gate(self):
+        planner = SsoDipPlanner()
+
+        _, _, new_state = planner.plan(
+            _sig(rsi=48.1, dev=0.0, mdd=-0.40), _pf(), SsoDipState(),
+        )
+
+        assert new_state.level == SignalLevel.IDLE
 
     def test_downgrades_when_lower_buy_target_exceeds_current_ratio(self):
         """단계2에서 단계1 조건 → 단계2 유지 (하향 강등 없음)."""
