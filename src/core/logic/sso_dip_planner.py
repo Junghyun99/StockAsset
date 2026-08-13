@@ -18,9 +18,9 @@ class SignalLevel(str, Enum):
 
 IDLE_TARGET = 0.20
 BUY_STAGES = [
-    (SignalLevel.BUY_STAGE_3, 36.0, -0.26, 0.80, 3),
-    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, 0.60, 5),
-    (SignalLevel.BUY_STAGE_1, 48.0, -0.10, 0.40, 10),
+    (SignalLevel.BUY_STAGE_3, 36.0, -0.26, -0.40, 0.80, 3),
+    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, -0.30, 0.60, 5),
+    (SignalLevel.BUY_STAGE_1, 48.0, -0.10, -0.20, 0.40, 10),
 ]
 SELL_CONDITION = {"rsi": 75.0, "deviation": 0.15}
 SELL_TARGET = IDLE_TARGET
@@ -94,6 +94,7 @@ class SsoDipPlanner:
     ) -> Tuple[List[Order], str, SsoDipState]:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
+        mdd = signals.mdd_252
         if math.isnan(rsi) or math.isnan(dev):
             return [], "waiting (invalid signal)", state
 
@@ -104,7 +105,7 @@ class SsoDipPlanner:
             return [], "waiting (missing portfolio data)", state
 
         current_ratio = self._sso_ratio(portfolio)
-        raw_signal = self._detect_signal(rsi, dev)
+        raw_signal = self._detect_signal(rsi, dev, mdd)
         new_state, delta_amount = self._transition(
             raw_signal, current_ratio, total, state,
         )
@@ -259,16 +260,18 @@ class SsoDipPlanner:
     def _idle_delta(self, current_ratio: float, total: float) -> float:
         return (IDLE_TARGET - current_ratio) * total
 
-    def _detect_signal(self, rsi: float, dev: float) -> SignalLevel:
+    def _detect_signal(self, rsi: float, dev: float, mdd: float) -> SignalLevel:
         if rsi >= self._sell_condition["rsi"] and dev >= self._sell_condition["deviation"]:
             return SignalLevel.SELL
-        for level, rsi_threshold, dev_threshold, _, _ in self._buy_stages:
-            if rsi <= rsi_threshold and dev <= dev_threshold:
+        for level, rsi_threshold, dev_threshold, mdd_threshold, _, _ in self._buy_stages:
+            if rsi <= rsi_threshold and (
+                dev <= dev_threshold or (not math.isnan(mdd) and mdd <= mdd_threshold)
+            ):
                 return level
         return SignalLevel.IDLE
 
     def _get_target_and_tranche_count(self, level: SignalLevel) -> Tuple[float, int]:
-        for stage_level, _, _, target, tranche_count in self._buy_stages:
+        for stage_level, _, _, _, target, tranche_count in self._buy_stages:
             if stage_level == level:
                 return target, tranche_count
         return IDLE_TARGET, 0
