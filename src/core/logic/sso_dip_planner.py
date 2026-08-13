@@ -139,10 +139,15 @@ class SsoDipPlanner:
                             self.SPYI_TICKER, OrderAction.SELL, income_sell_qty, income_price,
                         ))
                 orders.append(Order(self.SSO_TICKER, OrderAction.BUY, qty, lever_price))
-                reasons.append(
-                    f"{new_state.level.value} {progress} 분할매수 "
-                    f"{self.SSO_TICKER} {qty}주"
-                )
+                if new_state.level == SignalLevel.IDLE:
+                    reasons.append(
+                        f"IDLE 목표비중 보정 매수 {self.SSO_TICKER} {qty}주"
+                    )
+                else:
+                    reasons.append(
+                        f"{new_state.level.value} {progress} 분할매수 "
+                        f"{self.SSO_TICKER} {qty}주"
+                    )
 
         elif delta_amount < 0:
             qty = min(
