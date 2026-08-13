@@ -2035,12 +2035,12 @@
     },
     {
         "date": "2026-08-13",
-        "total_value": 10638495.0,
-        "cash_balance": 42215.0,
-        "net_deposit": 0.0,
-        "group_a": 2091320.0,
-        "group_b": 8504960.0,
-        "group_c": 42215.0,
+        "total_value": 10674270.0,
+        "cash_balance": 9245.0,
+        "net_deposit": 4.95,
+        "group_a": 2103815.0,
+        "group_b": 8561210.0,
+        "group_c": 9245.0,
         "expected_dividend": 0.0,
         "spy_price": 772.489990234375,
         "spy_ma180": 707.7242231580947,
@@ -2049,18 +2049,20 @@
         "mdd": -0.000995809328719059,
         "vix": 14.550000190734863,
         "benchmarks": {
-            "KOSPI200": 107630.0,
-            "S&P500": 27145.0,
-            "NASDAQ100": 185955.0
+            "KOSPI200": 107685.0,
+            "S&P500": 27210.0,
+            "NASDAQ100": 186495.0
         },
         "regime": "Bull",
-        "reason": "waiting (invalid signal)",
+        "reason": "486290.KS 스윕 3주",
         "target_exposure": 1.0,
         "target_ratio_a": null,
         "rebalance_threshold": null,
         "factors": {
+            "weekly_rsi": 51.30131184365916,
+            "ma200_deviation": 0.09565461314836537,
             "signal_level": "IDLE",
-            "lever_ratio": 0.19658043736449562
+            "lever_ratio": 0.1970921664900738
         }
     }
 ]

@@ -1,11 +1,11 @@
 {
-    "last_updated": "2026-08-13 10:01:08",
-    "last_rebalancing_date": "2026-08-12",
+    "last_updated": "2026-08-13 14:01:14",
+    "last_rebalancing_date": "2026-08-13",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "waiting (invalid signal)",
+        "trigger_reason": "486290.KS 스윕 3주",
         "market_score": {
             "vix": 14.550000190734863,
             "spy_mdd": -0.000995809328719059,
@@ -16,6 +16,20 @@
         },
         "decision_factors": [
             {
+                "key": "weekly_rsi",
+                "label": "주봉 RSI(14)",
+                "value": 51.30131184365916,
+                "format": "number",
+                "threshold": 48.0
+            },
+            {
+                "key": "ma200_deviation",
+                "label": "200일선 괴리율",
+                "value": 0.09565461314836537,
+                "format": "percent",
+                "threshold": -0.1
+            },
+            {
                 "key": "signal_level",
                 "label": "신호 단계",
                 "value": "IDLE",
@@ -25,27 +39,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.19658043736449562,
+                "value": 0.1970921664900738,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10638495.0,
-        "cash_balance": 42215.0,
+        "total_value": 10674270.0,
+        "cash_balance": 9245.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 42680.0,
-                "value": 2091320.0
+                "price": 42935.0,
+                "value": 2103815.0
             },
             {
                 "ticker": "486290.KS",
-                "qty": 776,
-                "price": 10960.0,
-                "value": 8504960.0
+                "qty": 779,
+                "price": 10990.0,
+                "value": 8561210.0
             }
         ]
     }
