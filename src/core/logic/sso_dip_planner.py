@@ -25,6 +25,8 @@ BUY_STAGES = [
 SELL_CONDITION = {"rsi": 75.0, "deviation": 0.15}
 SELL_TARGET = IDLE_TARGET
 SELL_TRANCHE_COUNT = 10
+BUY_SAFETY_MARGIN = 0.98
+ESTIMATED_SELL_FEE_RATE = 0.00015
 
 _LEVEL_ORDER = {
     SignalLevel.IDLE: 0,
@@ -111,6 +113,7 @@ class SsoDipPlanner:
 
         orders: List[Order] = []
         reasons: List[str] = []
+        cash_reserve = 0.0
         progress = (
             f"{new_state.tranche_completed + 1}/{new_state.tranche_total}"
             if new_state.tranche_total else ""
@@ -120,10 +123,15 @@ class SsoDipPlanner:
             qty = math.floor(delta_amount / lever_price)
             if qty > 0:
                 cost = qty * lever_price
-                cash_shortfall = cost - portfolio.total_cash
+                required_cash = cost / BUY_SAFETY_MARGIN
+                cash_reserve = required_cash - cost
+                cash_shortfall = required_cash - portfolio.total_cash
                 if cash_shortfall > 0:
                     income_sell_qty = min(
-                        math.ceil(cash_shortfall / income_price),
+                        math.ceil(
+                            cash_shortfall
+                            / (income_price * (1 - ESTIMATED_SELL_FEE_RATE))
+                        ),
                         portfolio.holdings.get(self.SPYI_TICKER, 0),
                     )
                     if income_sell_qty > 0:
@@ -154,8 +162,9 @@ class SsoDipPlanner:
                 estimated_cash += order.quantity * order.price
             else:
                 estimated_cash -= order.quantity * order.price
-        if estimated_cash >= income_price:
-            sweep_qty = math.floor(estimated_cash / income_price)
+        sweepable_cash = estimated_cash - cash_reserve
+        if sweepable_cash >= income_price:
+            sweep_qty = math.floor(sweepable_cash / income_price)
             existing_buy = next(
                 (order for order in orders
                  if order.ticker == self.SPYI_TICKER and order.action == OrderAction.BUY),
