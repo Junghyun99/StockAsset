@@ -225,6 +225,27 @@ class TestForcedStage:
         assert "수동 강제" not in next_decision.signal.reason
 
 
+class TestDecisionFactors:
+    def test_includes_trailing_mdd(self):
+        engine, mocks = _build_engine()
+        engine.dip_signals = SsoDipSignals(
+            date="2026-08-13", weekly_rsi=45.0, ma200_deviation=0.0,
+            price=43_200.0, ma200=39_215.0, mdd_252=-0.21,
+        )
+
+        factors = engine.decision_factors(
+            MarketData("2026-08-13", 1, 1, 1, 1, 1, 1),
+            MarketRegime.BULL,
+            1.0,
+            TradeSignal(1.0, [], "test"),
+            mocks["broker"].get_portfolio.return_value,
+        )
+
+        mdd = next(factor for factor in factors if factor.key == "mdd_252")
+        assert mdd.value == -0.21
+        assert mdd.threshold == -0.20
+
+
 class TestCollectData:
     def test_fetches_lever_and_spy_ohlcv(self):
         engine, mocks = _build_engine()

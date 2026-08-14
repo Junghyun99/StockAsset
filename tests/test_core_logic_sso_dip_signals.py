@@ -74,6 +74,17 @@ class TestMa200Deviation:
 
 
 # ── 주봉 RSI ──────────────────────────────────────────────────────────
+class TestMdd:
+    def test_trailing_252_day_peak_mdd(self):
+        dates = pd.date_range("2024-01-01", periods=252, freq="D")
+        closes = np.array([100.0] * 251 + [80.0])
+        df = pd.DataFrame({"Close": closes}, index=dates)
+
+        sig = SsoDipIndicatorCalculator().calculate(df)
+
+        assert sig.mdd_252 == pytest.approx(-0.20)
+
+
 class TestWeeklyRsi:
     def test_rsi_in_valid_range(self):
         """주봉 RSI는 항상 0~100 범위."""

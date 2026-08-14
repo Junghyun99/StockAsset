@@ -9,11 +9,11 @@ from src.core.logic.sso_dip_planner import (
 from src.core.models import ExecutionStatus, OrderAction, Portfolio, TradeExecution
 
 
-def _sig(rsi: float = 50.0, dev: float = 0.0) -> SsoDipSignals:
+def _sig(rsi: float = 50.0, dev: float = 0.0, mdd: float = 0.0) -> SsoDipSignals:
     """지표 스냅샷 헬퍼."""
     return SsoDipSignals(
         date="2024-06-01", weekly_rsi=rsi, ma200_deviation=dev,
-        price=500.0, ma200=500.0,
+        price=500.0, ma200=500.0, mdd_252=mdd,
     )
 
 
@@ -57,6 +57,31 @@ class TestSignalDetection:
         state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
         _, _, new_state = planner.plan(_sig(rsi=34, dev=-0.28), _pf(), state)
         assert new_state.level == SignalLevel.BUY_STAGE_3
+
+    @pytest.mark.parametrize(("rsi", "mdd", "expected"), [
+        (48.0, -0.20, SignalLevel.BUY_STAGE_1),
+        (42.0, -0.30, SignalLevel.BUY_STAGE_2),
+        (36.0, -0.40, SignalLevel.BUY_STAGE_3),
+    ])
+    def test_mdd_triggers_stage_when_ma200_deviation_does_not(
+        self, rsi, mdd, expected,
+    ):
+        planner = SsoDipPlanner()
+
+        _, _, new_state = planner.plan(
+            _sig(rsi=rsi, dev=0.0, mdd=mdd), _pf(), SsoDipState(),
+        )
+
+        assert new_state.level == expected
+
+    def test_mdd_does_not_bypass_rsi_gate(self):
+        planner = SsoDipPlanner()
+
+        _, _, new_state = planner.plan(
+            _sig(rsi=48.1, dev=0.0, mdd=-0.40), _pf(), SsoDipState(),
+        )
+
+        assert new_state.level == SignalLevel.IDLE
 
     def test_downgrades_when_lower_buy_target_exceeds_current_ratio(self):
         """단계2에서 단계1 조건 → 단계2 유지 (하향 강등 없음)."""
@@ -258,6 +283,43 @@ class TestDCA:
         )
         spyi_sell = [o for o in orders if o.ticker == "SPYI" and o.action.value == "SELL"]
         assert len(spyi_sell) == 1
+
+    def test_idle_buy_reason_identifies_target_weight_rebalance(self):
+        """IDLE 매수는 분할매수가 아닌 목표비중 보정으로 표시한다."""
+        planner = SsoDipPlanner()
+        _, reason, _ = planner.plan(
+            _sig(rsi=55, dev=0.02),
+            _pf(cash=10_000, sso=0, spyi=0),
+            SsoDipState(),
+        )
+
+        assert "IDLE 목표비중 보정 매수" in reason
+        assert "분할매수" not in reason
+
+    def test_income_sale_funds_buy_with_broker_safety_margin(self):
+        """매수 안전마진을 충족하도록 SPYI 매도 수량을 올림한다."""
+        planner = SsoDipPlanner()
+        orders, _, _ = planner.plan(
+            _sig(rsi=55, dev=0.02),
+            _pf(
+                cash=9_560,
+                sso=49,
+                spyi=779,
+                sso_price=42_140,
+                spyi_price=10_890,
+            ),
+            SsoDipState(),
+        )
+
+        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action == OrderAction.BUY]
+        spyi_sell = [o for o in orders if o.ticker == "SPYI" and o.action == OrderAction.SELL]
+
+        assert sso_buy[0].quantity == 1
+        assert spyi_sell[0].quantity == 4
+        assert not [
+            order for order in orders
+            if order.ticker == "SPYI" and order.action == OrderAction.BUY
+        ]
 
     def test_spyi_buy_on_sell(self):
         """SSO 매도 시 잔여 현금으로 SPYI 매수."""

@@ -18,13 +18,15 @@ class SignalLevel(str, Enum):
 
 IDLE_TARGET = 0.20
 BUY_STAGES = [
-    (SignalLevel.BUY_STAGE_3, 36.0, -0.26, 0.80, 3),
-    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, 0.60, 5),
-    (SignalLevel.BUY_STAGE_1, 48.0, -0.10, 0.40, 10),
+    (SignalLevel.BUY_STAGE_3, 36.0, -0.26, -0.40, 0.80, 3),
+    (SignalLevel.BUY_STAGE_2, 42.0, -0.18, -0.30, 0.60, 5),
+    (SignalLevel.BUY_STAGE_1, 48.0, -0.10, -0.20, 0.40, 10),
 ]
 SELL_CONDITION = {"rsi": 75.0, "deviation": 0.15}
 SELL_TARGET = IDLE_TARGET
 SELL_TRANCHE_COUNT = 10
+BUY_SAFETY_MARGIN = 0.98
+ESTIMATED_SELL_FEE_RATE = 0.00015
 
 _LEVEL_ORDER = {
     SignalLevel.IDLE: 0,
@@ -95,6 +97,7 @@ class SsoDipPlanner:
     ) -> Tuple[List[Order], str, SsoDipState]:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
+        mdd = signals.mdd_252
         if math.isnan(rsi) or math.isnan(dev):
             return [], "waiting (invalid signal)", state
 
@@ -105,13 +108,14 @@ class SsoDipPlanner:
             return [], "waiting (missing portfolio data)", state
 
         current_ratio = self._sso_ratio(portfolio)
-        raw_signal = raw_signal_override or self._detect_signal(rsi, dev)
+        raw_signal = raw_signal_override or self._detect_signal(rsi, dev, mdd)
         new_state, delta_amount = self._transition(
             raw_signal, current_ratio, total, state,
         )
 
         orders: List[Order] = []
         reasons: List[str] = []
+        cash_reserve = 0.0
         progress = (
             f"{new_state.tranche_completed + 1}/{new_state.tranche_total}"
             if new_state.tranche_total else ""
@@ -121,10 +125,15 @@ class SsoDipPlanner:
             qty = math.floor(delta_amount / lever_price)
             if qty > 0:
                 cost = qty * lever_price
-                cash_shortfall = cost - portfolio.total_cash
+                required_cash = cost / BUY_SAFETY_MARGIN
+                cash_reserve = required_cash - cost
+                cash_shortfall = required_cash - portfolio.total_cash
                 if cash_shortfall > 0:
                     income_sell_qty = min(
-                        math.ceil(cash_shortfall / income_price),
+                        math.ceil(
+                            cash_shortfall
+                            / (income_price * (1 - ESTIMATED_SELL_FEE_RATE))
+                        ),
                         portfolio.holdings.get(self.SPYI_TICKER, 0),
                     )
                     if income_sell_qty > 0:
@@ -132,10 +141,15 @@ class SsoDipPlanner:
                             self.SPYI_TICKER, OrderAction.SELL, income_sell_qty, income_price,
                         ))
                 orders.append(Order(self.SSO_TICKER, OrderAction.BUY, qty, lever_price))
-                reasons.append(
-                    f"{new_state.level.value} {progress} 분할매수 "
-                    f"{self.SSO_TICKER} {qty}주"
-                )
+                if new_state.level == SignalLevel.IDLE:
+                    reasons.append(
+                        f"IDLE 목표비중 보정 매수 {self.SSO_TICKER} {qty}주"
+                    )
+                else:
+                    reasons.append(
+                        f"{new_state.level.value} {progress} 분할매수 "
+                        f"{self.SSO_TICKER} {qty}주"
+                    )
 
         elif delta_amount < 0:
             qty = min(
@@ -155,8 +169,9 @@ class SsoDipPlanner:
                 estimated_cash += order.quantity * order.price
             else:
                 estimated_cash -= order.quantity * order.price
-        if estimated_cash >= income_price:
-            sweep_qty = math.floor(estimated_cash / income_price)
+        sweepable_cash = estimated_cash - cash_reserve
+        if sweepable_cash >= income_price:
+            sweep_qty = math.floor(sweepable_cash / income_price)
             existing_buy = next(
                 (order for order in orders
                  if order.ticker == self.SPYI_TICKER and order.action == OrderAction.BUY),
@@ -260,16 +275,18 @@ class SsoDipPlanner:
     def _idle_delta(self, current_ratio: float, total: float) -> float:
         return (IDLE_TARGET - current_ratio) * total
 
-    def _detect_signal(self, rsi: float, dev: float) -> SignalLevel:
+    def _detect_signal(self, rsi: float, dev: float, mdd: float) -> SignalLevel:
         if rsi >= self._sell_condition["rsi"] and dev >= self._sell_condition["deviation"]:
             return SignalLevel.SELL
-        for level, rsi_threshold, dev_threshold, _, _ in self._buy_stages:
-            if rsi <= rsi_threshold and dev <= dev_threshold:
+        for level, rsi_threshold, dev_threshold, mdd_threshold, _, _ in self._buy_stages:
+            if rsi <= rsi_threshold and (
+                dev <= dev_threshold or (not math.isnan(mdd) and mdd <= mdd_threshold)
+            ):
                 return level
         return SignalLevel.IDLE
 
     def _get_target_and_tranche_count(self, level: SignalLevel) -> Tuple[float, int]:
-        for stage_level, _, _, target, tranche_count in self._buy_stages:
+        for stage_level, _, _, _, target, tranche_count in self._buy_stages:
             if stage_level == level:
                 return target, tranche_count
         return IDLE_TARGET, 0
