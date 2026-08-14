@@ -2,11 +2,14 @@
 """DomesticQldDipBuyEngine 단위 테스트."""
 from unittest.mock import MagicMock, patch
 
+import pandas as pd
+
 from src.core.engine.domestic_qld_dip_buy import (
     DomesticQldDipBuyEngine, DomesticQldDipPlanner,
     LEVER_TICKER, INCOME_TICKER,
 )
 from src.core.engine import TradingEngine, _ENGINE_REGISTRY, _ENGINE_BACKTEST, _ENGINE_MARKET_TYPES
+from src.core.engine.data_pipeline import CollectedData
 from src.core.logic.sso_dip_planner import SsoDipPlanner
 from src.core.logic.sso_dip_planner import SignalLevel, SsoDipState
 from src.core.logic.sso_dip_signals import SsoDipSignals
@@ -163,7 +166,7 @@ class TestForcedStage:
         engine, mocks = _build_engine()
         engine.dip_signals = SsoDipSignals(
             date="2026-08-14", weekly_rsi=55.0, ma200_deviation=0.02,
-            price=43_000.0, ma200=42_000.0,
+            price=43_000.0, ma200=42_000.0, mdd_200=0.0,
         )
         engine.force_buy_stage(1, "2026-07-30 missed entry")
 
@@ -199,7 +202,7 @@ class TestForcedStage:
         engine, mocks = _build_engine()
         engine.dip_signals = SsoDipSignals(
             date="2026-08-14", weekly_rsi=55.0, ma200_deviation=0.02,
-            price=43_000.0, ma200=42_000.0,
+            price=43_000.0, ma200=42_000.0, mdd_200=0.0,
         )
         engine.force_buy_stage(1, "2026-07-30 missed entry")
 
@@ -230,7 +233,7 @@ class TestDecisionFactors:
         engine, mocks = _build_engine()
         engine.dip_signals = SsoDipSignals(
             date="2026-08-13", weekly_rsi=45.0, ma200_deviation=0.0,
-            price=43_200.0, ma200=39_215.0, mdd_252=-0.21,
+            price=43_200.0, ma200=39_215.0, mdd_200=-0.21,
         )
 
         factors = engine.decision_factors(
@@ -241,7 +244,7 @@ class TestDecisionFactors:
             mocks["broker"].get_portfolio.return_value,
         )
 
-        mdd = next(factor for factor in factors if factor.key == "mdd_252")
+        mdd = next(factor for factor in factors if factor.key == "mdd_200")
         assert mdd.value == -0.21
         assert mdd.threshold == -0.20
 
@@ -255,3 +258,22 @@ class TestCollectData:
         assert ["SPY"] in tickers_called
         assert [LEVER_TICKER] in tickers_called
         assert len(calls) == 2
+
+    def test_logs_invalid_indicator_data_diagnostics(self):
+        engine, mocks = _build_engine()
+        frame = pd.DataFrame(
+            {"Close": [100.0] * 199},
+            index=pd.date_range("2026-01-01", periods=199, freq="D"),
+        )
+        collected = CollectedData(
+            frames={"signal": frame}, vix=20.0, spec=engine.data_spec(),
+        )
+
+        engine.calculate_strategy_indicators(collected)
+
+        mocks["logger"].warning.assert_called_once()
+        message, fields, rows, last_date = mocks["logger"].warning.call_args.args
+        assert "Invalid strategy indicators" in message
+        assert "mdd_200" in fields
+        assert rows == 199
+        assert last_date.startswith("2026-07-18")

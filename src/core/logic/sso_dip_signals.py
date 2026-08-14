@@ -15,8 +15,8 @@ import pandas as pd
 
 RSI_PERIOD = 14
 MA200_WINDOW = 200
-MIN_REQUIRED_DAYS = 250
-MDD_WINDOW = 252
+MIN_REQUIRED_DAYS = 200
+MDD_WINDOW = 200
 
 
 @dataclass(frozen=True)
@@ -27,7 +27,7 @@ class SsoDipSignals:
     ma200_deviation: float
     price: float
     ma200: float
-    mdd_252: float = float("nan")
+    mdd_200: float = float("nan")
 
 
 class SsoDipIndicatorCalculator:
@@ -65,9 +65,9 @@ class SsoDipIndicatorCalculator:
         trailing_close = close.tail(MDD_WINDOW)
         if len(trailing_close) == MDD_WINDOW:
             trailing_peak = float(trailing_close.max())
-            mdd_252 = (price - trailing_peak) / trailing_peak
+            mdd_200 = (price - trailing_peak) / trailing_peak
         else:
-            mdd_252 = float("nan")
+            mdd_200 = float("nan")
 
         weekly_close = close.resample("W-FRI").last().dropna()
         weekly_rsi = self._rsi(weekly_close) if len(weekly_close) > RSI_PERIOD else float("nan")
@@ -78,7 +78,7 @@ class SsoDipIndicatorCalculator:
             ma200_deviation=deviation,
             price=price,
             ma200=ma200,
-            mdd_252=mdd_252,
+            mdd_200=mdd_200,
         )
 
     @staticmethod
@@ -99,5 +99,5 @@ class SsoDipIndicatorCalculator:
     def _nan_signals() -> SsoDipSignals:
         return SsoDipSignals(
             date="", weekly_rsi=float("nan"), ma200_deviation=float("nan"),
-            price=float("nan"), ma200=float("nan"), mdd_252=float("nan"),
+            price=float("nan"), ma200=float("nan"), mdd_200=float("nan"),
         )

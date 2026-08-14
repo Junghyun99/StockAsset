@@ -14,7 +14,7 @@ from src.core.logic.sso_dip_signals import (
 # ── 헬퍼 ──────────────────────────────────────────────────────────────
 def _make_spy_df(n_days: int = 300, base_price: float = 500.0,
                  trend: float = 0.0) -> pd.DataFrame:
-    dates = pd.bdate_range(end="2024-06-01", periods=n_days)
+    dates = pd.bdate_range(end="2024-05-31", periods=n_days)
     prices = base_price + np.arange(n_days) * trend
     return pd.DataFrame({
         "Open": prices, "High": prices * 1.01,
@@ -75,14 +75,22 @@ class TestMa200Deviation:
 
 # ── 주봉 RSI ──────────────────────────────────────────────────────────
 class TestMdd:
-    def test_trailing_252_day_peak_mdd(self):
-        dates = pd.date_range("2024-01-01", periods=252, freq="D")
-        closes = np.array([100.0] * 251 + [80.0])
+    def test_trailing_200_day_peak_mdd(self):
+        dates = pd.date_range("2024-01-01", periods=200, freq="D")
+        closes = np.array([100.0] * 199 + [80.0])
         df = pd.DataFrame({"Close": closes}, index=dates)
 
         sig = SsoDipIndicatorCalculator().calculate(df)
 
-        assert sig.mdd_252 == pytest.approx(-0.20)
+        assert sig.mdd_200 == pytest.approx(-0.20)
+
+    def test_mdd_is_invalid_below_200_days(self):
+        dates = pd.date_range("2024-01-01", periods=199, freq="D")
+        df = pd.DataFrame({"Close": [100.0] * 199}, index=dates)
+
+        sig = SsoDipIndicatorCalculator().calculate(df)
+
+        assert math.isnan(sig.mdd_200)
 
 
 class TestWeeklyRsi:
@@ -100,7 +108,7 @@ class TestWeeklyRsi:
 
     def test_rsi_mixed_data_between_bounds(self):
         """등락이 섞인 데이터 → RSI가 0과 100 사이."""
-        dates = pd.bdate_range(end="2024-06-01", periods=300)
+        dates = pd.bdate_range(end="2024-05-31", periods=300)
         prices = 500.0 + np.sin(np.linspace(0, 20 * np.pi, 300)) * 50
         df = pd.DataFrame({
             "Open": prices, "High": prices * 1.01,
@@ -119,6 +127,7 @@ class TestInsufficientData:
         sig = SsoDipIndicatorCalculator().calculate(df)
         assert math.isnan(sig.weekly_rsi)
         assert math.isnan(sig.ma200_deviation)
+        assert math.isnan(sig.mdd_200)
         assert sig.price == pytest.approx(500.0)
 
     def test_empty_dataframe_yields_nan(self):

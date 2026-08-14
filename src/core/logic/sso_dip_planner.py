@@ -78,6 +78,16 @@ class SsoDipState:
         )
 
 
+@dataclass(frozen=True)
+class SignalResolution:
+    """Automatic signal and the selected signal after manual escalation."""
+
+    automatic_signal: SignalLevel
+    selected_signal: SignalLevel
+    forced_applied: bool
+    forced_status: str | None = None
+
+
 class SsoDipPlanner:
     """Plans fixed-amount tranches and applies the signal transition table."""
 
@@ -97,8 +107,8 @@ class SsoDipPlanner:
     ) -> Tuple[List[Order], str, SsoDipState]:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
-        mdd = signals.mdd_252
-        if math.isnan(rsi) or math.isnan(dev):
+        mdd = signals.mdd_200
+        if not self.signals_are_valid(signals):
             return [], "waiting (invalid signal)", state
 
         lever_price = portfolio.current_prices.get(self.SSO_TICKER, 0.0)
@@ -186,6 +196,43 @@ class SsoDipPlanner:
 
         reason = " / ".join(reasons) if reasons else f"대기({new_state.level.value})"
         return orders, reason, new_state
+
+    @staticmethod
+    def signals_are_valid(signals: SsoDipSignals) -> bool:
+        return all(math.isfinite(value) for value in (
+            signals.weekly_rsi,
+            signals.ma200_deviation,
+            signals.mdd_200,
+        ))
+
+    def resolve_signal(
+        self,
+        signals: SsoDipSignals,
+        state: SsoDipState,
+        forced_stage: SignalLevel | None = None,
+    ) -> SignalResolution:
+        """Apply a forced stage only when it raises a valid buy signal."""
+        if not self.signals_are_valid(signals):
+            return SignalResolution(
+                SignalLevel.IDLE, SignalLevel.IDLE, False, "invalid signal",
+            )
+
+        automatic = self._detect_signal(
+            signals.weekly_rsi, signals.ma200_deviation, signals.mdd_200,
+        )
+        if forced_stage is None:
+            return SignalResolution(automatic, automatic, False)
+        if automatic == SignalLevel.SELL or state.level == SignalLevel.SELL:
+            return SignalResolution(automatic, SignalLevel.SELL, False, "SELL protected")
+
+        active_stage = state.level if self._is_buy_level(state.level) else SignalLevel.IDLE
+        baseline = max((automatic, active_stage), key=lambda level: _LEVEL_ORDER[level])
+        if (
+            self._is_buy_level(forced_stage)
+            and _LEVEL_ORDER[forced_stage] > _LEVEL_ORDER[baseline]
+        ):
+            return SignalResolution(automatic, forced_stage, True, "escalated")
+        return SignalResolution(automatic, baseline, False, "higher stage retained")
 
     def _transition(
         self,
@@ -280,7 +327,7 @@ class SsoDipPlanner:
             return SignalLevel.SELL
         for level, rsi_threshold, dev_threshold, mdd_threshold, _, _ in self._buy_stages:
             if rsi <= rsi_threshold and (
-                dev <= dev_threshold or (not math.isnan(mdd) and mdd <= mdd_threshold)
+                dev <= dev_threshold or mdd <= mdd_threshold
             ):
                 return level
         return SignalLevel.IDLE
