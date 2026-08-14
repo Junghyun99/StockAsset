@@ -563,5 +563,24 @@
                 "reason": "ODNO=0028873200"
             }
         ]
+    },
+    {
+        "id": "tx_20260814_134840",
+        "date": "2026-08-14 13:48:40",
+        "portfolio_value": 10992597.0,
+        "total_trade_amount": 199620.0,
+        "reason": "수동 강제 Stage 1 미적용 (higher stage retained): 7/30 신호 놓침 / BUY_STAGE_1 1/10 분할매수 418660.KS 4주 / 486290.KS 스윕 18주",
+        "executions": [
+            {
+                "ticker": "486290.KS",
+                "action": "BUY",
+                "quantity": 18,
+                "price": 11090.0,
+                "fee": 29.942999999999998,
+                "date": "2026-08-14 13:48:36",
+                "status": "FILLED",
+                "reason": "ODNO=0031718800"
+            }
+        ]
     }
 ]

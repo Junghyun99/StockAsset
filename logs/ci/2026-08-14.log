@@ -133,3 +133,34 @@ Traceback (most recent call last):
     self.logger.warning(
 TypeError: TradeLogger.warning() takes 2 positional arguments but 5 were given
 
+2026-08-14 13:48:22,718 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-08-14 13:48:22,722 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-08-14 13:48:22,722 [INFO] [my_test] engine=DomesticQldDipBuyEngine market=domestic mode=LIVE state=ACTIVE
+2026-08-14 13:48:22,723 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-08-14 13:48:22,723 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-08-14 13:48:22,724 [INFO] Restored previous regime: Bull
+2026-08-14 13:48:22,724 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-08-14 13:48:22,724 [INFO] >>> Step 1: Data Collection
+2026-08-14 13:48:22,724 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-08-14 13:48:23,033 [INFO] [Data] Fetching ['418660.KS'] history for 400 days...
+2026-08-14 13:48:23,261 [INFO] [Data] VIX fetched: 14.63
+2026-08-14 13:48:23,261 [INFO] >>> Step 2: Indicator Calculation
+2026-08-14 13:48:23,269 [INFO] Market Data: Price=777.88, VIX=14.63, MDD=0.00%
+2026-08-14 13:48:23,269 [INFO] >>> Step 3: Strategy Analysis
+2026-08-14 13:48:23,269 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-08-14 13:48:23,269 [INFO] >>> Step 4: Portfolio Status
+2026-08-14 13:48:24,174 [INFO] Fetching Real-time prices from Broker...
+2026-08-14 13:48:27,798 [INFO] Current Portfolio: Cash=$386,217, Value=$10,988,802
+2026-08-14 13:48:27,931 [INFO] >>> Step 5: DomesticQldDipBuy (수동 강제 Stage 1 미적용 (higher stage retained): 7/30 신호 놓침 / BUY_STAGE_1 1/10 분할매수 418660.KS 4주 / 486290.KS 스윕 18주)
+2026-08-14 13:48:27,931 [INFO] Executing 2 orders (수동 강제 Stage 1 미적용 (higher stage retained): 7/30 신호 놓침 / BUY_STAGE_1 1/10 분할매수 418660.KS 4주 / 486290.KS 스윕 18주)
+2026-08-14 13:48:28,751 [INFO] [KisBroker] Available Cash for BUY: 386,217
+2026-08-14 13:48:31,506 [ERROR] [KisDomestic] Order Failed: BUY 418660.KS qty=4 @ 43790 — 해당종목은 기본예탁금 충족한 계좌만 매수주문가능합니다
+2026-08-14 13:48:35,170 [INFO] [KisDomestic] Order Sent: BUY 486290.KS 18 @ 11090 (ODNO=0031718800)
+2026-08-14 13:48:36,427 [INFO] [KisDomestic] Order FILLED: 486290.KS ODNO=0031718800 price=11090.0 qty=18 fee=29.942999999999998
+2026-08-14 13:48:36,629 [INFO] Order Summary: total=2 filled=1 partial=0 ordered=0 cancelled=0 skipped=0 rejected=1 error=0
+2026-08-14 13:48:36,630 [ERROR] ⚠️ Order Result Alert
+날짜: 2026-08-14
+- BUY 418660.KS 4주: REJECTED — 해당종목은 기본예탁금 충족한 계좌만 매수주문가능합니다
+2026-08-14 13:48:40,739 [INFO] Updated Portfolio: Cash=$186,577, Value=$10,992,597
+2026-08-14 13:48:40,740 [INFO] >>> Step 6: Archiving Data
+2026-08-14 13:48:40,748 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=2 executions=1
