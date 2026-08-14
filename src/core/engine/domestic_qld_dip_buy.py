@@ -75,9 +75,9 @@ class DomesticQldDipBuyEngine(TradingEngine):
         if invalid_fields:
             last_date = str(frame.index[-1]) if not frame.empty else "none"
             self.logger.warning(
-                "[DomesticQldDipBuy] Invalid strategy indicators: %s "
-                "(rows=%d, last_date=%s)",
-                ", ".join(invalid_fields), len(frame), last_date,
+                "[DomesticQldDipBuy] Invalid strategy indicators: "
+                f"{', '.join(invalid_fields)} "
+                f"(rows={len(frame)}, last_date={last_date})"
             )
         return self.dip_signals
 
