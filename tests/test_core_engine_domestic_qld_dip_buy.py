@@ -261,6 +261,13 @@ class TestCollectData:
 
     def test_logs_invalid_indicator_data_diagnostics(self):
         engine, mocks = _build_engine()
+        warnings = []
+
+        class SingleArgumentLogger:
+            def warning(self, message):
+                warnings.append(message)
+
+        engine.logger = SingleArgumentLogger()
         frame = pd.DataFrame(
             {"Close": [100.0] * 199},
             index=pd.date_range("2026-01-01", periods=199, freq="D"),
@@ -271,9 +278,9 @@ class TestCollectData:
 
         engine.calculate_strategy_indicators(collected)
 
-        mocks["logger"].warning.assert_called_once()
-        message, fields, rows, last_date = mocks["logger"].warning.call_args.args
+        assert len(warnings) == 1
+        message = warnings[0]
         assert "Invalid strategy indicators" in message
-        assert "mdd_200" in fields
-        assert rows == 199
-        assert last_date.startswith("2026-07-18")
+        assert "mdd_200" in message
+        assert "rows=199" in message
+        assert "last_date=2026-07-18" in message
