@@ -164,3 +164,351 @@ TypeError: TradeLogger.warning() takes 2 positional arguments but 5 were given
 2026-08-14 13:48:40,739 [INFO] Updated Portfolio: Cash=$186,577, Value=$10,992,597
 2026-08-14 13:48:40,740 [INFO] >>> Step 6: Archiving Data
 2026-08-14 13:48:40,748 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=2 executions=1
+2026-08-14 14:01:01,215 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-08-14 14:01:01,220 [INFO] Loaded 4 account(s) from accounts.yaml
+2026-08-14 14:01:01,220 [INFO] [my_test] engine=DomesticQldDipBuyEngine market=domestic mode=LIVE state=ACTIVE
+2026-08-14 14:01:01,220 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-08-14 14:01:01,220 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-08-14 14:01:01,221 [INFO] Restored previous regime: Bull
+2026-08-14 14:01:01,222 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-08-14 14:01:01,222 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-08-14 14:01:01,222 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-08-14 14:01:01,223 [INFO] Restored previous regime: Bull
+2026-08-14 14:01:01,223 [INFO] [my_pension] engine=DomesticAsset5RealEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-08-14 14:01:01,224 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-08-14 14:01:01,224 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-08-14 14:01:01,225 [INFO] Restored previous regime: Bull
+2026-08-14 14:01:01,225 [INFO] [my_irp] engine=DomesticAsset5RealEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-08-14 14:01:01,225 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-08-14 14:01:01,225 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-08-14 14:01:01,226 [INFO] Restored previous regime: Bull
+2026-08-14 14:01:01,226 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-08-14 14:01:01,226 [INFO] >>> Step 1: Data Collection
+2026-08-14 14:01:01,227 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-08-14 14:01:01,676 [INFO] [Data] Fetching ['418660.KS'] history for 400 days...
+2026-08-14 14:01:01,961 [INFO] [Data] VIX fetched: 14.63
+2026-08-14 14:01:01,961 [INFO] >>> Step 2: Indicator Calculation
+2026-08-14 14:01:01,969 [INFO] Market Data: Price=777.88, VIX=14.63, MDD=0.00%
+2026-08-14 14:01:01,969 [INFO] >>> Step 3: Strategy Analysis
+2026-08-14 14:01:01,970 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-08-14 14:01:01,970 [INFO] >>> Step 4: Portfolio Status
+2026-08-14 14:01:12,224 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (2/3)
+2026-08-14 14:01:23,479 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (3/3)
+2026-08-14 14:01:35,702 [ERROR] ⚠️ Portfolio API Error — 사이클 중단
+날짜: today
+[KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=90005152&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a11d9840>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+2026-08-14 14:01:36,269 [ERROR] [my_test] Critical Error:
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a11d9840>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=90005152&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a11d9840>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 97, in get_portfolio
+    res = _pkg.requests.get(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 87, in get
+    return request("get", url, params=params, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 717, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=90005152&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a11d9840>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/main.py", line 169, in _run_one_account
+    runner.engine.run_one_cycle(self.data_loader)
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 163, in run_one_cycle
+    portfolio = self.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 293, in get_portfolio
+    portfolio = self.broker.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 138, in get_portfolio
+    raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
+RuntimeError: [KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=90005152&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a11d9840>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+2026-08-14 14:01:36,506 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-08-14 14:01:36,506 [INFO] >>> Step 1: Data Collection
+2026-08-14 14:01:36,506 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-08-14 14:01:36,702 [INFO] [Data] VIX fetched: 14.63
+2026-08-14 14:01:36,702 [INFO] >>> Step 2: Indicator Calculation
+2026-08-14 14:01:36,705 [INFO] Market Data: Price=188355.00, VIX=14.63, MDD=-9.35%
+2026-08-14 14:01:36,705 [INFO] >>> Step 3: Strategy Analysis
+2026-08-14 14:01:36,705 [INFO] >>> VolManaged: vol=27.60% → L=0.80x (TIGER 미국나스닥100레버리지(합성) 0%, 위험 80%, 현금 20%)
+2026-08-14 14:01:36,705 [INFO] Regime: Bull | Target Exposure: 0.80
+2026-08-14 14:01:36,706 [INFO] >>> Step 4: Portfolio Status
+2026-08-14 14:01:46,922 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (2/3)
+2026-08-14 14:01:58,140 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (3/3)
+2026-08-14 14:02:10,416 [ERROR] ⚠️ Portfolio API Error — 사이클 중단
+날짜: today
+[KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120f850>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+2026-08-14 14:02:10,882 [ERROR] [my_isa] Critical Error:
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120f850>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120f850>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 97, in get_portfolio
+    res = _pkg.requests.get(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 87, in get
+    return request("get", url, params=params, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 717, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120f850>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/main.py", line 169, in _run_one_account
+    runner.engine.run_one_cycle(self.data_loader)
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 163, in run_one_cycle
+    portfolio = self.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 293, in get_portfolio
+    portfolio = self.broker.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 138, in get_portfolio
+    raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
+RuntimeError: [KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44838440&ACNT_PRDT_CD=01&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120f850>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+2026-08-14 14:02:11,141 [INFO] ===== [my_pension] 계좌 실행 시작 =====
+2026-08-14 14:02:11,142 [INFO] >>> Step 1: Data Collection
+2026-08-14 14:02:11,142 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-08-14 14:02:11,361 [INFO] [Data] VIX fetched: 14.63
+2026-08-14 14:02:11,361 [INFO] >>> Step 2: Indicator Calculation
+2026-08-14 14:02:11,364 [INFO] Market Data: Price=777.88, VIX=14.63, MDD=0.00%
+2026-08-14 14:02:11,364 [INFO] >>> Step 3: Strategy Analysis
+2026-08-14 14:02:11,364 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-08-14 14:02:11,364 [INFO] >>> Step 4: Portfolio Status
+2026-08-14 14:02:21,651 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (2/3)
+2026-08-14 14:02:32,868 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (3/3)
+2026-08-14 14:02:45,126 [ERROR] ⚠️ Portfolio API Error — 사이클 중단
+날짜: today
+[KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44340824&ACNT_PRDT_CD=22&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120e080>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+2026-08-14 14:02:45,642 [ERROR] [my_pension] Critical Error:
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120e080>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44340824&ACNT_PRDT_CD=22&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120e080>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 97, in get_portfolio
+    res = _pkg.requests.get(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 87, in get
+    return request("get", url, params=params, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 717, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44340824&ACNT_PRDT_CD=22&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120e080>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/main.py", line 169, in _run_one_account
+    runner.engine.run_one_cycle(self.data_loader)
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 163, in run_one_cycle
+    portfolio = self.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 293, in get_portfolio
+    portfolio = self.broker.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 138, in get_portfolio
+    raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
+RuntimeError: [KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=44340824&ACNT_PRDT_CD=22&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120e080>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+2026-08-14 14:02:45,859 [INFO] ===== [my_irp] 계좌 실행 시작 =====
+2026-08-14 14:02:45,860 [INFO] >>> Step 1: Data Collection
+2026-08-14 14:02:45,860 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-08-14 14:02:46,065 [INFO] [Data] VIX fetched: 14.63
+2026-08-14 14:02:46,065 [INFO] >>> Step 2: Indicator Calculation
+2026-08-14 14:02:46,068 [INFO] Market Data: Price=777.88, VIX=14.63, MDD=0.00%
+2026-08-14 14:02:46,068 [INFO] >>> Step 3: Strategy Analysis
+2026-08-14 14:02:46,068 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-08-14 14:02:46,068 [INFO] >>> Step 4: Portfolio Status
+2026-08-14 14:02:56,325 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (2/3)
+2026-08-14 14:03:07,543 [WARNING] [KisDomestic] Portfolio API ConnectTimeout; retrying (3/3)
+2026-08-14 14:03:19,760 [ERROR] ⚠️ Portfolio API Error — 사이클 중단
+날짜: today
+[KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=74796139&ACNT_PRDT_CD=29&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120d7b0>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+2026-08-14 14:03:20,290 [ERROR] [my_irp] Critical Error:
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 204, in _new_conn
+    sock = connection.create_connection(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 85, in create_connection
+    raise err
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/connection.py", line 73, in create_connection
+    sock.connect(sa)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 488, in _make_request
+    raise new_e
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 464, in _make_request
+    self._validate_conn(conn)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 1106, in _validate_conn
+    conn.connect()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 759, in connect
+    self.sock = sock = self._new_conn()
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connection.py", line 213, in _new_conn
+    raise ConnectTimeoutError(
+urllib3.exceptions.ConnectTimeoutError: (<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120d7b0>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)')
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/urllib3/util/retry.py", line 543, in increment
+    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
+urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=74796139&ACNT_PRDT_CD=29&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120d7b0>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 97, in get_portfolio
+    res = _pkg.requests.get(
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 87, in get
+    return request("get", url, params=params, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "/opt/hostedtoolcache/Python/3.10.20/x64/lib/python3.10/site-packages/requests/adapters.py", line 717, in send
+    raise ConnectTimeout(e, request=request)
+requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=74796139&ACNT_PRDT_CD=29&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120d7b0>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/main.py", line 169, in _run_one_account
+    runner.engine.run_one_cycle(self.data_loader)
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 163, in run_one_cycle
+    portfolio = self.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/core/engine/base.py", line 293, in get_portfolio
+    portfolio = self.broker.get_portfolio()
+  File "/home/runner/work/StockAsset/StockAsset/src/../src/infra/broker/kis_domestic.py", line 138, in get_portfolio
+    raise RuntimeError(f"[KisDomestic] Error getting portfolio: {e}") from e
+RuntimeError: [KisDomestic] Error getting portfolio: HTTPSConnectionPool(host='openapi.koreainvestment.com', port=9443): Max retries exceeded with url: /uapi/domestic-stock/v1/trading/inquire-balance?CANO=74796139&ACNT_PRDT_CD=29&AFHR_FLPR_YN=N&OFL_YN=&INQR_DVSN=01&UNPR_DVSN=01&FUND_STTL_ICLD_YN=N&FNCG_AMT_AUTO_RDPT_YN=N&PRCS_DVSN=00&CTX_AREA_FK100=&CTX_AREA_NK100= (Caused by ConnectTimeoutError(<HTTPSConnection(host='openapi.koreainvestment.com', port=9443) at 0x7f99a120d7b0>, 'Connection to openapi.koreainvestment.com timed out. (connect timeout=10.0)'))
+
