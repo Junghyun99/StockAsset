@@ -1,11 +1,11 @@
 {
-    "last_updated": "2026-08-14 10:01:07",
+    "last_updated": "2026-08-14 10:27:24",
     "last_rebalancing_date": "2026-08-13",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "대기(IDLE)",
+        "trigger_reason": "수동 강제 Stage 1 진입: 7/30 신호 놓침 / waiting (invalid signal)",
         "market_score": {
             "vix": 14.630000114440918,
             "spy_mdd": 0.0,
@@ -16,27 +16,6 @@
         },
         "decision_factors": [
             {
-                "key": "weekly_rsi",
-                "label": "주봉 RSI(14)",
-                "value": 52.921772830451836,
-                "format": "number",
-                "threshold": 48.0
-            },
-            {
-                "key": "ma200_deviation",
-                "label": "200일선 괴리율",
-                "value": 0.11892617723143774,
-                "format": "percent",
-                "threshold": -0.1
-            },
-            {
-                "key": "mdd_252",
-                "label": "252거래일 MDD",
-                "value": -0.17947520776916612,
-                "format": "percent",
-                "threshold": -0.2
-            },
-            {
                 "key": "signal_level",
                 "label": "신호 단계",
                 "value": "IDLE",
@@ -46,21 +25,21 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.19882047009658496,
+                "value": 0.19887506791500473,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10784805.0,
+        "total_value": 10785540.0,
         "cash_balance": 9245.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 43760.0,
-                "value": 2144240.0
+                "price": 43775.0,
+                "value": 2144975.0
             },
             {
                 "ticker": "486290.KS",
