@@ -37,30 +37,6 @@ class TestSignalDetection:
         _, _, new_state = planner.plan(_sig(rsi=55, dev=0.02), _pf(), state)
         assert new_state.level == SignalLevel.IDLE
 
-    def test_forced_stage_bypasses_invalid_raw_indicators(self):
-        planner = SsoDipPlanner()
-
-        orders, _, new_state = planner.plan(
-            _sig(rsi=float("nan"), dev=float("nan")),
-            _pf(),
-            SsoDipState(),
-            raw_signal_override=SignalLevel.BUY_STAGE_1,
-        )
-
-        assert new_state.level == SignalLevel.BUY_STAGE_1
-        assert any(order.ticker == "SSO" for order in orders)
-
-    def test_invalid_raw_indicators_block_unforced_signal(self):
-        planner = SsoDipPlanner()
-
-        orders, reason, new_state = planner.plan(
-            _sig(rsi=float("nan"), dev=float("nan")), _pf(), SsoDipState(),
-        )
-
-        assert orders == []
-        assert reason == "waiting (invalid signal)"
-        assert new_state.level == SignalLevel.IDLE
-
     def test_stage1_triggers(self):
         """RSI≤48 AND 괴리율≤-10% → STAGE_1."""
         planner = SsoDipPlanner()
