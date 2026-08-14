@@ -98,7 +98,7 @@ class SsoDipPlanner:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
         mdd = signals.mdd_252
-        if raw_signal_override is None and (math.isnan(rsi) or math.isnan(dev)):
+        if math.isnan(rsi) or math.isnan(dev):
             return [], "waiting (invalid signal)", state
 
         lever_price = portfolio.current_prices.get(self.SSO_TICKER, 0.0)
