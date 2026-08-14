@@ -93,6 +93,7 @@ class SsoDipPlanner:
         signals: SsoDipSignals,
         portfolio: Portfolio,
         state: SsoDipState,
+        raw_signal_override: SignalLevel | None = None,
     ) -> Tuple[List[Order], str, SsoDipState]:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
@@ -107,7 +108,7 @@ class SsoDipPlanner:
             return [], "waiting (missing portfolio data)", state
 
         current_ratio = self._sso_ratio(portfolio)
-        raw_signal = self._detect_signal(rsi, dev, mdd)
+        raw_signal = raw_signal_override or self._detect_signal(rsi, dev, mdd)
         new_state, delta_amount = self._transition(
             raw_signal, current_ratio, total, state,
         )

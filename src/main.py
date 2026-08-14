@@ -55,7 +55,7 @@ class AccountRunner:
 
 
 class TradingBot:
-    def __init__(self):
+    def __init__(self, account_id: str | None = None, save_accounts_meta: bool = True):
         # 1. 공용 설정 및 인프라
         self.config = Config()
         self.strategy = StrategyConfig()
@@ -72,6 +72,10 @@ class TradingBot:
 
         # 2. accounts.yaml 로드
         accounts = load_accounts(self.config.ACCOUNTS_CONFIG_PATH)
+        if account_id is not None:
+            accounts = [account for account in accounts if account.id == account_id]
+            if not accounts:
+                raise ValueError(f"Account not found: {account_id}")
         self.logger.info(f"Loaded {len(accounts)} account(s) from {self.config.ACCOUNTS_CONFIG_PATH}")
 
         # 3. 계좌별 러너 구성
@@ -118,7 +122,8 @@ class TradingBot:
         if not self.runners:
             raise ValueError("등록된 계좌가 없습니다. accounts.yaml을 확인하세요.")
 
-        self._save_accounts_meta()
+        if save_accounts_meta:
+            self._save_accounts_meta()
 
     def _save_accounts_meta(self):
         """docs/data/accounts.json + accounts_meta.json 생성 (프론트엔드 계좌 목록용)."""
