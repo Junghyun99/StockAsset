@@ -1,0 +1,164 @@
+name: Run Forced DipBuy Stage
+
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: "Forced DipBuy stage"
+        required: true
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+      reason:
+        description: "Reason recorded with the forced stage entry"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  forced-dip-stage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: live-trading-domestic
+      cancel-in-progress: false
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        cache: pip
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Check Korean holiday
+      id: holiday
+      run: |
+        python - <<'PY'
+        import datetime
+        import os
+        import zoneinfo
+
+        import holidays
+
+        kr = holidays.country_holidays('KR')
+        kst_tz = zoneinfo.ZoneInfo('Asia/Seoul')
+        today_kst = datetime.datetime.now(datetime.timezone.utc).astimezone(kst_tz).date()
+        is_holiday = today_kst in kr
+        name = kr.get(today_kst, '')
+        print(f'KST today={today_kst}, holiday={is_holiday}, name={name}')
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+            output.write(f"is_holiday={'true' if is_holiday else 'false'}\n")
+            output.write(f'kst_date={today_kst.isoformat()}\n')
+        PY
+
+    - name: Skip if holiday
+      if: ${{ steps.holiday.outputs.is_holiday == 'true' }}
+      run: |
+        echo "::notice title=Holiday Skip::${{ steps.holiday.outputs.kst_date }} is a Korean holiday."
+
+    - name: Restore KIS token cache
+      if: ${{ steps.holiday.outputs.is_holiday != 'true' }}
+      id: token-cache-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: .kis_token_cache.enc
+        key: kis-token-domestic-${{ github.run_id }}
+        restore-keys: |
+          kis-token-domestic-
+
+    - name: Decrypt KIS token cache
+      if: ${{ steps.holiday.outputs.is_holiday != 'true' && hashFiles('.kis_token_cache.enc') != '' }}
+      env:
+        KIS_TOKEN_CACHE_KEY: ${{ secrets.KIS_TOKEN_CACHE_KEY }}
+      run: |
+        if [ -z "${KIS_TOKEN_CACHE_KEY:-}" ]; then
+          echo "::warning::KIS_TOKEN_CACHE_KEY is not configured; issuing a new token."
+          exit 0
+        fi
+        if ! openssl enc -d -aes-256-cbc -pbkdf2 -salt \
+             -in .kis_token_cache.enc -out .kis_token_cache.json \
+             -pass env:KIS_TOKEN_CACHE_KEY; then
+          echo "::warning::Could not decrypt KIS token cache; issuing a new token."
+          rm -f .kis_token_cache.json
+        fi
+
+    - name: Run forced DipBuy stage for my_test
+      if: ${{ steps.holiday.outputs.is_holiday != 'true' }}
+      env:
+        MY_TEST_KIS_APP_KEY: ${{ secrets.MY_TEST_KIS_APP_KEY }}
+        MY_TEST_KIS_APP_SECRET: ${{ secrets.MY_TEST_KIS_APP_SECRET }}
+        MY_TEST_KIS_ACC_NO: ${{ secrets.MY_TEST_KIS_ACC_NO }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_LIVE }}
+        SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+        SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+        PYTHONUNBUFFERED: "1"
+        STAGE: ${{ inputs.stage }}
+        REASON: ${{ inputs.reason }}
+      run: |
+        python -m scripts.run_forced_dip_stage \
+          --account my_test \
+          --stage "$STAGE" \
+          --reason "$REASON"
+
+    - name: Encrypt KIS token cache
+      if: ${{ always() && steps.holiday.outputs.is_holiday != 'true' && hashFiles('.kis_token_cache.json') != '' }}
+      id: encrypt-token-cache
+      env:
+        KIS_TOKEN_CACHE_KEY: ${{ secrets.KIS_TOKEN_CACHE_KEY }}
+      run: |
+        if [ -z "${KIS_TOKEN_CACHE_KEY:-}" ]; then
+          echo "::warning::KIS_TOKEN_CACHE_KEY is not configured; token cache will not be saved."
+          echo "cache_saved=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        rm -f .kis_token_cache.enc
+        if openssl enc -aes-256-cbc -pbkdf2 -salt \
+             -in .kis_token_cache.json -out .kis_token_cache.enc \
+             -pass env:KIS_TOKEN_CACHE_KEY; then
+          echo "cache_saved=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "cache_saved=false" >> "$GITHUB_OUTPUT"
+          exit 1
+        fi
+
+    - name: Save KIS token cache
+      if: ${{ always() && steps.encrypt-token-cache.outputs.cache_saved == 'true' }}
+      uses: actions/cache/save@v4
+      with:
+        path: .kis_token_cache.enc
+        key: kis-token-domestic-${{ github.run_id }}
+
+    - name: Commit and push updated dashboard data
+      if: ${{ always() && steps.holiday.outputs.is_holiday != 'true' }}
+      uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403
+      with:
+        commit_message: "chore(live): update forced dip stage data [skip ci]"
+        file_pattern: "docs/data/*.json docs/data/**/*.json logs/ci/*.log"
+        commit_user_name: "github-actions[bot]"
+        commit_user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Notify Slack on failure
+      if: ${{ failure() && steps.holiday.outputs.is_holiday != 'true' }}
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_LIVE }}
+      run: |
+        if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+          echo "SLACK_WEBHOOK_URL not set, skipping Slack notification"
+          exit 0
+        fi
+        RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\":rotating_light: Forced DipBuy Stage FAILED\\n<${RUN_URL}|Run #${{ github.run_id }}>\"}" \
+          "$SLACK_WEBHOOK_URL"
