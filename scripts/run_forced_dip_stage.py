@@ -29,11 +29,16 @@ def main(argv=None) -> int:
         print(f"error: {error}")
         return 2
 
-    if not isinstance(bot.engine, DomesticQldDipBuyEngine):
+    runner = bot.runners[0]
+    if runner.account.market_type != "domestic":
+        print(f"error: {args.account} is not a domestic account")
+        return 2
+
+    if not isinstance(runner.engine, DomesticQldDipBuyEngine):
         print(f"error: {args.account} does not use DomesticQldDipBuyEngine")
         return 2
 
-    bot.engine.force_buy_stage(args.stage, args.reason)
+    runner.engine.force_buy_stage(args.stage, args.reason)
     bot.run()
     return 0
 
