@@ -48,11 +48,11 @@ Run the existing CLI exactly as:
 ```bash
 python -m scripts.run_forced_dip_stage \
   --account my_test \
-  --stage "${{ inputs.stage }}" \
-  --reason "${{ inputs.reason }}"
+  --stage "$STAGE" \
+  --reason "$REASON"
 ```
 
-Inject only `MY_TEST_KIS_APP_KEY`, `MY_TEST_KIS_APP_SECRET`, `MY_TEST_KIS_ACC_NO`, Slack secrets, and `KIS_TOKEN_CACHE_KEY` where needed. Copy the restricted auto-commit and failure Slack notification patterns from the domestic live workflow.
+Set `STAGE` and `REASON` from workflow inputs in the step environment so user text is not interpolated into shell source. Inject only `MY_TEST_KIS_APP_KEY`, `MY_TEST_KIS_APP_SECRET`, `MY_TEST_KIS_ACC_NO`, Slack secrets, and `KIS_TOKEN_CACHE_KEY` where needed. Copy the restricted auto-commit and failure Slack notification patterns from the domestic live workflow.
 
 **Step 2: Run test to verify it passes**
 
