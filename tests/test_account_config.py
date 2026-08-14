@@ -96,6 +96,40 @@ def test_load_accounts_missing_secret(yaml_file, monkeypatch):
         load_accounts(yaml_file)
 
 
+def test_load_accounts_target_requires_only_target_secrets(yaml_file, monkeypatch):
+    _set_env(monkeypatch, "ACC1")
+    monkeypatch.delenv("ACC2_KIS_APP_KEY", raising=False)
+    monkeypatch.delenv("ACC2_KIS_APP_SECRET", raising=False)
+    monkeypatch.delenv("ACC2_KIS_ACC_NO", raising=False)
+
+    accounts = load_accounts(yaml_file, account_id="acc1")
+
+    assert [account.id for account in accounts] == ["acc1"]
+
+
+def test_load_accounts_target_rejects_unknown_id(yaml_file, monkeypatch):
+    _set_env(monkeypatch, "ACC1")
+
+    with pytest.raises(ValueError, match="Account not found: unknown"):
+        load_accounts(yaml_file, account_id="unknown")
+
+
+def test_load_accounts_target_rejects_duplicate_ids(tmp_path, monkeypatch):
+    p = tmp_path / "dup-target.yaml"
+    p.write_text(
+        """
+accounts:
+  - {id: target, market_type: domestic, is_live: false, engine: SpyEngine, kis_env_prefix: ONE}
+  - {id: target, market_type: domestic, is_live: false, engine: SpyEngine, kis_env_prefix: TWO}
+""",
+        encoding="utf-8",
+    )
+    _set_env(monkeypatch, "ONE")
+
+    with pytest.raises(ValueError, match="중복"):
+        load_accounts(str(p), account_id="target")
+
+
 def test_load_accounts_duplicate_id(tmp_path, monkeypatch):
     p = tmp_path / "dup.yaml"
     p.write_text(

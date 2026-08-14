@@ -27,6 +27,13 @@ def _fake_two_accounts():
     ]
 
 
+def _load_fake_accounts(path, account_id=None):
+    accounts = _fake_two_accounts()
+    if account_id is None:
+        return accounts
+    return [account for account in accounts if account.id == account_id]
+
+
 @pytest.fixture
 def mock_multi_account_deps(tmp_path):
     """acc1(overseas)/acc2(domestic) 2개 계좌로 TradingBot을 구성할 때 필요한 의존성을 mock.
@@ -35,7 +42,7 @@ def mock_multi_account_deps(tmp_path):
     테스트가 실제 docs/data, logs 디렉토리에 부작용을 남기지 않게 한다.
     """
     with patch('src.main.Config') as MockConfig, \
-         patch('src.main.load_accounts', return_value=_fake_two_accounts()), \
+        patch('src.main.load_accounts', side_effect=_load_fake_accounts) as MockLoadAccounts, \
          patch('src.main._resolve_engine_class') as MockResolve, \
          patch('src.main.YFinanceLoader') as MockLoader, \
          patch('src.main.JsonRepository') as MockRepoCls, \
@@ -86,6 +93,7 @@ def mock_multi_account_deps(tmp_path):
             'broker_acc2': domestic_broker,
             'repo_acc1': repo_acc1,
             'repo_acc2': repo_acc2,
+            'load_accounts': MockLoadAccounts,
             'tmp_path': tmp_path,
         }
 
@@ -204,5 +212,8 @@ def test_target_account_mode_builds_only_target_and_skips_meta_write(mock_multi_
     bot = TradingBot(account_id="acc2", save_accounts_meta=False)
 
     assert [runner.account.id for runner in bot.runners] == ["acc2"]
+    mock_multi_account_deps["load_accounts"].assert_called_once_with(
+        "accounts.yaml", account_id="acc2",
+    )
     assert not (mock_multi_account_deps["tmp_path"] / "accounts.json").exists()
     assert not (mock_multi_account_deps["tmp_path"] / "accounts_meta.json").exists()

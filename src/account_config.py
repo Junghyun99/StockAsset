@@ -37,7 +37,9 @@ class AccountConfig:
         self.market_type = mt
 
 
-def load_accounts(path: str = "accounts.yaml") -> List[AccountConfig]:
+def load_accounts(
+    path: str = "accounts.yaml", account_id: str | None = None,
+) -> List[AccountConfig]:
     """accounts.yaml을 읽어 AccountConfig 리스트를 반환한다.
 
     Raises:
@@ -66,6 +68,9 @@ def load_accounts(path: str = "accounts.yaml") -> List[AccountConfig]:
         if acc_id in seen_ids:
             raise ValueError(f"{path}: 중복된 계좌 id '{acc_id}'")
         seen_ids.add(acc_id)
+
+        if account_id is not None and acc_id != account_id:
+            continue
 
         engine_name = raw.get("engine")
         if not engine_name:
@@ -96,5 +101,8 @@ def load_accounts(path: str = "accounts.yaml") -> List[AccountConfig]:
                 acc_no=acc_no,
             )
         )
+
+    if account_id is not None and not accounts:
+        raise ValueError(f"Account not found: {account_id}")
 
     return accounts
