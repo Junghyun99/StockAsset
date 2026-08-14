@@ -13,7 +13,7 @@ def _sig(rsi: float = 50.0, dev: float = 0.0, mdd: float = 0.0) -> SsoDipSignals
     """지표 스냅샷 헬퍼."""
     return SsoDipSignals(
         date="2024-06-01", weekly_rsi=rsi, ma200_deviation=dev,
-        price=500.0, ma200=500.0, mdd_252=mdd,
+        price=500.0, ma200=500.0, mdd_200=mdd,
     )
 
 
@@ -35,6 +35,82 @@ class TestSignalDetection:
         planner = SsoDipPlanner()
         state = SsoDipState()
         _, _, new_state = planner.plan(_sig(rsi=55, dev=0.02), _pf(), state)
+        assert new_state.level == SignalLevel.IDLE
+
+    def test_forced_stage_does_not_bypass_invalid_raw_indicators(self):
+        planner = SsoDipPlanner()
+
+        orders, reason, new_state = planner.plan(
+            _sig(rsi=float("nan"), dev=float("nan")),
+            _pf(),
+            SsoDipState(),
+            raw_signal_override=SignalLevel.BUY_STAGE_1,
+        )
+
+        assert orders == []
+        assert reason == "waiting (invalid signal)"
+        assert new_state.level == SignalLevel.IDLE
+
+    def test_forced_stage_does_not_bypass_invalid_mdd(self):
+        planner = SsoDipPlanner()
+
+        orders, reason, new_state = planner.plan(
+            _sig(mdd=float("nan")),
+            _pf(),
+            SsoDipState(),
+            raw_signal_override=SignalLevel.BUY_STAGE_1,
+        )
+
+        assert orders == []
+        assert reason == "waiting (invalid signal)"
+        assert new_state.level == SignalLevel.IDLE
+
+    def test_forced_stage_only_escalates_automatic_signal(self):
+        planner = SsoDipPlanner()
+
+        resolution = planner.resolve_signal(
+            _sig(rsi=45, dev=-0.12),
+            SsoDipState(),
+            SignalLevel.BUY_STAGE_2,
+        )
+
+        assert resolution.automatic_signal == SignalLevel.BUY_STAGE_1
+        assert resolution.selected_signal == SignalLevel.BUY_STAGE_2
+        assert resolution.forced_applied is True
+
+    def test_forced_stage_does_not_downgrade_active_campaign(self):
+        planner = SsoDipPlanner()
+
+        resolution = planner.resolve_signal(
+            _sig(rsi=55, dev=0.02),
+            SsoDipState(level=SignalLevel.BUY_STAGE_2),
+            SignalLevel.BUY_STAGE_1,
+        )
+
+        assert resolution.selected_signal == SignalLevel.BUY_STAGE_2
+        assert resolution.forced_applied is False
+
+    def test_forced_stage_does_not_override_sell(self):
+        planner = SsoDipPlanner()
+
+        resolution = planner.resolve_signal(
+            _sig(rsi=78, dev=0.18),
+            SsoDipState(level=SignalLevel.BUY_STAGE_1),
+            SignalLevel.BUY_STAGE_3,
+        )
+
+        assert resolution.selected_signal == SignalLevel.SELL
+        assert resolution.forced_applied is False
+
+    def test_invalid_raw_indicators_block_unforced_signal(self):
+        planner = SsoDipPlanner()
+
+        orders, reason, new_state = planner.plan(
+            _sig(rsi=float("nan"), dev=float("nan")), _pf(), SsoDipState(),
+        )
+
+        assert orders == []
+        assert reason == "waiting (invalid signal)"
         assert new_state.level == SignalLevel.IDLE
 
     def test_stage1_triggers(self):

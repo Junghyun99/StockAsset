@@ -90,7 +90,7 @@ class TestStateManagement:
         engine, mocks = _build_engine()
         engine.sso_signals = SsoDipSignals(
             date="2026-07-22", weekly_rsi=45.0, ma200_deviation=-0.12,
-            price=80.0, ma200=90.0,
+            price=80.0, ma200=90.0, mdd_200=-0.15,
         )
         mocks["broker"].execute_orders.return_value = [TradeExecution(
             "SSO", OrderAction.BUY, 5, 80.0, 0.0, "2026-07-22", ExecutionStatus.FILLED,

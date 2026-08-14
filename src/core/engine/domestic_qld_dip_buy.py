@@ -63,7 +63,22 @@ class DomesticQldDipBuyEngine(TradingEngine):
         )
 
     def calculate_strategy_indicators(self, collected: CollectedData):
-        self.dip_signals = self._signal_calc.calculate(collected.frame("signal"))
+        frame = collected.frame("signal")
+        self.dip_signals = self._signal_calc.calculate(frame)
+        invalid_fields = [
+            name for name, value in (
+                ("weekly_rsi", self.dip_signals.weekly_rsi),
+                ("ma200_deviation", self.dip_signals.ma200_deviation),
+                ("mdd_200", self.dip_signals.mdd_200),
+            ) if not math.isfinite(value)
+        ]
+        if invalid_fields:
+            last_date = str(frame.index[-1]) if not frame.empty else "none"
+            self.logger.warning(
+                "[DomesticQldDipBuy] Invalid strategy indicators: %s "
+                "(rows=%d, last_date=%s)",
+                ", ".join(invalid_fields), len(frame), last_date,
+            )
         return self.dip_signals
 
     def uses_trading_interval(self) -> bool:
@@ -78,13 +93,24 @@ class DomesticQldDipBuyEngine(TradingEngine):
     ) -> StrategyDecision:
         forced_stage = self._forced_buy_stage
         self._forced_buy_stage = None
+        resolution = self._planner.resolve_signal(
+            self.dip_signals,
+            self.dip_state,
+            forced_stage[0] if forced_stage else None,
+        )
         orders, reason, new_state = self._planner.plan(
             self.dip_signals, portfolio, self.dip_state,
-            raw_signal_override=forced_stage[0] if forced_stage else None,
+            raw_signal_override=resolution.selected_signal,
         )
         if forced_stage:
             stage = forced_stage[0].value.removeprefix("BUY_STAGE_")
-            reason = f"수동 강제 Stage {stage} 진입: {forced_stage[1]} / {reason}"
+            if resolution.forced_applied:
+                reason = f"수동 강제 Stage {stage} 진입: {forced_stage[1]} / {reason}"
+            else:
+                reason = (
+                    f"수동 강제 Stage {stage} 미적용 "
+                    f"({resolution.forced_status}): {forced_stage[1]} / {reason}"
+                )
 
         signal = TradeSignal(exposure, orders, reason)
         return StrategyDecision(
@@ -127,9 +153,9 @@ class DomesticQldDipBuyEngine(TradingEngine):
                     "ma200_deviation", "200일선 괴리율", s.ma200_deviation, "percent",
                     threshold=-0.10,
                 ))
-            if not math.isnan(s.mdd_252):
+            if not math.isnan(s.mdd_200):
                 factors.append(DecisionFactor(
-                    "mdd_252", "252거래일 MDD", s.mdd_252, "percent",
+                    "mdd_200", "200거래일 MDD", s.mdd_200, "percent",
                     threshold=-0.20,
                 ))
 
