@@ -300,24 +300,6 @@ class TestFixedAmountTranches:
         assert new_state.tranche_amount == 400.0
         assert "1/10" in reason
 
-    def test_forced_stage1_initializes_campaign_despite_idle_signal(self):
-        planner = SsoDipPlanner()
-        forced_state = SsoDipState(
-            level=SignalLevel.BUY_STAGE_1,
-            forced_at="2026-08-14T10:00:00+09:00",
-            forced_reason="2026-07-30 missed entry",
-        )
-
-        orders, _, new_state = planner.plan(
-            _sig(rsi=55, dev=0.02), _pf(cash=10_000, sso=0, spyi=0), forced_state,
-        )
-
-        sso_buy = [o for o in orders if o.ticker == "SSO" and o.action == OrderAction.BUY]
-        assert sso_buy[0].quantity == 5
-        assert new_state.tranche_total == 10
-        assert new_state.tranche_amount == 400.0
-        assert new_state.forced_reason == "2026-07-30 missed entry"
-
     def test_stage_upgrade_replaces_tranche_with_next_stage_schedule(self):
         planner = SsoDipPlanner()
         state = SsoDipState(
@@ -471,15 +453,3 @@ class TestStateSerialize:
     def test_from_none(self):
         state = SsoDipState.from_dict(None)
         assert state.level == SignalLevel.IDLE
-
-    def test_preserves_forced_entry_metadata(self):
-        state = SsoDipState(
-            level=SignalLevel.BUY_STAGE_1,
-            forced_at="2026-08-14T10:00:00+09:00",
-            forced_reason="2026-07-30 missed entry",
-        )
-
-        restored = SsoDipState.from_dict(state.to_dict())
-
-        assert restored.forced_at == "2026-08-14T10:00:00+09:00"
-        assert restored.forced_reason == "2026-07-30 missed entry"

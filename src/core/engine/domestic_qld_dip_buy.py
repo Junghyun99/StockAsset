@@ -14,7 +14,7 @@ from src.core.engine.base import TradingEngine
 from src.core.engine.data_pipeline import CollectedData, DataSetSpec, StrategyDataSpec
 from src.core.engine.registry import register_engine
 from src.core.logic.sso_dip_signals import SsoDipIndicatorCalculator
-from src.core.logic.sso_dip_planner import SsoDipPlanner, SsoDipState
+from src.core.logic.sso_dip_planner import SignalLevel, SsoDipPlanner, SsoDipState
 from src.core.models import (
     MarketData, MarketRegime, Portfolio, TradeSignal, DecisionFactor,
     OrderBatchResult, StrategyDecision,
@@ -47,6 +47,14 @@ class DomesticQldDipBuyEngine(TradingEngine):
             self.restore_strategy_state(self.STATE_KEY)
         )
         self.dip_signals = None
+        self._forced_buy_stage: tuple[SignalLevel, str] | None = None
+
+    def force_buy_stage(self, stage: int, reason: str) -> None:
+        if stage not in (1, 2, 3):
+            raise ValueError("stage must be one of: 1, 2, 3")
+        if not reason.strip():
+            raise ValueError("reason is required")
+        self._forced_buy_stage = (SignalLevel[f"BUY_STAGE_{stage}"], reason.strip())
 
     def data_spec(self) -> StrategyDataSpec:
         return StrategyDataSpec(
@@ -68,9 +76,15 @@ class DomesticQldDipBuyEngine(TradingEngine):
         regime: MarketRegime,
         exposure: float,
     ) -> StrategyDecision:
+        forced_stage = self._forced_buy_stage
+        self._forced_buy_stage = None
         orders, reason, new_state = self._planner.plan(
             self.dip_signals, portfolio, self.dip_state,
+            raw_signal_override=forced_stage[0] if forced_stage else None,
         )
+        if forced_stage:
+            stage = forced_stage[0].value.removeprefix("BUY_STAGE_")
+            reason = f"수동 강제 Stage {stage} 진입: {forced_stage[1]} / {reason}"
 
         signal = TradeSignal(exposure, orders, reason)
         return StrategyDecision(

@@ -44,8 +44,6 @@ class SsoDipState:
     tranche_completed: int = 0
     tranche_amount: float = 0.0
     sell_target_level: SignalLevel | None = None
-    forced_at: str | None = None
-    forced_reason: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -56,8 +54,6 @@ class SsoDipState:
             "sell_target_level": (
                 self.sell_target_level.value if self.sell_target_level else None
             ),
-            "forced_at": self.forced_at,
-            "forced_reason": self.forced_reason,
         }
 
     @classmethod
@@ -77,8 +73,6 @@ class SsoDipState:
             tranche_completed=int(data.get("tranche_completed", 0)),
             tranche_amount=float(data.get("tranche_amount", 0.0)),
             sell_target_level=sell_target,
-            forced_at=data.get("forced_at"),
-            forced_reason=data.get("forced_reason"),
         )
 
 
@@ -97,6 +91,7 @@ class SsoDipPlanner:
         signals: SsoDipSignals,
         portfolio: Portfolio,
         state: SsoDipState,
+        raw_signal_override: SignalLevel | None = None,
     ) -> Tuple[List[Order], str, SsoDipState]:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
@@ -110,7 +105,7 @@ class SsoDipPlanner:
             return [], "waiting (missing portfolio data)", state
 
         current_ratio = self._sso_ratio(portfolio)
-        raw_signal = self._detect_signal(rsi, dev)
+        raw_signal = raw_signal_override or self._detect_signal(rsi, dev)
         new_state, delta_amount = self._transition(
             raw_signal, current_ratio, total, state,
         )
@@ -190,9 +185,7 @@ class SsoDipPlanner:
             if self._is_buy_level(raw_signal):
                 buy_target, _ = self._get_target_and_tranche_count(raw_signal)
                 if buy_target > current_ratio:
-                    new_state = self._new_buy_state(
-                        raw_signal, current_ratio, total, state.forced_at, state.forced_reason,
-                    )
+                    new_state = self._new_buy_state(raw_signal, current_ratio, total)
                     return new_state, self._buy_delta(new_state, current_ratio, total)
             if current_ratio <= target_ratio + 0.005:
                 return SsoDipState(level=target_level), 0.0
@@ -215,28 +208,19 @@ class SsoDipPlanner:
         if self._is_buy_level(raw_signal) and raw_signal != state.level:
             buy_target, _ = self._get_target_and_tranche_count(raw_signal)
             if buy_target > current_ratio:
-                new_state = self._new_buy_state(
-                    raw_signal, current_ratio, total, state.forced_at, state.forced_reason,
-                )
+                new_state = self._new_buy_state(raw_signal, current_ratio, total)
                 return new_state, self._buy_delta(new_state, current_ratio, total)
 
         if state.level == SignalLevel.IDLE:
             idle_state = SsoDipState(level=SignalLevel.IDLE)
             return idle_state, self._idle_delta(current_ratio, total)
         if state.tranche_total == 0:
-            new_state = self._new_buy_state(
-                state.level, current_ratio, total, state.forced_at, state.forced_reason,
-            )
+            new_state = self._new_buy_state(state.level, current_ratio, total)
             return new_state, self._buy_delta(new_state, current_ratio, total)
         return state, self._buy_delta(state, current_ratio, total)
 
     def _new_buy_state(
-        self,
-        level: SignalLevel,
-        current_ratio: float,
-        total: float,
-        forced_at: str | None = None,
-        forced_reason: str | None = None,
+        self, level: SignalLevel, current_ratio: float, total: float,
     ) -> SsoDipState:
         target_ratio, tranche_total = self._get_target_and_tranche_count(level)
         amount = max(target_ratio - current_ratio, 0.0) * total / tranche_total
@@ -244,8 +228,6 @@ class SsoDipPlanner:
             level=level,
             tranche_total=tranche_total,
             tranche_amount=amount,
-            forced_at=forced_at,
-            forced_reason=forced_reason,
         )
 
     def _new_sell_state(
@@ -326,8 +308,6 @@ class SsoDipPlanner:
                     tranche_completed=state.tranche_completed + 1,
                     tranche_amount=state.tranche_amount,
                     sell_target_level=state.sell_target_level,
-                    forced_at=state.forced_at,
-                    forced_reason=state.forced_reason,
                 )
         return state
 

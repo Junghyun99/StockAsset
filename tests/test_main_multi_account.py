@@ -198,3 +198,11 @@ def test_multi_account_save_accounts_meta_writes_all_accounts(mock_multi_account
     assert accounts_meta["acc1"]["is_live"] is False
     assert accounts_meta["acc1"]["is_active"] is True  # 기본값 True
     assert accounts_meta["acc2"]["market_type"] == "domestic"
+
+
+def test_target_account_mode_builds_only_target_and_skips_meta_write(mock_multi_account_deps):
+    bot = TradingBot(account_id="acc2", save_accounts_meta=False)
+
+    assert [runner.account.id for runner in bot.runners] == ["acc2"]
+    assert not (mock_multi_account_deps["tmp_path"] / "accounts.json").exists()
+    assert not (mock_multi_account_deps["tmp_path"] / "accounts_meta.json").exists()

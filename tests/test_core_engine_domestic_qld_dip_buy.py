@@ -9,6 +9,7 @@ from src.core.engine.domestic_qld_dip_buy import (
 from src.core.engine import TradingEngine, _ENGINE_REGISTRY, _ENGINE_BACKTEST, _ENGINE_MARKET_TYPES
 from src.core.logic.sso_dip_planner import SsoDipPlanner
 from src.core.logic.sso_dip_planner import SignalLevel, SsoDipState
+from src.core.logic.sso_dip_signals import SsoDipSignals
 from src.core.models import (
     ExecutionStatus,
     MarketData,
@@ -20,6 +21,7 @@ from src.core.models import (
     Portfolio,
     StrategyDecision,
     TradeSignal,
+    TradeExecution,
 )
 
 
@@ -154,6 +156,73 @@ class TestStateManagement:
         assert saved_state["tranche_completed"] == 0
         notifier.send_alert.assert_called_once()
         assert "기본예탁금" in notifier.send_alert.call_args.args[0]
+
+
+class TestForcedStage:
+    def test_forced_stage_filled_order_commits_first_tranche(self):
+        engine, mocks = _build_engine()
+        engine.dip_signals = SsoDipSignals(
+            date="2026-08-14", weekly_rsi=55.0, ma200_deviation=0.02,
+            price=43_000.0, ma200=42_000.0,
+        )
+        engine.force_buy_stage(1, "2026-07-30 missed entry")
+
+        def fill_all(orders):
+            return [
+                TradeExecution(
+                    ticker=order.ticker, action=order.action,
+                    quantity=order.quantity, price=order.price, fee=0.0,
+                    date="2026-08-14 10:00:00", status=ExecutionStatus.FILLED,
+                )
+                for order in orders
+            ]
+
+        mocks["broker"].execute_orders.side_effect = fill_all
+        signal, executions, _, _ = engine.execute_cycle(
+            MarketData("2026-08-14", 1, 1, 1, 1, 1, 1),
+            mocks["broker"].get_portfolio.return_value,
+            MarketRegime.BULL,
+            1.0,
+            [],
+            "2026-08-14",
+            "2026-08-14",
+        )
+
+        assert "수동 강제 Stage 1 진입" in signal.reason
+        assert any(execution.ticker == LEVER_TICKER for execution in executions)
+        assert engine.dip_state.level == SignalLevel.BUY_STAGE_1
+        assert engine.dip_state.tranche_completed == 1
+        saved_state = mocks["repo"].save_strategy_state.call_args.args[1]
+        assert saved_state["tranche_completed"] == 1
+
+    def test_forced_stage_overrides_raw_signal_once(self):
+        engine, mocks = _build_engine()
+        engine.dip_signals = SsoDipSignals(
+            date="2026-08-14", weekly_rsi=55.0, ma200_deviation=0.02,
+            price=43_000.0, ma200=42_000.0,
+        )
+        engine.force_buy_stage(1, "2026-07-30 missed entry")
+
+        decision = engine.build_strategy_decision(
+            MarketData("2026-08-14", 1, 1, 1, 1, 1, 1),
+            mocks["broker"].get_portfolio.return_value,
+            MarketRegime.BULL,
+            1.0,
+        )
+
+        assert decision.proposed_state.level == SignalLevel.BUY_STAGE_1
+        assert "수동 강제 Stage 1 진입: 2026-07-30 missed entry" in decision.signal.reason
+
+        engine.dip_state = decision.proposed_state
+        next_decision = engine.build_strategy_decision(
+            MarketData("2026-08-15", 1, 1, 1, 1, 1, 1),
+            mocks["broker"].get_portfolio.return_value,
+            MarketRegime.BULL,
+            1.0,
+        )
+
+        assert next_decision.proposed_state.level == SignalLevel.BUY_STAGE_1
+        assert "수동 강제" not in next_decision.signal.reason
 
 
 class TestCollectData:
