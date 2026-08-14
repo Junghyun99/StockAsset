@@ -544,5 +544,24 @@
                 "reason": "ODNO=0030077100"
             }
         ]
+    },
+    {
+        "id": "tx_20260814_130600",
+        "date": "2026-08-14 13:06:00",
+        "portfolio_value": 10767662.0,
+        "total_trade_amount": 176992.0,
+        "reason": "수동 강제 Stage 1 진입: 7/30 신호 놓침 / BUY_STAGE_1 1/10 분할매수 418660.KS 4주",
+        "executions": [
+            {
+                "ticker": "486290.KS",
+                "action": "SELL",
+                "quantity": 16,
+                "price": 11062.0,
+                "fee": 26.548799999999996,
+                "date": "2026-08-14 13:05:51",
+                "status": "FILLED",
+                "reason": "ODNO=0028873200"
+            }
+        ]
     }
 ]
