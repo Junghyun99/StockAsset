@@ -77,25 +77,3 @@
 2026-08-14 10:01:32,789 [INFO] >>> Step 6: Archiving Data
 2026-08-14 10:01:32,791 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
 2026-08-14 10:18:28,707 [INFO] === Initializing Trading Bot (multi-account) ===
-2026-08-14 10:27:19,536 [INFO] === Initializing Trading Bot (multi-account) ===
-2026-08-14 10:27:19,539 [INFO] Loaded 1 account(s) from accounts.yaml
-2026-08-14 10:27:19,539 [INFO] [my_test] engine=DomesticQldDipBuyEngine market=domestic mode=LIVE state=ACTIVE
-2026-08-14 10:27:19,540 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
-2026-08-14 10:27:19,540 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
-2026-08-14 10:27:19,540 [INFO] Restored previous regime: Bull
-2026-08-14 10:27:19,541 [INFO] ===== [my_test] 계좌 실행 시작 =====
-2026-08-14 10:27:19,541 [INFO] >>> Step 1: Data Collection
-2026-08-14 10:27:19,541 [INFO] [Data] Fetching ['SPY'] history for 400 days...
-2026-08-14 10:27:20,165 [INFO] [Data] Fetching ['418660.KS'] history for 400 days...
-2026-08-14 10:27:20,558 [INFO] [Data] VIX fetched: 14.63
-2026-08-14 10:27:20,558 [INFO] >>> Step 2: Indicator Calculation
-2026-08-14 10:27:20,561 [INFO] Market Data: Price=777.88, VIX=14.63, MDD=0.00%
-2026-08-14 10:27:20,561 [INFO] >>> Step 3: Strategy Analysis
-2026-08-14 10:27:20,561 [INFO] Regime: Bull | Target Exposure: 1.00
-2026-08-14 10:27:20,561 [INFO] >>> Step 4: Portfolio Status
-2026-08-14 10:27:21,368 [INFO] Fetching Real-time prices from Broker...
-2026-08-14 10:27:24,596 [INFO] Current Portfolio: Cash=$9,245, Value=$10,785,540
-2026-08-14 10:27:24,791 [INFO] >>> Step 5: DomesticQldDipBuy (수동 강제 Stage 1 진입: 7/30 신호 놓침 / waiting (invalid signal))
-2026-08-14 10:27:24,791 [INFO] No Rebalance Needed.
-2026-08-14 10:27:24,792 [INFO] >>> Step 6: Archiving Data
-2026-08-14 10:27:24,799 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0

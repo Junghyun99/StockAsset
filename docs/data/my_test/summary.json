@@ -2067,10 +2067,10 @@
     },
     {
         "date": "2026-08-14",
-        "total_value": 10785540.0,
+        "total_value": 10784805.0,
         "cash_balance": 9245.0,
         "net_deposit": 0.0,
-        "group_a": 2144975.0,
+        "group_a": 2144240.0,
         "group_b": 8631320.0,
         "group_c": 9245.0,
         "expected_dividend": 0.0,
@@ -2081,18 +2081,21 @@
         "mdd": 0.0,
         "vix": 14.630000114440918,
         "benchmarks": {
-            "KOSPI200": 108695.0,
-            "S&P500": 27390.0,
-            "NASDAQ100": 188375.0
+            "KOSPI200": 109000.0,
+            "S&P500": 27370.0,
+            "NASDAQ100": 188340.0
         },
         "regime": "Bull",
-        "reason": "수동 강제 Stage 1 진입: 7/30 신호 놓침 / waiting (invalid signal)",
+        "reason": "대기(IDLE)",
         "target_exposure": 1.0,
         "target_ratio_a": null,
         "rebalance_threshold": null,
         "factors": {
+            "weekly_rsi": 52.921772830451836,
+            "ma200_deviation": 0.11892617723143774,
+            "mdd_252": -0.17947520776916612,
             "signal_level": "IDLE",
-            "lever_ratio": 0.19887506791500473
+            "lever_ratio": 0.19882047009658496
         }
     }
 ]
