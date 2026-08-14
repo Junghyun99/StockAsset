@@ -71,11 +71,9 @@ class TradingBot:
         )
 
         # 2. accounts.yaml 로드
-        accounts = load_accounts(self.config.ACCOUNTS_CONFIG_PATH)
-        if account_id is not None:
-            accounts = [account for account in accounts if account.id == account_id]
-            if not accounts:
-                raise ValueError(f"Account not found: {account_id}")
+        accounts = load_accounts(
+            self.config.ACCOUNTS_CONFIG_PATH, account_id=account_id,
+        )
         self.logger.info(f"Loaded {len(accounts)} account(s) from {self.config.ACCOUNTS_CONFIG_PATH}")
 
         # 3. 계좌별 러너 구성
