@@ -109,3 +109,27 @@
 2026-08-14 13:06:00,231 [INFO] Updated Portfolio: Cash=$186,217, Value=$10,767,662
 2026-08-14 13:06:00,232 [INFO] >>> Step 6: Archiving Data
 2026-08-14 13:06:00,240 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=2 executions=1
+2026-08-14 13:19:30,076 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-08-14 13:19:30,079 [INFO] Loaded 1 account(s) from accounts.yaml
+2026-08-14 13:19:30,079 [INFO] [my_test] engine=DomesticQldDipBuyEngine market=domestic mode=LIVE state=ACTIVE
+2026-08-14 13:19:30,080 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-08-14 13:19:30,080 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-08-14 13:19:30,080 [INFO] Restored previous regime: Bull
+2026-08-14 13:19:30,081 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-08-14 13:19:30,081 [INFO] >>> Step 1: Data Collection
+2026-08-14 13:19:30,081 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-08-14 13:19:30,813 [INFO] [Data] Fetching ['418660.KS'] history for 400 days...
+2026-08-14 13:19:31,334 [INFO] [Data] VIX fetched: 14.63
+2026-08-14 13:19:31,335 [INFO] >>> Step 2: Indicator Calculation
+2026-08-14 13:19:31,338 [ERROR] [my_test] Critical Error:
+Traceback (most recent call last):
+  File "/home/runner/work/StockAsset/StockAsset/src/main.py", line 169, in _run_one_account
+    runner.engine.run_one_cycle(self.data_loader)
+  File "/home/runner/work/StockAsset/StockAsset/src/core/engine/base.py", line 149, in run_one_cycle
+    market_data = self.calculate_indicators(collected)
+  File "/home/runner/work/StockAsset/StockAsset/src/core/engine/base.py", line 233, in calculate_indicators
+    self.strategy_indicators = self.calculate_strategy_indicators(collected)
+  File "/home/runner/work/StockAsset/StockAsset/src/core/engine/domestic_qld_dip_buy.py", line 77, in calculate_strategy_indicators
+    self.logger.warning(
+TypeError: TradeLogger.warning() takes 2 positional arguments but 5 were given
+
