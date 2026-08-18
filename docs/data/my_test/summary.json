@@ -2100,35 +2100,35 @@
     },
     {
         "date": "2026-08-18",
-        "total_value": 10908557.0,
-        "cash_balance": 230687.0,
-        "net_deposit": 56.61,
-        "group_a": 2115330.0,
-        "group_b": 8562540.0,
-        "group_c": 230687.0,
+        "total_value": 10853742.0,
+        "cash_balance": 219707.0,
+        "net_deposit": 58.26,
+        "group_a": 2095485.0,
+        "group_b": 8538550.0,
+        "group_c": 219707.0,
         "expected_dividend": 0.0,
-        "spy_price": 772.6699829101562,
-        "spy_ma180": 709.5248341878255,
-        "spy_volatility": 0.13241878127877926,
-        "spy_momentum": 0.10305332789760069,
-        "mdd": -0.006697719365393816,
-        "vix": 15.1899995803833,
+        "spy_price": 776.3400268554688,
+        "spy_ma180": 709.545223320855,
+        "spy_volatility": 0.13044419204589972,
+        "spy_momentum": 0.10480135754898925,
+        "mdd": -0.001979711546353152,
+        "vix": 14.25,
         "benchmarks": {
-            "KOSPI200": 113365.0,
-            "S&P500": 27070.0,
-            "NASDAQ100": 187130.0
+            "KOSPI200": 109807.0,
+            "S&P500": 27040.0,
+            "NASDAQ100": 186330.0
         },
         "regime": "Bull",
-        "reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주",
+        "reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주 / 486290.KS 스윕 1주",
         "target_exposure": 1.0,
         "target_ratio_a": null,
         "rebalance_threshold": null,
         "factors": {
-            "weekly_rsi": 51.60527287627502,
-            "ma200_deviation": 0.10217573509118447,
-            "mdd_200": -0.19077411523018023,
+            "weekly_rsi": 50.52302862149604,
+            "ma200_deviation": 0.0872496196915814,
+            "mdd_200": -0.20179288448968158,
             "signal_level": "BUY_STAGE_1",
-            "lever_ratio": 0.19391474051059182
+            "lever_ratio": 0.19306567265004088
         }
     }
 ]

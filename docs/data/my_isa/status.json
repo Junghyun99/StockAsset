@@ -1,24 +1,24 @@
 {
-    "last_updated": "2026-08-18 10:01:19",
+    "last_updated": "2026-08-18 14:01:22",
     "last_rebalancing_date": "2026-07-15",
     "strategy": {
         "engine_name": "DomesticVolManagedEngine",
         "regime": "Bull",
-        "target_exposure": 0.8060017138925194,
+        "target_exposure": 0.7991334906952585,
         "trigger_reason": "Bull (비활성 — 조회 전용)",
         "market_score": {
-            "vix": 15.1899995803833,
-            "spy_mdd": -0.09781980941380305,
-            "spy_momentum": 0.09863778097991667,
-            "spy_price": 187455.0,
-            "spy_ma180": 176205.69444444444,
-            "spy_volatility": 0.27295227318751963
+            "vix": 14.25,
+            "spy_mdd": -0.10383578785253633,
+            "spy_momentum": 0.09618013957611671,
+            "spy_price": 186205.0,
+            "spy_ma180": 176198.75,
+            "spy_volatility": 0.27529818554919605
         },
         "decision_factors": [
             {
                 "key": "realized_vol",
                 "label": "실현변동성(21d)",
-                "value": 0.27295227318751963,
+                "value": 0.27529818554919605,
                 "format": "percent",
                 "threshold": 0.22
             },
@@ -32,46 +32,46 @@
             {
                 "key": "effective_leverage",
                 "label": "실효 레버리지(x)",
-                "value": 0.8060017138925194,
+                "value": 0.7991334906952585,
                 "format": "number",
                 "threshold": null
             },
             {
                 "key": "cash_weight",
                 "label": "현금 비중",
-                "value": 0.1939982861074806,
+                "value": 0.20086650930474148,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 53325010.0,
+        "total_value": 51261930.0,
         "cash_balance": 158900.0,
         "holdings": [
             {
                 "ticker": "133690.KS",
                 "qty": 16,
-                "price": 187135.0,
-                "value": 2994160.0
+                "price": 186245.0,
+                "value": 2979920.0
             },
             {
                 "ticker": "418660.KS",
                 "qty": 109,
-                "price": 43170.0,
-                "value": 4705530.0
+                "price": 42765.0,
+                "value": 4661385.0
             },
             {
                 "ticker": "486290.KS",
                 "qty": 741,
-                "price": 11020.0,
-                "value": 8165820.0
+                "price": 10975.0,
+                "value": 8132475.0
             },
             {
                 "ticker": "494310.KS",
                 "qty": 443,
-                "price": 84200.0,
-                "value": 37300600.0
+                "price": 79750.0,
+                "value": 35329250.0
             }
         ]
     }

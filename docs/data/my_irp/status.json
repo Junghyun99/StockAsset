@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-08-18 10:01:33",
+    "last_updated": "2026-08-18 14:01:40",
     "last_rebalancing_date": null,
     "strategy": {
         "engine_name": "DomesticAsset5RealEngine",
@@ -7,12 +7,12 @@
         "target_exposure": 1.0,
         "trigger_reason": "Bull (비활성 — 조회 전용)",
         "market_score": {
-            "vix": 15.1899995803833,
-            "spy_mdd": -0.006697719365393816,
-            "spy_momentum": 0.10305332789760069,
-            "spy_price": 772.6699829101562,
-            "spy_ma180": 709.5248341878255,
-            "spy_volatility": 0.13241878127877926
+            "vix": 14.25,
+            "spy_mdd": -0.001979711546353152,
+            "spy_momentum": 0.10480135754898925,
+            "spy_price": 776.3400268554688,
+            "spy_ma180": 709.545223320855,
+            "spy_volatility": 0.13044419204589972
         },
         "decision_factors": [
             {
@@ -32,26 +32,26 @@
         ]
     },
     "portfolio": {
-        "total_value": 16718338.0,
+        "total_value": 16539426.0,
         "cash_balance": 45378.0,
         "holdings": [
             {
                 "ticker": "0162Z0.KS",
                 "qty": 384,
-                "price": 13715.0,
-                "value": 5266560.0
+                "price": 13455.0,
+                "value": 5166720.0
             },
             {
                 "ticker": "381180.KS",
                 "qty": 109,
-                "price": 46400.0,
-                "value": 5057600.0
+                "price": 45792.0,
+                "value": 4991328.0
             },
             {
                 "ticker": "465580.KS",
                 "qty": 256,
-                "price": 24800.0,
-                "value": 6348800.0
+                "price": 24750.0,
+                "value": 6336000.0
             }
         ]
     }
