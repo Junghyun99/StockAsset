@@ -57,9 +57,10 @@ class SsoDipBuyEngine(TradingEngine):
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         orders, reason, new_state = self._planner.plan(
-            self.sso_signals, portfolio, self.dip_state,
+            self.sso_signals, portfolio, self.dip_state, record_date=record_date,
         )
 
         signal = TradeSignal(exposure, orders, reason)
@@ -75,9 +76,10 @@ class SsoDipBuyEngine(TradingEngine):
         self,
         decision: StrategyDecision,
         order_result: OrderBatchResult,
+        record_date: str | None = None,
     ) -> SsoDipState:
         state = self._planner.record_filled_tranche(
-            decision.proposed_state, order_result.actual_executions
+            decision.proposed_state, order_result.actual_executions, record_date=record_date,
         )
         self.dip_state = state
         return state

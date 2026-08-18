@@ -437,7 +437,7 @@ class TradingEngine:
 
         else:
             decision = self.build_strategy_decision(
-                market_data, portfolio, regime, exposure
+                market_data, portfolio, regime, exposure, record_date=record_date
             )
             signal = decision.signal
             is_rebalancing = decision.is_rebalancing
@@ -473,7 +473,7 @@ class TradingEngine:
             else:
                 self.logger.info("No Rebalance Needed.")
 
-            self.commit_strategy_state(decision, strategy_result)
+            self.commit_strategy_state(decision, strategy_result, record_date=record_date)
 
         self._last_order_result = OrderBatchResult(
             self._orphan_order_result.outcomes + strategy_result.outcomes
@@ -490,6 +490,7 @@ class TradingEngine:
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         """전략 특화 훅: 주문을 포함한 결정만 생성한다."""
         signal = self.rebalancer.generate_signal(portfolio, exposure, regime)
@@ -503,6 +504,7 @@ class TradingEngine:
         self,
         decision: StrategyDecision,
         order_result: OrderBatchResult,
+        record_date: str | None = None,
     ) -> Any:
         """전략 특화 훅: 주문 결과로 다음 상태를 확정한다."""
         return decision.proposed_state
@@ -511,11 +513,12 @@ class TradingEngine:
         self,
         decision: StrategyDecision,
         order_result: OrderBatchResult,
+        record_date: str | None = None,
     ) -> None:
         """상태 저장은 공통 흐름에서만 수행한다."""
         if not decision.state_key:
             return
-        state = self.finalize_strategy_state(decision, order_result)
+        state = self.finalize_strategy_state(decision, order_result, record_date)
         if state is None:
             return
         self.repo.save_strategy_state(decision.state_key, state.to_dict())
