@@ -2160,5 +2160,35 @@
             "signal_level": "BUY_STAGE_1",
             "lever_ratio": 0.18960887842374324
         }
+    },
+    {
+        "date": "2026-08-20",
+        "total_value": 10600017.0,
+        "cash_balance": 219707.0,
+        "net_deposit": 0.0,
+        "group_a": 2012920.0,
+        "group_b": 8367390.0,
+        "group_c": 219707.0,
+        "expected_dividend": 0.0,
+        "spy_price": 769.0599975585938,
+        "spy_ma180": 710.4883897569445,
+        "spy_volatility": 0.13310729812160216,
+        "spy_momentum": 0.10012447611503747,
+        "mdd": -0.011338519140297845,
+        "vix": 14.890000343322754,
+        "benchmarks": {
+            "KOSPI200": 107445.0,
+            "S&P500": 26690.0,
+            "NASDAQ100": 182500.0
+        },
+        "regime": "Bull",
+        "reason": "waiting (invalid signal)",
+        "target_exposure": 1.0,
+        "target_ratio_a": null,
+        "rebalance_threshold": null,
+        "factors": {
+            "signal_level": "BUY_STAGE_1",
+            "lever_ratio": 0.18989780865445782
+        }
     }
 ]
