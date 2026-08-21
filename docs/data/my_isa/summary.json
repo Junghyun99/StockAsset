@@ -896,5 +896,37 @@
             "effective_leverage": 0.8382859103754687,
             "cash_weight": 0.16171408962453127
         }
+    },
+    {
+        "date": "2026-08-21",
+        "total_value": 50063365.0,
+        "cash_balance": 98990.0,
+        "net_deposit": 0.0,
+        "group_a": 4335475.0,
+        "group_b": 0.0,
+        "group_c": 98990.0,
+        "expected_dividend": 0.0,
+        "spy_price": 179352.0,
+        "spy_ma180": 176551.4,
+        "spy_volatility": 0.2658522029672552,
+        "spy_momentum": 0.0770292983889219,
+        "mdd": -0.13681778804504766,
+        "vix": 16.010000228881836,
+        "benchmarks": {
+            "KOSPI200": 108555.0,
+            "S&P500": 26305.0,
+            "NASDAQ100": 179570.0
+        },
+        "regime": "Bull",
+        "reason": "Bull (비활성 — 조회 전용)",
+        "target_exposure": 0.8275274665566612,
+        "target_ratio_a": 0.0,
+        "rebalance_threshold": 0.075,
+        "factors": {
+            "realized_vol": 0.2658522029672552,
+            "target_vol": 0.22,
+            "effective_leverage": 0.8275274665566612,
+            "cash_weight": 0.1724725334433388
+        }
     }
 ]
