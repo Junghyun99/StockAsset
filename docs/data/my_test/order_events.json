@@ -1420,5 +1420,26 @@
         "alertable": true,
         "display_level": "danger",
         "source": "runtime"
+    },
+    {
+        "schema_version": 1,
+        "event_id": "d93786aa-a610-4cf8-8a4f-054d6858d38c",
+        "attempted_at": "2026-08-27 14:01:02",
+        "execution_mode": "live",
+        "account_id": "my_test",
+        "engine": "DomesticQldDipBuyEngine",
+        "ticker": "418660.KS",
+        "action": "BUY",
+        "requested_quantity": 5,
+        "requested_price": 39850.0,
+        "filled_quantity": 5,
+        "filled_price": 39860.0,
+        "fee": 0.0,
+        "executed_at": "2026-08-27 05:01:05",
+        "status": "REJECTED",
+        "broker_reason": "해당종목은 기본예탁금 충족한 계좌만 매수주문가능합니다",
+        "alertable": true,
+        "display_level": "danger",
+        "source": "runtime"
     }
 ]
