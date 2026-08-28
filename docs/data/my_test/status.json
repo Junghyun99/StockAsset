@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-08-28 10:01:18",
+    "last_updated": "2026-08-28 14:01:05",
     "last_rebalancing_date": "2026-08-28",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
@@ -18,21 +18,21 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 46.35488476174754,
+                "value": 46.30866999110635,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": 0.015884193508144035,
+                "value": 0.015254142834707026,
                 "format": "percent",
                 "threshold": -0.1
             },
             {
                 "key": "mdd_200",
                 "label": "200거래일 MDD",
-                "value": -0.2510038285554207,
+                "value": -0.2514707255579419,
                 "format": "percent",
                 "threshold": -0.2
             },
@@ -46,27 +46,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.18987524277851164,
+                "value": 0.18956105564188425,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10369019.0,
+        "total_value": 10340969.0,
         "cash_balance": 209014.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 40180.0,
-                "value": 1968820.0
+                "price": 40005.0,
+                "value": 1960245.0
             },
             {
                 "ticker": "486290.KS",
                 "qty": 779,
-                "price": 10515.0,
-                "value": 8191185.0
+                "price": 10490.0,
+                "value": 8171710.0
             }
         ]
     }
