@@ -1,38 +1,38 @@
 {
-    "last_updated": "2026-08-31 14:01:06",
-    "last_rebalancing_date": "2026-08-31",
+    "last_updated": "2026-09-01 10:01:17",
+    "last_rebalancing_date": "2026-09-01",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
         "trigger_reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주",
         "market_score": {
-            "vix": 14.430000305175781,
-            "spy_mdd": -0.010965739244268205,
-            "spy_momentum": 0.09300795181421895,
-            "spy_price": 769.3499755859375,
-            "spy_ma180": 713.7205552842881,
-            "spy_volatility": 0.10373772599361052
+            "vix": 14.920000076293945,
+            "spy_mdd": -0.01392247778817157,
+            "spy_momentum": 0.09013770960678436,
+            "spy_price": 767.0499877929688,
+            "spy_ma180": 714.1621107313368,
+            "spy_volatility": 0.10301437466143734
         },
         "decision_factors": [
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 44.81813386140848,
+                "value": 44.84273166206069,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": -0.007217360150196111,
+                "value": -0.006839451704482516,
                 "format": "percent",
                 "threshold": -0.1
             },
             {
                 "key": "mdd_200",
                 "label": "200거래일 MDD",
-                "value": -0.2677187412456812,
+                "value": -0.26743860304416844,
                 "format": "percent",
                 "threshold": -0.2
             },
@@ -46,27 +46,27 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.18837611959364195,
+                "value": 0.1881951956621188,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10239541.0,
+        "total_value": 10232461.0,
         "cash_balance": 209056.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 39365.0,
-                "value": 1928885.0
+                "price": 39300.0,
+                "value": 1925700.0
             },
             {
                 "ticker": "486290.KS",
                 "qty": 779,
-                "price": 10400.0,
-                "value": 8101600.0
+                "price": 10395.0,
+                "value": 8097705.0
             }
         ]
     }
