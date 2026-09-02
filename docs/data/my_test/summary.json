@@ -2457,12 +2457,12 @@
     },
     {
         "date": "2026-09-02",
-        "total_value": 10090006.0,
-        "cash_balance": 198786.0,
-        "net_deposit": 1.54,
-        "group_a": 1880620.0,
-        "group_b": 8010600.0,
-        "group_c": 198786.0,
+        "total_value": 10151559.0,
+        "cash_balance": 199254.0,
+        "net_deposit": 102834.89,
+        "group_a": 1866655.0,
+        "group_b": 8085650.0,
+        "group_c": 199254.0,
         "expected_dividend": 0.0,
         "spy_price": 761.780029296875,
         "spy_ma180": 714.5654998779297,
@@ -2471,21 +2471,21 @@
         "mdd": -0.020697248270783047,
         "vix": 16.34000015258789,
         "benchmarks": {
-            "KOSPI200": 105215.0,
-            "S&P500": 25940.0,
-            "NASDAQ100": 176385.0
+            "KOSPI200": 103750.0,
+            "S&P500": 25890.0,
+            "NASDAQ100": 175830.0
         },
         "regime": "Bull",
-        "reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주 / 486290.KS 스윕 1주",
+        "reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주 / 486290.KS 스윕 10주",
         "target_exposure": 1.0,
         "target_ratio_a": null,
         "rebalance_threshold": null,
         "factors": {
-            "weekly_rsi": 43.505595444620944,
-            "ma200_deviation": -0.02894569078048625,
-            "mdd_200": -0.28312634232888223,
+            "weekly_rsi": 43.03960987157409,
+            "ma200_deviation": -0.03662433978219065,
+            "mdd_200": -0.2888224857596414,
             "signal_level": "BUY_STAGE_1",
-            "lever_ratio": 0.1863844283145124
+            "lever_ratio": 0.18387865351518914
         }
     }
 ]
