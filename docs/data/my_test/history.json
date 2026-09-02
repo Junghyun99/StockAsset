@@ -639,5 +639,24 @@
                 "reason": "ODNO=0034571400"
             }
         ]
+    },
+    {
+        "id": "tx_20260902_100123",
+        "date": "2026-09-02 10:01:23",
+        "portfolio_value": 10090006.0,
+        "total_trade_amount": 10270.0,
+        "reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주 / 486290.KS 스윕 1주",
+        "executions": [
+            {
+                "ticker": "486290.KS",
+                "action": "BUY",
+                "quantity": 1,
+                "price": 10270.0,
+                "fee": 1.5404999999999998,
+                "date": "2026-09-02 10:01:18",
+                "status": "FILLED",
+                "reason": "ODNO=0011773100"
+            }
+        ]
     }
 ]
