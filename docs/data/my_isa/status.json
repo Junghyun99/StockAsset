@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-09-02 14:01:19",
+    "last_updated": "2026-09-03 10:01:17",
     "last_rebalancing_date": "2026-07-15",
     "strategy": {
         "engine_name": "DomesticVolManagedEngine",
@@ -7,18 +7,18 @@
         "target_exposure": 1.0,
         "trigger_reason": "Bear_Weak (비활성 — 조회 전용)",
         "market_score": {
-            "vix": 16.34000015258789,
-            "spy_mdd": -0.153960920204062,
-            "spy_momentum": 0.05439822506790063,
-            "spy_price": 175790.0,
-            "spy_ma180": 177136.44444444444,
-            "spy_volatility": 0.18928305863647835
+            "vix": 15.199999809265137,
+            "spy_mdd": -0.15565983251516027,
+            "spy_momentum": 0.04527532280331811,
+            "spy_price": 175437.0,
+            "spy_ma180": 177177.95555555556,
+            "spy_volatility": 0.17816588154215462
         },
         "decision_factors": [
             {
                 "key": "realized_vol",
                 "label": "실현변동성(21d)",
-                "value": 0.18928305863647835,
+                "value": 0.17816588154215462,
                 "format": "percent",
                 "threshold": 0.22
             },
@@ -32,7 +32,7 @@
             {
                 "key": "effective_leverage",
                 "label": "실효 레버리지(x)",
-                "value": 1.1622804575580856,
+                "value": 1.2348043188501683,
                 "format": "number",
                 "threshold": null
             },
@@ -46,20 +46,20 @@
         ]
     },
     "portfolio": {
-        "total_value": 46648810.0,
+        "total_value": 46252625.0,
         "cash_balance": 111215.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 109,
-                "price": 38095.0,
-                "value": 4152355.0
+                "price": 37785.0,
+                "value": 4118565.0
             },
             {
                 "ticker": "494310.KS",
                 "qty": 599,
-                "price": 70760.0,
-                "value": 42385240.0
+                "price": 70155.0,
+                "value": 42022845.0
             }
         ]
     }
