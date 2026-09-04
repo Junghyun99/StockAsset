@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-09-04 10:01:18",
+    "last_updated": "2026-09-04 14:01:13",
     "last_rebalancing_date": "2026-07-15",
     "strategy": {
         "engine_name": "DomesticVolManagedEngine",
@@ -7,18 +7,18 @@
         "target_exposure": 1.0,
         "trigger_reason": "Sideways (비활성 — 조회 전용)",
         "market_score": {
-            "vix": 14.319999694824219,
-            "spy_mdd": -0.14662142650880738,
-            "spy_momentum": 0.04285363842195347,
-            "spy_price": 177315.0,
-            "spy_ma180": 177232.58333333334,
-            "spy_volatility": 0.15877514452117134
+            "vix": 15.199999809265137,
+            "spy_mdd": -0.14666955433631726,
+            "spy_momentum": 0.042834112666160794,
+            "spy_price": 177305.0,
+            "spy_ma180": 177232.52777777778,
+            "spy_volatility": 0.15871000986363323
         },
         "decision_factors": [
             {
                 "key": "realized_vol",
                 "label": "실현변동성(21d)",
-                "value": 0.15877514452117134,
+                "value": 0.15871000986363323,
                 "format": "percent",
                 "threshold": 0.22
             },
@@ -32,7 +32,7 @@
             {
                 "key": "effective_leverage",
                 "label": "실효 레버리지(x)",
-                "value": 1.3856073043640962,
+                "value": 1.3861759582084856,
                 "format": "number",
                 "threshold": null
             },
@@ -46,20 +46,20 @@
         ]
     },
     "portfolio": {
-        "total_value": 47212200.0,
+        "total_value": 48528640.0,
         "cash_balance": 111215.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 109,
-                "price": 38730.0,
-                "value": 4221570.0
+                "price": 38745.0,
+                "value": 4223205.0
             },
             {
                 "ticker": "494310.KS",
                 "qty": 599,
-                "price": 71585.0,
-                "value": 42879415.0
+                "price": 73780.0,
+                "value": 44194220.0
             }
         ]
     }

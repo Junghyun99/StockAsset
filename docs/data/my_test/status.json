@@ -1,5 +1,5 @@
 {
-    "last_updated": "2026-09-04 10:01:11",
+    "last_updated": "2026-09-04 14:01:07",
     "last_rebalancing_date": "2026-09-04",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
@@ -7,7 +7,7 @@
         "target_exposure": 1.0,
         "trigger_reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주",
         "market_score": {
-            "vix": 14.319999694824219,
+            "vix": 15.199999809265137,
             "spy_mdd": -0.016352177274690998,
             "spy_momentum": 0.08219959836659867,
             "spy_price": 765.1599731445312,
@@ -18,21 +18,21 @@
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 44.08657411921126,
+                "value": 44.06284024442161,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": -0.020870811836527704,
+                "value": -0.02124821825330354,
                 "format": "percent",
                 "threshold": -0.1
             },
             {
                 "key": "mdd_200",
                 "label": "200거래일 MDD",
-                "value": -0.2767765430945933,
+                "value": -0.27705668129610606,
                 "format": "percent",
                 "threshold": -0.2
             },
@@ -46,21 +46,21 @@
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.18515147186917552,
+                "value": 0.1851904244104132,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10249824.0,
+        "total_value": 10250314.0,
         "cash_balance": 199254.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 38730.0,
-                "value": 1897770.0
+                "price": 38740.0,
+                "value": 1898260.0
             },
             {
                 "ticker": "486290.KS",
