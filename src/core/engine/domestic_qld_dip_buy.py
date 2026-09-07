@@ -90,6 +90,7 @@ class DomesticQldDipBuyEngine(TradingEngine):
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         forced_stage = self._forced_buy_stage
         self._forced_buy_stage = None
@@ -101,6 +102,7 @@ class DomesticQldDipBuyEngine(TradingEngine):
         orders, reason, new_state = self._planner.plan(
             self.dip_signals, portfolio, self.dip_state,
             raw_signal_override=resolution.selected_signal,
+            record_date=record_date,
         )
         if forced_stage:
             stage = forced_stage[0].value.removeprefix("BUY_STAGE_")
@@ -125,9 +127,10 @@ class DomesticQldDipBuyEngine(TradingEngine):
         self,
         decision: StrategyDecision,
         order_result: OrderBatchResult,
+        record_date: str | None = None,
     ) -> SsoDipState:
         state = self._planner.record_filled_tranche(
-            decision.proposed_state, order_result.actual_executions
+            decision.proposed_state, order_result.actual_executions, record_date=record_date,
         )
         self.dip_state = state
         return state

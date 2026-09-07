@@ -77,6 +77,7 @@ class DipBuyEngine(TradingEngine):
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         """전략 훅: 눌림목 트리거와 현금 저수지 주문만 결정한다."""
         previous_state = self.dip_state
@@ -101,6 +102,7 @@ class DipBuyEngine(TradingEngine):
         self,
         decision: StrategyDecision,
         order_result: OrderBatchResult,
+        record_date: str | None = None,
     ) -> DipBuyState:
         target_ticker = decision.metadata["target_ticker"]
         target_requested = any(
@@ -217,6 +219,7 @@ class DipBuyGatedEngine(DipBuyEngine):
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         price = portfolio.current_prices.get(self._ticker, 0.0)
         ma = self.dip_signals.ma200 if self.dip_signals is not None else float("nan")
@@ -224,7 +227,7 @@ class DipBuyGatedEngine(DipBuyEngine):
 
         if risk_on:
             return super().build_strategy_decision(
-                market_data, portfolio, regime, exposure
+                market_data, portfolio, regime, exposure, record_date=record_date
             )
 
         # 추세 이탈(200MA 아래) → risk-off: 보유 QLD 전량 청산 후 SHV로 대기, 상태 리셋

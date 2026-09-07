@@ -491,8 +491,11 @@ class TestFixedAmountTranches:
         execution = TradeExecution(
             "SSO", OrderAction.BUY, 5, 80.0, 0.0, "2026-07-22", ExecutionStatus.FILLED,
         )
-        new_state = planner.record_filled_tranche(state, [execution])
+        new_state = planner.record_filled_tranche(
+            state, [execution], record_date="2026-07-22",
+        )
         assert new_state.tranche_completed == 2
+        assert new_state.last_buy_tranche_date == "2026-07-22"
 
     def test_ordered_execution_does_not_consume_a_tranche(self):
         planner = SsoDipPlanner()
@@ -505,8 +508,118 @@ class TestFixedAmountTranches:
         execution = TradeExecution(
             "SSO", OrderAction.BUY, 5, 80.0, 0.0, "2026-07-22", ExecutionStatus.ORDERED,
         )
-        new_state = planner.record_filled_tranche(state, [execution])
+        new_state = planner.record_filled_tranche(
+            state, [execution], record_date="2026-07-22",
+        )
         assert new_state.tranche_completed == 1
+        assert new_state.last_buy_tranche_date is None
+
+    def test_partial_stage_buy_records_date_and_blocks_same_day_retry(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=1,
+            tranche_amount=400.0,
+        )
+        partial = TradeExecution(
+            "SSO", OrderAction.BUY, 2, 80.0, 0.0, "2026-08-19", ExecutionStatus.PARTIAL,
+        )
+
+        filled_state = planner.record_filled_tranche(
+            state, [partial], record_date="2026-08-19",
+        )
+        orders, reason, next_state = planner.plan(
+            _sig(rsi=45, dev=-0.12),
+            _pf(cash=10_000, sso=2, spyi=0),
+            filled_state,
+            record_date="2026-08-19",
+        )
+
+        assert filled_state.tranche_completed == 2
+        assert filled_state.last_buy_tranche_date == "2026-08-19"
+        assert orders == []
+        assert "당일 분할매수 완료" in reason
+        assert next_state == filled_state
+
+    def test_zero_quantity_stage_buy_does_not_consume_or_date_a_tranche(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=1,
+            tranche_amount=400.0,
+        )
+        zero_quantity = TradeExecution(
+            "SSO", OrderAction.BUY, 0, 80.0, 0.0, "2026-08-19", ExecutionStatus.FILLED,
+        )
+
+        new_state = planner.record_filled_tranche(
+            state, [zero_quantity], record_date="2026-08-19",
+        )
+
+        assert new_state == state
+
+    def test_same_day_stage_escalation_waits_without_changing_state(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=1,
+            tranche_amount=400.0,
+            last_buy_tranche_date="2026-08-19",
+        )
+
+        orders, reason, new_state = planner.plan(
+            _sig(rsi=34, dev=-0.28),
+            _pf(cash=10_000, sso=5, spyi=0),
+            state,
+            record_date="2026-08-19",
+        )
+
+        assert orders == []
+        assert "당일 분할매수 완료" in reason
+        assert new_state == state
+
+    def test_next_day_stage_escalation_can_buy(self):
+        planner = SsoDipPlanner()
+        state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            tranche_total=10,
+            tranche_completed=1,
+            tranche_amount=400.0,
+            last_buy_tranche_date="2026-08-19",
+        )
+
+        orders, _, new_state = planner.plan(
+            _sig(rsi=34, dev=-0.28),
+            _pf(cash=10_000, sso=5, spyi=0),
+            state,
+            record_date="2026-08-20",
+        )
+
+        assert any(order.ticker == "SSO" and order.action == OrderAction.BUY for order in orders)
+        assert new_state.level == SignalLevel.BUY_STAGE_3
+
+    def test_same_day_idle_and_sell_orders_are_not_blocked(self):
+        planner = SsoDipPlanner()
+        idle_state = SsoDipState(last_buy_tranche_date="2026-08-19")
+        idle_orders, _, _ = planner.plan(
+            _sig(rsi=55, dev=0.02), _pf(), idle_state, record_date="2026-08-19",
+        )
+        sell_state = SsoDipState(
+            level=SignalLevel.BUY_STAGE_1,
+            last_buy_tranche_date="2026-08-19",
+        )
+        sell_orders, _, _ = planner.plan(
+            _sig(rsi=78, dev=0.18),
+            _pf(cash=0, sso=100, spyi=0),
+            sell_state,
+            record_date="2026-08-19",
+        )
+
+        assert any(order.ticker == "SSO" and order.action == OrderAction.BUY for order in idle_orders)
+        assert any(order.ticker == "SSO" and order.action == OrderAction.SELL for order in sell_orders)
 
 
 class TestSpyiSweep:
@@ -579,10 +692,12 @@ class TestStateSerialize:
         state = SsoDipState(
             level=SignalLevel.SELL,
             sell_target_level=SignalLevel.BUY_STAGE_2,
+            last_buy_tranche_date="2026-08-19",
         )
         restored = SsoDipState.from_dict(state.to_dict())
         assert restored.level == SignalLevel.SELL
         assert restored.sell_target_level == SignalLevel.BUY_STAGE_2
+        assert restored.last_buy_tranche_date == "2026-08-19"
 
     def test_from_empty_dict(self):
         state = SsoDipState.from_dict({})
@@ -591,3 +706,7 @@ class TestStateSerialize:
     def test_from_none(self):
         state = SsoDipState.from_dict(None)
         assert state.level == SignalLevel.IDLE
+
+    def test_legacy_state_without_buy_tranche_date_is_supported(self):
+        state = SsoDipState.from_dict({"level": "BUY_STAGE_1"})
+        assert state.last_buy_tranche_date is None
