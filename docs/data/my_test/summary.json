@@ -2553,5 +2553,38 @@
             "signal_level": "BUY_STAGE_1",
             "lever_ratio": 0.1851904244104132
         }
+    },
+    {
+        "date": "2026-09-07",
+        "total_value": 10073805.0,
+        "cash_balance": 200290.0,
+        "net_deposit": 1036.0,
+        "group_a": 1839215.0,
+        "group_b": 8034300.0,
+        "group_c": 200290.0,
+        "expected_dividend": 0.0,
+        "spy_price": 770.1900024414062,
+        "spy_ma180": 716.0497219509549,
+        "spy_volatility": 0.08196873980380015,
+        "spy_momentum": 0.08883984306361668,
+        "mdd": -0.00988584665132863,
+        "vix": 14.529999732971191,
+        "benchmarks": {
+            "KOSPI200": 108855.0,
+            "S&P500": 25555.0,
+            "NASDAQ100": 174600.0
+        },
+        "regime": "Bull",
+        "reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주",
+        "target_exposure": 1.0,
+        "target_ratio_a": null,
+        "rebalance_threshold": null,
+        "factors": {
+            "weekly_rsi": 42.508467769344776,
+            "ma200_deviation": -0.04548453889735827,
+            "mdd_200": -0.2948921467924176,
+            "signal_level": "BUY_STAGE_1",
+            "lever_ratio": 0.1825740125007383
+        }
     }
 ]
