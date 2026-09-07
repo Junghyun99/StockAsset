@@ -67,6 +67,7 @@ class SsoSpyiChannelDipEngine(TradingEngine):
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         orders, reason, state = self._planner.plan(self.asset_inputs, portfolio, self.channel_state)
         return StrategyDecision(
@@ -78,7 +79,10 @@ class SsoSpyiChannelDipEngine(TradingEngine):
         )
 
     def finalize_strategy_state(
-        self, decision: StrategyDecision, order_result: OrderBatchResult
+        self,
+        decision: StrategyDecision,
+        order_result: OrderBatchResult,
+        record_date: str | None = None,
     ) -> SsoSpyiChannelState:
         self.channel_state = self._planner.record_fills(
             decision.proposed_state, order_result.actual_executions
