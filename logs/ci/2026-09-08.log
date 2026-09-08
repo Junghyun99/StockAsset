@@ -81,3 +81,87 @@
 2026-09-08 10:01:34,346 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
 2026-09-08 10:01:34,346 [INFO] >>> Step 6: Archiving Data
 2026-09-08 10:01:34,349 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
+2026-09-08 14:00:58,760 [INFO] === Initializing Trading Bot (multi-account) ===
+2026-09-08 14:00:58,762 [INFO] Loaded 4 account(s) from accounts.yaml
+2026-09-08 14:00:58,763 [INFO] [my_test] engine=DomesticQldDipBuyEngine market=domestic mode=LIVE state=ACTIVE
+2026-09-08 14:00:58,763 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-09-08 14:00:58,763 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-09-08 14:00:58,763 [INFO] Restored previous regime: Bull
+2026-09-08 14:00:58,764 [INFO] [my_isa] engine=DomesticVolManagedEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-09-08 14:00:58,764 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-09-08 14:00:58,764 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-09-08 14:00:58,764 [INFO] Restored previous regime: Bear_Weak
+2026-09-08 14:00:58,764 [INFO] [my_pension] engine=DomesticAsset5RealEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-09-08 14:00:58,765 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-09-08 14:00:58,765 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-09-08 14:00:58,765 [INFO] Restored previous regime: Bull
+2026-09-08 14:00:58,765 [INFO] [my_irp] engine=DomesticAsset5RealEngine market=domestic mode=LIVE state=INACTIVE(조회전용)
+2026-09-08 14:00:58,765 [INFO] [KisBroker] 캐시에서 토큰 로드 (API 호출 생략)
+2026-09-08 14:00:58,765 [INFO] [KisDomesticLiveBroker] Mode: LIVE TRADING
+2026-09-08 14:00:58,766 [INFO] Restored previous regime: Bull
+2026-09-08 14:00:58,767 [INFO] ===== [my_test] 계좌 실행 시작 =====
+2026-09-08 14:00:58,767 [INFO] >>> Step 1: Data Collection
+2026-09-08 14:00:58,767 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-09-08 14:00:59,059 [INFO] [Data] Fetching ['418660.KS'] history for 400 days...
+2026-09-08 14:00:59,253 [INFO] [Data] VIX fetched: 15.30
+2026-09-08 14:00:59,279 [INFO] >>> Step 2: Indicator Calculation
+2026-09-08 14:00:59,288 [INFO] Market Data: Price=770.19, VIX=15.30, MDD=-0.99%
+2026-09-08 14:00:59,288 [INFO] >>> Step 3: Strategy Analysis
+2026-09-08 14:00:59,288 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-09-08 14:00:59,288 [INFO] >>> Step 4: Portfolio Status
+2026-09-08 14:01:00,145 [INFO] Fetching Real-time prices from Broker...
+2026-09-08 14:01:04,001 [INFO] Current Portfolio: Cash=$200,290, Value=$10,191,730
+2026-09-08 14:01:04,132 [INFO] >>> Step 5: DomesticQldDipBuy (BUY_STAGE_1 1/10 분할매수 418660.KS 5주)
+2026-09-08 14:01:04,132 [INFO] Executing 1 orders (BUY_STAGE_1 1/10 분할매수 418660.KS 5주)
+2026-09-08 14:01:04,946 [WARNING] [KisDomestic] Portfolio API HTTP 500; retrying (2/3)
+2026-09-08 14:01:06,785 [INFO] [KisBroker] Available Cash for BUY: 200,290
+2026-09-08 14:01:09,579 [ERROR] [KisDomestic] Order Failed: BUY 418660.KS qty=5 @ 38400 — 해당종목은 기본예탁금 충족한 계좌만 매수주문가능합니다
+2026-09-08 14:01:09,781 [INFO] Order Summary: total=1 filled=0 partial=0 ordered=0 cancelled=0 skipped=0 rejected=1 error=0
+2026-09-08 14:01:09,782 [ERROR] ⚠️ Order Result Alert
+날짜: 2026-09-08
+- BUY 418660.KS 5주: REJECTED — 해당종목은 기본예탁금 충족한 계좌만 매수주문가능합니다
+2026-09-08 14:01:10,061 [INFO] >>> Step 6: Archiving Data
+2026-09-08 14:01:10,070 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=1 executions=0
+2026-09-08 14:01:10,070 [INFO] ===== [my_isa] 계좌 실행 시작 =====
+2026-09-08 14:01:10,070 [INFO] >>> Step 1: Data Collection
+2026-09-08 14:01:10,070 [INFO] [Data] Fetching ['133690.KS'] history for 400 days...
+2026-09-08 14:01:10,253 [INFO] [Data] VIX fetched: 15.30
+2026-09-08 14:01:10,253 [INFO] >>> Step 2: Indicator Calculation
+2026-09-08 14:01:10,255 [INFO] Market Data: Price=176717.00, VIX=15.30, MDD=-14.95%
+2026-09-08 14:01:10,256 [INFO] >>> Step 3: Strategy Analysis
+2026-09-08 14:01:10,256 [INFO] >>> VolManaged: vol=15.30% → L=1.44x (TIGER 미국나스닥100레버리지(합성) 44%, 위험 100%, 현금 0%)
+2026-09-08 14:01:10,256 [INFO] Regime: Bear_Weak | Target Exposure: 1.00
+2026-09-08 14:01:10,256 [INFO] >>> Step 4: Portfolio Status
+2026-09-08 14:01:11,070 [INFO] Fetching Real-time prices from Broker...
+2026-09-08 14:01:16,063 [INFO] Current Portfolio: Cash=$118,093, Value=$56,356,793
+2026-09-08 14:01:16,187 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
+2026-09-08 14:01:16,187 [INFO] >>> Step 6: Archiving Data
+2026-09-08 14:01:16,191 [INFO] Cycle Completed: regime=Bear_Weak exposure=1.00 orders=0 executions=0
+2026-09-08 14:01:16,191 [INFO] ===== [my_pension] 계좌 실행 시작 =====
+2026-09-08 14:01:16,191 [INFO] >>> Step 1: Data Collection
+2026-09-08 14:01:16,191 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-09-08 14:01:16,750 [INFO] [Data] VIX fetched: 15.30
+2026-09-08 14:01:16,750 [INFO] >>> Step 2: Indicator Calculation
+2026-09-08 14:01:16,752 [INFO] Market Data: Price=770.19, VIX=15.30, MDD=-0.99%
+2026-09-08 14:01:16,752 [INFO] >>> Step 3: Strategy Analysis
+2026-09-08 14:01:16,752 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-09-08 14:01:16,753 [INFO] >>> Step 4: Portfolio Status
+2026-09-08 14:01:17,599 [INFO] Fetching Real-time prices from Broker...
+2026-09-08 14:01:24,942 [INFO] Current Portfolio: Cash=$42,590, Value=$46,787,395
+2026-09-08 14:01:25,289 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
+2026-09-08 14:01:25,289 [INFO] >>> Step 6: Archiving Data
+2026-09-08 14:01:25,292 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
+2026-09-08 14:01:25,292 [INFO] ===== [my_irp] 계좌 실행 시작 =====
+2026-09-08 14:01:25,292 [INFO] >>> Step 1: Data Collection
+2026-09-08 14:01:25,292 [INFO] [Data] Fetching ['SPY'] history for 400 days...
+2026-09-08 14:01:25,450 [INFO] [Data] VIX fetched: 15.30
+2026-09-08 14:01:25,450 [INFO] >>> Step 2: Indicator Calculation
+2026-09-08 14:01:25,453 [INFO] Market Data: Price=770.19, VIX=15.30, MDD=-0.99%
+2026-09-08 14:01:25,453 [INFO] >>> Step 3: Strategy Analysis
+2026-09-08 14:01:25,453 [INFO] Regime: Bull | Target Exposure: 1.00
+2026-09-08 14:01:25,453 [INFO] >>> Step 4: Portfolio Status
+2026-09-08 14:01:26,280 [INFO] Fetching Real-time prices from Broker...
+2026-09-08 14:01:34,048 [INFO] Current Portfolio: Cash=$45,446, Value=$16,057,171
+2026-09-08 14:01:34,285 [INFO] >>> Step 5: Deactivated (조회 전용, 매매 스킵)
+2026-09-08 14:01:34,285 [INFO] >>> Step 6: Archiving Data
+2026-09-08 14:01:34,288 [INFO] Cycle Completed: regime=Bull exposure=1.00 orders=0 executions=0
