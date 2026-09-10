@@ -1,72 +1,72 @@
 {
-    "last_updated": "2026-09-10 10:01:19",
+    "last_updated": "2026-09-10 14:01:20",
     "last_rebalancing_date": "2026-09-10",
     "strategy": {
         "engine_name": "DomesticQldDipBuyEngine",
         "regime": "Bull",
         "target_exposure": 1.0,
-        "trigger_reason": "BUY_STAGE_1 1/10 분할매수 418660.KS 5주",
+        "trigger_reason": "BUY_STAGE_2 1/5 분할매수 418660.KS 22주",
         "market_score": {
             "vix": 16.459999084472656,
-            "spy_mdd": -0.01532367824771636,
-            "spy_momentum": 0.0868177706157766,
-            "spy_price": 765.9600219726562,
-            "spy_ma180": 717.0722222222222,
-            "spy_volatility": 0.08113095355558371
+            "spy_mdd": -0.019900216449299346,
+            "spy_momentum": 0.08513617050349867,
+            "spy_price": 762.4000244140625,
+            "spy_ma180": 717.0524444580078,
+            "spy_volatility": 0.08241161641122603
         },
         "decision_factors": [
             {
                 "key": "weekly_rsi",
                 "label": "주봉 RSI(14)",
-                "value": 42.05037764897462,
+                "value": 41.903336673019794,
                 "format": "number",
                 "threshold": 48.0
             },
             {
                 "key": "ma200_deviation",
                 "label": "200일선 괴리율",
-                "value": -0.05319928847869695,
+                "value": -0.055587479398596894,
                 "format": "percent",
                 "threshold": -0.1
             },
             {
                 "key": "mdd_200",
                 "label": "200거래일 MDD",
-                "value": -0.299934634419647,
+                "value": -0.30170884302922774,
                 "format": "percent",
                 "threshold": -0.2
             },
             {
                 "key": "signal_level",
                 "label": "신호 단계",
-                "value": "BUY_STAGE_1",
+                "value": "BUY_STAGE_2",
                 "format": "text",
                 "threshold": null
             },
             {
                 "key": "lever_ratio",
                 "label": "레버리지 비중",
-                "value": 0.18256615543596807,
+                "value": 0.18268908515731364,
                 "format": "percent",
                 "threshold": null
             }
         ]
     },
     "portfolio": {
-        "total_value": 10044715.0,
-        "cash_balance": 200290.0,
+        "total_value": 10055390.0,
+        "cash_balance": 849480.0,
         "holdings": [
             {
                 "ticker": "418660.KS",
                 "qty": 49,
-                "price": 37425.0,
-                "value": 1833825.0
+                "price": 37490.0,
+                "value": 1837010.0
             },
             {
                 "ticker": "486290.KS",
-                "qty": 790,
-                "price": 10140.0,
-                "value": 8010600.0
+                "qty": 726,
+                "price": 10150.0,
+                "value": 7368900.0
             }
         ]
     }
