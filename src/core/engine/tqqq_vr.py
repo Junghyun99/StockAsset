@@ -34,7 +34,7 @@ class TqqqVrEngine(TradingEngine):
             frame = frame.xs("QQQ", axis=1, level=1)
         # Strictly prior session, whether the provider includes today's unfinished bar or not.
         prior = frame.loc[frame.index.strftime("%Y-%m-%d") < self.cycle_date]
-        close = prior["Adj Close"].tail(21) if "Adj Close" in prior else pd.Series(dtype=float)
+        close = prior["Close"].tail(21) if "Close" in prior else pd.Series(dtype=float)
         if len(close) != 21 or not close.gt(0).all() or not close.map(math.isfinite).all():
             self.realized_vol = self.weight_cap = float("nan")
         else:

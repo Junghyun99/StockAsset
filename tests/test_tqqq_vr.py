@@ -127,15 +127,15 @@ def engine(repo=None):
     return TqqqVrEngine(broker=Mock(), repo=repo, logger=logger)
 
 
-def test_volatility_uses_adjusted_prior_20_returns_only():
+def test_volatility_uses_close_prior_20_returns_only():
     e = engine()
     e.cycle_date = "2026-02-04"
     idx = pd.bdate_range(end=e.cycle_date, periods=30)
     prices = 100*np.cumprod(1+np.tile([.01, -.02], 15))
-    df = pd.DataFrame({'Close': prices*2, 'Adj Close': prices}, index=idx)
+    df = pd.DataFrame({'Close': prices*2, 'Adj Close': np.full(30, 100.0)}, index=idx)
     data = CollectedData({'reference': df}, 20, e.data_spec())
     e.calculate_strategy_indicators(data)
-    expected = df['Adj Close'].iloc[:-1].tail(21).pct_change().dropna().std()*np.sqrt(252)
+    expected = df['Close'].iloc[:-1].tail(21).pct_change().dropna().std()*np.sqrt(252)
     assert e.realized_vol == pytest.approx(expected)
     df.iloc[-1] = 1000000
     assert e.calculate_strategy_indicators(data) == pytest.approx(min(1, .3/(3*expected)))
@@ -144,9 +144,9 @@ def test_volatility_uses_adjusted_prior_20_returns_only():
     assert e.calculate_strategy_indicators(old) == pytest.approx(e.weight_cap)
 
 
-def test_missing_adjusted_prices_block_instead_of_falling_back():
+def test_missing_close_blocks_instead_of_using_adjusted_prices():
     e = engine(); e.cycle_date = '2026-02-04'
-    data = CollectedData({'reference': pd.DataFrame({'Close': [100]*30},
+    data = CollectedData({'reference': pd.DataFrame({'Adj Close': [100]*30},
                           index=pd.bdate_range(end=e.cycle_date, periods=30))},20,e.data_spec())
     e.calculate_strategy_indicators(data)
     assert e.analyze_strategy(None)[2] == ['qqq_volatility_20d']
@@ -167,3 +167,13 @@ def test_template_execution_persists_state_and_restores_for_next_day():
     e.execute_cycle(m,pf(2080.25,79),MarketRegime.SIDEWAYS,1,[], '2026-01-05','2026-01-05')
     e.broker.execute_orders.assert_not_called()
     assert TqqqVrEngine.run_one_cycle is TradingEngine.run_one_cycle
+
+
+def test_close_only_cache_is_supported():
+    e = engine()
+    e.cycle_date = '2026-02-04'
+    frame = pd.DataFrame({'Close': [100.0]*30},
+                         index=pd.bdate_range(end=e.cycle_date, periods=30))
+    data = CollectedData({'reference': frame}, 20, e.data_spec())
+    assert e.calculate_strategy_indicators(data) == 1.0
+    assert e.analyze_strategy(None)[2] == []
