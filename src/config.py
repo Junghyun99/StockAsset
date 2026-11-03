@@ -42,6 +42,7 @@ TICKER_EXCHANGE_MAP: dict[str, str] = {
     'SHV': 'NAS',
     'SDY': 'NYS',
     'QQQ': 'NAS',
+    'TQQQ': 'NAS',
     'EEM': 'NYS',
     'TLT': 'NAS',
     'EMB': 'NYS',

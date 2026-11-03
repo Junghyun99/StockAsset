@@ -8,7 +8,7 @@
 # engine 값은 src/core/engine 디렉토리에 @register_engine 으로 등록된 이름을 사용합니다.
 # 예: QldSHVEngine, QldSdyEngine, QqqSdyEngine, SpyEngine, QqqEngine, Asset5Engine,
 #     DomesticAsset5Engine, QldSdyShvEngine, QldQqqShvRegimeEngine, VolManagedEngine,
-#     DomesticVolManagedEngine
+#     DomesticVolManagedEngine, TqqqVrEngine (규칙: docs/strategies/tqqq-vr.md)
 #
 # is_active (선택, 기본값 true):
 #   true  - 정상 매매 (조회 → 국면분석 → 매매 → 저장)

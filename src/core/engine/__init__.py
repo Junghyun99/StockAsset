@@ -37,7 +37,10 @@ from src.core.engine.sso_spyi_channel_dip import SsoSpyiChannelDipEngine
 from src.core.engine.qld_dip_buy import QldDipBuyEngine
 from src.core.engine.domestic_qld_dip_buy import DomesticQldDipBuyEngine
 
+from src.core.engine.tqqq_vr import TqqqVrEngine
+
 __all__ = [
+    "TqqqVrEngine",
     "_ENGINE_REGISTRY",
     "_ENGINE_COLORS",
     "_ENGINE_MARKET_TYPES",
