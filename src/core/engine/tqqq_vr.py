@@ -11,7 +11,7 @@ from src.core.logic.tqqq_vr import TqqqVrPlanner, VrState
 from src.core.models import DecisionFactor, MarketRegime, StrategyDecision, TradeSignal
 
 
-@register_engine(color="#d97706", backtest=False)
+@register_engine(color="#d97706", backtest=True)
 class TqqqVrEngine(TradingEngine):
     """Daily cap sales and weekly V/budget updates; dedicated TQQQ/cash account."""
     ASSET_GROUPS = {"A": ["TQQQ"], "B": []}

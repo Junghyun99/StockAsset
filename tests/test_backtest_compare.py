@@ -10,7 +10,7 @@ from src.backtest.runner import (
 
 
 # 모든 엔진의 티커 합집합 + SPY + 벤치마크 티커(EWY, 360750.KS, 133690.KS)
-ALL_COMPARE_TICKERS = ["SPY", "SSO", "SPYI", "QLD", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
+ALL_COMPARE_TICKERS = ["SPY", "SSO", "SPYI", "QLD", "TQQQ", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
                         "069500.KS", "143850.KS", "132030.KS", "305080.KS", "148070.KS",
                         "EWY", "360750.KS", "133690.KS"]
 
@@ -38,7 +38,7 @@ def mock_compare_fetcher():
 @patch("src.backtest.runner.download_historical_data")
 @patch("src.backtest.runner.plt.savefig")
 def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
-    """[Compare] 비교 백테스트가 4개 엔진 모두의 결과를 반환해야 한다."""
+    """[Compare] 비교 백테스트가 활성화된 모든 엔진의 결과를 반환해야 한다."""
     mock_download.return_value = mock_compare_fetcher
 
     result = run_compare_backtest(
@@ -50,6 +50,8 @@ def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, m
     assert isinstance(result, CompareBacktestResult)
     expected_names = {name for name, _ in ENGINE_REGISTRY if _ENGINE_BACKTEST.get(name, True)}
     assert set(result.engine_results.keys()) == expected_names
+    assert "TqqqVrEngine" in result.engine_results
+    assert result.engine_results["TqqqVrEngine"].final_value != 10000.0
 
 
 @patch("src.backtest.runner.download_historical_data")
@@ -69,6 +71,8 @@ def test_run_compare_single_data_download(mock_savefig, mock_download, mock_comp
     tickers_called = set(mock_download.call_args[0][0])
     assert "SPY" in tickers_called
     assert "QLD" in tickers_called
+    assert "TQQQ" in tickers_called
+    assert "QQQ" in tickers_called
     assert "SSO" in tickers_called
     assert "SHV" in tickers_called
 
