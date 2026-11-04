@@ -1,45 +1,45 @@
 {
-    "last_updated": "2026-07-31",
-    "last_rebalancing_date": "2026-07-06",
+    "last_updated": "2026-10-30",
+    "last_rebalancing_date": "2026-10-14",
     "strategy": {
         "engine_name": "DipBuyEngine",
-        "regime": "Crash",
-        "target_exposure": 0.0,
+        "regime": "Bear_Weak",
+        "target_exposure": 0.33213756701947855,
         "trigger_reason": "대기(트리거 없음)",
         "market_score": {
-            "vix": 15.989999771118164,
-            "spy_mdd": -0.16771113911346935,
-            "spy_momentum": 0.09422892596078623,
-            "spy_price": 83.66999816894531,
-            "spy_ma180": 77.23613912794325,
-            "spy_volatility": 0.4757641093060243
+            "vix": 19.420000076293945,
+            "spy_mdd": -0.1804108455969337,
+            "spy_momentum": 0.0524525397449525,
+            "spy_price": 82.58999633789062,
+            "spy_ma180": 84.66816673278808,
+            "spy_volatility": 0.4516200962934226
         },
         "decision_factors": [
             {
                 "key": "gap_ma20",
                 "label": "MA20 이격",
-                "value": -0.042118421411028506,
+                "value": -0.10577692355705115,
                 "format": "percent",
                 "threshold": 0.02
             },
             {
                 "key": "gap_ma60",
                 "label": "MA60 이격",
-                "value": -0.08469349847340746,
+                "value": -0.10148668051312593,
                 "format": "percent",
                 "threshold": 0.02
             },
             {
                 "key": "gap_ma120",
                 "label": "MA120 이격",
-                "value": 0.04149526974327222,
+                "value": -0.09904688833340569,
                 "format": "percent",
                 "threshold": 0.02
             },
             {
                 "key": "rsi",
                 "label": "RSI(14)",
-                "value": 44.04292791661392,
+                "value": 34.33704062925314,
                 "format": "number",
                 "threshold": 70.0
             },
@@ -53,17 +53,17 @@
         ]
     },
     "portfolio": {
-        "total_value": 25455362.591477767,
-        "cash_balance": 20.698548689871316,
+        "total_value": 251339702.96573865,
+        "cash_balance": 9.130350456178448,
         "holdings": [
             {
                 "ticker": "QLD",
-                "qty": 304235,
-                "price": 83.66999816894531,
-                "value": 25455341.892929077
+                "qty": 3043222,
+                "price": 82.58999633789062,
+                "value": 251339693.83538818
             }
         ]
     },
-    "initial_cash": 10000000.0,
-    "backtest_start_date": "2023-08-01"
+    "initial_cash": 100000000.0,
+    "backtest_start_date": "2016-01-01"
 }
