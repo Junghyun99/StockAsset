@@ -177,3 +177,33 @@ def test_close_only_cache_is_supported():
     data = CollectedData({'reference': frame}, 20, e.data_spec())
     assert e.calculate_strategy_indicators(data) == 1.0
     assert e.analyze_strategy(None)[2] == []
+
+
+def test_backtest_adjusted_buy_settles_and_allows_next_day_sell():
+    from src.backtest.components import BacktestBroker
+
+    planner = TqqqVrPlanner()
+    broker = BacktestBroker(initial_cash=1000)
+    broker.set_prices({"TQQQ": 10})
+    broker.set_date(pd.Timestamp("2026-01-06"))
+    old = state(budget=2000, closing_pool=1000)
+    orders, _, proposed = planner.plan(
+        "2026-01-06", 1, broker.get_portfolio(), old)
+    assert orders[0].quantity == 99
+    batch = broker.execute_orders(orders)
+    fill = batch.actual_executions[0]
+    assert fill.quantity == 97  # cash 98% and price 101% safety margins
+    settled = planner.settle(proposed, batch)
+    assert not settled.reconciliation_required
+    assert settled.spent == pytest.approx(fill.quantity * fill.price + fill.fee)
+    assert settled.closing_pool == pytest.approx(1000 - settled.spent)
+
+    broker.set_date(pd.Timestamp("2026-01-07"))
+    next_orders, _, next_state = planner.plan(
+        "2026-01-07", .4, broker.get_portfolio(), settled)
+    assert next_orders[0].action == OrderAction.SELL
+    sell_batch = broker.execute_orders(next_orders)
+    after_sell = planner.settle(next_state, sell_batch)
+    assert not after_sell.reconciliation_required
+    assert after_sell.spent == settled.spent
+    assert broker.holdings["TQQQ"] < 97

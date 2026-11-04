@@ -95,16 +95,16 @@ class MockBroker(IBrokerAdapter):
                 order, ExecutionStatus.SKIPPED, reason="no executable quantity"
             )
         if execution.quantity < order.quantity:
-            partial = replace(
+            # Cash/holding limits can reduce the executable order before filling.
+            # A smaller completed execution has no outstanding remainder. Preserve
+            # explicit execution status (including genuine PARTIAL) instead of
+            # inferring pending orders from the original requested quantity.
+            execution = replace(
                 execution,
-                status=ExecutionStatus.PARTIAL,
                 reason=(
                     execution.reason
                     or f"quantity adjusted {order.quantity}->{execution.quantity}"
                 ),
-            )
-            return OrderOutcome(
-                order, ExecutionStatus.PARTIAL, partial, partial.reason
             )
         return OrderOutcome(
             order, execution.status, execution, execution.reason
