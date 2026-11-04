@@ -102,16 +102,20 @@ def test_mock_broker_reports_zero_affordable_quantity_as_skipped():
     assert result.has_warnings is False
 
 
-def test_mock_broker_reports_adjusted_quantity_as_partial():
+def test_mock_broker_reports_adjusted_quantity_as_completed():
     broker = MockBroker(initial_cash=250.0)
     order = Order("SPY", OrderAction.BUY, 5, 100.0)
 
     result = broker.execute_orders([order])
 
     assert result.total == 1
-    assert result.outcomes[0].status == ExecutionStatus.PARTIAL
-    assert result.actual_executions[0].quantity < order.quantity
-    assert result.has_warnings is True
+    assert result.outcomes[0].status == ExecutionStatus.FILLED
+    assert result.outcomes[0].order is order
+    assert order.quantity == 5
+    assert result.actual_executions[0].quantity == 2
+    assert result.actual_executions[0].status == ExecutionStatus.FILLED
+    assert "quantity adjusted 5->2" in result.outcomes[0].reason
+    assert result.has_warnings is False
 
 
 def test_kis_common_converts_missing_adapter_result_to_error(monkeypatch):
@@ -128,3 +132,25 @@ def test_kis_common_converts_missing_adapter_result_to_error(monkeypatch):
     assert result.total == 1
     assert result.outcomes[0].status == ExecutionStatus.ERROR
     assert result.has_warnings is True
+
+
+def test_mock_broker_preserves_explicit_partial_execution():
+    order = _order()
+    execution = _execution(order, ExecutionStatus.PARTIAL, quantity=3)
+    outcome = MockBroker._outcome_for_execution(order, execution)
+    assert outcome.status == ExecutionStatus.PARTIAL
+    assert outcome.execution.status == ExecutionStatus.PARTIAL
+    assert outcome.execution.quantity == 3
+    assert outcome.reason == "broker response"
+
+
+def test_mock_broker_clamped_sell_is_completed(monkeypatch):
+    monkeypatch.setattr("src.infra.broker.mock.time.sleep", lambda _: None)
+    broker = MockBroker(initial_cash=0, holdings={"SPY": 2})
+    order = Order("SPY", OrderAction.SELL, 5, 100)
+    result = broker.execute_orders([order])
+    assert result.outcomes[0].status == ExecutionStatus.FILLED
+    assert result.actual_executions[0].quantity == 2
+    assert order.quantity == 5
+    assert broker.holdings["SPY"] == 0
+    assert not result.has_warnings

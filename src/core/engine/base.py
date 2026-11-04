@@ -72,6 +72,7 @@ class TradingEngine:
 
         self.calculator = IndicatorCalculator()
         self.strategy_indicators: Any = None
+        self.cycle_date: Optional[str] = None
         self.analyzer = RegimeAnalyzer()
         self.targeter = VolatilityTargeter(target_vol=target_vol)
         self.ticker_labels = ticker_labels or IdentityTickerLabelProvider()
@@ -138,7 +139,11 @@ class TradingEngine:
         # 저장 key 및 리밸런싱 날짜로 사용할 실행일 결정
         # 백테스트: sim_date(시뮬레이션 날짜) 사용
         # 라이브: 오늘 실행일 사용 (market_data.date는 전일 미국 거래일이므로 부적합)
-        record_date = sim_date or datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d")
+        record_date = sim_date or datetime.now(
+            getattr(self, "SESSION_TIMEZONE", timezone(timedelta(hours=9)))
+        ).strftime("%Y-%m-%d")
+
+        self.cycle_date = record_date
 
         # Step 1: 데이터 수집
         self.logger.info(">>> Step 1: Data Collection")
@@ -372,6 +377,7 @@ class TradingEngine:
         record_date: str,
     ) -> Tuple[TradeSignal, List[TradeExecution], Portfolio, bool]:
         """Step 5 공통 흐름: 안전 분기 → 전략 결정 → 주문 → 알림 → 상태 반영."""
+        self.cycle_date = record_date
         orphan_executions: List[TradeExecution] = []
         executions: List[TradeExecution] = []
         final_pf = portfolio
