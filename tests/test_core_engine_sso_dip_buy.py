@@ -106,6 +106,7 @@ class TestStateManagement:
         )
 
         assert engine.dip_state.tranche_completed == 1
+        assert engine.dip_state.last_buy_tranche_date == "2026-07-22"
 
 
 class TestCollectData:
