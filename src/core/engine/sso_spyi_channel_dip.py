@@ -18,7 +18,7 @@ from src.core.models import (
 )
 
 
-@register_engine(color="#c0392b")
+@register_engine(color="#c0392b", backtest=False)
 class SsoSpyiChannelDipEngine(TradingEngine):
     """Run SSO and SPYI campaigns from one cash pool without global interval gating."""
 

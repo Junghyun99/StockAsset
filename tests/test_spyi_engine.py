@@ -45,8 +45,8 @@ def test_registered_in_registry():
     assert "SpyiEngine" in names
 
 
-def test_backtest_enabled():
-    assert _ENGINE_BACKTEST.get("SpyiEngine") is True
+def test_backtest_disabled():
+    assert _ENGINE_BACKTEST.get("SpyiEngine") is False
 
 
 def test_rebalancer_groups():
