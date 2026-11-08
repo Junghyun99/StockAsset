@@ -22,7 +22,7 @@ from src.core.models import (
 )
 
 
-@register_engine(color="#ff6b6b")
+@register_engine(color="#ff6b6b", backtest=False)
 class SsoDipBuyEngine(TradingEngine):
     """SSO/SPYI 신호 기반 분할매수 전략 엔진."""
 

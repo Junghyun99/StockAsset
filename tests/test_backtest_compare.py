@@ -10,7 +10,7 @@ from src.backtest.runner import (
 
 
 # 모든 엔진의 티커 합집합 + SPY + 벤치마크 티커(EWY, 360750.KS, 133690.KS)
-ALL_COMPARE_TICKERS = ["SPY", "SSO", "SPYI", "QLD", "TQQQ", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
+ALL_COMPARE_TICKERS = ["SPY", "SSO", "QLD", "TQQQ", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
                         "069500.KS", "143850.KS", "132030.KS", "305080.KS", "148070.KS",
                         "EWY", "360750.KS", "133690.KS"]
 
@@ -50,6 +50,7 @@ def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, m
     assert isinstance(result, CompareBacktestResult)
     expected_names = {name for name, _ in ENGINE_REGISTRY if _ENGINE_BACKTEST.get(name, True)}
     assert set(result.engine_results.keys()) == expected_names
+    assert not {"SpyiEngine", "SsoSpyiEngine", "SsoSpyiChannelDipEngine", "SsoDipBuyEngine"} & set(result.engine_results)
     assert "TqqqVrEngine" in result.engine_results
     assert result.engine_results["TqqqVrEngine"].final_value != 10000.0
 
@@ -73,6 +74,7 @@ def test_run_compare_single_data_download(mock_savefig, mock_download, mock_comp
     assert "QLD" in tickers_called
     assert "TQQQ" in tickers_called
     assert "QQQ" in tickers_called
+    assert "SPYI" not in tickers_called
     assert "SSO" in tickers_called
     assert "SHV" in tickers_called
 
@@ -189,11 +191,7 @@ def test_stale_status_json_does_not_block_rebalancing(mock_savefig, mock_downloa
     )
 
     assert result is not None
-    # 신호 기반 엔진은 mock 데이터에서 매수 신호가 없을 수 있어 제외
-    signal_based_engines = {"SsoDipBuyEngine", "SsoSpyiChannelDipEngine"}
     for name, br in result.engine_results.items():
-        if name in signal_based_engines:
-            continue
         # 가격이 선형 증가(100->200)하므로 total_value는 10000과 달라야 함
         assert br.final_value != br.initial_cash, (
             f"{name}: final_value가 initial_cash와 같음 — 리밸런싱이 실행되지 않았음"

@@ -20,7 +20,7 @@ def _engine():
 def test_channel_dip_engine_is_registered_for_compare_backtest():
     assert issubclass(SsoSpyiChannelDipEngine, TradingEngine)
     assert "SsoSpyiChannelDipEngine" in [name for name, _ in _ENGINE_REGISTRY]
-    assert _ENGINE_BACKTEST["SsoSpyiChannelDipEngine"] is True
+    assert _ENGINE_BACKTEST["SsoSpyiChannelDipEngine"] is False
 
 
 def test_channel_dip_engine_collects_independent_sso_and_spyi_data_without_interval():

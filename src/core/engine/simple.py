@@ -112,7 +112,7 @@ class Asset5Engine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.4
 
 
-@register_engine(color="#e377c2")
+@register_engine(color="#e377c2", backtest=False)
 class SsoSpyiEngine(FullExposureEngine):
     """SSO(A그룹) + SPYI(B그룹) Full Exposure 전략 엔진.
 
@@ -146,7 +146,7 @@ class SsoEngine(FullExposureEngine):
     REBALANCE_RATIO_A: float = 0.999
 
 
-@register_engine(color="#4488ff")
+@register_engine(color="#4488ff", backtest=False)
 class SpyiEngine(FullExposureEngine):
     """SPYI Buy&Hold 벤치마크 시뮬레이션 엔진.
 

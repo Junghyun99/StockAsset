@@ -65,8 +65,8 @@ class TestClassStructure:
         names = [name for name, _ in _ENGINE_REGISTRY]
         assert "SsoDipBuyEngine" in names
 
-    def test_backtest_enabled(self):
-        assert _ENGINE_BACKTEST.get("SsoDipBuyEngine") is True
+    def test_backtest_disabled(self):
+        assert _ENGINE_BACKTEST.get("SsoDipBuyEngine") is False
 
     def test_asset_groups(self):
         assert SsoDipBuyEngine.ASSET_GROUPS == {"A": ["SSO"], "B": ["SPYI"]}

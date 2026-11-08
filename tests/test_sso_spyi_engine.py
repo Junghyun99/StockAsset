@@ -109,8 +109,8 @@ def test_registered_in_registry():
     assert "SsoSpyiEngine" in names
 
 
-def test_backtest_enabled():
-    assert _ENGINE_BACKTEST.get("SsoSpyiEngine") is True
+def test_backtest_disabled():
+    assert _ENGINE_BACKTEST.get("SsoSpyiEngine") is False
 
 
 # ── Rebalancer 생성 검증 ──────────────────────────────────────────
