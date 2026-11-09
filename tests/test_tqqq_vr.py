@@ -54,6 +54,15 @@ def test_weekly_rollover_uses_previous_pool_and_does_not_repeat():
     assert again.budget == 1000
 
 
+@pytest.mark.parametrize(("cap", "expected_value"), [(.6, 80.5), (.55, 80), (.5, 80)])
+def test_rollover_limits_value_growth_to_cap_headroom(cap, expected_value):
+    old = state(value=80, closing_pool=45, spent=10)
+    _, _, new = TqqqVrPlanner().plan("2026-01-12", cap, pf(45, 55, 1), old)
+    assert new.value == pytest.approx(expected_value)
+    assert new.budget == 22.5
+    assert new.spent == 0
+
+
 def test_cap_sell_is_daily_and_post_fee_safe():
     p = TqqqVrPlanner()
     orders, _, s = p.plan("2026-01-06", .4, pf(), state())

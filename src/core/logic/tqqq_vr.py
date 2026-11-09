@@ -65,15 +65,18 @@ class TqqqVrPlanner:
             orders = [Order(self.TICKER, OrderAction.BUY, n, price)] if n else []
             return orders, "VR: initial allocation", replace(
                 state, last_date=day, closing_pool=cash)
+        stock_value = qty * price
+        equity = cash + stock_value
+        cap_headroom = cap * equity - stock_value
         cycle = (date.fromisoformat(day)-date.fromisoformat(state.anchor)).days // self.CYCLE_DAYS
         if cycle > state.cycle:
             # One update on the first observed session; no fictitious skipped-week compounding.
-            state = replace(state, cycle=cycle, value=state.value+state.closing_pool/self.G,
+            deployable_pool = max(0.0, min(state.closing_pool, cap_headroom))
+            state = replace(state, cycle=cycle, value=state.value + deployable_pool / self.G,
                             budget=state.closing_pool*self.CYCLE_LIMIT, spent=0.0)
         state = replace(state, last_date=day, closing_pool=cash)
-        equity = cash + qty*price
         vr_sell = max(0, math.ceil(qty-1.15*state.value/price-1e-10))
-        cap_sell = max(0, math.ceil((qty*price-cap*equity) /
+        cap_sell = max(0, math.ceil(-cap_headroom /
                                    (price*(1-cap*self.fee_rate))-1e-10))
         sell = min(qty, max(vr_sell, cap_sell))
         if sell:
@@ -83,7 +86,7 @@ class TqqqVrPlanner:
         unit_cost = price*(1+self.fee_rate)
         affordable = math.floor(cash/unit_cost+1e-10)
         permitted = max(0, math.floor((state.budget-state.spent)/unit_cost+1e-10))
-        room = max(0, math.floor((cap*equity-qty*price) /
+        room = max(0, math.floor(cap_headroom /
                                 (price*(1+cap*self.fee_rate))+1e-10))
         buy = min(need, affordable, permitted, room)
         if buy:
