@@ -34,9 +34,12 @@ class TqqqVrPlanner:
     G = 10.0
     CYCLE_DAYS = 7
 
-    def __init__(self, fee_rate: float = 0.0025):
+    def __init__(self, fee_rate: float = 0.0025, *, sell_deadband: float = 0.0):
         if not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
             raise ValueError("fee_rate must be finite and in [0, 1)")
+        if not 0 <= sell_deadband <= 1:
+            raise ValueError("sell_deadband must be in [0, 1]")
+        self.sell_deadband = sell_deadband
         self.fee_rate = fee_rate
 
     def plan(self, day: str, cap: float, portfolio: Portfolio,
@@ -78,6 +81,11 @@ class TqqqVrPlanner:
         vr_sell = max(0, math.ceil(qty-1.15*state.value/price-1e-10))
         cap_sell = max(0, math.ceil(-cap_headroom /
                                    (price*(1-cap*self.fee_rate))-1e-10))
+        if (cap_sell and self.sell_deadband and
+                stock_value <= (cap + self.sell_deadband + 1e-14) * equity):
+            if not vr_sell:
+                return [], "VR: cap sell deferred within deadband", state
+            cap_sell = 0
         sell = min(qty, max(vr_sell, cap_sell))
         if sell:
             reason = "VR: volatility cap sell" if cap_sell > vr_sell else "VR: upper band sell"
