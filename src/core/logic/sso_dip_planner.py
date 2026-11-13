@@ -46,6 +46,7 @@ class SsoDipState:
     tranche_completed: int = 0
     tranche_amount: float = 0.0
     sell_target_level: SignalLevel | None = None
+    last_buy_tranche_date: str | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -56,6 +57,7 @@ class SsoDipState:
             "sell_target_level": (
                 self.sell_target_level.value if self.sell_target_level else None
             ),
+            "last_buy_tranche_date": self.last_buy_tranche_date,
         }
 
     @classmethod
@@ -75,6 +77,11 @@ class SsoDipState:
             tranche_completed=int(data.get("tranche_completed", 0)),
             tranche_amount=float(data.get("tranche_amount", 0.0)),
             sell_target_level=sell_target,
+            last_buy_tranche_date=(
+                data.get("last_buy_tranche_date")
+                if isinstance(data.get("last_buy_tranche_date"), str)
+                else None
+            ),
         )
 
 
@@ -104,6 +111,7 @@ class SsoDipPlanner:
         portfolio: Portfolio,
         state: SsoDipState,
         raw_signal_override: SignalLevel | None = None,
+        record_date: str | None = None,
     ) -> Tuple[List[Order], str, SsoDipState]:
         rsi = signals.weekly_rsi
         dev = signals.ma200_deviation
@@ -122,6 +130,15 @@ class SsoDipPlanner:
         new_state, delta_amount = self._transition(
             raw_signal, current_ratio, total, state,
         )
+
+        if (
+            record_date is not None
+            and record_date == state.last_buy_tranche_date
+            and self._is_buy_level(new_state.level)
+        ):
+            return [], f"대기({new_state.level.value}, 당일 분할매수 완료)", state
+
+        new_state.last_buy_tranche_date = state.last_buy_tranche_date
 
         orders: List[Order] = []
         reasons: List[str] = []
@@ -353,7 +370,10 @@ class SsoDipPlanner:
         }
 
     def record_filled_tranche(
-        self, state: SsoDipState, executions: List[TradeExecution],
+        self,
+        state: SsoDipState,
+        executions: List[TradeExecution],
+        record_date: str | None = None,
     ) -> SsoDipState:
         if state.tranche_completed >= state.tranche_total:
             return state
@@ -364,6 +384,7 @@ class SsoDipPlanner:
                     ExecutionStatus.FILLED,
                     ExecutionStatus.PARTIAL,
                 )
+                and execution.quantity > 0
                 and execution.action in (OrderAction.BUY, OrderAction.SELL)
             ):
                 return SsoDipState(
@@ -372,6 +393,12 @@ class SsoDipPlanner:
                     tranche_completed=state.tranche_completed + 1,
                     tranche_amount=state.tranche_amount,
                     sell_target_level=state.sell_target_level,
+                    last_buy_tranche_date=(
+                        record_date
+                        if self._is_buy_level(state.level)
+                        and execution.action == OrderAction.BUY
+                        else state.last_buy_tranche_date
+                    ),
                 )
         return state
 

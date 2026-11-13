@@ -115,6 +115,21 @@ class TestStateManagement:
         engine, mocks = _build_engine()
         mocks["repo"].load_strategy_state.assert_called_with("domestic_qld_dip_buy")
 
+    def test_passes_record_date_when_finalizing_state(self):
+        engine, _ = _build_engine()
+        proposed_state = SsoDipState(level=SignalLevel.BUY_STAGE_1)
+        engine._planner.record_filled_tranche = MagicMock(return_value=proposed_state)
+        decision = StrategyDecision(
+            signal=TradeSignal(1.0, [], "test"), proposed_state=proposed_state,
+        )
+        result = MagicMock(actual_executions=[])
+
+        engine.finalize_strategy_state(decision, result, record_date="2026-08-19")
+
+        engine._planner.record_filled_tranche.assert_called_once_with(
+            proposed_state, [], record_date="2026-08-19",
+        )
+
     def test_rejected_buy_alerts_and_does_not_consume_tranche(self):
         notifier = MagicMock()
         engine, mocks = _build_engine(notifier)
