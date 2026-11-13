@@ -15,12 +15,14 @@ from src.core.models import DecisionFactor, MarketRegime, StrategyDecision, Trad
 class TqqqVrEngine(TradingEngine):
     """Daily cap sales and weekly V/budget updates; dedicated TQQQ/cash account."""
     ASSET_GROUPS = {"A": ["TQQQ"], "B": []}
+    SELL_DEADBAND = 0.0
+    LABEL = "TQQQ VR"
     STATE_KEY = "tqqq_vr"
     SESSION_TIMEZONE = ZoneInfo("America/New_York")
 
     def __init__(self, *args, fee_rate: float = 0.0025, **kwargs):
         super().__init__(*args, **kwargs)
-        self.planner = TqqqVrPlanner(fee_rate)
+        self.planner = TqqqVrPlanner(fee_rate, sell_deadband=self.SELL_DEADBAND)
         self.vr_state = VrState.from_dict(self.restore_strategy_state(self.STATE_KEY))
         self.realized_vol = float("nan")
         self.weight_cap = float("nan")
@@ -54,7 +56,7 @@ class TqqqVrEngine(TradingEngine):
         orders, reason, state = self.planner.plan(
             self.cycle_date or market_data.date, self.weight_cap, portfolio, self.vr_state)
         return StrategyDecision(
-            signal=TradeSignal(exposure, orders, reason), label="TQQQ VR",
+            signal=TradeSignal(exposure, orders, reason), label=self.LABEL,
             is_rebalancing=bool(orders), state_key=self.STATE_KEY, proposed_state=state)
 
     def finalize_strategy_state(self, decision, order_result):
@@ -71,3 +73,11 @@ class TqqqVrEngine(TradingEngine):
         factors.append(DecisionFactor("vr_reconcile", "체결 확인 필요",
                                       str(self.vr_state.reconciliation_required), "text"))
         return factors
+
+
+@register_engine(color="#9333ea", backtest=True)
+class TqqqVrDeadbandEngine(TqqqVrEngine):
+    """Defer daily cap sales for overshoots up to five percentage points."""
+    SELL_DEADBAND = 0.05
+    LABEL = "TQQQ VR 5%p 데드밴드"
+    STATE_KEY = "tqqq_vr_deadband"

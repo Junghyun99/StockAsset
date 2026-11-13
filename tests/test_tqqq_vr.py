@@ -216,3 +216,15 @@ def test_backtest_adjusted_buy_settles_and_allows_next_day_sell():
     assert not after_sell.reconciliation_required
     assert after_sell.spent == settled.spent
     assert broker.holdings["TQQQ"] < 97
+
+
+@pytest.mark.parametrize(("qty", "value", "sell"), [
+    (44, 8000, 0),   # lower-band buy demand, but no room under the raw cap
+    (45, 8000, 0),   # exactly at cap + 5 percentage points
+    (46, 8000, 6),   # sell back to 40%
+    (45, 3800, 2),   # upper VR band still triggers inside the deadband
+])
+def test_deadband_sell_boundary(qty, value, sell):
+    planner = TqqqVrPlanner(0, sell_deadband=.05)
+    orders, _, _ = planner.plan("2026-01-06", .4, pf(10000-100*qty, qty), state(value=value))
+    assert [(o.action, o.quantity) for o in orders] == ([(OrderAction.SELL, sell)] if sell else [])
