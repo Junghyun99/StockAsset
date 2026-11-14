@@ -120,6 +120,18 @@ def _calculate_metrics(
     return res_df, final_value, cagr, mdd, sharpe_ratio, regime_returns
 
 
+def select_compare_engines(engine_names=None):
+    """Explicit selection may include experimental engines excluded by default."""
+    if engine_names is None:
+        return [(name, cls) for name, cls in ENGINE_REGISTRY
+                if _ENGINE_BACKTEST.get(name, True)]
+    requested = set(engine_names)
+    known = {name for name, _ in ENGINE_REGISTRY}
+    if not requested or requested - known:
+        raise ValueError(f"Invalid engine selection: {sorted(requested - known)}")
+    return [(name, cls) for name, cls in ENGINE_REGISTRY if name in requested]
+
+
 def run_compare_backtest(
     start_date: str,
     end_date: str,
@@ -128,21 +140,21 @@ def run_compare_backtest(
     output_dir: str = "docs/data/backtest/compare",
     run_number: Optional[str] = None,
     reinvest_dividends: bool = True,
+    engine_names: Optional[List[str]] = None,
 ) -> Optional[CompareBacktestResult]:
-    """모든 엔진을 동시에 실행하고 결과를 비교한다."""
+    """기본 활성 엔진 또는 명시적으로 선택한 엔진을 비교한다."""
     if execution_interval < 1:
         raise ValueError(f"execution_interval은 1 이상이어야 합니다: {execution_interval}")
 
+    selected_engines = select_compare_engines(engine_names)
     strategy = StrategyConfig(trading_interval_days=execution_interval)
     # CI에서 실행된 백테스트 로그만 커밋한다. (.gitignore는 !logs/backtest/ci/**/*.log 만 허용)
     _log_subdir = "ci" if os.getenv("GITHUB_ACTIONS") == "true" else "local"
     logger = TradeLogger(log_dir=f"logs/backtest/{_log_subdir}", run_number=run_number)
 
-    # 1. 전체 엔진의 티커 합집합 수집 (backtest=False 엔진 제외)
+    # 1. 선택한 엔진의 티커 합집합 수집
     all_tickers: set = set()
-    for name, eng_cls in ENGINE_REGISTRY:
-        if not _ENGINE_BACKTEST.get(name, True):
-            continue
+    for name, eng_cls in selected_engines:
         groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
         for group_tickers in groups.values():
             all_tickers.update(group_tickers)
@@ -164,11 +176,9 @@ def run_compare_backtest(
     trading_days = full_df.index
     sim_days = [d for d in trading_days if start_date <= d.strftime("%Y-%m-%d") <= end_date]
 
-    # 4. 엔진별 독립 컴포넌트 생성 (backtest=False 엔진 제외)
+    # 4. 선택한 엔진별 독립 컴포넌트 생성
     engines: Dict[str, dict] = {}
-    for name, eng_cls in ENGINE_REGISTRY:
-        if not _ENGINE_BACKTEST.get(name, True):
-            continue
+    for name, eng_cls in selected_engines:
         eff_groups = getattr(eng_cls, 'ASSET_GROUPS', strategy.ASSET_GROUPS)
         eff_ratio = getattr(eng_cls, 'REBALANCE_RATIO_A', 0.5)
 

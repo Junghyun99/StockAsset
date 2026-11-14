@@ -12,7 +12,7 @@ from src.backtest.runner import (
 # 모든 엔진의 티커 합집합 + SPY + 벤치마크 티커(EWY, 360750.KS, 133690.KS)
 ALL_COMPARE_TICKERS = ["SPY", "SSO", "QLD", "TQQQ", "IEF", "GLD", "DBC", "SHV", "SDY", "QQQ", "EEM", "TLT", "EMB",
                         "069500.KS", "143850.KS", "132030.KS", "305080.KS", "148070.KS",
-                        "EWY", "360750.KS", "133690.KS"]
+                        "EWY", "360750.KS", "133690.KS", "418660.KS"]
 
 
 @pytest.fixture
@@ -232,3 +232,18 @@ def test_default_output_dir_isolated_from_real_data(mock_savefig, mock_download,
     assert snapshot(real_root) == before, (
         "output_dir 기본값 실행이 실제 docs/data/backtest 파일을 수정했습니다"
     )
+
+
+@patch("src.backtest.runner.download_historical_data")
+@patch("src.backtest.runner.plt.savefig")
+def test_explicit_domestic_vr_comparison(mock_savefig, mock_download, mock_compare_fetcher, tmp_path):
+    mock_download.return_value = mock_compare_fetcher
+    name = "DomesticQldVrBuyDeadbandEngine"
+    result = run_compare_backtest(
+        "2023-01-02", "2023-01-05", output_dir=str(tmp_path / "domestic"),
+        engine_names=[name])
+    assert set(result.engine_results) == {name}
+    assert result.engine_results[name].final_value != 10000.0
+    requested = set(mock_download.call_args.args[0])
+    assert {"418660.KS", "133690.KS"} <= requested
+    assert "TQQQ" not in requested

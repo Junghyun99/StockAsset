@@ -21,6 +21,11 @@ on:
         required: false
         type: string
         default: '1'
+      engines:
+        description: '엔진 이름 쉼표 구분 (비우면 기본 목록, 국내판은 명시 선택)'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write
@@ -48,6 +53,7 @@ jobs:
         BACKTEST_END: ${{ inputs.end }}
         BACKTEST_CASH: ${{ inputs.initial_cash }}
         BACKTEST_INTERVAL: ${{ inputs.interval }}
+        BACKTEST_ENGINES: ${{ inputs.engines }}
       run: python scripts/run_compare_ci.py
 
     - name: Commit and Push Results
