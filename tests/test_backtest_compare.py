@@ -51,6 +51,7 @@ def test_run_compare_backtest_returns_all_engines(mock_savefig, mock_download, m
     expected_names = {name for name, _ in ENGINE_REGISTRY if _ENGINE_BACKTEST.get(name, True)}
     assert set(result.engine_results.keys()) == expected_names
     assert not {"SpyiEngine", "SsoSpyiEngine", "SsoSpyiChannelDipEngine", "SsoDipBuyEngine"} & set(result.engine_results)
+    assert result.engine_results["TqqqVrBuyDeadbandEngine"].final_value != 10000.0
     assert result.engine_results["TqqqVrDeadbandEngine"].final_value != 10000.0
     assert "TqqqVrEngine" in result.engine_results
     assert result.engine_results["TqqqVrEngine"].final_value != 10000.0

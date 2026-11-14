@@ -15,6 +15,8 @@ from src.core.models import DecisionFactor, MarketRegime, StrategyDecision, Trad
 class TqqqVrEngine(TradingEngine):
     """Daily cap sales and weekly V/budget updates; dedicated TQQQ/cash account."""
     ASSET_GROUPS = {"A": ["TQQQ"], "B": []}
+    VOLATILITY_TARGET = 0.30
+    BUY_DEADBAND = 0.0
     SELL_DEADBAND = 0.0
     LABEL = "TQQQ VR"
     STATE_KEY = "tqqq_vr"
@@ -22,7 +24,8 @@ class TqqqVrEngine(TradingEngine):
 
     def __init__(self, *args, fee_rate: float = 0.0025, **kwargs):
         super().__init__(*args, **kwargs)
-        self.planner = TqqqVrPlanner(fee_rate, sell_deadband=self.SELL_DEADBAND)
+        self.planner = TqqqVrPlanner(
+            fee_rate, sell_deadband=self.SELL_DEADBAND, buy_deadband=self.BUY_DEADBAND)
         self.vr_state = VrState.from_dict(self.restore_strategy_state(self.STATE_KEY))
         self.realized_vol = float("nan")
         self.weight_cap = float("nan")
@@ -41,7 +44,7 @@ class TqqqVrEngine(TradingEngine):
             self.realized_vol = self.weight_cap = float("nan")
         else:
             self.realized_vol = float(close.pct_change(fill_method=None).dropna().std(ddof=1)*math.sqrt(252))
-            self.weight_cap = min(1.0, .30/(3*self.realized_vol)) if self.realized_vol > 0 else 1.0
+            self.weight_cap = min(1.0, self.VOLATILITY_TARGET/(3*self.realized_vol)) if self.realized_vol > 0 else 1.0
         return self.weight_cap
 
     def analyze_strategy(self, market_data):
@@ -78,6 +81,17 @@ class TqqqVrEngine(TradingEngine):
 @register_engine(color="#9333ea", backtest=True)
 class TqqqVrDeadbandEngine(TqqqVrEngine):
     """Defer daily cap sales for overshoots up to five percentage points."""
+    VOLATILITY_TARGET = 0.30
+    BUY_DEADBAND = 0.0
     SELL_DEADBAND = 0.05
     LABEL = "TQQQ VR 5%p 데드밴드"
     STATE_KEY = "tqqq_vr_deadband"
+
+
+@register_engine(color="#0284c7", backtest=True)
+class TqqqVrBuyDeadbandEngine(TqqqVrEngine):
+    """Target 22.5% volatility and defer small lower-band purchases."""
+    VOLATILITY_TARGET = 0.225
+    BUY_DEADBAND = 0.02
+    LABEL = "TQQQ VR 22.5% · 매수 2%p"
+    STATE_KEY = "tqqq_vr_buy_deadband"
