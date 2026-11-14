@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from src.core.engine import TqqqVrEngine, TradingEngine
+from src.core.engine import TqqqVrBuyDeadbandEngine, TqqqVrEngine, TradingEngine
 from src.core.engine.data_pipeline import CollectedData
 from src.core.logic.tqqq_vr import TqqqVrPlanner, VrState
 from src.core.models import (Portfolio, OrderAction, OrderBatchResult, OrderOutcome,
@@ -127,17 +127,18 @@ def test_uninitialized_existing_holdings_require_state():
     assert not TqqqVrPlanner().plan("2026-01-05", 1, pf(), VrState())[0]
 
 
-def engine(repo=None):
+def engine(repo=None, engine_cls=TqqqVrEngine):
     repo = repo or Mock()
     repo.load_last_regime.return_value = None
     repo.load_strategy_state.return_value = {}
     logger = Mock()
     logger.get_captured_logs.return_value = []
-    return TqqqVrEngine(broker=Mock(), repo=repo, logger=logger)
+    return engine_cls(broker=Mock(), repo=repo, logger=logger)
 
 
-def test_volatility_uses_close_prior_20_returns_only():
-    e = engine()
+@pytest.mark.parametrize(("cls", "target"), [(TqqqVrEngine, .30), (TqqqVrBuyDeadbandEngine, .225)])
+def test_volatility_uses_close_prior_20_returns_only(cls, target):
+    e = engine(engine_cls=cls)
     e.cycle_date = "2026-02-04"
     idx = pd.bdate_range(end=e.cycle_date, periods=30)
     prices = 100*np.cumprod(1+np.tile([.01, -.02], 15))
@@ -147,7 +148,7 @@ def test_volatility_uses_close_prior_20_returns_only():
     expected = df['Close'].iloc[:-1].tail(21).pct_change().dropna().std()*np.sqrt(252)
     assert e.realized_vol == pytest.approx(expected)
     df.iloc[-1] = 1000000
-    assert e.calculate_strategy_indicators(data) == pytest.approx(min(1, .3/(3*expected)))
+    assert e.calculate_strategy_indicators(data) == pytest.approx(min(1, target/(3*expected)))
     # A provider already excluding today must yield exactly the same cap.
     old = CollectedData({'reference': df.iloc[:-1]}, 20, e.data_spec())
     assert e.calculate_strategy_indicators(old) == pytest.approx(e.weight_cap)
@@ -228,3 +229,22 @@ def test_deadband_sell_boundary(qty, value, sell):
     planner = TqqqVrPlanner(0, sell_deadband=.05)
     orders, _, _ = planner.plan("2026-01-06", .4, pf(10000-100*qty, qty), state(value=value))
     assert [(o.action, o.quantity) for o in orders] == ([(OrderAction.SELL, sell)] if sell else [])
+
+
+@pytest.mark.parametrize(("qty", "expected"), [
+    (39, []),                        # 1 percentage point of headroom
+    (38, [(OrderAction.BUY, 1)]),     # exactly 2 points, fee-adjusted room
+    (37, [(OrderAction.BUY, 2)]),
+    (41, [(OrderAction.SELL, 2)]),    # immediate sale even for a small excess
+])
+def test_buy_deadband_candidate_orders(qty, expected):
+    planner = engine(engine_cls=TqqqVrBuyDeadbandEngine).planner
+    orders, _, proposed = planner.plan("2026-01-06", .4, pf(10000-qty*100, qty), state())
+    assert [(o.action, o.quantity) for o in orders] == expected
+    assert proposed.spent == 0
+
+
+def test_buy_deadband_allows_initial_allocation_under_small_cap():
+    planner = engine(engine_cls=TqqqVrBuyDeadbandEngine).planner
+    orders, _, _ = planner.plan("2026-01-05", .015, pf(10000, 0), VrState())
+    assert [(o.action, o.quantity) for o in orders] == [(OrderAction.BUY, 1)]

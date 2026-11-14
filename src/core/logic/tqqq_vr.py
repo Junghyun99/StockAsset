@@ -34,11 +34,15 @@ class TqqqVrPlanner:
     G = 10.0
     CYCLE_DAYS = 7
 
-    def __init__(self, fee_rate: float = 0.0025, *, sell_deadband: float = 0.0):
+    def __init__(self, fee_rate: float = 0.0025, *, sell_deadband: float = 0.0,
+                 buy_deadband: float = 0.0):
         if not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
             raise ValueError("fee_rate must be finite and in [0, 1)")
         if not 0 <= sell_deadband <= 1:
             raise ValueError("sell_deadband must be in [0, 1]")
+        if not 0 <= buy_deadband <= 1:
+            raise ValueError("buy_deadband must be in [0, 1]")
+        self.buy_deadband = buy_deadband
         self.sell_deadband = sell_deadband
         self.fee_rate = fee_rate
 
@@ -97,6 +101,8 @@ class TqqqVrPlanner:
         room = max(0, math.floor(cap_headroom /
                                 (price*(1+cap*self.fee_rate))+1e-10))
         buy = min(need, affordable, permitted, room)
+        if buy and cap_headroom < (self.buy_deadband - 1e-14) * equity:
+            return [], "VR: lower band buy deferred within deadband", state
         if buy:
             return [Order(self.TICKER, OrderAction.BUY, buy, price)], "VR: lower band buy", state
         reason = "VR: within bands"
