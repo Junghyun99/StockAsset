@@ -1,7 +1,8 @@
 """Reproduce domestic VR price-return research using PR414 engine/planner/broker.
 
 Input: research/domestic_vr/prices.csv (Naver daily Close snapshot).
-No synthetic pre-listing prices, dividends, cash interest, taxes or terminal sale.
+No synthetic pre-listing prices, dividends, taxes or terminal sale.
+Cash interest defaults to zero; scenarios may supply an effective annual rate.
 """
 import math
 import sys
@@ -31,9 +32,18 @@ def load(code):
     return frame
 
 
-def metrics(frame):
+def period_risk_free(index, annual_rate):
+    """Accrue effective annual interest over actual calendar gaps; entry gap is zero."""
+    if not math.isfinite(annual_rate) or annual_rate <= -1:
+        raise ValueError("annual_rate must be finite and greater than -1")
+    gaps = index.to_series().diff().dt.days.fillna(0).to_numpy()
+    return np.expm1(np.log1p(annual_rate)*gaps/365.25)
+
+
+def metrics(frame, risk_free_rate=0.0):
     equity = np.r_[INITIAL, frame.equity.to_numpy()]
     daily = equity[1:]/equity[:-1]-1
+    excess = daily - period_risk_free(frame.index, risk_free_rate)
     peaks = np.maximum.accumulate(equity)
     dd = equity/peaks-1
     trough = int(np.argmin(dd))
@@ -48,7 +58,7 @@ def metrics(frame):
         longest = max(longest, streak)
     days = (frame.index[-1]-frame.index[0]).days
     return dict(cagr=(equity[-1]/INITIAL)**(365.25/days)-1,
-                mdd=float(dd.min()), sharpe=float(np.mean(daily)/np.std(daily, ddof=1)*np.sqrt(252)),
+                mdd=float(dd.min()), sharpe=float(np.mean(excess)/np.std(excess, ddof=1)*np.sqrt(252)),
                 final_value=equity[-1], average_weight=frame.weight.mean(),
                 trades=int(frame.trades.sum()), cap_sells=int(frame.cap_sell.sum()),
                 upper_sells=int(frame.upper_sell.sum()), pool_blocked=int(frame.pool_blocked.sum()),
@@ -58,7 +68,8 @@ def metrics(frame):
                 mdd_peak=str(dates[peak].date()), mdd_trough=str(dates[trough].date()),
                 mdd_recovery=str(dates[recovery].date()) if recovery is not None else None,
                 mdd_recovery_calendar_days=(dates[recovery]-dates[peak]).days if recovery is not None else None,
-                fees=frame.fees.sum())
+                fees=frame.fees.sum(),
+                interest_income=float(frame['interest'].sum()) if 'interest' in frame else 0.0)
 
 
 def longest_run(values):
@@ -69,8 +80,9 @@ def longest_run(values):
     return longest
 
 
-def simulate(prices, caps, start, end, ticker='418660.KS', target=.225, band=.03, bh=False):
+def simulate(prices, caps, start, end, ticker='418660.KS', target=.225, band=.03, bh=False, cash_rate=0.0):
     sim = prices.loc[start:end]
+    accruals = period_risk_free(sim.index, cash_rate)
     broker = BacktestBroker(INITIAL)
     repo = Mock(); repo.load_last_regime.return_value = None; repo.load_strategy_state.return_value = {}
     engine = DomesticQldVrBuyDeadbandEngine(broker=broker, repo=repo, logger=Mock())
@@ -78,6 +90,8 @@ def simulate(prices, caps, start, end, ticker='418660.KS', target=.225, band=.03
     state = VrState()
     rows = []
     for i, (date, row) in enumerate(sim.iterrows()):
+        interest = broker.cash * accruals[i]
+        broker.cash += interest
         price = float(row[ticker]); cap = float(min(1, target/(2*caps.loc[date])))
         broker.set_prices({ticker: price}); broker.set_date(date)
         pool_blocked = budget_blocked = False
@@ -101,7 +115,7 @@ def simulate(prices, caps, start, end, ticker='418660.KS', target=.225, band=.03
             assert not state.reconciliation_required
         equity = broker.cash + broker.holdings.get(ticker, 0)*price
         assert broker.cash >= -1e-5
-        rows.append(dict(date=date, equity=equity, cash=broker.cash,
+        rows.append(dict(date=date, equity=equity, cash=broker.cash, interest=interest,
                          weight=broker.holdings.get(ticker, 0)*price/equity,
                          cap=cap, value=state.value, reason=reason,
                          trades=len(fills), cap_sell=int(bool(fills) and reason=='VR: volatility cap sell'),

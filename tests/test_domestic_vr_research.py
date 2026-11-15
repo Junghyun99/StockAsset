@@ -25,3 +25,27 @@ def test_recovery_uses_pre_trough_peak_and_tracks_unfinished_drawdown():
     assert result['mdd_recovery']=='2024-01-04'
     assert result['mdd_recovery_calendar_days']==3
     assert result['longest_underwater_sessions']==2
+
+
+def test_interest_accrues_over_weekends_on_cash_only():
+    from scripts.research.compare_domestic_vr import period_risk_free
+    idx=pd.to_datetime(['2024-01-05','2024-01-08','2024-01-09'])
+    prices=pd.DataFrame({'133690.KS':[100.,100.,100.]},index=idx)
+    frame=simulate(prices,pd.Series(.2,index=idx),'2024-01-05','2024-01-09',ticker='133690.KS',bh=True,cash_rate=.04)
+    residual=frame.cash.iloc[0]
+    assert frame.interest.iloc[0]==0
+    assert frame.cash.iloc[-1]==pytest.approx(residual*1.04**(4/365.25))
+    assert frame.interest.sum()==pytest.approx(frame.cash.iloc[-1]-residual)
+    assert period_risk_free(idx,.04)[1]==pytest.approx(1.04**(3/365.25)-1)
+    assert frame.weight.iloc[-1]<frame.weight.iloc[0]
+
+
+def test_sharpe_uses_matching_calendar_gap_risk_free_rate():
+    from scripts.research.compare_domestic_vr import period_risk_free
+    idx=pd.to_datetime(['2024-01-05','2024-01-08','2024-01-09'])
+    prices=pd.DataFrame({'133690.KS':[100.,99.,103.]},index=idx)
+    frame=simulate(prices,pd.Series(.2,index=idx),'2024-01-05','2024-01-09',ticker='133690.KS',bh=True,cash_rate=.04)
+    daily=frame.equity.to_numpy()/np.r_[INITIAL,frame.equity.to_numpy()[:-1]]-1
+    excess=daily-period_risk_free(idx,.04)
+    assert metrics(frame,.04)['sharpe']==pytest.approx(excess.mean()/excess.std(ddof=1)*np.sqrt(252))
+    assert metrics(frame,.04)['sharpe']<metrics(frame,0)['sharpe']
