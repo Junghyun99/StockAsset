@@ -90,6 +90,7 @@ class VolTargetLeverageEngine(FullExposureEngine):
         portfolio: Portfolio,
         regime: MarketRegime,
         exposure: float,
+        record_date: str | None = None,
     ) -> StrategyDecision:
         L = self._set_leverage_ratio(regime, market_data.spy_volatility)
         self.logger.info(
@@ -97,7 +98,7 @@ class VolTargetLeverageEngine(FullExposureEngine):
             f"→ leverage={L:.2f}x (QLD {self.rebalancer.ratio_a:.0%})"
         )
         return super().build_strategy_decision(
-            market_data, portfolio, regime, exposure
+            market_data, portfolio, regime, exposure, record_date=record_date
         )
 
     def decision_factors(
