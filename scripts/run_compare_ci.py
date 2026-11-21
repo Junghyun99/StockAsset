@@ -11,14 +11,16 @@ def main() -> None:
     interval = int(os.environ.get("BACKTEST_INTERVAL", "1"))
 
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-    from src.backtest.runner import run_compare_backtest, ENGINE_REGISTRY, _ENGINE_COLORS, _ENGINE_MARKET_TYPES, _ENGINE_BACKTEST  # noqa: PLC0415
+    from src.backtest.runner import run_compare_backtest, select_compare_engines, _ENGINE_COLORS, _ENGINE_MARKET_TYPES  # noqa: PLC0415
 
     run_number = os.environ.get("GITHUB_RUN_NUMBER")
+    requested = [name.strip() for name in os.environ.get("BACKTEST_ENGINES", "").split(",") if name.strip()]
+    selected = select_compare_engines(requested or None)
 
     # 엔진 매니페스트 생성 (GitHub Pages에서 동적 디렉토리 리스팅 불가)
     output_dir = "docs/data/backtest/compare"
     os.makedirs(output_dir, exist_ok=True)
-    engine_names = [name for name, _ in ENGINE_REGISTRY if _ENGINE_BACKTEST.get(name, True)]
+    engine_names = [name for name, _ in selected]
     with open(os.path.join(output_dir, "engines.json"), "w") as f:
         json.dump(engine_names, f)
 
@@ -38,6 +40,7 @@ def main() -> None:
         start, end, cash,
         execution_interval=interval,
         run_number=run_number,
+        engine_names=engine_names,
     )
 
     if result is None:

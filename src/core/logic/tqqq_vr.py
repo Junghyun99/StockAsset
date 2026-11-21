@@ -35,13 +35,16 @@ class TqqqVrPlanner:
     CYCLE_DAYS = 7
 
     def __init__(self, fee_rate: float = 0.0025, *, sell_deadband: float = 0.0,
-                 buy_deadband: float = 0.0):
+                 buy_deadband: float = 0.0, ticker: str = "TQQQ"):
         if not math.isfinite(fee_rate) or not 0 <= fee_rate < 1:
             raise ValueError("fee_rate must be finite and in [0, 1)")
         if not 0 <= sell_deadband <= 1:
             raise ValueError("sell_deadband must be in [0, 1]")
         if not 0 <= buy_deadband <= 1:
             raise ValueError("buy_deadband must be in [0, 1]")
+        if not ticker or not ticker.strip():
+            raise ValueError("ticker must be non-empty")
+        self.TICKER = ticker
         self.buy_deadband = buy_deadband
         self.sell_deadband = sell_deadband
         self.fee_rate = fee_rate
@@ -60,7 +63,7 @@ class TqqqVrPlanner:
                 or price <= 0 or cash < 0 or not 0 < cap <= 1):
             return [], "VR: invalid cash, price or cap", state
         if any(q > 0 for t, q in portfolio.holdings.items() if t != self.TICKER):
-            return [], "VR: requires a dedicated TQQQ/cash portfolio", state
+            return [], f"VR: requires a dedicated {self.TICKER}/cash portfolio", state
         if not state.anchor:
             if qty:
                 return [], "VR: existing holdings require an explicit initial state", state

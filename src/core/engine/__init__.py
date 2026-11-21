@@ -39,7 +39,11 @@ from src.core.engine.domestic_qld_dip_buy import DomesticQldDipBuyEngine
 
 from src.core.engine.tqqq_vr import TqqqVrBuyDeadbandEngine, TqqqVrDeadbandEngine, TqqqVrEngine
 
+from src.core.engine.qld_vr import QldVrBuyDeadbandEngine, DomesticQldVrBuyDeadbandEngine
+
 __all__ = [
+    "QldVrBuyDeadbandEngine",
+    "DomesticQldVrBuyDeadbandEngine",
     "TqqqVrEngine",
     "TqqqVrDeadbandEngine",
     "TqqqVrBuyDeadbandEngine",
