@@ -17,10 +17,12 @@ class QldVrBuyDeadbandEngine(TqqqVrBuyDeadbandEngine):
 
 @register_engine(color="#059669", market_type="domestic", backtest=False)
 class DomesticQldVrBuyDeadbandEngine(QldVrBuyDeadbandEngine):
-    """Experimental KRW variant; select explicitly to preserve US test history."""
+    """Selected KRW candidate; opt in to preserve the US backtest history."""
     ASSET_GROUPS = {"A": ["418660.KS"], "B": []}
     TRADE_TICKER = "418660.KS"
     REFERENCE_TICKER = "133690.KS"
-    LABEL = "국내 나스닥 2배 VR 22.5% · 매수 3%p"
+    VOLATILITY_TARGET = 0.1975
+    BUY_DEADBAND = 0.075
+    LABEL = "국내 나스닥 2배 VR 19.75% · 매수 7.5%p"
     STATE_KEY = "domestic_qld_vr_buy_deadband"
     SESSION_TIMEZONE = ZoneInfo("Asia/Seoul")
